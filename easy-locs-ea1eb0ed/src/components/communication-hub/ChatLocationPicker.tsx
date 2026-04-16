@@ -265,7 +265,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: "hsl(var(--hud-success))" }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: "hsl(var(--hud-success))" }} />
               </span>
-              <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-success))" }}>LIVE</span>
+              <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--hud-success))" }}>LIVE</span>
             </div>
           )}
         </div>
@@ -285,7 +285,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                 <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>
                   {geoResult.building ? `🏢 ${geoResult.building}` : `📍 ${geoResult.label}`}
                 </p>
-                <p className="text-[10px] truncate mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] truncate mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {geoResult.address}
                 </p>
               </div>
@@ -388,7 +388,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
                     <p className="text-sm font-medium line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
                       {place.name}
                     </p>
-                    <p className="text-[11px] line-clamp-2 break-words mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.6875rem] line-clamp-2 break-words mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {place.address}
                     </p>
                   </button>

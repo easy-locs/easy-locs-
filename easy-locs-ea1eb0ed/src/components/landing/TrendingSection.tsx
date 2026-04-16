@@ -34,11 +34,11 @@ function ShopCard({ shop }: { shop: HomeShopPreview }) {
             {shop.rating > 0 && (
               <>
                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
-                <span className="text-[10px] font-semibold text-foreground">{shop.rating.toFixed(1)}</span>
+                <span className="text-[0.625rem] font-semibold text-foreground">{shop.rating.toFixed(1)}</span>
               </>
             )}
             {shop.distanceKm != null && (
-              <span className="text-[10px] text-muted-foreground ml-auto">{shop.distanceKm.toFixed(1)} km</span>
+              <span className="text-[0.625rem] text-muted-foreground ml-auto">{shop.distanceKm.toFixed(1)} km</span>
             )}
           </div>
         </div>
@@ -63,7 +63,7 @@ function VerticalRow({ config, section, t }: { config: typeof VERTICAL_CONFIG[nu
             <h3 className="text-sm sm:text-base font-extrabold text-foreground">{t(config.labelKey)}</h3>
           </div>
         </div>
-        <Link to={config.route} className="flex items-center gap-1 text-[11px] font-semibold text-accent hover:gap-2 transition-all">
+        <Link to={config.route} className="flex items-center gap-1 text-[0.6875rem] font-semibold text-accent hover:gap-2 transition-all">
           {t("landing.trending.see_all") || "See all"} <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
@@ -103,7 +103,7 @@ export default function TrendingSection() {
           <div>
             <h2 className="text-lg sm:text-xl font-extrabold text-foreground flex items-center gap-2">
               {t("landing.trending.title") || "Trending Now"}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-500/10 text-[10px] font-bold text-green-500 uppercase">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-500/10 text-[0.625rem] font-bold text-green-500 uppercase">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
@@ -111,7 +111,7 @@ export default function TrendingSection() {
                 Live
               </span>
             </h2>
-            <p className="text-[11px] sm:text-xs text-muted-foreground">{t("landing.trending.subtitle") || "Popular on Easy-Locs right now"}</p>
+            <p className="text-[0.6875rem] sm:text-xs text-muted-foreground">{t("landing.trending.subtitle") || "Popular on Easy-Locs right now"}</p>
           </div>
         </div>
 

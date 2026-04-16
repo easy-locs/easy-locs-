@@ -45,7 +45,7 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
       <div className="flex items-center gap-2">
         <Shield className="h-4 w-4" style={{ color: "hsl(var(--success))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Compliance</h3>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{
+        <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{
           background: score >= 80 ? "hsl(var(--success) / 0.12)" : "hsl(var(--warning) / 0.12)",
           color: score >= 80 ? "hsl(var(--success))" : "hsl(var(--warning))",
         }}>{score}%</span>
@@ -58,7 +58,7 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
           { id: "audit" as const, label: "📋 Audit" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--success) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -74,7 +74,7 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
             {/* Score */}
             <div className="text-center py-3 rounded-xl" style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.06), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--success) / 0.12)" }}>
               <p className="text-3xl font-extrabold tabular-nums" style={{ color: score >= 80 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>{score}%</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Score de conformité global</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Score de conformité global</p>
             </div>
 
             {complianceCases.length === 0 && <div style={{ padding: "1rem", textAlign: "center", color: "#888" }}>Aucun cas de conformité</div>}
@@ -86,11 +86,11 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
                   style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${cfg.color}15` }}>
                   <span className="text-sm">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{c.title || c.label || c.category || "Case"}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{c.description || c.details || ""}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{c.title || c.label || c.category || "Case"}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{c.description || c.details || ""}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
                   </div>
                 </div>
               );
@@ -108,12 +108,12 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-3">
                     <UserCheck className="h-4 w-4" style={{ color: isOnline ? "hsl(var(--success))" : "hsl(var(--warning))" }} />
                     <div className="flex-1">
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{d.driver_name || d.name || `Driver ${String(d.id).slice(0, 6)}`}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                      <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{d.driver_name || d.name || `Driver ${String(d.id).slice(0, 6)}`}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                         {d.last_heartbeat_at ? `Dernière activité: ${new Date(d.last_heartbeat_at).toLocaleDateString("fr-FR")}` : ""}
                       </p>
                     </div>
-                    <span className="text-[10px] font-bold" style={{ color: isOnline ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+                    <span className="text-[0.625rem] font-bold" style={{ color: isOnline ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                       {isOnline ? "En ligne" : d.status || "Hors ligne"}
                     </span>
                   </div>
@@ -142,13 +142,13 @@ export default function ComplianceDashboard({ orgId }: { orgId: string }) {
               return (
                 <div key={a.id} className="px-3 py-2 rounded-xl" style={{ background: cfg.bg, border: `1px solid ${cfg.color}15` }}>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {a.created_at ? new Date(a.created_at).toLocaleString("fr-FR", { hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" }) : ""}
                     </span>
-                    <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{a.actor || "Système"}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{a.actor || "Système"}</span>
                   </div>
-                  <p className="text-[10px] font-semibold mt-0.5" style={{ color: "hsl(var(--hud-text))" }}>{a.title || a.action || a.label || ""}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{a.description || a.details || ""}</p>
+                  <p className="text-[0.625rem] font-semibold mt-0.5" style={{ color: "hsl(var(--hud-text))" }}>{a.title || a.action || a.label || ""}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{a.description || a.details || ""}</p>
                 </div>
               );
             })}

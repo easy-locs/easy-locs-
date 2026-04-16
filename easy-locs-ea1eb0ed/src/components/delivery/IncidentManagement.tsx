@@ -85,7 +85,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
           <ShieldAlert className="h-4 w-4" style={{ color: "hsl(var(--destructive))" }} />
           Gestion des incidents
         </h3>
-        <Button size="sm" className="text-[10px] h-7" onClick={() => { setView("create"); haptic("light"); }}
+        <Button size="sm" className="text-[0.625rem] h-7" onClick={() => { setView("create"); haptic("light"); }}
           style={{ background: "hsl(var(--destructive))", color: "#fff" }}>
           <Plus className="h-3 w-3 mr-1" /> Déclarer
         </Button>
@@ -101,7 +101,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -109,7 +109,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["list", "create", "stats"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -140,27 +140,27 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
                   <span className="text-base">{st.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{inc.type}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{inc.type}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: sev.bg, color: `hsl(var(${sev.color}))` }}>{sev.label}</span>
                     </div>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{inc.description}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{inc.description}</p>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       👤 {inc.driver} • 📍 {inc.zone} • Escalade: Niv.{escalationLevel}
                     </p>
                     {slaExpired && (
-                      <p className="text-[10px] mt-0.5 font-semibold animate-pulse" style={{ color: "hsl(var(--destructive))" }}>
+                      <p className="text-[0.625rem] mt-0.5 font-semibold animate-pulse" style={{ color: "hsl(var(--destructive))" }}>
                         ⏰ SLA dépassé
                       </p>
                     )}
                   </div>
                   {inc.status !== "resolved" && (
                     <div className="flex flex-col gap-1 shrink-0">
-                      <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => resolveIncident(inc.id)}
+                      <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => resolveIncident(inc.id)}
                         style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                         Résoudre
                       </Button>
-                      <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => escalateIncident(inc.id, escalationLevel)}
+                      <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => escalateIncident(inc.id, escalationLevel)}
                         style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
                         Escalader
                       </Button>
@@ -183,7 +183,7 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
           <div className="flex gap-1">
             {(["low", "medium", "high", "critical"] as const).map(s => (
               <button key={s} onClick={() => setNewIncident(p => ({ ...p, severity: s }))}
-                className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+                className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
                 style={{
                   background: newIncident.severity === s ? severityConfig(s).bg : "hsl(var(--muted) / 0.3)",
                   color: newIncident.severity === s ? `hsl(var(${severityConfig(s).color}))` : "hsl(var(--muted-foreground))",
@@ -221,12 +221,12 @@ export default function IncidentManagement({ orgId, className }: { orgId: string
                 style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
                 <User className="h-3.5 w-3.5" style={{ color: "hsl(var(--primary))" }} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{driver}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{driver}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {driverInc.length} incident{driverInc.length > 1 ? "s" : ""} • {resolved} résolu{resolved > 1 ? "s" : ""}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold" style={{
+                <span className="text-[0.625rem] font-bold" style={{
                   color: driverInc.length <= 1 ? "hsl(var(--success))" : driverInc.length <= 2 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                 }}>{driverInc.length}</span>
               </div>

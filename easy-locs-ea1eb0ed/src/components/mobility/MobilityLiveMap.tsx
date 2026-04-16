@@ -588,7 +588,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
               {nearbyRiders} {mode === "taxi" ? "drivers" : "riders"} nearby
             </span>
           </div>
-          <span className="text-[10px] font-semibold text-muted-foreground tracking-wide uppercase">Live</span>
+          <span className="text-[0.625rem] font-semibold text-muted-foreground tracking-wide uppercase">Live</span>
         </div>
       </div>
     </div>

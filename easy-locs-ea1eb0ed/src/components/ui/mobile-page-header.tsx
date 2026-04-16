@@ -60,7 +60,7 @@ export function MobilePageHeader({
       <div className="flex-1 min-w-0">
         <h1 className="text-base font-bold text-foreground whitespace-normal break-words leading-snug tracking-tight">{title}</h1>
         {subtitle && (
-          <p className="text-[11px] text-muted-foreground/70 whitespace-normal break-words leading-snug mt-0.5">{subtitle}</p>
+          <p className="text-[0.6875rem] text-muted-foreground/70 whitespace-normal break-words leading-snug mt-0.5">{subtitle}</p>
         )}
       </div>
       {actions && (

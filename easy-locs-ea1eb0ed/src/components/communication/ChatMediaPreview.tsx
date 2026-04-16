@@ -122,7 +122,7 @@ export default function ChatMediaPreview({ url, fileName, isMe }: Props) {
         <p className="text-xs font-medium min-w-0 break-words leading-snug" style={{ color: "hsl(var(--foreground))" }}>
           {fileName || "Document"}
         </p>
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           Tap to open
         </p>
       </div>

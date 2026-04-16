@@ -100,7 +100,7 @@ export default function MeTenantView() {
           </button>
           <div className="flex-1">
             <h1 className="text-lg font-bold text-foreground">Mon logement</h1>
-            <p className="text-[11px] text-muted-foreground">{property?.label || "—"}</p>
+            <p className="text-[0.6875rem] text-muted-foreground">{property?.label || "—"}</p>
           </div>
         </div>
 
@@ -109,17 +109,17 @@ export default function MeTenantView() {
           <div className="grid grid-cols-3 gap-3 text-center">
             <div>
               <p className="text-lg font-bold text-foreground">{fmt(monthlyTotal)}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Loyer/mois</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">Loyer/mois</p>
             </div>
             <div>
               <p className={`text-lg font-bold ${unpaidCalls.length > 0 ? "text-destructive" : "text-emerald-600"}`}>
                 {unpaidCalls.length}
               </p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Impayé{unpaidCalls.length !== 1 ? "s" : ""}</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">Impayé{unpaidCalls.length !== 1 ? "s" : ""}</p>
             </div>
             <div>
               <p className="text-lg font-bold text-foreground">{fmt(totalPaid)}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Total payé</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-semibold">Total payé</p>
             </div>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function MeTenantView() {
                   <div className="flex items-center gap-2 mb-2">
                     <Key className="w-5 h-5 text-emerald-500" />
                     <span className="text-sm font-bold text-foreground">Bail actif</span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Actif</span>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600">Actif</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2.5">
                     <InfoRow icon={Calendar} label="Début" value={activeLease.start_date ? new Date(activeLease.start_date).toLocaleDateString("fr-FR") : "—"} />
@@ -206,14 +206,14 @@ export default function MeTenantView() {
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     {activeLease.signed_by_tenant ? (
-                      <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé par vous</span>
+                      <span className="text-[0.625rem] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé par vous</span>
                     ) : (
-                      <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> En attente de votre signature</span>
+                      <span className="text-[0.625rem] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> En attente de votre signature</span>
                     )}
                     {activeLease.signed_by_owner ? (
-                      <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé par le bailleur</span>
+                      <span className="text-[0.625rem] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé par le bailleur</span>
                     ) : (
-                      <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> Bailleur en attente</span>
+                      <span className="text-[0.625rem] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> Bailleur en attente</span>
                     )}
                   </div>
                 </div>
@@ -228,7 +228,7 @@ export default function MeTenantView() {
                     <div key={l.id} className="rounded-xl p-3 bg-muted/30 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground">{l.start_date ? new Date(l.start_date).toLocaleDateString("fr-FR") : "—"}</p>
-                        <p className="text-[10px] text-muted-foreground capitalize">{l.status}</p>
+                        <p className="text-[0.625rem] text-muted-foreground capitalize">{l.status}</p>
                       </div>
                       <span className="text-xs font-semibold text-muted-foreground">{fmt(l.rent_amount || 0)}</span>
                     </div>
@@ -241,7 +241,7 @@ export default function MeTenantView() {
           {activeTab === "quittances" && (
             <motion.div key="quittances" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
               <div className="rounded-2xl p-3 bg-emerald-500/5 border border-emerald-500/10">
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-[0.6875rem] text-muted-foreground">
                   Vos quittances de loyer sont générées automatiquement après chaque paiement validé par votre bailleur.
                 </p>
               </div>
@@ -258,15 +258,15 @@ export default function MeTenantView() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                            <p className="text-[10px] text-muted-foreground">{fmt(rc.total_amount)}</p>
+                            <p className="text-[0.625rem] text-muted-foreground">{fmt(rc.total_amount)}</p>
                           </div>
                         </div>
                         {rc.receipt_pdf_url ? (
-                          <a href={rc.receipt_pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
+                          <a href={rc.receipt_pdf_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[0.625rem] font-semibold bg-emerald-500/10 text-emerald-600 active:scale-95 transition-transform">
                             <Download className="w-3 h-3" /> PDF
                           </a>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground">En cours...</span>
+                          <span className="text-[0.625rem] text-muted-foreground">En cours...</span>
                         )}
                       </div>
                     );
@@ -293,7 +293,7 @@ export default function MeTenantView() {
                           <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
                           <p className="text-sm font-bold text-destructive">{fmt(rc.total_amount)}</p>
                         </div>
-                        <div className="text-[10px] text-muted-foreground">
+                        <div className="text-[0.625rem] text-muted-foreground">
                           Loyer: {fmt(rc.rent_amount)} + Charges: {fmt(rc.charges_amount)}
                         </div>
                       </div>
@@ -317,7 +317,7 @@ export default function MeTenantView() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                            <p className="text-[10px] text-muted-foreground">
+                            <p className="text-[0.625rem] text-muted-foreground">
                               Payé le {rc.paid_date ? new Date(rc.paid_date).toLocaleDateString("fr-FR") : "—"}
                               {rc.payment_method && ` · ${rc.payment_method}`}
                             </p>
@@ -345,8 +345,8 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
   return (
     <div className="flex items-center gap-2">
       <Icon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-      <span className="text-[11px] text-muted-foreground">{label}:</span>
-      <span className="text-[11px] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
+      <span className="text-[0.6875rem] text-muted-foreground">{label}:</span>
+      <span className="text-[0.6875rem] font-semibold text-foreground line-clamp-1 break-words">{value}</span>
     </div>
   );
 }

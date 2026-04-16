@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -72,15 +72,15 @@ export default function ReviewsManagerPanel({ providerId }: Props) {
       </div>
 
       {reviews.length === 0 ? (
-        <Card>
+        <AppCard>
           <CardContent className="py-8 text-center text-muted-foreground text-sm">
             No reviews yet
           </CardContent>
-        </Card>
+        </AppCard>
       ) : (
         <div className="space-y-3">
           {reviews.map((review: any) => (
-            <Card key={review.id} className="overflow-hidden">
+            <AppCard key={review.id} className="overflow-hidden">
               <CardContent className="p-4 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
@@ -88,7 +88,7 @@ export default function ReviewsManagerPanel({ providerId }: Props) {
                       <span className="text-sm font-semibold text-foreground">{review.reviewer_name}</span>
                       <Badge
                         variant={review.status === "published" ? "default" : review.status === "flagged" ? "destructive" : "secondary"}
-                        className="text-[10px] h-5"
+                        className="text-[0.625rem] h-5"
                       >
                         {review.status}
                       </Badge>
@@ -99,7 +99,7 @@ export default function ReviewsManagerPanel({ providerId }: Props) {
                           <Star key={i} className={`h-3 w-3 ${filled ? "text-[hsl(var(--chart-4))] fill-[hsl(var(--chart-4))]" : "text-muted-foreground/30"}`} />
                         ))}
                       </div>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-[0.6875rem] text-muted-foreground">
                         {(() => { try { return format(new Date(review.created_at), "MMM d, yyyy"); } catch { return review.created_at; } })()}
                       </span>
                     </div>
@@ -118,7 +118,7 @@ export default function ReviewsManagerPanel({ providerId }: Props) {
                 <p className="text-sm text-muted-foreground">{review.comment}</p>
 
                 {review.service_title && (
-                  <span className="text-[11px] text-muted-foreground">📌 {review.service_title}</span>
+                  <span className="text-[0.6875rem] text-muted-foreground">📌 {review.service_title}</span>
                 )}
 
                 {review.response && (
@@ -128,7 +128,7 @@ export default function ReviewsManagerPanel({ providerId }: Props) {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}

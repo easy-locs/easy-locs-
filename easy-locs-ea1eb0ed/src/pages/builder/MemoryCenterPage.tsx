@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Database, Shield, AlertTriangle, CheckCircle, FileText } from "lucide-react";
@@ -41,34 +41,34 @@ export default function MemoryCenterPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-gray-900 border-gray-800">
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <Shield className="w-6 h-6 mx-auto text-cyan-400 mb-2" />
               <div className="text-2xl font-bold">{summary.totalRules}</div>
               <div className="text-gray-400 text-xs">Rules</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <AlertTriangle className="w-6 h-6 mx-auto text-amber-400 mb-2" />
               <div className="text-2xl font-bold">{summary.totalIncidents}</div>
               <div className="text-gray-400 text-xs">Incidents</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <CheckCircle className="w-6 h-6 mx-auto text-emerald-400 mb-2" />
               <div className="text-2xl font-bold">{summary.totalProofs}</div>
               <div className="text-gray-400 text-xs">Proofs</div>
             </CardContent>
-          </Card>
-          <Card className="bg-gray-900 border-gray-800">
+          </AppCard>
+          <AppCard className="bg-gray-900 border-gray-800">
             <CardContent className="pt-6 text-center">
               <FileText className="w-6 h-6 mx-auto text-purple-400 mb-2" />
               <div className="text-2xl font-bold">{summary.averageHealthScore}%</div>
               <div className="text-gray-400 text-xs">Avg Health</div>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         <Tabs defaultValue="rules" className="space-y-4">
@@ -80,7 +80,7 @@ export default function MemoryCenterPage() {
 
           <TabsContent value="rules" className="space-y-3">
             {rules.map((rule) => (
-              <Card key={rule.id} className="bg-gray-900 border-gray-800">
+              <AppCard key={rule.id} className="bg-gray-900 border-gray-800">
                 <CardContent className="py-4">
                   <div className="flex items-start gap-3">
                     <Shield className={`w-4 h-4 mt-0.5 ${rule.enforced ? "text-emerald-400" : "text-gray-600"}`} />
@@ -93,21 +93,21 @@ export default function MemoryCenterPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </TabsContent>
 
           <TabsContent value="incidents" className="space-y-3">
             {incidents.length === 0 ? (
-              <Card className="bg-gray-900 border-gray-800">
+              <AppCard className="bg-gray-900 border-gray-800">
                 <CardContent className="py-12 text-center">
                   <CheckCircle className="w-12 h-12 mx-auto text-emerald-400 mb-3" />
                   <div className="text-gray-300">No incidents recorded</div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ) : (
               incidents.map((inc) => (
-                <Card key={inc.id} className="bg-gray-900 border-gray-800">
+                <AppCard key={inc.id} className="bg-gray-900 border-gray-800">
                   <CardContent className="py-4">
                     <div className="flex items-start gap-3">
                       <AlertTriangle className="w-4 h-4 mt-0.5 text-amber-400" />
@@ -121,23 +121,23 @@ export default function MemoryCenterPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))
             )}
           </TabsContent>
 
           <TabsContent value="proofs" className="space-y-3">
             {proofs.length === 0 ? (
-              <Card className="bg-gray-900 border-gray-800">
+              <AppCard className="bg-gray-900 border-gray-800">
                 <CardContent className="py-12 text-center">
                   <FileText className="w-12 h-12 mx-auto text-gray-600 mb-3" />
                   <div className="text-gray-300">No proofs recorded yet</div>
                   <div className="text-gray-500 text-sm">Run audits or apply patches to generate proofs</div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ) : (
               proofs.map((p) => (
-                <Card key={p.id} className="bg-gray-900 border-gray-800">
+                <AppCard key={p.id} className="bg-gray-900 border-gray-800">
                   <CardContent className="py-4">
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-4 h-4 mt-0.5 text-emerald-400" />
@@ -150,7 +150,7 @@ export default function MemoryCenterPage() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))
             )}
           </TabsContent>

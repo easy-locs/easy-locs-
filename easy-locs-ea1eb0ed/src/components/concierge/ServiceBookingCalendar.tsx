@@ -244,7 +244,7 @@ function RangeCalendar({
           "rounded-xl border-2 px-4 py-3 text-center transition-all",
           !range?.from ? "border-primary bg-primary/5 shadow-sm" : "border-border"
         )}>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkInLabel}</p>
+          <p className="text-[0.625rem] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkInLabel}</p>
           <p className={cn("text-sm font-bold", range?.from ? "text-foreground" : "text-muted-foreground/60")}>
             {range?.from ? format(range.from, "dd MMM yyyy") : "—"}
           </p>
@@ -253,7 +253,7 @@ function RangeCalendar({
           "rounded-xl border-2 px-4 py-3 text-center transition-all",
           range?.from && !range?.to ? "border-primary bg-primary/5 shadow-sm" : "border-border"
         )}>
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkOutLabel}</p>
+          <p className="text-[0.625rem] uppercase tracking-widest text-muted-foreground font-semibold mb-1">{checkOutLabel}</p>
           <p className={cn("text-sm font-bold", range?.to ? "text-foreground" : "text-muted-foreground/60")}>
             {range?.to ? format(range.to, "dd MMM yyyy") : "—"}
           </p>
@@ -301,7 +301,7 @@ function RangeCalendar({
       )}
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 text-[10px] text-muted-foreground flex-wrap">
+      <div className="flex items-center justify-center gap-4 text-[0.625rem] text-muted-foreground flex-wrap">
         <span className="flex items-center gap-1">
           <span className="w-2.5 h-2.5 rounded-sm bg-primary/30" /> Selected
         </span>
@@ -420,14 +420,14 @@ function SlotCalendar({
               Available times — {format(date, "dd/MM/yyyy")}
             </p>
             {effectiveCapacity > 1 && (
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-[0.625rem]">
                 {remainingCapacity > 0 ? `${remainingCapacity} spots left` : "Fully booked"}
               </Badge>
             )}
           </div>
 
           {rules?.durationMinutes && (
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[0.625rem]">
               ⏱ {rules.durationMinutes} min per slot
             </Badge>
           )}
@@ -453,13 +453,13 @@ function SlotCalendar({
                   onClick={() => onSelect(date!, slot.start)}
                 >
                   {slot.start}
-                  {isBooked && <span className="ml-1 text-[10px]">✕</span>}
+                  {isBooked && <span className="ml-1 text-[0.625rem]">✕</span>}
                 </Button>
               );
             })}
           </div>
 
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground flex-wrap">
+          <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground flex-wrap">
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-2.5 rounded-sm bg-accent" /> Selected
             </span>

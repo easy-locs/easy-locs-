@@ -12,7 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { checkConnectStatus as checkStripeStatus, createConnectAccount, disconnectStripe as disconnectStripeApi, fetchFinancialData } from "@/repositories/finances.repository";
 import { useToast } from "@/hooks/use-toast";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ChartContainerLazy } from "@/components/ui/LazyChart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -368,7 +368,7 @@ const Finances = () => {
           </TabsList>
 
           <TabsContent value="bar">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <CardTitle className="text-base">{t("page.finances.chart_title")}</CardTitle>
               </CardHeader>
@@ -392,11 +392,11 @@ const Finances = () => {
                   </ChartContainerLazy>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="pie">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <CardTitle className="text-base">{t("page.finances.payments")}</CardTitle>
               </CardHeader>
@@ -421,11 +421,11 @@ const Finances = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="expenses">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <CardTitle className="text-base">{t("page.finances.expenses_category")}</CardTitle>
               </CardHeader>
@@ -451,11 +451,11 @@ const Finances = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
 
           <TabsContent value="detail">
-            <Card>
+            <AppCard>
               <CardHeader>
                 <CardTitle className="text-base">{t("page.finances.detail_expenses")}</CardTitle>
               </CardHeader>
@@ -479,7 +479,7 @@ const Finances = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </TabsContent>
         </Tabs>
       </div>

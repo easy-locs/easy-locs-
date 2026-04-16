@@ -126,7 +126,7 @@ export default function SnapBottomSheet({ snap, onSnapChange, peekContent, child
 
       {snap === "peek" && !peekContent && resultCount != null && (
         <div className="px-4 pb-2 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-semibold text-muted-foreground">
+          <span className="text-[0.6875rem] font-semibold text-muted-foreground">
             {resultCount} places nearby
           </span>
         </div>

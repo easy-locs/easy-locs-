@@ -146,7 +146,7 @@ export default function DriverEarningsPayroll() {
         <div className="flex gap-1">
           {(["week", "biweekly", "month"] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              className="text-[10px] px-2 py-1 rounded-lg transition-all"
+              className="text-[0.625rem] px-2 py-1 rounded-lg transition-all"
               style={{
                 background: period === p ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
                 color: period === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -159,7 +159,7 @@ export default function DriverEarningsPayroll() {
 
       {/* Period info */}
       <div className="text-center py-1">
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
           <Calendar className="h-3 w-3 inline mr-1" />
           {from.toLocaleDateString("fr")} — {to.toLocaleDateString("fr")}
         </p>
@@ -168,9 +168,9 @@ export default function DriverEarningsPayroll() {
       {/* Net pay hero */}
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.08), hsl(var(--hud-cyan) / 0.05))", border: "1px solid hsl(var(--success) / 0.15)" }}>
-        <p className="text-[10px] font-semibold mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>NET À PAYER</p>
+        <p className="text-[0.625rem] font-semibold mb-1" style={{ color: "hsl(var(--hud-text-dim))" }}>NET À PAYER</p>
         <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>{summary.netPay.toFixed(2)} €</p>
-        <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+        <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           {summary.totalDeliveries} livraisons terminées
         </p>
       </div>
@@ -187,13 +187,13 @@ export default function DriverEarningsPayroll() {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <Icon className="h-3 w-3 mx-auto mb-1" style={{ color: `hsl(var(${color}))` }} />
             <p className="text-xs font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* Breakdown toggle */}
-      <Button size="sm" variant="outline" className="w-full text-[10px] h-8"
+      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-8"
         onClick={() => setShowBreakdown(!showBreakdown)}
         style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text-dim))" }}>
         <FileText className="h-3 w-3 mr-1" /> {showBreakdown ? "Masquer le détail" : "Voir le détail"}
@@ -204,19 +204,19 @@ export default function DriverEarningsPayroll() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="rounded-xl p-3 space-y-2"
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-          <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>DÉTAIL DU CALCUL</p>
+          <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>DÉTAIL DU CALCUL</p>
 
           {/* Earnings section */}
           <div className="space-y-1">
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>GAINS</p>
+            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>GAINS</p>
             {[
               { label: `Frais de livraison (${summary.totalDeliveries} missions)`, value: summary.totalEarnings },
               { label: `Bonus express (${jobs.filter(j => j.priority === "express" && j.status === "completed").length}x 2€)`, value: summary.expressBonus },
               { label: `Bonus urgent (${jobs.filter(j => j.priority === "urgent" && j.status === "completed").length}x 5€)`, value: summary.urgentBonus },
             ].filter(l => l.value > 0).map(({ label, value }) => (
               <div key={label} className="flex justify-between py-0.5">
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{label}</span>
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>+{value.toFixed(2)} €</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{label}</span>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>+{value.toFixed(2)} €</span>
               </div>
             ))}
           </div>
@@ -224,14 +224,14 @@ export default function DriverEarningsPayroll() {
           {/* Deductions section */}
           {summary.deductions > 0 && (
             <div className="space-y-1 pt-1 border-t" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--destructive))" }}>DÉDUCTIONS</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--destructive))" }}>DÉDUCTIONS</p>
               {[
                 { label: `Annulations (${jobs.filter(j => j.status === "cancelled").length}x 1€)`, value: summary.cancellationDeductions },
                 { label: "Retards SLA", value: summary.lateDeductions },
               ].filter(l => l.value > 0).map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-0.5">
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{label}</span>
-                  <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--destructive))" }}>-{value.toFixed(2)} €</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{label}</span>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--destructive))" }}>-{value.toFixed(2)} €</span>
                 </div>
               ))}
             </div>
@@ -239,15 +239,15 @@ export default function DriverEarningsPayroll() {
 
           {/* Total */}
           <div className="pt-2 border-t flex justify-between" style={{ borderColor: "hsl(var(--hud-border) / 0.1)" }}>
-            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>NET À PAYER</span>
-            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{summary.netPay.toFixed(2)} €</span>
+            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>NET À PAYER</span>
+            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>{summary.netPay.toFixed(2)} €</span>
           </div>
         </motion.div>
       )}
 
       {/* Recent deliveries */}
       <div className="space-y-1">
-        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>
           LIVRAISONS RÉCENTES ({jobs.length})
         </p>
         {loading ? (
@@ -255,22 +255,22 @@ export default function DriverEarningsPayroll() {
             <Clock className="h-4 w-4 animate-pulse" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
           </div>
         ) : jobs.length === 0 ? (
-          <p className="text-[10px] text-center py-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucune livraison sur cette période</p>
+          <p className="text-[0.625rem] text-center py-4" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucune livraison sur cette période</p>
         ) : (
           jobs.slice(0, 10).map(job => (
             <div key={job.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
               <span className="text-sm">{job.status === "completed" ? "✅" : job.status === "cancelled" ? "❌" : "⏳"}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                   {job.dropoff_address}
                 </p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {(job.delivered_at || job.created_at) ? new Date(job.delivered_at || job.created_at!).toLocaleDateString("fr") : ""}
                   {job.priority !== "standard" && ` • ${job.priority}`}
                 </p>
               </div>
-              <span className="text-[10px] font-bold shrink-0"
+              <span className="text-[0.625rem] font-bold shrink-0"
                 style={{ color: job.status === "completed" ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {job.status === "completed" ? `+${(job.delivery_fee || 0).toFixed(2)}€` : "--"}
               </span>

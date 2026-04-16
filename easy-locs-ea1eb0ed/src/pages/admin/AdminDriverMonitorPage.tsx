@@ -55,7 +55,7 @@ export default function AdminDriverMonitorPage() {
                 <p className="text-xs text-muted-foreground">
                   Status: {row.current_status || "unknown"}
                 </p>
-                <p className="text-[11px] text-muted-foreground/70">
+                <p className="text-[0.6875rem] text-muted-foreground/70">
                   Updated: {row.updated_at ? new Date(row.updated_at).toLocaleString() : "-"}
                 </p>
               </div>
@@ -70,7 +70,7 @@ export default function AdminDriverMonitorPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 text-center">
-      <p className="text-[11px] text-muted-foreground">{title}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{title}</p>
       <p className="text-lg font-bold text-foreground">{value}</p>
     </div>
   );

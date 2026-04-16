@@ -131,7 +131,7 @@ export default function ContactSyncPrompt({ userId, onComplete, onSkip }: Contac
         {t("contacts.sync.skip") || "Skip for now"}
       </button>
 
-      <p className="text-[11px] text-muted-foreground/60 mt-4 max-w-xs mx-auto">
+      <p className="text-[0.6875rem] text-muted-foreground/60 mt-4 max-w-xs mx-auto">
         {t("contacts.sync.privacy") || "Your contacts are only used to find friends on the platform. We never share your data."}
       </p>
     </motion.div>

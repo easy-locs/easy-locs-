@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2, XCircle, Rocket, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -98,18 +98,18 @@ export default function LaunchAudit({ shopId }: Props) {
 
       {audit && (
         <>
-          <Card>
+          <AppCard>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs text-muted-foreground">Overall Score</span>
                 <span className="text-lg font-bold text-foreground">{audit.overall_score}%</span>
               </div>
               <Progress value={audit.overall_score} className="h-2" />
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[0.625rem] text-muted-foreground">
                 Last checked: {new Date(audit.checked_at).toLocaleString()}
               </p>
             </CardContent>
-          </Card>
+          </AppCard>
 
           <div className="space-y-1.5">
             {checks.map(c => (
@@ -121,7 +121,7 @@ export default function LaunchAudit({ shopId }: Props) {
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium">{c.label}</p>
-                  {!c.passed && <p className="text-[10px] text-muted-foreground">{c.hint}</p>}
+                  {!c.passed && <p className="text-[0.625rem] text-muted-foreground">{c.hint}</p>}
                 </div>
               </div>
             ))}
@@ -130,9 +130,9 @@ export default function LaunchAudit({ shopId }: Props) {
       )}
 
       {!audit && !isLoading && (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">
           Run the audit to check your shop's launch readiness.
-        </CardContent></Card>
+        </CardContent></AppCard>
       )}
     </div>
   );

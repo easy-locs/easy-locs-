@@ -196,7 +196,7 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                 <Label className="text-xs font-medium flex items-center gap-1.5">
                   <Upload className="h-3 w-3" /> 🪪 {t("mp.id_document_required") || "ID Document Required"} *
                 </Label>
-                <p className="text-[11px] text-muted-foreground">{t("mp.id_document_desc") || "This service requires a copy of your identity document (passport, ID card, or driver's license)."}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">{t("mp.id_document_desc") || "This service requires a copy of your identity document (passport, ID card, or driver's license)."}</p>
                 <Input
                   type="file"
                   accept="image/*,.pdf"
@@ -319,12 +319,12 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
               showOffline={true}
             />
             {paymentMethod === "bank_transfer" && (
-              <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
+              <p className="text-[0.625rem] text-muted-foreground bg-muted/30 p-2 rounded-lg">
                 💳 {t("mp.bank_transfer_note") || "Bank transfer details will be sent after booking confirmation."}
               </p>
             )}
             {paymentMethod === "cash" && (
-              <p className="text-[10px] text-muted-foreground bg-muted/30 p-2 rounded-lg">
+              <p className="text-[0.625rem] text-muted-foreground bg-muted/30 p-2 rounded-lg">
                 💵 {t("mp.cash_note") || "Payment in cash upon arrival or at the time of service."}
               </p>
             )}

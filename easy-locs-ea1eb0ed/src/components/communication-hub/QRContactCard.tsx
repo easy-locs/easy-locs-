@@ -329,7 +329,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
             </div>
 
             <p className="text-sm font-bold text-foreground mb-0.5">{userName}</p>
-            <p className="text-[11px] text-muted-foreground/50 mb-5">
+            <p className="text-[0.6875rem] text-muted-foreground/50 mb-5">
               {t("orbit.qr.scan_to_add")}
             </p>
 
@@ -402,7 +402,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
             {/* Manual link fallback */}
             {showManualInput && (
               <div className="w-full mb-3 space-y-2">
-                <p className="text-[11px] text-center text-muted-foreground/60">
+                <p className="text-[0.6875rem] text-center text-muted-foreground/60">
                   {t("orbit.qr.or_paste")}
                 </p>
                 <div className="flex gap-2">
@@ -426,7 +426,7 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
               </div>
             )}
 
-            <p className="text-[11px] text-center text-muted-foreground/50 mb-3">
+            <p className="text-[0.6875rem] text-center text-muted-foreground/50 mb-3">
               {t("orbit.qr.point_camera")}
             </p>
 

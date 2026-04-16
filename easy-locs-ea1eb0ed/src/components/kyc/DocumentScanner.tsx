@@ -158,7 +158,7 @@ export function DocumentScanner({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{field.value}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                      className={`text-[0.625rem] px-1.5 py-0.5 rounded-full ${
                         field.confidence >= 0.8
                           ? "bg-green-100 text-green-700"
                           : field.confidence >= 0.6

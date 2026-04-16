@@ -262,7 +262,7 @@ export default function AdminAutonomyDashboardPage() {
                     <p className={`text-2xl font-bold ${card.status === "error" ? "text-red-400" : card.status === "warning" ? "text-amber-400" : "text-emerald-400"}`}>
                       {displayValue != null ? String(displayValue) : "—"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground mt-1">{card.status}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-1">{card.status}</p>
                   </div>
                 );
               })}
@@ -283,7 +283,7 @@ export default function AdminAutonomyDashboardPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground">{evt.actionTaken}</span>
-                    <span className="text-[10px] text-muted-foreground">{new Date(evt.timestamp).toLocaleTimeString()}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{new Date(evt.timestamp).toLocaleTimeString()}</span>
                   </div>
                 </div>
               ))}
@@ -329,7 +329,7 @@ export default function AdminAutonomyDashboardPage() {
                 );
               })}
             </div>
-            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+            <div className="flex justify-between text-[0.625rem] text-muted-foreground mt-1">
               <span>Oldest</span>
               <span>Latest</span>
             </div>

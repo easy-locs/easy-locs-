@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useI18n } from "@/lib/i18n";
 import { formatCurrency } from "@/lib/country-config";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Calculator, TrendingDown, TrendingUp, ChevronDown, ChevronUp } from "lucide-react";
 
 interface RentCall {
@@ -62,7 +62,7 @@ const PropertyFiscalCard = ({ propertyId, propertyLabel, propertyAddress, proper
   }, [rentCalls, year, expenses, manualRegime, config]);
 
   return (
-    <Card className="border-border/60">
+    <AppCard className="border-border/60">
       {/* Header — always visible */}
       <CardHeader
         className="cursor-pointer hover:bg-muted/30 transition-colors"
@@ -97,18 +97,18 @@ const PropertyFiscalCard = ({ propertyId, propertyLabel, propertyAddress, proper
             <div className="bg-muted/30 rounded-lg p-3 text-center">
               <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1" />
               <p className="text-lg font-bold text-foreground">{fmt(report.totalBrut)}</p>
-              <p className="text-[11px] text-muted-foreground">{t("page.fiscal.gross_revenue")}</p>
-              <p className="text-[10px] text-muted-foreground">{report.paidCalls}/{report.yearCalls} {t("page.fiscal.paid_calls")}</p>
+              <p className="text-[0.6875rem] text-muted-foreground">{t("page.fiscal.gross_revenue")}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{report.paidCalls}/{report.yearCalls} {t("page.fiscal.paid_calls")}</p>
             </div>
             <div className="bg-muted/30 rounded-lg p-3 text-center">
               <TrendingDown className="h-4 w-4 text-destructive mx-auto mb-1" />
               <p className="text-lg font-bold text-destructive">-{fmt(report.totalExpenses)}</p>
-              <p className="text-[11px] text-muted-foreground">{t("page.fiscal.deductible_expenses")}</p>
+              <p className="text-[0.6875rem] text-muted-foreground">{t("page.fiscal.deductible_expenses")}</p>
             </div>
             <div className="bg-accent/10 rounded-lg p-3 text-center border border-accent/20">
               <Calculator className="h-4 w-4 text-accent mx-auto mb-1" />
               <p className="text-lg font-bold text-accent">{fmt(report.revenuImposable)}</p>
-              <p className="text-[11px] text-muted-foreground">{t("page.fiscal.taxable_income")}</p>
+              <p className="text-[0.6875rem] text-muted-foreground">{t("page.fiscal.taxable_income")}</p>
             </div>
           </div>
 
@@ -154,7 +154,7 @@ const PropertyFiscalCard = ({ propertyId, propertyLabel, propertyAddress, proper
           )}
         </CardContent>
       )}
-    </Card>
+    </AppCard>
   );
 };
 

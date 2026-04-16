@@ -176,7 +176,7 @@ export default function ThreadActionCard({
         )}
 
         {isCompleted && (
-          <span className="text-[10px] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">
+          <span className="text-[0.625rem] font-bold text-emerald-600 bg-emerald-500/10 px-2.5 py-1 rounded-full">
             ✓ {t("orbit.done")}
           </span>
         )}
@@ -186,7 +186,7 @@ export default function ThreadActionCard({
       {ghostMode && (
         <div className="px-4 pb-2 flex items-center gap-1.5">
           <Lock className="w-3 h-3 text-muted-foreground/40" />
-          <span className="text-[10px] text-muted-foreground/40 font-medium">
+          <span className="text-[0.625rem] text-muted-foreground/40 font-medium">
             {t("orbit.ghost_protected")}
           </span>
         </div>

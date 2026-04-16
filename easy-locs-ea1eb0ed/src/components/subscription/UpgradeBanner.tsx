@@ -85,7 +85,7 @@ const UpgradeBanner = ({ featureLabel }: UpgradeBannerProps) => {
           <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
         </Link>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
           <Shield className="w-3 h-3" />
           <span>{(() => { const v = t("gating.secure_upgrade"); return v && v !== "gating.secure_upgrade" ? v : "Secure & instant upgrade"; })()}</span>
         </div>

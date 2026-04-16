@@ -40,7 +40,7 @@ export default function BrandedQR({ value, size = 200, darkMode = false, classNa
       />
       {/* Easy-Locs badge */}
       <div
-        className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider"
+        className="absolute bottom-1.5 right-1.5 px-1.5 py-0.5 rounded text-[0.625rem] font-bold tracking-wider"
         style={{
           background: darkMode ? "hsl(var(--primary) / 0.15)" : "hsl(var(--primary) / 0.08)",
           color: darkMode ? "hsl(var(--primary))" : "hsl(var(--primary))",

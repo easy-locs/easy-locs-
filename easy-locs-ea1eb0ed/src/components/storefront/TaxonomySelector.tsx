@@ -36,7 +36,7 @@ export default function TaxonomySelector({
     [verticalDef, cluster]
   );
 
-  const labelClass = compact ? "text-[10px]" : "text-xs";
+  const labelClass = compact ? "text-[0.625rem]" : "text-xs";
   const triggerClass = compact ? "mt-1 h-9 text-xs" : "mt-1.5 h-11";
 
   return (

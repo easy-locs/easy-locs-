@@ -138,7 +138,7 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${color}))` }} />
             <p className="text-sm font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -146,7 +146,7 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
       {/* Radius slider */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Rayon de regroupement</span>
+          <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Rayon de regroupement</span>
           <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{radiusKm} km</span>
         </div>
         <input type="range" min={1} max={10} step={0.5} value={radiusKm}
@@ -187,22 +187,22 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+                  <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
                     {cluster.jobs.length > 1 ? `Zone ${cluster.id} — ${cluster.jobs.length} livraisons` : cluster.jobs[0].dropoff_address}
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
                     {cluster.estimatedKm > 0 && (
-                      <span className="text-[10px]" style={{ color: "hsl(var(--info))" }}>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--info))" }}>
                         📏 ~{cluster.estimatedKm} km
                       </span>
                     )}
-                    <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
                       💰 {cluster.totalFees.toFixed(0)}€
                     </span>
                   </div>
                 </div>
                 {cluster.jobs.length > 1 && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold"
+                  <span className="text-[0.625rem] px-2 py-0.5 rounded-full font-semibold"
                     style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
                     BATCH
                   </span>
@@ -220,15 +220,15 @@ export default function MultiDropBatchPanel({ orgId }: { orgId: string }) {
                     style={{ borderColor: "hsl(var(--hud-border) / 0.08)" }}>
                     {cluster.jobs.map((job, idx) => (
                       <div key={job.id} className="flex items-center gap-2 py-1">
-                        <span className="text-[10px] font-mono w-4 text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{idx + 1}</span>
+                        <span className="text-[0.625rem] font-mono w-4 text-center" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{idx + 1}</span>
                         <MapPin className="h-3 w-3 shrink-0" style={{ color: `hsl(var(--info))` }} />
-                        <p className="text-[10px] truncate flex-1" style={{ color: "hsl(var(--hud-text))" }}>{job.dropoff_address}</p>
-                        <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        <p className="text-[0.625rem] truncate flex-1" style={{ color: "hsl(var(--hud-text))" }}>{job.dropoff_address}</p>
+                        <span className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                           {job.current_price || 0} AED
                         </span>
                       </div>
                     ))}
-                    <Button size="sm" className="w-full text-[10px] h-8 mt-2"
+                    <Button size="sm" className="w-full text-[0.625rem] h-8 mt-2"
                       onClick={(e) => { e.stopPropagation(); handleBatchDispatch(cluster); }}
                       disabled={dispatching}
                       style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>

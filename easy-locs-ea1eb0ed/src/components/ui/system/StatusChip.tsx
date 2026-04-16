@@ -35,7 +35,7 @@ export function StatusChip({ label, variant = "neutral", size = "sm", dot = true
     <span
       className={cn(
         "inline-flex max-w-full items-center gap-1.5 border font-medium rounded-full whitespace-nowrap",
-        size === "sm" ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
+        size === "sm" ? "px-2 py-0.5 text-[0.625rem]" : "px-2.5 py-1 text-xs",
         variantStyles[variant],
         className,
       )}

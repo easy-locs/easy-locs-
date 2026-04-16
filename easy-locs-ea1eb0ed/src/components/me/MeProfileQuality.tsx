@@ -76,8 +76,8 @@ function MeProfileQuality(props: Props) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-foreground">{t("me.profile_quality")}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-[0.8125rem] font-bold text-foreground">{t("me.profile_quality")}</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-0.5">
             {score >= 80
               ? t("me.quality_excellent")
               : score >= 50
@@ -90,11 +90,11 @@ function MeProfileQuality(props: Props) {
               {missing.slice(0, 3).map(m => (
                 <div key={m.key} className="flex items-center gap-1.5">
                   <AlertCircle className="w-3 h-3 shrink-0" style={{ color: "hsl(var(--accent))" }} />
-                  <span className="text-[10px] text-muted-foreground truncate">{m.label}</span>
+                  <span className="text-[0.625rem] text-muted-foreground truncate">{m.label}</span>
                 </div>
               ))}
               {missing.length > 3 && (
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--accent))" }}>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--accent))" }}>
                   +{missing.length - 3} {t("me.quality_more")}
                 </span>
               )}

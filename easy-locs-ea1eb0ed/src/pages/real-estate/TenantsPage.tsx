@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useTenants } from "@/hooks/useRealEstate";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Users, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
@@ -37,7 +37,7 @@ export default function TenantsPage() {
 
       <div className="grid gap-3">
         {tenants?.map((t) => (
-          <Card key={t.id} className="hover:shadow-sm transition-all border-border/50">
+          <AppCard key={t.id} className="hover:shadow-sm transition-all border-border/50">
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
@@ -55,7 +55,7 @@ export default function TenantsPage() {
                 </div>
                 <div className="shrink-0 flex flex-col items-end gap-1.5">
                   {t.rent_amount != null && (
-                    <Badge variant="secondary" className="text-[10px]">{t.rent_amount}€/mo</Badge>
+                    <Badge variant="secondary" className="text-[0.625rem]">{t.rent_amount}€/mo</Badge>
                   )}
                   <Link to="/orbit" className="text-primary hover:text-primary/80">
                     <MessageCircle className="w-4 h-4" />
@@ -63,7 +63,7 @@ export default function TenantsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
     </div>

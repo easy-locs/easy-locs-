@@ -53,11 +53,11 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
       {/* Trust Score */}
       <div className="rounded-xl p-4 text-center" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${scoreColor}20` }}>
         <p className="text-3xl font-extrabold tabular-nums" style={{ color: scoreColor }}>{seller.trustScore}</p>
-        <p className="text-[10px] font-semibold mt-1" style={{ color: "hsl(var(--hud-text))" }}>Score de Confiance</p>
+        <p className="text-[0.625rem] font-semibold mt-1" style={{ color: "hsl(var(--hud-text))" }}>Score de Confiance</p>
         <div className="flex justify-center gap-4 mt-2">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>⭐ {seller.avgRating} moy.</span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>📦 {seller.totalSales} ventes</span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>💬 {seller.totalReviews} avis</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>⭐ {seller.avgRating} moy.</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>📦 {seller.totalSales} ventes</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>💬 {seller.totalReviews} avis</span>
         </div>
       </div>
 
@@ -71,7 +71,7 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -85,7 +85,7 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
           { id: "ranking" as const, label: "🏆 Classement" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--warning) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -99,20 +99,20 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
         {tab === "overview" && (
           <motion.div key="overview" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Résumé</p>
-              <div className="flex items-center justify-between text-[10px]">
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Résumé</p>
+              <div className="flex items-center justify-between text-[0.625rem]">
                 <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Total avis</span>
                 <span style={{ color: "hsl(var(--info))" }}>💬 {totalReviews}</span>
               </div>
-              <div className="flex items-center justify-between text-[10px]">
+              <div className="flex items-center justify-between text-[0.625rem]">
                 <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Note moyenne</span>
                 <span style={{ color: "hsl(var(--warning))" }}>⭐ {seller.avgRating}</span>
               </div>
             </div>
             {totalReviews > 0 && (
               <div className="rounded-xl p-3" style={{ background: "hsl(var(--success) / 0.04)", border: "1px solid hsl(var(--success) / 0.1)" }}>
-                <p className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>📈 Performance</p>
-                <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>📈 Performance</p>
+                <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                   {totalReviews} évaluations avec une note moyenne de {seller.avgRating}.
                 </p>
               </div>
@@ -128,10 +128,10 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
                 style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${tierColor[b.tier]}20` }}>
                 <span className="text-xl">{b.emoji}</span>
                 <div className="flex-1">
-                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{b.label}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{b.description}</p>
+                  <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{b.label}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{b.description}</p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${tierColor[b.tier]}15`, color: tierColor[b.tier] }}>
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${tierColor[b.tier]}15`, color: tierColor[b.tier] }}>
                   {b.tier.toUpperCase()}
                 </span>
               </div>
@@ -149,17 +149,17 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-2">
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <span key={i} className="text-[10px]">{i < ratingVal ? "⭐" : "☆"}</span>
+                        <span key={i} className="text-[0.625rem]">{i < ratingVal ? "⭐" : "☆"}</span>
                       ))}
                     </div>
-                    <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.reviewer_name || r.buyer || "Anonyme"}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.reviewer_name || r.buyer || "Anonyme"}</span>
                     {r.verified && <CheckCircle2 className="h-2.5 w-2.5" style={{ color: "hsl(var(--success))" }} />}
-                    <span className="text-[10px] ml-auto" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                    <span className="text-[0.625rem] ml-auto" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                       {r.created_at ? new Date(r.created_at).toLocaleDateString("fr-FR") : ""}
                     </span>
                   </div>
                   {(r.comment || r.review_text) && (
-                    <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{r.comment || r.review_text}</p>
+                    <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{r.comment || r.review_text}</p>
                   )}
                 </div>
               );
@@ -169,7 +169,7 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
 
         {tab === "ranking" && (
           <motion.div key="ranking" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            <p className="text-[10px] font-bold px-1" style={{ color: "hsl(var(--hud-text))" }}>Classement vendeurs</p>
+            <p className="text-[0.625rem] font-bold px-1" style={{ color: "hsl(var(--hud-text))" }}>Classement vendeurs</p>
             {[
               { rank: 1, name: "Votre boutique", score: seller.trustScore, emoji: "🥇" },
             ].map(r => (
@@ -179,8 +179,8 @@ export default function SellerRatingSystem({ orgId }: { orgId: string }) {
                   border: `1px solid ${r.rank === 1 ? "hsl(var(--warning) / 0.12)" : "hsl(var(--hud-border) / 0.06)"}`,
                 }}>
                 <span className="text-sm w-6 text-center">{r.emoji}</span>
-                <p className="text-[10px] font-semibold flex-1" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
-                <span className="text-[10px] font-bold" style={{ color: r.score >= 90 ? "hsl(var(--success))" : "hsl(var(--info))" }}>{r.score}</span>
+                <p className="text-[0.625rem] font-semibold flex-1" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
+                <span className="text-[0.625rem] font-bold" style={{ color: r.score >= 90 ? "hsl(var(--success))" : "hsl(var(--info))" }}>{r.score}</span>
               </div>
             ))}
           </motion.div>

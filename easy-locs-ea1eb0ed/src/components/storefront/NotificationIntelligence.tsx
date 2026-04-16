@@ -5,7 +5,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Bell, ShoppingCart, RotateCcw, UserMinus, Trophy,
@@ -52,13 +52,13 @@ export default function NotificationIntelligence({ shopId }: Props) {
   if (!data || data.total === 0) return null;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-3 space-y-3">
         <div className="flex items-center justify-between">
           <h4 className="text-xs font-bold flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5 text-primary" /> Smart Alerts
           </h4>
-          <Badge variant="outline" className="text-[10px]">{data.total} events</Badge>
+          <Badge variant="outline" className="text-[0.625rem]">{data.total} events</Badge>
         </div>
 
         {/* Summary badges */}
@@ -67,10 +67,10 @@ export default function NotificationIntelligence({ shopId }: Props) {
             const meta = TYPE_META[type] || { icon: Bell, label: type, color: "text-muted-foreground" };
             const Icon = meta.icon;
             return (
-              <div key={type} className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50 text-[10px]">
+              <div key={type} className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50 text-[0.625rem]">
                 <Icon className={`h-3 w-3 ${meta.color}`} />
                 <span className="font-medium">{meta.label}</span>
-                <Badge variant="secondary" className="text-[10px] h-4 ml-0.5">{count}</Badge>
+                <Badge variant="secondary" className="text-[0.625rem] h-4 ml-0.5">{count}</Badge>
               </div>
             );
           })}
@@ -86,12 +86,12 @@ export default function NotificationIntelligence({ shopId }: Props) {
               <div key={n.id} className="flex items-center gap-2 py-1.5 border-b border-border last:border-0">
                 <Icon className={`h-3 w-3 shrink-0 ${meta.color}`} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-medium">{meta.label}</p>
-                  <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">
+                  <p className="text-[0.625rem] font-medium">{meta.label}</p>
+                  <p className="text-[0.625rem] text-muted-foreground line-clamp-1 break-words">
                     {n.buyer_email || `Cart #${payload.cart_id?.slice(0, 8) || ""}` || "—"}
                   </p>
                 </div>
-                <span className="text-[10px] text-muted-foreground shrink-0">
+                <span className="text-[0.625rem] text-muted-foreground shrink-0">
                   {new Date(n.created_at).toLocaleDateString()}
                 </span>
               </div>
@@ -99,6 +99,6 @@ export default function NotificationIntelligence({ shopId }: Props) {
           })}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

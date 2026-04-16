@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useInsuranceOffer } from "@/hooks/useMicroInsurance";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Check, ChevronDown, ChevronUp } from "lucide-react";
 import type { InsuranceType } from "@/services/micro-insurance.service";
@@ -33,7 +33,7 @@ export default function MicroInsuranceOption({
   const symbol = currency === "USD" ? "$" : currency;
 
   return (
-    <Card
+    <AppCard
       className={`cursor-pointer transition-all ${
         selected ? "border-green-500/40 bg-green-500/5" : "border-border/40"
       }`}
@@ -58,17 +58,17 @@ export default function MicroInsuranceOption({
               <span className="text-xs font-semibold">{offer.title}</span>
               <Badge
                 variant="secondary"
-                className="text-[10px] font-bold"
+                className="text-[0.625rem] font-bold"
               >
                 +{symbol}{offer.premium.toFixed(2)}
               </Badge>
             </div>
-            <p className="text-[10px] text-muted-foreground mb-1.5">
+            <p className="text-[0.625rem] text-muted-foreground mb-1.5">
               {offer.description}
             </p>
 
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.625rem] text-muted-foreground">
                 Up to {symbol}{offer.coverageAmount.toLocaleString()} coverage
               </span>
               <button
@@ -76,7 +76,7 @@ export default function MicroInsuranceOption({
                   e.stopPropagation();
                   setExpanded(!expanded);
                 }}
-                className="text-[10px] text-primary flex items-center gap-0.5"
+                className="text-[0.625rem] text-primary flex items-center gap-0.5"
               >
                 {expanded ? "Less" : "Details"}
                 {expanded ? (
@@ -92,7 +92,7 @@ export default function MicroInsuranceOption({
                 {offer.coverageItems.map((item, i) => (
                   <div key={i} className="flex items-center gap-1.5">
                     <Check className="h-2.5 w-2.5 text-green-500 shrink-0" />
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[0.625rem] text-muted-foreground">
                       {item}
                     </span>
                   </div>
@@ -102,6 +102,6 @@ export default function MicroInsuranceOption({
           </div>
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

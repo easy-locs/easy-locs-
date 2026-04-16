@@ -181,7 +181,7 @@ export default function MonthlyCalendarTab({ country }: { country: string }) {
 
       {!loading && !error && days.length > 0 && (
         <div className="overflow-x-auto -mx-4 px-4">
-          <table className="w-full text-[10px] border-collapse min-w-[600px]">
+          <table className="w-full text-[0.625rem] border-collapse min-w-[600px]">
             <thead>
               <tr style={{ background: `${GOLD}12` }}>
                 {[t("islamic.day"), "Fajr", t("islamic.sunrise"), "Dhuhr", "Asr", "Maghrib", "Isha"].map(h => (

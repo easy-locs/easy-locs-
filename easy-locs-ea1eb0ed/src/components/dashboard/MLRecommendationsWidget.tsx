@@ -1,7 +1,7 @@
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw, MapPin, Star, TrendingUp, Heart, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +26,7 @@ export default function MLRecommendationsWidget() {
 
   if (loading && recommendations.length === 0) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-4 w-4 text-primary" />
@@ -36,14 +36,14 @@ export default function MLRecommendationsWidget() {
             <Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" />
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
   if (recommendations.length === 0) return null;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -76,11 +76,11 @@ export default function MLRecommendationsWidget() {
                 )}
                 <p className="text-xs font-semibold text-foreground line-clamp-1">{rec.title}</p>
                 {rec.subtitle && (
-                  <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{rec.subtitle}</p>
+                  <p className="text-[0.625rem] text-muted-foreground line-clamp-1 mt-0.5">{rec.subtitle}</p>
                 )}
                 <div className="flex items-center gap-1 mt-1.5">
                   <ReasonIcon className="h-2.5 w-2.5 text-primary" />
-                  <span className="text-[9px] text-primary font-medium">
+                  <span className="text-[0.5625rem] text-primary font-medium">
                     {rec.matchReason === "vector_similarity" && t("recommendations.matches_interests")}
                     {rec.matchReason === "collaborative" && t("recommendations.users_enjoyed")}
                     {rec.matchReason === "trending" && t("recommendations.trending")}
@@ -104,6 +104,6 @@ export default function MLRecommendationsWidget() {
           })}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

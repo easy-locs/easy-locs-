@@ -213,7 +213,7 @@ export default function RechercheAnnonces() {
           <button onClick={() => setShowSaved(!showSaved)} className="p-2 rounded-full hover:bg-muted relative active:scale-95 transition-transform">
             <Bookmark className="h-4 w-4" />
             {savedSearches.length > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary text-primary-foreground text-[8px] font-bold rounded-full flex items-center justify-center">{savedSearches.length}</span>
+              <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary text-primary-foreground text-[0.5rem] font-bold rounded-full flex items-center justify-center">{savedSearches.length}</span>
             )}
           </button>
         </div>
@@ -261,7 +261,7 @@ export default function RechercheAnnonces() {
           >
             <SlidersHorizontal className="h-4 w-4" />
             {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-bold rounded-full flex items-center justify-center shadow-md">{activeFilterCount}</span>
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[0.5625rem] font-bold rounded-full flex items-center justify-center shadow-md">{activeFilterCount}</span>
             )}
           </button>
           <button onClick={handleSaveSearch} className="p-2.5 rounded-xl border border-border/50 bg-muted/50 h-11 w-11 flex items-center justify-center active:scale-95 transition-transform">
@@ -280,7 +280,7 @@ export default function RechercheAnnonces() {
               <div className="bg-card rounded-2xl border border-border/50 p-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold">{t("page.annonces.search.filters")}</span>
-                  <button onClick={clearAllFilters} className="text-[10px] text-primary font-semibold">{t("page.annonces.search.clear_all")}</button>
+                  <button onClick={clearAllFilters} className="text-[0.625rem] text-primary font-semibold">{t("page.annonces.search.clear_all")}</button>
                 </div>
 
                 <div>
@@ -357,7 +357,7 @@ export default function RechercheAnnonces() {
                   <div>
                     <label className="text-xs font-bold">{t("page.annonces.search.radius")} : {radiusKm >= 1000 ? t("page.annonces.search.whole_country") : `${radiusKm} km`}</label>
                     <input type="range" min={1} max={1000} value={radiusKm} onChange={e => setRadiusKm(parseInt(e.target.value))} className="w-full mt-1.5 accent-primary" />
-                    <div className="flex justify-between text-[9px] text-muted-foreground">
+                    <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
                       <span>1 km</span>
                       <span>{t("page.annonces.search.whole_country")}</span>
                     </div>

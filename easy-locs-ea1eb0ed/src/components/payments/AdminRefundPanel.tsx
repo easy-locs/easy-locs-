@@ -156,14 +156,14 @@ export default function AdminRefundPanel() {
                   <p className="text-xs font-bold text-foreground">
                     {refund.amount} {refund.currency}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {refund.booking_type} · {refund.booking_id.slice(0, 8)}...
                   </p>
                   {refund.user_email && (
-                    <p className="text-[10px] text-muted-foreground">{refund.user_email}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{refund.user_email}</p>
                   )}
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${statusColors[refund.status] || ""}`}>
+                <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full capitalize ${statusColors[refund.status] || ""}`}>
                   {refund.status}
                 </span>
               </div>
@@ -171,11 +171,11 @@ export default function AdminRefundPanel() {
               {refund.reason && (
                 <div className="flex items-start gap-1.5 p-2 rounded-lg bg-muted/30">
                   <Eye className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
-                  <p className="text-[10px] text-muted-foreground">{refund.reason}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{refund.reason}</p>
                 </div>
               )}
 
-              <p className="text-[9px] text-muted-foreground">
+              <p className="text-[0.5625rem] text-muted-foreground">
                 {new Date(refund.created_at).toLocaleString()}
               </p>
 

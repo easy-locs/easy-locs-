@@ -84,7 +84,7 @@ export default function WalletTopUpPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-xs font-bold text-foreground">{m.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{m.desc}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{m.desc}</p>
                   </div>
                 </motion.button>
               );
@@ -93,7 +93,7 @@ export default function WalletTopUpPage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount")}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount")}</p>
           <div className="rounded-2xl bg-card border border-border/10 p-6 text-center">
             <div className="flex items-center justify-center gap-3">
               <span className="text-lg text-muted-foreground font-bold whitespace-nowrap shrink-0">{currency}</span>
@@ -114,7 +114,7 @@ export default function WalletTopUpPage() {
               <button
                 key={a}
                 onClick={() => setAmount(String(a))}
-                className="flex-1 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-95"
+                className="flex-1 py-2.5 rounded-xl text-[0.6875rem] font-bold transition-all active:scale-95"
                 style={{
                   background: Number(amount) === a ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.5)",
                   color: Number(amount) === a ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
@@ -139,7 +139,7 @@ export default function WalletTopUpPage() {
             )}
             {loading ? t("wallet.redirecting") : `${t("wallet.topUp")} ${amount} ${currency}`}
           </button>
-          <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed mt-2">
+          <p className="text-[0.625rem] text-muted-foreground/60 text-center leading-relaxed mt-2">
             {t("wallet.securePayNote")}
           </p>
         </motion.div>

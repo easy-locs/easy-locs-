@@ -152,7 +152,7 @@ export default function OrbitAccountSection() {
             style={{ background: "hsl(var(--destructive) / 0.1)" }}>
             <LogOut className="h-[18px] w-[18px]" style={{ color: "hsl(var(--destructive))" }} />
           </div>
-          <p className="text-[14px] font-medium truncate" style={{ color: "hsl(var(--destructive))" }}>{t("orbit.you.logout")}</p>
+          <p className="text-[0.875rem] font-medium truncate" style={{ color: "hsl(var(--destructive))" }}>{t("orbit.you.logout")}</p>
         </button>
 
         <button
@@ -163,7 +163,7 @@ export default function OrbitAccountSection() {
             style={{ background: "hsl(var(--destructive) / 0.08)" }}>
             <Trash2 className="h-[18px] w-[18px]" style={{ color: "hsl(var(--destructive) / 0.7)" }} />
           </div>
-          <p className="text-[14px] font-medium truncate" style={{ color: "hsl(var(--destructive) / 0.7)" }}>{t("orbit.you.delete_account")}</p>
+          <p className="text-[0.875rem] font-medium truncate" style={{ color: "hsl(var(--destructive) / 0.7)" }}>{t("orbit.you.delete_account")}</p>
         </button>
       </div>
 
@@ -201,7 +201,7 @@ export default function OrbitAccountSection() {
       </Dialog>
 
       <div className="text-center pb-8 pt-2">
-        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{t("orbit.version")}</p>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{t("orbit.version")}</p>
       </div>
     </div>
   );

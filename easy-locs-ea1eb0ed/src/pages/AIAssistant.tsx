@@ -618,7 +618,7 @@ const AIAssistant = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="text-sm font-semibold text-foreground">{insight.title}</h3>
-                      <span className={`badge-status text-[10px] px-1.5 py-0.5 ${impactColors[insight.impact]}`}>
+                      <span className={`badge-status text-[0.625rem] px-1.5 py-0.5 ${impactColors[insight.impact]}`}>
                         {insight.impact}
                       </span>
                     </div>

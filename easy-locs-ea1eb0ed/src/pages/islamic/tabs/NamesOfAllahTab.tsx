@@ -99,7 +99,7 @@ export default function NamesOfAllahTab() {
       <div className="flex gap-2">
         {(["list", "grid"] as const).map(mode => (
           <button key={mode} onClick={() => setViewMode(mode)}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-bold uppercase tracking-wide"
             style={{ background: viewMode === mode ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: viewMode === mode ? GOLD : "hsl(var(--muted-foreground))" }}>
             {mode === "list" ? t("islamic.names.list") : t("islamic.names.grid")}
           </button>
@@ -123,8 +123,8 @@ export default function NamesOfAllahTab() {
                 className="rounded-2xl p-3 text-center relative"
                 style={{ background: "hsl(var(--card))", border: expandedName === name.number ? `1px solid ${GOLD}44` : "1px solid hsl(var(--border))" }}>
                 <p className="text-lg mb-1" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: GOLD }}>{name.arabic}</p>
-                <p className="text-[9px] font-semibold truncate">{name.transliteration}</p>
-                <p className="text-[8px] text-muted-foreground truncate">{name.french}</p>
+                <p className="text-[0.5625rem] font-semibold truncate">{name.transliteration}</p>
+                <p className="text-[0.5rem] text-muted-foreground truncate">{name.french}</p>
                 {isFav && <div className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: GOLD }} />}
               </button>
             );
@@ -148,7 +148,7 @@ export default function NamesOfAllahTab() {
                         <span className="text-lg shrink-0" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: GOLD }}>{name.arabic}</span>
                       </div>
                       <p className="text-xs font-medium" style={{ color: GOLD }}>{name.french}</p>
-                      <p className="text-[11px] text-muted-foreground mt-1">{name.meaning}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground mt-1">{name.meaning}</p>
                     </div>
                     <ChevronDown size={14} className="text-muted-foreground shrink-0 transition-transform" style={{ transform: isExpanded ? "rotate(180deg)" : undefined }} />
                   </div>
@@ -157,21 +157,21 @@ export default function NamesOfAllahTab() {
                   {isExpanded && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                       <div className="flex flex-wrap gap-2 pt-2 px-4">
-                        <button onClick={() => speakName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                        <button onClick={() => speakName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold"
                           style={{ background: isSpeaking ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isSpeaking ? GOLD : "hsl(var(--muted-foreground))" }}>
                           {isSpeaking ? <VolumeX size={12} /> : <Volume2 size={12} />} {isSpeaking ? "Stop" : "Écouter"}
                         </button>
-                        <button onClick={() => toggleFavorite(name.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+                        <button onClick={() => toggleFavorite(name.number)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold"
                           style={{ background: isFav ? `${GOLD}22` : "hsl(var(--muted)/0.3)", color: isFav ? GOLD : "hsl(var(--muted-foreground))" }}>
                           <Heart size={12} fill={isFav ? GOLD : "none"} /> {isFav ? t("islamic.remove") : t("islamic.favorite")}
                         </button>
-                        <button onClick={() => copyName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                        <button onClick={() => copyName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                           <Copy size={12} /> {t("islamic.copy")}
                         </button>
-                        <button onClick={() => shareName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
+                        <button onClick={() => shareName(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "hsl(var(--muted)/0.3)" }}>
                           <Share2 size={12} /> {t("islamic.share")}
                         </button>
-                        <button onClick={() => shareNameWhatsApp(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
+                        <button onClick={() => shareNameWhatsApp(name)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.625rem] font-semibold" style={{ background: "#25D36622", color: "#25D366" }}>
                           WhatsApp
                         </button>
                       </div>
@@ -185,7 +185,7 @@ export default function NamesOfAllahTab() {
       )}
 
       <div className="text-center">
-        <p className="text-[10px] text-muted-foreground">{displayNames.length} {t("islamic.names.shown")}</p>
+        <p className="text-[0.625rem] text-muted-foreground">{displayNames.length} {t("islamic.names.shown")}</p>
       </div>
     </div>
   );

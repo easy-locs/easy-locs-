@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -298,7 +298,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                   >
                     <ImageIcon className="h-6 w-6 text-muted-foreground/40 mx-auto mb-1.5" />
                     <p className="text-xs text-muted-foreground">Click to upload photos or videos</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">JPG, PNG, WebP, MP4, WebM</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">JPG, PNG, WebP, MP4, WebM</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -313,7 +313,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                           <X className="h-3 w-3" />
                         </button>
                         {i === 0 && (
-                          <span className="absolute bottom-1 left-1 bg-accent text-accent-foreground text-[10px] font-bold px-1 py-0.5 rounded">Cover</span>
+                          <span className="absolute bottom-1 left-1 bg-accent text-accent-foreground text-[0.625rem] font-bold px-1 py-0.5 rounded">Cover</span>
                         )}
                       </div>
                     ))}
@@ -418,15 +418,15 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
       {isLoading ? (
         <div className="py-8 text-center"><Loader2 className="h-5 w-5 animate-spin mx-auto text-muted-foreground" /></div>
       ) : items.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-muted-foreground text-sm">
+        <AppCard><CardContent className="py-8 text-center text-muted-foreground text-sm">
           No items yet. Add your first product or service!
-        </CardContent></Card>
+        </CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {items.map((item: any) => {
             const thumbUrl = item.photo_url || (item.photo_urls && item.photo_urls[0]);
             return (
-              <Card key={item.id} className="overflow-hidden">
+              <AppCard key={item.id} className="overflow-hidden">
                 <CardContent className="p-3 flex items-center gap-3">
                   <GripVertical className="h-4 w-4 text-muted-foreground/40 shrink-0" />
                   {thumbUrl ? (
@@ -440,11 +440,11 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                     <p className="text-sm font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs font-bold text-primary">{fmtPrice(item.price)}</span>
-                      <Badge variant={item.available ? "secondary" : "outline"} className="text-[10px]">
+                      <Badge variant={item.available ? "secondary" : "outline"} className="text-[0.625rem]">
                         {item.available ? "Active" : "Hidden"}
                       </Badge>
                       {item.storefront_catalog_categories?.name && (
-                        <Badge variant="outline" className="text-[10px]">{item.storefront_catalog_categories.name}</Badge>
+                        <Badge variant="outline" className="text-[0.625rem]">{item.storefront_catalog_categories.name}</Badge>
                       )}
                       {item.video_url && <Video className="h-3 w-3 text-muted-foreground" />}
                     </div>
@@ -463,7 +463,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

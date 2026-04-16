@@ -142,7 +142,7 @@ export default function OrgMemberManager() {
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-bold text-foreground">Équipe</h3>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
             {members.length}
           </span>
         </div>
@@ -177,12 +177,12 @@ export default function OrgMemberManager() {
                      {member.profile?.name || member.profile?.email || "Utilisateur"}
                    </p>
                   {isMe && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold">
                       Vous
                     </span>
                   )}
                 </div>
-                 <p className="text-[10px] text-muted-foreground break-words leading-snug">
+                 <p className="text-[0.625rem] text-muted-foreground break-words leading-snug">
                    {member.profile?.email || "—"}
                  </p>
               </div>
@@ -195,7 +195,7 @@ export default function OrgMemberManager() {
                       haptic("light");
                     }
                   }}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold transition-colors"
                   style={{
                     background: `${roleCfg.color}12`,
                     color: roleCfg.color,
@@ -277,7 +277,7 @@ export default function OrgMemberManager() {
                   <button
                     key={r.value}
                     onClick={() => setInviteRole(r.value)}
-                    className="flex flex-col items-center gap-1 p-2 rounded-lg text-[10px] font-medium transition-all"
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg text-[0.625rem] font-medium transition-all"
                     style={{
                       background: inviteRole === r.value ? `${r.color}12` : "hsl(var(--muted) / 0.5)",
                       color: inviteRole === r.value ? r.color : "hsl(var(--muted-foreground))",

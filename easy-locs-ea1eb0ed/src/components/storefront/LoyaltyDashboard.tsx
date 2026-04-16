@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,7 +132,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
   if (mode === "seller") {
     if (!program) {
       return (
-        <Card>
+        <AppCard>
           <CardContent className="p-4 text-center space-y-3">
             <Trophy className="h-8 w-8 mx-auto text-primary/40" />
             <p className="text-sm text-muted-foreground">Enable loyalty rewards for your customers</p>
@@ -140,7 +140,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
               <Gift className="h-3 w-3 mr-1" /> Enable Loyalty Program
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       );
     }
 
@@ -150,50 +150,50 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
           <h4 className="text-sm font-semibold flex items-center gap-2">
             <Trophy className="h-4 w-4 text-primary" /> Loyalty Program
           </h4>
-          <Badge variant="outline" className="text-[10px]">{memberCount} members</Badge>
+          <Badge variant="outline" className="text-[0.625rem]">{memberCount} members</Badge>
         </div>
 
-        <Card>
+        <AppCard>
           <CardContent className="p-3">
             <p className="text-xs text-muted-foreground">
               Customers earn <strong>{program.points_per_currency} point</strong> per {program.currency} spent.
               Points are awarded automatically on completed orders.
             </p>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {/* Tiers */}
         <div className="flex items-center justify-between">
           <h5 className="text-xs font-semibold">Reward Tiers ({tiers.length})</h5>
-          <Button size="sm" variant="outline" className="text-[10px] h-6" onClick={() => setShowCreateTier(!showCreateTier)}>
+          <Button size="sm" variant="outline" className="text-[0.625rem] h-6" onClick={() => setShowCreateTier(!showCreateTier)}>
             <Plus className="h-2.5 w-2.5 mr-1" /> Add Tier
           </Button>
         </div>
 
         {showCreateTier && (
-          <Card>
+          <AppCard>
             <CardContent className="p-3 space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-[10px]">Tier Name</Label>
+                  <Label className="text-[0.625rem]">Tier Name</Label>
                   <Input value={tierName} onChange={e => setTierName(e.target.value)} placeholder="Gold" className="h-7 text-xs mt-0.5" />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Emoji</Label>
+                  <Label className="text-[0.625rem]">Emoji</Label>
                   <Input value={tierEmoji} onChange={e => setTierEmoji(e.target.value)} className="h-7 text-xs mt-0.5" />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Min Points</Label>
+                  <Label className="text-[0.625rem]">Min Points</Label>
                   <Input type="number" value={tierMinPoints} onChange={e => setTierMinPoints(e.target.value)} className="h-7 text-xs mt-0.5" />
                 </div>
                 <div>
-                  <Label className="text-[10px]">Discount %</Label>
+                  <Label className="text-[0.625rem]">Discount %</Label>
                   <Input type="number" value={tierDiscount} onChange={e => setTierDiscount(e.target.value)} className="h-7 text-xs mt-0.5" />
                 </div>
               </div>
               <Button size="sm" className="w-full text-xs h-7" onClick={createTier}>Create Tier</Button>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {tiers.map((t: any) => (
@@ -202,10 +202,10 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
               <span className="text-lg">{t.badge_emoji}</span>
               <div>
                 <p className="text-xs font-medium">{t.name}</p>
-                <p className="text-[10px] text-muted-foreground">{t.min_points}+ points</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t.min_points}+ points</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-[10px]">{t.discount_percent}% off</Badge>
+            <Badge variant="secondary" className="text-[0.625rem]">{t.discount_percent}% off</Badge>
           </div>
         ))}
       </div>
@@ -220,7 +220,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
   const progress = nextTier ? Math.min(100, ((myPoints?.points || 0) / nextTier.min_points) * 100) : 100;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Trophy className="h-4 w-4 text-primary" />
@@ -230,7 +230,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
         {/* Points display */}
         <div className="text-center py-2">
           <p className="text-3xl font-bold text-primary">{myPoints?.points || 0}</p>
-          <p className="text-[10px] text-muted-foreground">points earned</p>
+          <p className="text-[0.625rem] text-muted-foreground">points earned</p>
           {currentTier && (
             <Badge className="text-xs mt-1 bg-primary/10 text-primary">
               {currentTier.badge_emoji} {currentTier.name} • {currentTier.discount_percent}% off
@@ -241,7 +241,7 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
         {/* Progress to next tier */}
         {nextTier && (
           <div className="space-y-1">
-            <div className="flex justify-between text-[10px] text-muted-foreground">
+            <div className="flex justify-between text-[0.625rem] text-muted-foreground">
               <span>{myPoints?.points || 0} pts</span>
               <span>{nextTier.badge_emoji} {nextTier.name} ({nextTier.min_points} pts)</span>
             </div>
@@ -254,11 +254,11 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
         {/* History */}
         {history.length > 0 && (
           <div className="space-y-1 pt-2 border-t border-border">
-            <p className="text-[10px] font-medium text-muted-foreground flex items-center gap-1">
+            <p className="text-[0.625rem] font-medium text-muted-foreground flex items-center gap-1">
               <History className="h-3 w-3" /> Recent Activity
             </p>
             {history.slice(0, 5).map((h: any) => (
-              <div key={h.id} className="flex items-center justify-between text-[11px]">
+              <div key={h.id} className="flex items-center justify-between text-[0.6875rem]">
                 <span className="text-muted-foreground">{h.reason}</span>
                 <span className={`font-medium ${h.points_change > 0 ? "text-success" : "text-destructive"}`}>
                   {h.points_change > 0 ? "+" : ""}{h.points_change}
@@ -268,6 +268,6 @@ export default function LoyaltyDashboard({ shopId, mode }: LoyaltyDashboardProps
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

@@ -115,14 +115,14 @@ export default function DriverLivePage() {
 
         {driver && (
           <div className="rounded-2xl border border-border/15 bg-card p-4">
-            <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Profile</p>
+            <p className="text-[0.6875rem] uppercase tracking-wider font-bold text-muted-foreground mb-3">Profile</p>
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
                   {driver.service_mode === "taxi" ? <Car className="w-4 h-4 text-blue-500" /> : <Bike className="w-4 h-4 text-blue-500" />}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground">Mode</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Mode</p>
                   <p className="text-xs font-bold text-foreground">{modeLabel}</p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function DriverLivePage() {
                   <Navigation className="w-4 h-4 text-violet-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground">Vehicle</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Vehicle</p>
                   <p className="text-xs font-bold text-foreground">{vehicleLabel}</p>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function DriverLivePage() {
                   <Shield className="w-4 h-4 text-emerald-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground">Status</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Status</p>
                   <p className="text-xs font-bold text-foreground capitalize">{driver.current_status || "—"}</p>
                 </div>
               </div>
@@ -149,7 +149,7 @@ export default function DriverLivePage() {
                   <Zap className="w-4 h-4 text-amber-500" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[10px] text-muted-foreground">Available</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Available</p>
                   <p className="text-xs font-bold text-foreground">{driver.is_available ? "Yes" : "No"}</p>
                 </div>
               </div>
@@ -161,23 +161,23 @@ export default function DriverLivePage() {
           <div className="rounded-2xl border border-border/15 bg-card p-4">
             <div className="flex items-center gap-2 mb-3">
               <Satellite className="w-4 h-4 text-emerald-500" />
-              <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground">GPS Signal</p>
+              <p className="text-[0.6875rem] uppercase tracking-wider font-bold text-muted-foreground">GPS Signal</p>
               <div className="ml-auto flex items-center gap-1">
                 <Signal className="w-3 h-3 text-emerald-500" />
-                <span className="text-[10px] font-bold text-emerald-500">Active</span>
+                <span className="text-[0.625rem] font-bold text-emerald-500">Active</span>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-xl bg-muted/30 p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">Latitude</p>
+                <p className="text-[0.625rem] text-muted-foreground">Latitude</p>
                 <p className="text-xs font-bold text-foreground tabular-nums">{coords.latitude.toFixed(5)}</p>
               </div>
               <div className="rounded-xl bg-muted/30 p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">Longitude</p>
+                <p className="text-[0.625rem] text-muted-foreground">Longitude</p>
                 <p className="text-xs font-bold text-foreground tabular-nums">{coords.longitude.toFixed(5)}</p>
               </div>
               <div className="rounded-xl bg-muted/30 p-2.5 text-center">
-                <p className="text-[10px] text-muted-foreground">Accuracy</p>
+                <p className="text-[0.625rem] text-muted-foreground">Accuracy</p>
                 <p className="text-xs font-bold text-foreground tabular-nums">{coords.accuracy?.toFixed(0) || "—"}m</p>
               </div>
             </div>
@@ -189,7 +189,7 @@ export default function DriverLivePage() {
             <MapPin className="w-4 h-4 text-destructive shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-destructive">Location Error</p>
-              <p className="text-[11px] text-destructive/80 mt-0.5">{error}</p>
+              <p className="text-[0.6875rem] text-destructive/80 mt-0.5">{error}</p>
             </div>
           </div>
         )}

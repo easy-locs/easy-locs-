@@ -87,9 +87,9 @@ export function TaxiCompletedScreen() {
           className="rounded-2xl border border-border/20 bg-card overflow-hidden"
         >
           <div className="p-4 text-center border-b border-border/10">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold mb-1">Total Fare</p>
+            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider font-bold mb-1">Total Fare</p>
             <p className="text-3xl font-bold text-foreground">{job.current_price ?? job.quoted_price} <span className="text-base text-muted-foreground">{job.currency}</span></p>
-            <p className="text-[10px] text-muted-foreground mt-1 capitalize">{job.payment_status || "Wallet"} payment</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-1 capitalize">{job.payment_status || "Wallet"} payment</p>
           </div>
 
           <div className="p-4 space-y-2.5">
@@ -107,7 +107,7 @@ export function TaxiCompletedScreen() {
               <p className="text-xs text-foreground flex-1 min-w-0 line-clamp-1">{job.dropoff_label || "Dropoff"}</p>
             </div>
 
-            <div className="flex items-center gap-4 pt-2 border-t border-border/10 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-4 pt-2 border-t border-border/10 text-[0.625rem] text-muted-foreground">
               <span className="capitalize">{job.service_level.replace(/_/g, " ")}</span>
               {job.confirmation_code && <span className="font-mono">{job.confirmation_code}</span>}
               {job.completed_at && <span>{formatDate(job.completed_at)}</span>}

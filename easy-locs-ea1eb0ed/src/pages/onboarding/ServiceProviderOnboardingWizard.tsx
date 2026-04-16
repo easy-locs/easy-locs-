@@ -225,7 +225,7 @@ export default function ServiceProviderOnboardingWizard() {
         </div>
         <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
         {uiTimedOut && (
-          <p className="text-[10px] text-amber-500/60 mt-1">⚠ UI engine timed out — form remains fully functional</p>
+          <p className="text-[0.625rem] text-amber-500/60 mt-1">⚠ UI engine timed out — form remains fully functional</p>
         )}
       </div>
 
@@ -443,7 +443,7 @@ export default function ServiceProviderOnboardingWizard() {
                             onClick={() => toggleSlot(day, slot)}
                             aria-pressed={slots.includes(slot)}
                             aria-label={`${day} ${slot}`}
-                            className={`px-2 py-0.5 rounded text-[10px] font-mono ${
+                            className={`px-2 py-0.5 rounded text-[0.625rem] font-mono ${
                               slots.includes(slot)
                                 ? "bg-primary text-primary-foreground"
                                 : "bg-muted/50 text-muted-foreground"

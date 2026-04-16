@@ -113,7 +113,7 @@ export default function FoodSection() {
                       <Clock className="h-3 w-3" /> 15-25 min
                     </span>
                   </div>
-                  <span className="text-[10px] font-medium text-accent">Order →</span>
+                  <span className="text-[0.625rem] font-medium text-accent">Order →</span>
                 </div>
               </Link>
             </motion.div>

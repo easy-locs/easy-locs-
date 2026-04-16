@@ -51,7 +51,7 @@ export function TrustLevelBadge({
     return (
       <button
         onClick={onTap}
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold transition-all active:scale-95"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[0.625rem] font-bold transition-all active:scale-95"
         style={{
           background: `${flagColor()}15`,
           color: flagColor(),
@@ -85,7 +85,7 @@ export function TrustLevelBadge({
             {t(config.nameKey) || config.name}
           </span>
           <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
             style={{ background: `${flagColor()}15`, color: flagColor() }}
           >
             {score}/100
@@ -95,10 +95,10 @@ export function TrustLevelBadge({
         {showProgress && progress.nextLevel !== null && (
           <div className="mt-1.5">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.625rem] text-muted-foreground">
                 {t("trust.nextLevel") || "Next level"}: {TRUST_LEVELS[progress.nextLevel].name}
               </span>
-              <span className="text-[10px] font-bold" style={{ color: flagColor() }}>
+              <span className="text-[0.625rem] font-bold" style={{ color: flagColor() }}>
                 {progress.progress}%
               </span>
             </div>
@@ -112,7 +112,7 @@ export function TrustLevelBadge({
         )}
 
         {securityFlag !== "normal" && securityFlag !== "low_risk" && (
-          <p className="text-[10px] mt-0.5" style={{ color: flagColor() }}>
+          <p className="text-[0.625rem] mt-0.5" style={{ color: flagColor() }}>
             {securityFlag === "blocked" && (t("trust.blocked") || "Account suspended")}
             {securityFlag === "restricted" && (t("trust.restricted") || "Account restricted")}
             {securityFlag === "high_risk" && (t("trust.highRisk") || "Verification required")}
@@ -145,33 +145,33 @@ export function TrustLimitsCard({ score, level, securityFlag = "normal" }: Trust
 
   return (
     <div className="rounded-2xl border border-border/5 bg-card p-4 shadow-card">
-      <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider mb-3">
+      <p className="text-[0.625rem] font-bold text-muted-foreground/60 uppercase tracking-wider mb-3">
         {t("trust.yourLimits") || "Your Limits"}
       </p>
       <div className="grid grid-cols-3 gap-2">
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailySend)}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.dailySend") || "Daily Send"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.dailySend") || "Daily Send"}</p>
         </div>
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.dailyReceive)}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.dailyReceive") || "Daily Receive"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.dailyReceive") || "Daily Receive"}</p>
         </div>
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.weeklySend)}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.weeklySend") || "Weekly Send"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.weeklySend") || "Weekly Send"}</p>
         </div>
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.singleTx)}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.perTransaction") || "Per Tx"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.perTransaction") || "Per Tx"}</p>
         </div>
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">{formatLimit(limits.topUp)}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.topUp") || "Top-Up"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.topUp") || "Top-Up"}</p>
         </div>
         <div className="rounded-xl p-3 text-center border border-border/5" style={{ background: "hsl(226 24% 11%)" }}>
           <p className="text-lg font-extrabold tabular-nums text-foreground">L{level}</p>
-          <p className="text-[10px] text-muted-foreground/70">{t("trust.trustLevel") || "Trust Level"}</p>
+          <p className="text-[0.625rem] text-muted-foreground/70">{t("trust.trustLevel") || "Trust Level"}</p>
         </div>
       </div>
     </div>

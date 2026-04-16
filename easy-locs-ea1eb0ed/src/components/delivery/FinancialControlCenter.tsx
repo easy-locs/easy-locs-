@@ -84,7 +84,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -92,7 +92,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["pl", "zones", "forecast", "reconcile"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -104,26 +104,26 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
 
       {view === "pl" && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--success))" }}>Revenus</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--success))" }}>Revenus</p>
           {PL_DATA.filter(p => p.type === "revenue").map(p => (
             <div key={p.label} className="flex justify-between py-1.5 px-3 rounded-lg"
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
-              <span className="text-[10px]" style={{ color: "hsl(var(--foreground))" }}>{p.label}</span>
-              <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>+{p.amount.toLocaleString()} F</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--foreground))" }}>{p.label}</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>+{p.amount.toLocaleString()} F</span>
             </div>
           ))}
-          <p className="text-[10px] font-semibold mt-2" style={{ color: "hsl(var(--destructive))" }}>Coûts</p>
+          <p className="text-[0.625rem] font-semibold mt-2" style={{ color: "hsl(var(--destructive))" }}>Coûts</p>
           {PL_DATA.filter(p => p.type === "cost").map(p => (
             <div key={p.label} className="flex justify-between py-1.5 px-3 rounded-lg"
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
-              <span className="text-[10px]" style={{ color: "hsl(var(--foreground))" }}>{p.label}</span>
-              <span className="text-[10px] font-bold" style={{ color: "hsl(var(--destructive))" }}>{p.amount.toLocaleString()} F</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--foreground))" }}>{p.label}</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--destructive))" }}>{p.amount.toLocaleString()} F</span>
             </div>
           ))}
           <div className="flex justify-between py-2 px-3 rounded-xl mt-2"
             style={{ background: "hsl(var(--primary) / 0.08)", border: "1px solid hsl(var(--primary) / 0.15)" }}>
-            <span className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>Résultat net</span>
-            <span className="text-[11px] font-bold" style={{ color: netProfit >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+            <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>Résultat net</span>
+            <span className="text-[0.6875rem] font-bold" style={{ color: netProfit >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
               {netProfit.toLocaleString()} F
             </span>
           </div>
@@ -136,8 +136,8 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
             <div key={z.zone} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</span>
-                <span className="text-[10px] font-bold" style={{
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{z.zone}</span>
+                <span className="text-[0.625rem] font-bold" style={{
                   color: z.margin >= 30 ? "hsl(var(--success))" : z.margin >= 20 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                 }}>{z.margin}%</span>
               </div>
@@ -147,8 +147,8 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
                   style={{ background: z.margin >= 30 ? "hsl(var(--success))" : z.margin >= 20 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }} />
               </div>
               <div className="flex justify-between mt-1">
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.orders} commandes</span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.orders} commandes</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   R: {fmt(z.revenue)} • C: {fmt(z.costs)}
                 </span>
               </div>
@@ -159,7 +159,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
 
       {view === "forecast" && (
         <div className="space-y-3">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Prévisions 3 mois</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Prévisions 3 mois</p>
           {FORECASTS.map((f, i) => (
             <div key={f.month} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px dashed hsl(var(--primary) / 0.2)" }}>
@@ -168,12 +168,12 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
                 <TrendingUp className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
               </div>
               <div className="flex-1">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.month} 2026</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Projection basée sur tendance</p>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{f.month} 2026</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Projection basée sur tendance</p>
               </div>
               <div className="text-right">
-                <p className="text-[11px] font-bold" style={{ color: "hsl(var(--success))" }}>{fmt(f.revenue)} F</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>
+                <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--success))" }}>{fmt(f.revenue)} F</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>
                   <ArrowUpRight className="h-2.5 w-2.5 inline" /> +{(8 + i * 3)}%
                 </p>
               </div>
@@ -188,7 +188,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
           <Calculator className="h-10 w-10 mx-auto" style={{ color: "hsl(var(--primary))" }} />
           <div>
             <p className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>Rapprochement bancaire</p>
-            <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
               Compare les transactions plateforme avec les relevés bancaires
             </p>
           </div>
@@ -196,7 +196,7 @@ export default function FinancialControlCenter({ orgId, className }: { orgId: st
             <div className="space-y-2">
               <CheckCircle2 className="h-8 w-8 mx-auto" style={{ color: "hsl(var(--success))" }} />
               <p className="text-xs font-bold" style={{ color: "hsl(var(--success))" }}>0 écart détecté</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 Dernier rapprochement : {new Date().toLocaleString("fr-FR")}
               </p>
             </div>

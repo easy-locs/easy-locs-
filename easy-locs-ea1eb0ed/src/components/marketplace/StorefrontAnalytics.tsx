@@ -130,12 +130,12 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
           >
             <div className="flex items-center gap-2">
               <kpi.icon className="w-3.5 h-3.5" style={{ color: kpi.color }} />
-              <span className="text-[10px] text-muted-foreground font-medium">{kpi.label}</span>
+              <span className="text-[0.625rem] text-muted-foreground font-medium">{kpi.label}</span>
             </div>
             <div className="flex items-baseline gap-2">
               <p className="text-lg font-bold text-foreground">{kpi.value}</p>
               {kpi.trend !== undefined && kpi.trend !== 0 && (
-                <span className="flex items-center gap-0.5 text-[10px] font-semibold"
+                <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold"
                   style={{ color: kpi.trend > 0 ? "hsl(142 76% 36%)" : "hsl(0 84% 60%)" }}>
                   {kpi.trend > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                   {Math.abs(kpi.trend)}%
@@ -155,7 +155,7 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
           <div className="space-y-2">
             {metrics.topServices.map((svc, i) => (
               <div key={svc.id} className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-muted-foreground w-4">{i + 1}</span>
+                <span className="text-[0.625rem] font-bold text-muted-foreground w-4">{i + 1}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium text-foreground line-clamp-2 break-words leading-snug">{svc.title}</p>
                 </div>
@@ -179,8 +179,8 @@ export default function StorefrontAnalytics({ providerId, services }: Storefront
               return (
                 <div key={channel} className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-foreground capitalize">{channel}</span>
-                    <span className="text-[10px] text-muted-foreground">{count} ({pct}%)</span>
+                    <span className="text-[0.6875rem] text-foreground capitalize">{channel}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{count} ({pct}%)</span>
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <motion.div

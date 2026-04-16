@@ -62,9 +62,9 @@ export default function CustomerProfilePage() {
             </p>
             <StatusPulse status="active" size="sm" />
           </div>
-          <p className="text-[11px] text-muted-foreground break-words leading-snug font-mono">EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}</p>
+          <p className="text-[0.6875rem] text-muted-foreground break-words leading-snug font-mono">EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}</p>
           {profile?.role && (
-            <span className="inline-block mt-0.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-px rounded-full bg-accent/15 text-accent">
+            <span className="inline-block mt-0.5 text-[0.625rem] font-bold uppercase tracking-wider px-1.5 py-px rounded-full bg-accent/15 text-accent">
               {profile.role}
             </span>
           )}
@@ -96,7 +96,7 @@ export default function CustomerProfilePage() {
             className="flex flex-col items-center gap-1.5 py-3 rounded-2xl bg-card border border-border/15 active:scale-[0.96] transition-transform"
           >
             <action.icon className={`w-5 h-5 ${action.color}`} />
-            <span className="text-[10px] font-semibold text-foreground">{action.label}</span>
+            <span className="text-[0.625rem] font-semibold text-foreground">{action.label}</span>
           </button>
         ))}
       </motion.div>

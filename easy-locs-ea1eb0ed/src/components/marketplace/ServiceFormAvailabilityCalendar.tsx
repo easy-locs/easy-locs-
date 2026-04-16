@@ -139,7 +139,7 @@ export default function ServiceFormAvailabilityCalendar({
       {(datesWithSlots.length > 0 || blockedDates.length > 0) && (
         <div className="flex flex-wrap gap-1.5 pt-2">
           {datesWithSlots.slice(0, 5).map(d => (
-            <Badge key={d} variant="secondary" className="text-[10px] gap-1">
+            <Badge key={d} variant="secondary" className="text-[0.625rem] gap-1">
               ✅ {d} ({timeSlots[d].length}h)
               <X className="h-2.5 w-2.5 cursor-pointer" onClick={() => {
                 const { [d]: _, ...rest } = timeSlots;
@@ -148,12 +148,12 @@ export default function ServiceFormAvailabilityCalendar({
             </Badge>
           ))}
           {blockedDates.slice(0, 3).map(d => (
-            <Badge key={d} variant="destructive" className="text-[10px] gap-1">
+            <Badge key={d} variant="destructive" className="text-[0.625rem] gap-1">
               🚫 {d}
               <X className="h-2.5 w-2.5 cursor-pointer" onClick={() => onBlockedDatesChange(blockedDates.filter(x => x !== d))} />
             </Badge>
           ))}
-          {datesWithSlots.length > 5 && <Badge variant="outline" className="text-[10px]">+{datesWithSlots.length - 5} more</Badge>}
+          {datesWithSlots.length > 5 && <Badge variant="outline" className="text-[0.625rem]">+{datesWithSlots.length - 5} more</Badge>}
         </div>
       )}
     </div>

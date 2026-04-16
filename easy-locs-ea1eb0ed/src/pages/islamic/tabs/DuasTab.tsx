@@ -193,7 +193,7 @@ export default function DuasTab() {
 
       {showFavorites && (
         <div className="space-y-2">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">
+          <h3 className="text-[0.6875rem] font-bold uppercase tracking-wide text-muted-foreground">
             {t("islamic.favorites")} ({favoriteDuas.length})
           </h3>
           {favoriteDuas.length === 0 && (
@@ -229,7 +229,7 @@ export default function DuasTab() {
                   <span className="text-2xl">{cat.emoji}</span>
                   <div className="flex-1">
                     <p className="text-sm font-semibold">{cat.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{cat.duas.length} {t("islamic.duas.invocations")}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{cat.duas.length} {t("islamic.duas.invocations")}</p>
                   </div>
                   <ChevronDown size={18} className="text-muted-foreground transition-transform" style={{ transform: isOpen ? "rotate(180deg)" : undefined }} />
                 </button>
@@ -287,10 +287,10 @@ function DuaCard({
           <button onClick={onShare} className="w-7 h-7 rounded-full flex items-center justify-center"><Share2 size={12} className="text-muted-foreground" /></button>
         </div>
       </div>
-      <p className="text-[11px] italic text-muted-foreground">{dua.transliteration}</p>
+      <p className="text-[0.6875rem] italic text-muted-foreground">{dua.transliteration}</p>
       <p className="text-xs">{dua.french}</p>
       {dua.source && (
-        <p className="text-[9px] text-muted-foreground">{t("islamic.source")} : {dua.source}</p>
+        <p className="text-[0.5625rem] text-muted-foreground">{t("islamic.source")} : {dua.source}</p>
       )}
       {dua.repetitions > 1 && (
         <div className="flex items-center gap-2 pt-1">

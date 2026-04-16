@@ -91,7 +91,7 @@ const SocialProofStrip = () => {
               <div className="text-xl sm:text-2xl font-extrabold text-foreground leading-none tracking-tight">
                 <AnimatedCounter from={s.valueFrom} to={s.valueTo} suffix={s.suffix} />
               </div>
-              <div className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              <div className="text-[0.625rem] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                 {t(s.labelKey) || s.fallback}
               </div>
             </motion.div>
@@ -119,7 +119,7 @@ const SocialProofStrip = () => {
           {marqueeItems.map((item, i) => (
             <div
               key={`${item.label}-${i}`}
-              className="inline-flex items-center gap-2 text-[11px] font-medium text-muted-foreground/60 uppercase tracking-widest shrink-0"
+              className="inline-flex items-center gap-2 text-[0.6875rem] font-medium text-muted-foreground/60 uppercase tracking-widest shrink-0"
             >
               <item.icon className="h-3.5 w-3.5 text-accent/40" />
               {item.label}

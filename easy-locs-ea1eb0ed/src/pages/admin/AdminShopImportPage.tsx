@@ -223,7 +223,7 @@ export default function AdminShopImportPage() {
         ].map((s) => (
           <div key={s.label} className="rounded-xl bg-card border border-border p-3 text-center">
             <div className={`text-lg font-bold ${s.color}`}>{s.value}</div>
-            <div className="text-[10px] text-muted-foreground">{s.label}</div>
+            <div className="text-[0.625rem] text-muted-foreground">{s.label}</div>
           </div>
         ))}
       </div>
@@ -240,12 +240,12 @@ export default function AdminShopImportPage() {
           ].map((s) => (
             <div key={s.label} className="rounded-lg bg-muted p-2 text-center">
               <div className={`text-sm font-bold ${s.color}`}>{s.value}</div>
-              <div className="text-[10px] text-muted-foreground">{s.label}</div>
+              <div className="text-[0.625rem] text-muted-foreground">{s.label}</div>
             </div>
           ))}
         </div>
         {onboardingStates.length > 0 && (
-          <div className="text-[10px] text-muted-foreground mt-1">
+          <div className="text-[0.625rem] text-muted-foreground mt-1">
             Avg menu score: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.menu_display_score || 0), 0) / onboardingStates.length)} · 
             Avg visual: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.visual_completeness_score || 0), 0) / onboardingStates.length)} · 
             Avg storefront: {Math.round(onboardingStates.reduce((s: number, o: any) => s + (o.storefront_readiness_score || 0), 0) / onboardingStates.length)}
@@ -290,7 +290,7 @@ export default function AdminShopImportPage() {
               />
             </div>
             {importProgress.batchErrors > 0 && (
-              <div className="text-[10px] text-destructive">{importProgress.batchErrors} errors so far</div>
+              <div className="text-[0.625rem] text-destructive">{importProgress.batchErrors} errors so far</div>
             )}
           </div>
         )}
@@ -346,7 +346,7 @@ export default function AdminShopImportPage() {
           <h3 className="text-sm font-bold">Pipeline Trace ({traceSteps.length} steps)</h3>
           <div className="space-y-1 max-h-48 overflow-y-auto">
             {traceSteps.map((step: any, i: number) => (
-              <div key={i} className="flex items-center gap-2 text-[10px]">
+              <div key={i} className="flex items-center gap-2 text-[0.625rem]">
                 <span className={step.status === "success" ? "text-emerald-500" : step.status === "failed" ? "text-destructive" : "text-amber-500"}>
                   {step.status === "success" ? "✓" : step.status === "failed" ? "✗" : "!"}
                 </span>
@@ -380,11 +380,11 @@ export default function AdminShopImportPage() {
             <div key={b.id} className="rounded-xl bg-card border border-border p-3 flex justify-between items-center">
               <div>
                 <div className="text-xs font-semibold">{b.source_name || b.source_type} · {b.city}</div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[0.625rem] text-muted-foreground">
                   {b.total_created} created · {b.total_duplicates} dupes · {b.status}
                 </div>
               </div>
-              <div className={`text-[10px] px-2 py-0.5 rounded-full ${b.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}`}>
+              <div className={`text-[0.625rem] px-2 py-0.5 rounded-full ${b.status === "completed" ? "bg-emerald-500/10 text-emerald-500" : "bg-amber-500/10 text-amber-500"}`}>
                 {b.status}
               </div>
             </div>
@@ -399,17 +399,17 @@ export default function AdminShopImportPage() {
             <div className="flex justify-between items-start">
               <div>
                 <div className="text-sm font-semibold">{c.canonical_name}</div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[0.625rem] text-muted-foreground">
                   {c.canonical_vertical} · {c.canonical_subcategory} · {c.city} · {c.zone}
                 </div>
-                <div className="text-[10px] text-muted-foreground">
+                <div className="text-[0.625rem] text-muted-foreground">
                   Score: {c.quality_score} · {c.phone || "no phone"} · {c.rating ? `★${c.rating}` : "no rating"}
                 </div>
                 {(() => {
                   const state = onboardingStates.find((s: any) => s.entity_id === c.id);
                   if (!state) return null;
                   return (
-                    <div className="text-[10px] flex gap-1.5 mt-0.5 flex-wrap">
+                    <div className="text-[0.625rem] flex gap-1.5 mt-0.5 flex-wrap">
                       <span className={state.ui_quality_status === "good" ? "text-emerald-500" : state.ui_quality_status === "needs_assets" ? "text-amber-500" : "text-muted-foreground"}>
                         UI:{state.ui_quality_status}
                       </span>
@@ -424,7 +424,7 @@ export default function AdminShopImportPage() {
                   );
                 })()}
               </div>
-              <div className={`text-[10px] px-2 py-0.5 rounded-full ${
+              <div className={`text-[0.625rem] px-2 py-0.5 rounded-full ${
                 c.candidate_status === "approved" ? "bg-emerald-500/10 text-emerald-500"
                 : c.candidate_status === "review" ? "bg-amber-500/10 text-amber-500"
                 : "bg-destructive/10 text-destructive"
@@ -433,18 +433,18 @@ export default function AdminShopImportPage() {
               </div>
             </div>
             {c.duplicate_group_id && (
-              <div className="text-[10px] text-amber-500">Potential duplicate</div>
+              <div className="text-[0.625rem] text-amber-500">Potential duplicate</div>
             )}
             <div className="flex gap-1.5 flex-wrap">
-              <button onClick={() => updateCandidateStatus(c.id, "approved")} className="text-[10px] px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">Approve</button>
-              <button onClick={() => updateCandidateStatus(c.id, "review")} className="text-[10px] px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500">Review</button>
-              <button onClick={() => updateCandidateStatus(c.id, "rejected")} className="text-[10px] px-2 py-1 rounded-lg bg-destructive/10 text-destructive">Reject</button>
+              <button onClick={() => updateCandidateStatus(c.id, "approved")} className="text-[0.625rem] px-2 py-1 rounded-lg bg-emerald-500/10 text-emerald-500">Approve</button>
+              <button onClick={() => updateCandidateStatus(c.id, "review")} className="text-[0.625rem] px-2 py-1 rounded-lg bg-amber-500/10 text-amber-500">Review</button>
+              <button onClick={() => updateCandidateStatus(c.id, "rejected")} className="text-[0.625rem] px-2 py-1 rounded-lg bg-destructive/10 text-destructive">Reject</button>
               <button onClick={async () => {
                 const res = await publishCandidateAsSeed(c.id);
                 if (res.success) { toast.success("Published as seed"); loadDashboard(); }
                 else toast.error(res.error || "Publish failed");
-              }} className="text-[10px] px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold">Publish Seed</button>
-              <button onClick={() => updateCandidateStatus(c.id, "ready_for_claim")} className="text-[10px] px-2 py-1 rounded-lg bg-blue-500/10 text-blue-500">Ready Claim</button>
+              }} className="text-[0.625rem] px-2 py-1 rounded-lg bg-primary/10 text-primary font-bold">Publish Seed</button>
+              <button onClick={() => updateCandidateStatus(c.id, "ready_for_claim")} className="text-[0.625rem] px-2 py-1 rounded-lg bg-blue-500/10 text-blue-500">Ready Claim</button>
             </div>
           </div>
         ))}

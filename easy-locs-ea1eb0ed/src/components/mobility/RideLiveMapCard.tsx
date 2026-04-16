@@ -195,16 +195,16 @@ export function RideLiveMapCard({ route }: Props) {
         {route && (
           <div className="absolute bottom-2 right-2 flex gap-1.5 z-10">
             {route.etaMinutes != null && (
-              <span className="rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold shadow text-foreground backdrop-blur-sm">
+              <span className="rounded-full bg-background/90 px-2.5 py-1 text-[0.6875rem] font-semibold shadow text-foreground backdrop-blur-sm">
                 {route.etaMinutes} min
               </span>
             )}
             {route.distanceKm != null && (
-              <span className="rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold shadow text-foreground backdrop-blur-sm">
+              <span className="rounded-full bg-background/90 px-2.5 py-1 text-[0.6875rem] font-semibold shadow text-foreground backdrop-blur-sm">
                 {route.distanceKm} km
               </span>
             )}
-            <span className="rounded-full bg-background/90 px-2.5 py-1 text-[11px] font-semibold shadow capitalize text-foreground backdrop-blur-sm">
+            <span className="rounded-full bg-background/90 px-2.5 py-1 text-[0.6875rem] font-semibold shadow capitalize text-foreground backdrop-blur-sm">
               {tc(`ride.traffic_${route.trafficLevel}`)}
             </span>
           </div>

@@ -32,7 +32,7 @@ export const IconMenuCard = memo(function IconMenuCard({ node, index = 0, onClic
         ) : node.emoji ? (
           <span className="text-xl">{node.emoji}</span>
         ) : null}
-        <span className="text-[10px] font-bold text-foreground leading-tight text-center line-clamp-2 w-full">
+        <span className="text-[0.625rem] font-bold text-foreground leading-tight text-center line-clamp-2 w-full">
           {label}
         </span>
       </Link>

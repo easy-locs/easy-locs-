@@ -74,8 +74,8 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
               background: currentPkgId === p.id ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-surface))",
               border: `1px solid ${currentPkgId === p.id ? "hsl(var(--hud-cyan) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
             }}>
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{p.tracking_code || p.tracking_number || `#${String(p.id).slice(0, 8)}`}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{p.description || p.status || ""}</p>
+            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{p.tracking_code || p.tracking_number || `#${String(p.id).slice(0, 8)}`}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{p.description || p.status || ""}</p>
           </button>
         ))}
       </div>
@@ -89,7 +89,7 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
           <>
             <p className="text-lg">🏁</p>
             <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--success))" }}>Livré</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               {pkg.driver_name ? `Par ${pkg.driver_name}` : ""}
             </p>
           </>
@@ -99,7 +99,7 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
             <p className="text-xs font-bold mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
               {pkg.eta ? `Arrivée estimée : ${pkg.eta}` : `Statut: ${pkg.status || "en cours"}`}
             </p>
-            <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
               {pkg.driver_name ? `🚗 ${pkg.driver_name}` : ""}
               {pkg.driver_vehicle ? ` • ${pkg.driver_vehicle}` : ""}
             </p>
@@ -116,32 +116,32 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
         </div>
         <div className="flex-1 space-y-3">
           <div>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>RETRAIT</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.origin || pkg.pickup_address || pkg.from_address || "—"}</p>
+            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>RETRAIT</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.origin || pkg.pickup_address || pkg.from_address || "—"}</p>
           </div>
           <div>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>LIVRAISON</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.destination || pkg.delivery_address || pkg.to_address || "—"}</p>
+            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>LIVRAISON</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{pkg.destination || pkg.delivery_address || pkg.to_address || "—"}</p>
           </div>
         </div>
       </div>
 
       {/* Status info */}
       <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Statut actuel</p>
+        <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Statut actuel</p>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px]"
+          <div className="w-5 h-5 rounded-full flex items-center justify-center text-[0.625rem]"
             style={{
               background: isDelivered ? "hsl(var(--success) / 0.12)" : "hsl(var(--hud-cyan) / 0.12)",
               border: `1.5px solid ${isDelivered ? "hsl(var(--success))" : "hsl(var(--hud-cyan))"}`,
             }}>
             {isDelivered ? "🏁" : "🚚"}
           </div>
-          <p className="text-[10px] font-semibold" style={{ color: isDelivered ? "hsl(var(--success))" : "hsl(var(--hud-cyan))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: isDelivered ? "hsl(var(--success))" : "hsl(var(--hud-cyan))" }}>
             {isDelivered ? "Livré" : pkg.status || "En cours"}
           </p>
           {pkg.updated_at && (
-            <span className="text-[10px] ml-auto" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+            <span className="text-[0.625rem] ml-auto" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
               {new Date(pkg.updated_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
             </span>
           )}
@@ -161,7 +161,7 @@ export default function CustomerTrackingPortal({ orgId }: { orgId: string }) {
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
             className="rounded-xl p-3 space-y-3 overflow-hidden"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--warning) / 0.12)" }}>
-            <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Évaluez la livraison</p>
+            <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Évaluez la livraison</p>
             <div className="flex gap-1 justify-center">
               {[1, 2, 3, 4, 5].map(s => (
                 <button key={s} onClick={() => setRating(s)} className="text-lg transition-transform hover:scale-110">

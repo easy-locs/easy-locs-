@@ -224,7 +224,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Service</h3>
             <div className="bg-muted/30 rounded-[var(--card-radius)] p-3 space-y-1.5">
               <p className="font-medium text-foreground text-sm">{service?.title || "Unknown service"}</p>
-              {service?.category && <Badge variant="outline" className="text-[10px]">{service.category}</Badge>}
+              {service?.category && <Badge variant="outline" className="text-[0.625rem]">{service.category}</Badge>}
               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                 {booking.service_date && (
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{booking.service_date}</span>
@@ -359,7 +359,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
           </section>
 
           {/* Timestamps */}
-          <div className="text-[10px] text-muted-foreground space-y-0.5 pt-2">
+          <div className="text-[0.625rem] text-muted-foreground space-y-0.5 pt-2">
             <p>Created: {booking.created_at ? format(new Date(booking.created_at), "PPp") : "—"}</p>
             {booking.confirmed_at && <p>Confirmed: {format(new Date(booking.confirmed_at), "PPp")}</p>}
             {booking.completed_at && <p>Completed: {format(new Date(booking.completed_at), "PPp")}</p>}

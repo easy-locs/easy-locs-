@@ -206,7 +206,7 @@ export default function AdminDldBackfillPage() {
           )}
 
           <div className="space-y-1">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Monthly Breakdown</p>
+            <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wide">Monthly Breakdown</p>
             <div className="space-y-1 max-h-60 overflow-y-auto">
               {lastResult.months.map((m, i) => (
                 <MonthRow key={i} month={m} />
@@ -235,7 +235,7 @@ function StatCard({ icon, label, value }: { icon?: ReactNode; label: string; val
     <div className="rounded-xl border border-border/10 bg-muted/20 p-3 space-y-0.5">
       <div className="flex items-center gap-1">
         {icon}
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">{label}</p>
+        <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wide">{label}</p>
       </div>
       <p className="text-sm font-bold text-foreground">{value}</p>
     </div>
@@ -246,7 +246,7 @@ function MonthRow({ month }: { month: MonthDetail }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-border/10 bg-muted/10 px-3 py-1.5">
       <span className="text-xs font-medium text-foreground">{month.month}</span>
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+      <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground">
         <span>{month.fetched} fetched</span>
         <span>{month.upserted} upserted</span>
         {month.errors > 0 && <span className="text-destructive">{month.errors} err</span>}
@@ -273,9 +273,9 @@ function RunCard({ run }: { run: BackfillRun }) {
           <span className="text-xs font-bold text-foreground">
             {run.months_processed}/{run.months_requested} months
           </span>
-          <span className="text-[10px] text-muted-foreground">{formatTimestamp(run.created_at)}</span>
+          <span className="text-[0.625rem] text-muted-foreground">{formatTimestamp(run.created_at)}</span>
         </div>
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+        <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground">
           <span>{run.total_fetched.toLocaleString()} fetched</span>
           <span>{run.total_upserted.toLocaleString()} upserted</span>
           <span>{formatDuration(run.duration_ms)}</span>

@@ -138,7 +138,7 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
       <div className="flex items-center gap-2">
         <Leaf className="h-4 w-4" style={{ color: "hsl(var(--success))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Green Delivery</h3>
-        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{
+        <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{
           background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))",
         }}>🌱 Score {greenScore}</span>
       </div>
@@ -146,7 +146,7 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
       <div className="flex gap-1 p-1 rounded-lg" style={{ background: "hsl(var(--hud-surface))" }}>
         {(["week", "month", "year"] as const).map(p => (
           <button key={p} onClick={() => setPeriod(p)}
-            className="flex-1 py-1.5 rounded-md text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-md text-[0.625rem] font-semibold"
             style={{
               background: period === p ? "hsl(var(--success) / 0.12)" : "transparent",
               color: period === p ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -164,11 +164,11 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
           <div key={m.label} className="rounded-xl p-2.5" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <div className="flex items-center gap-1.5">
               <span className="text-sm">{m.icon}</span>
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{m.label}</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{m.label}</span>
             </div>
             <div className="flex items-end gap-1.5 mt-1">
               <p className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>{m.value}</p>
-              <span className="text-[10px] font-semibold" style={{
+              <span className="text-[0.625rem] font-semibold" style={{
                 color: m.changeType === "positive" ? "hsl(var(--success))" : m.changeType === "negative" ? "hsl(var(--destructive))" : "hsl(var(--hud-text-dim) / 0.4)",
               }}>{m.change}</span>
             </div>
@@ -178,8 +178,8 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
 
       <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
         <div className="flex items-center justify-between">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Flotte — Mix énergétique</p>
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{evPercent}% vert</span>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Flotte — Mix énergétique</p>
+          <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>{evPercent}% vert</span>
         </div>
         {vehicleBreakdown.length === 0 && (
           <p className="text-center py-4 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun véhicule enregistré</p>
@@ -189,14 +189,14 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
             <span className="text-sm w-6 text-center">{v.icon}</span>
             <div className="flex-1">
               <div className="flex justify-between">
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{v.type}</span>
-                <span className="text-[10px]" style={{ color: v.isEV ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{v.type}</span>
+                <span className="text-[0.625rem]" style={{ color: v.isEV ? "hsl(var(--success))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {v.isEV ? "0g CO₂" : `${v.co2PerKm}g/km`}
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{v.count} véhicules</span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{(v.totalKm / 1000).toFixed(1)}k km</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{v.count} véhicules</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{(v.totalKm / 1000).toFixed(1)}k km</span>
               </div>
             </div>
           </div>
@@ -204,7 +204,7 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
       </div>
 
       <div className="rounded-xl p-3 space-y-2" style={{ background: "linear-gradient(135deg, hsl(var(--success) / 0.04), hsl(var(--hud-surface)))", border: "1px solid hsl(var(--success) / 0.1)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎯 Objectifs RSE</p>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎯 Objectifs RSE</p>
         {csrGoals.length === 0 && (
           <p className="text-center py-4 text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun objectif RSE défini</p>
         )}
@@ -213,8 +213,8 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
           return (
             <div key={g.id} className="space-y-1">
               <div className="flex justify-between">
-                <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{g.label}</span>
-                <span className="text-[10px]" style={{ color: percent >= 75 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+                <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{g.label}</span>
+                <span className="text-[0.625rem]" style={{ color: percent >= 75 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                   {g.current}{g.unit} / {g.target}{g.unit}
                 </span>
               </div>
@@ -222,7 +222,7 @@ export default function GreenDeliveryDashboard({ orgId }: { orgId: string }) {
                 <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${Math.min(100, percent)}%` }}
                   style={{ background: percent >= 75 ? "hsl(var(--success))" : percent >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }} />
               </div>
-              <p className="text-[10px] text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Échéance: {g.deadline}</p>
+              <p className="text-[0.625rem] text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Échéance: {g.deadline}</p>
             </div>
           );
         })}

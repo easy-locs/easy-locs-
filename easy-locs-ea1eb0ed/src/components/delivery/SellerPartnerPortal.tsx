@@ -110,7 +110,7 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -118,7 +118,7 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["sellers", "contracts", "commissions", "support"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -142,15 +142,15 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📍 {s.zone} • ⭐ {s.rating} • {s.totalOrders} commandes
                     </p>
                   </div>
-                  <p className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(s.revenue)} F</p>
+                  <p className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(s.revenue)} F</p>
                 </div>
               </div>
             );
@@ -168,16 +168,16 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
                 style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid ${isExpiring ? "hsl(var(--warning) / 0.2)" : "hsl(var(--border) / 0.08)"}` }}>
                 <FileText className="h-4 w-4" style={{ color: isExpiring ? "hsl(var(--warning))" : "hsl(var(--primary))" }} />
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     Expire : {new Date(s.contractExpiry).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold" style={{
+                  <p className="text-[0.625rem] font-bold" style={{
                     color: daysLeft > 180 ? "hsl(var(--success))" : daysLeft > 90 ? "hsl(var(--warning))" : "hsl(var(--destructive))",
                   }}>{daysLeft}j</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>restants</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>restants</p>
                 </div>
               </div>
             );
@@ -191,15 +191,15 @@ export default function SellerPartnerPortal({ orgId, className }: { orgId: strin
             <div key={s.id} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
                   {s.commissionRate}%
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Revenue : {fmt(s.revenue)} F</span>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Revenue : {fmt(s.revenue)} F</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>
                   Commission : {(s.commissionPaid || 0).toLocaleString()} F
                 </span>
               </div>

@@ -71,7 +71,7 @@ export default function C2CReportSheet({ onSubmit, onClose }: C2CReportSheetProp
           maxLength={1000}
         />
 
-        <div className="flex items-start gap-2 bg-muted/30 rounded-xl p-3 text-[11px] text-muted-foreground">
+        <div className="flex items-start gap-2 bg-muted/30 rounded-xl p-3 text-[0.6875rem] text-muted-foreground">
           <Shield className="h-3.5 w-3.5 shrink-0 mt-0.5 text-blue-500" />
           <span>Votre signalement est confidentiel. Notre équipe examinera cette annonce sous 24h.</span>
         </div>

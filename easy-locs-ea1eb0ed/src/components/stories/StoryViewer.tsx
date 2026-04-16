@@ -169,7 +169,7 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
           <div className="flex items-center justify-between px-4 mt-3">
             <div className="flex items-center gap-2">
               <span
-                className="px-2 py-0.5 rounded-lg text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-sm"
+                className="px-2 py-0.5 rounded-lg text-[0.625rem] font-bold text-white uppercase tracking-wider backdrop-blur-sm"
                 style={{ background: typeColor }}
               >
                 {t(`story.type.${story.storyType}`) || story.storyType}
@@ -199,7 +199,7 @@ export default function StoryViewer({ stories, initialIndex = 0, onClose }: Stor
 
         <StoryCTABar story={story} />
 
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/15 text-[11px] font-medium select-none pointer-events-none tabular-nums">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/15 text-[0.6875rem] font-medium select-none pointer-events-none tabular-nums">
           {current + 1}/{stories.length}
         </div>
       </div>

@@ -41,7 +41,7 @@ export default function WhatsAppSharePreview({
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold line-clamp-2 text-foreground">{title}</p>
               {price && <p className="text-xs font-bold text-[#25D366] mt-0.5">{price}</p>}
-              <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 break-words">{url}</p>
+              <p className="text-[0.6875rem] text-muted-foreground mt-1 line-clamp-2 break-words">{url}</p>
             </div>
           </div>
 

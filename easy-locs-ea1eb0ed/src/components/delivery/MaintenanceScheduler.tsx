@@ -67,7 +67,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
         <Wrench className="h-4 w-4" style={{ color: "hsl(var(--warning))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Planification Maintenance</h3>
         {overdueCount > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
+          <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
             style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}>
             🔴 {overdueCount} en retard
           </span>
@@ -84,7 +84,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -97,7 +97,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
           { id: "reminders" as const, label: `🔔 Rappels (${reminders.length})` },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--warning) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -130,20 +130,20 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{type.emoji}</span>
                     <div className="flex-1">
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.description || t.title || type.label}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{vehiclePlate} • {vehicleModel}</p>
+                      <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{t.description || t.title || type.label}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{vehiclePlate} • {vehicleModel}</p>
                     </div>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${st.color}12`, color: st.color }}>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${st.color}12`, color: st.color }}>
                       {st.emoji} {st.label}
                     </span>
                   </div>
-                  <div className="flex gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                  <div className="flex gap-3 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                     <span>📅 {scheduledDate}</span>
                     <span style={{ color: prio.color }}>⚡ {prio.label}</span>
                     {intervalMonths > 0 && <span>🔄 Tous les {intervalMonths} mois</span>}
                     {mileageTrigger && <span>📏 {Number(mileageTrigger).toLocaleString()} km</span>}
                   </div>
-                  {t.technician && <p className="text-[10px]" style={{ color: "hsl(var(--info) / 0.6)" }}>🔧 {t.technician}</p>}
+                  {t.technician && <p className="text-[0.625rem]" style={{ color: "hsl(var(--info) / 0.6)" }}>🔧 {t.technician}</p>}
                 </div>
               );
             })}
@@ -163,10 +163,10 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                   <span className="text-sm">{type.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{t.description || t.title || type.label}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.vehicle_plate || t.vehiclePlate || ""} • {completedDate}</p>
+                    <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{t.description || t.title || type.label}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.vehicle_plate || t.vehiclePlate || ""} • {completedDate}</p>
                   </div>
-                  {t.cost && <span className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--warning))" }}>{t.cost}€</span>}
+                  {t.cost && <span className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--warning))" }}>{t.cost}€</span>}
                   <CheckCircle2 className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
                 </div>
               );
@@ -178,7 +178,7 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
           <motion.div key="reminders" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             {reminders.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>✅ Aucun rappel imminent</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>✅ Aucun rappel imminent</p>
               </div>
             ) : reminders.map((t: any) => {
               const type = typeCfg[t.type] || typeCfg.general;
@@ -191,10 +191,10 @@ export default function MaintenanceScheduler({ orgId }: { orgId: string }) {
                   style={{ background: `color-mix(in srgb, ${color} 3%, transparent)`, border: `1px solid color-mix(in srgb, ${color} 8%, transparent)` }}>
                   <Bell className="h-4 w-4 shrink-0" style={{ color }} />
                   <div className="flex-1">
-                    <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{type.emoji} {t.description || t.title || type.label}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.vehicle_plate || t.vehiclePlate || ""} • {scheduledDate}</p>
+                    <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{type.emoji} {t.description || t.title || type.label}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{t.vehicle_plate || t.vehiclePlate || ""} • {scheduledDate}</p>
                   </div>
-                  <span className="text-[10px] font-bold shrink-0" style={{ color }}>
+                  <span className="text-[0.625rem] font-bold shrink-0" style={{ color }}>
                     {isOverdue ? `${Math.abs(t.daysUntil)}j en retard` : t.daysUntil === 0 ? "Aujourd'hui" : `Dans ${t.daysUntil}j`}
                   </span>
                 </div>

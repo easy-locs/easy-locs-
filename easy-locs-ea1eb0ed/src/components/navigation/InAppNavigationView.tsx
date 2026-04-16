@@ -580,14 +580,14 @@ function InAppNavigationViewInner() {
               <p className="text-2xl font-bold" style={{ color: "hsl(var(--foreground))" }}>
                 {formatDistance(routeInfo.distanceKm)}
               </p>
-              <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>distance</p>
+              <p className="text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>distance</p>
             </div>
             <div className="w-px h-8" style={{ background: "hsl(var(--border) / 0.2)" }} />
             <div className="text-center">
               <p className="text-2xl font-bold" style={{ color: "hsl(var(--primary))" }}>
                 {formatETA(routeInfo.etaMinutes)}
               </p>
-              <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>ETA</p>
+              <p className="text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>ETA</p>
             </div>
           </div>
         )}

@@ -74,7 +74,7 @@ export default function MeTenantsPage() {
                   {tenant.email && <AppText as="p" size="xs" lines={1} className="text-label-safe" style={{ color: "#999" }}>{tenant.email}</AppText>}
                 </div>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
+                  className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full capitalize"
                   style={{
                     background: `${statusColors[tenant.paymentStatus] ?? "#999"}15`,
                     color: statusColors[tenant.paymentStatus] ?? "#999",

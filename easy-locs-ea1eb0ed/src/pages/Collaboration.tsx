@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useOrgRole } from "@/hooks/useOrgRole";
 import * as collabRepo from "@/repositories/collaboration.repository";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -140,22 +140,22 @@ const Collaboration = () => {
 
         {/* KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card><CardContent className="pt-4">
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Users className="h-4 w-4 text-accent" /><span className="text-xs text-muted-foreground uppercase">Active members</span></div>
             <p className="text-2xl font-bold text-foreground">{members.length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Mail className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Pending invitations</span></div>
             <p className="text-2xl font-bold text-foreground">{invitations.filter(i => i.status === "pending").length}</p>
-          </CardContent></Card>
-          <Card><CardContent className="pt-4">
+          </CardContent></AppCard>
+          <AppCard><CardContent className="pt-4">
             <div className="flex items-center gap-2"><Shield className="h-4 w-4 text-muted-foreground" /><span className="text-xs text-muted-foreground uppercase">Your role</span></div>
             <p className="text-2xl font-bold text-foreground">{getRoleDisplay(myRole).icon} {getRoleDisplay(myRole).labelEn}</p>
-          </CardContent></Card>
+          </CardContent></AppCard>
         </div>
 
         {/* Members */}
-        <Card>
+        <AppCard>
           <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Users className="h-5 w-5" />Team members</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -210,11 +210,11 @@ const Collaboration = () => {
               })}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {/* Pending invitations */}
         {invitations.length > 0 && (
-          <Card>
+          <AppCard>
             <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5" />Invitations</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -248,7 +248,7 @@ const Collaboration = () => {
                 })}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
     </DashboardLayout>

@@ -20,7 +20,7 @@ export default function YouChatDefaultsPage({ onBack }: Props) {
     <div className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]">
       <div className="min-w-0 flex-1">
         <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        {desc && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
+        {desc && <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -42,7 +42,7 @@ export default function YouChatDefaultsPage({ onBack }: Props) {
         </Row>
 
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.disappearing_title")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.disappearing_title")}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 responsive-grid-4-to-3">
           {[
             { label: t("orbit.you.disappearing_off"), val: null },
@@ -56,7 +56,7 @@ export default function YouChatDefaultsPage({ onBack }: Props) {
             </button>
           ))}
         </div>
-        <p className="text-[10px] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.disappearing_hint")}</p>
+        <p className="text-[0.625rem] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.disappearing_hint")}</p>
       </div>
     </div>
   );

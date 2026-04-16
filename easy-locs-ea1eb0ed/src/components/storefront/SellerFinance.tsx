@@ -4,7 +4,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, Clock, CheckCircle, Loader2, ArrowDownRight, ArrowUpRight } from "lucide-react";
 
@@ -67,20 +67,20 @@ export default function SellerFinance({ shopId }: { shopId: string }) {
 
       <div className="grid grid-cols-2 gap-2">
         {kpis.map(k => (
-          <Card key={k.label}>
+          <AppCard key={k.label}>
             <CardContent className="p-3 flex items-center gap-3">
               <k.icon className={`h-5 w-5 ${k.color} shrink-0`} />
               <div>
                 <p className="text-lg font-bold text-foreground">{k.value}</p>
-                <p className="text-[10px] text-muted-foreground">{k.label}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{k.label}</p>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       {/* Extra stats */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-2">
           <div className="flex justify-between text-xs">
             <span className="text-muted-foreground">Completed Orders</span>
@@ -91,18 +91,18 @@ export default function SellerFinance({ shopId }: { shopId: string }) {
             <span className="font-medium">{fmtPrice(data.shippingCollected, data.currency)}</span>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Recent transactions */}
       {data.recentOrders.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground">Recent Transactions</h4>
             {data.recentOrders.map((order: any) => {
               const isCompleted = order.status === "completed";
               const isCancelled = order.status === "cancelled";
               return (
-                <div key={order.id} className="flex items-center justify-between text-[11px]">
+                <div key={order.id} className="flex items-center justify-between text-[0.6875rem]">
                   <div className="flex items-center gap-2">
                     {isCompleted ? (
                       <ArrowUpRight className="h-3 w-3 text-success" />
@@ -116,7 +116,7 @@ export default function SellerFinance({ shopId }: { shopId: string }) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="secondary" className={`text-[10px] px-1 capitalize ${
+                    <Badge variant="secondary" className={`text-[0.625rem] px-1 capitalize ${
                       isCompleted ? "bg-success/10 text-success" : isCancelled ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
                     }`}>{order.status}</Badge>
                     <span className={`font-medium ${isCompleted ? "text-success" : "text-foreground"}`}>
@@ -127,7 +127,7 @@ export default function SellerFinance({ shopId }: { shopId: string }) {
               );
             })}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

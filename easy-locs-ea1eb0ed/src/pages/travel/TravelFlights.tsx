@@ -63,7 +63,7 @@ export default function TravelFlights() {
         <div className="flex items-center gap-2 p-3 rounded-xl bg-primary/5 border border-primary/10">
           <Plane className="h-4 w-4 text-primary shrink-0" />
           <p className="text-xs text-foreground flex-1">Search for flights above</p>
-          <Button variant="outline" size="sm" className="h-7 text-[10px]">
+          <Button variant="outline" size="sm" className="h-7 text-[0.625rem]">
             <SlidersHorizontal className="h-3 w-3 mr-1" /> Filters
           </Button>
         </div>
@@ -74,7 +74,7 @@ export default function TravelFlights() {
             <button
               key={s}
               onClick={() => setSortBy(s)}
-              className={`shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold border transition-colors ${
                 sortBy === s ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border/30"
               }`}
             >

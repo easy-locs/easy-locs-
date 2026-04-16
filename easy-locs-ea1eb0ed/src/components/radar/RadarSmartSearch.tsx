@@ -213,7 +213,7 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
               exit={{ opacity: 0, scale: 0.85 }}
               transition={{ duration: 0.15 }}
               onClick={(e) => { e.stopPropagation(); onSearchHere?.(); }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 active:scale-95 transition-transform"
+              className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.625rem] font-bold whitespace-nowrap shrink-0 active:scale-95 transition-transform"
               style={{
                 background: "hsl(var(--accent) / 0.12)",
                 color: "hsl(var(--accent))",
@@ -238,7 +238,7 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
             <button
               key={cat.id}
               onClick={() => onCategorySelect(cat.id as RadarLayer)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border shrink-0 active:scale-95 transition-all"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border shrink-0 active:scale-95 transition-all"
               style={{
                 background: "hsl(var(--card) / 0.85)",
                 borderColor: "hsl(var(--border) / 0.15)",
@@ -280,7 +280,7 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
               group.items.length > 0 && (
                 <div key={group.type}>
                   <div className="px-4 pt-2.5 pb-1">
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">
                       {group.label}
                     </span>
                   </div>
@@ -302,14 +302,14 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-foreground line-clamp-1">{r.title}</p>
-                        <p className="text-[10px] text-muted-foreground line-clamp-1">
+                        <p className="text-[0.625rem] text-muted-foreground line-clamp-1">
                           {[r.district, r.city, r.vertical].filter(Boolean).join(" · ")}
                         </p>
                       </div>
                       {r.score != null && r.score > 0.7 && (
                         <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full shrink-0" style={{ background: "hsl(var(--accent) / 0.1)" }}>
                           <Sparkles className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
-                          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>{tSafe(t, "radar.best_match", "Best")}</span>
+                          <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>{tSafe(t, "radar.best_match", "Best")}</span>
                         </div>
                       )}
                     </button>
@@ -323,9 +323,9 @@ export default function RadarSmartSearch({ onCategorySelect, onSearchFilter, sho
                 <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: "hsl(var(--border) / 0.1)" }}>
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3 h-3 text-muted-foreground" />
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{tSafe(t, "radar.recent", "Recent")}</span>
+                    <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">{tSafe(t, "radar.recent", "Recent")}</span>
                   </div>
-                  <button onClick={clearHistory} className="text-[10px] font-semibold text-muted-foreground/60 active:opacity-70">
+                  <button onClick={clearHistory} className="text-[0.625rem] font-semibold text-muted-foreground/60 active:opacity-70">
                     {tSafe(t, "radar.clear", "Clear")}
                   </button>
                 </div>

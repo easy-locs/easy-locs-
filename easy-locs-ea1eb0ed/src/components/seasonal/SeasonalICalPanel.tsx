@@ -118,7 +118,7 @@ export default function SeasonalICalPanel({
               {copiedExport ? t("page.seasonal.copied") : t("page.seasonal.copy")}
             </button>
           </div>
-          <p className="text-[10px] text-muted-foreground italic">{t("page.seasonal.export_hint")}</p>
+          <p className="text-[0.625rem] text-muted-foreground italic">{t("page.seasonal.export_hint")}</p>
         </div>
       </div>
     </div>

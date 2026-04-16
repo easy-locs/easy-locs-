@@ -100,7 +100,7 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
             <div className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all"
               style={{ left: config.enabled ? "calc(100% - 14px)" : "2px" }} />
           </button>
-          <Button size="sm" variant="ghost" className="h-7 text-[10px] px-2" onClick={() => setShowConfig(!showConfig)}
+          <Button size="sm" variant="ghost" className="h-7 text-[0.625rem] px-2" onClick={() => setShowConfig(!showConfig)}
             style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>⚙️</Button>
         </div>
       </div>
@@ -111,31 +111,31 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
           <TrendingUp className="h-3.5 w-3.5 mx-auto mb-1" style={{ color: "hsl(var(--warning))" }} />
           <p className="text-sm font-bold" style={{ color: "hsl(var(--warning))" }}>×{avgMultiplier.toFixed(1)}</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Multiplicateur moy.</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Multiplicateur moy.</p>
         </div>
         <div className="rounded-xl px-2 py-2 text-center"
           style={{ background: activePeak ? "hsl(var(--warning) / 0.05)" : "hsl(var(--hud-surface))", border: `1px solid ${activePeak ? "hsl(var(--warning) / 0.15)" : "hsl(var(--hud-border) / 0.08)"}` }}>
           <Clock className="h-3.5 w-3.5 mx-auto mb-1" style={{ color: activePeak ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
-          <p className="text-[10px] font-bold" style={{ color: activePeak ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-bold" style={{ color: activePeak ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim))" }}>
             {activePeak ? `+${(activePeak.bonus * 100).toFixed(0)}%` : "Normal"}
           </p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Heure</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Heure</p>
         </div>
         <div className="rounded-xl px-2 py-2 text-center cursor-pointer"
           onClick={() => setWeather(w => w === "clear" ? "rain" : w === "rain" ? "storm" : "clear")}
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
           <WeatherIcon className="h-3.5 w-3.5 mx-auto mb-1" style={{ color: weather !== "clear" ? "hsl(var(--info))" : "hsl(var(--warning))" }} />
-          <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+          <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
             {weather === "storm" ? "🌧️ Orage" : weather === "rain" ? "🌦️ Pluie" : "☀️ Clair"}
           </p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Météo</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Météo</p>
         </div>
       </div>
 
       {/* Peak hours indicator */}
       <div className="rounded-lg px-3 py-2"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
-        <p className="text-[10px] font-bold mb-1.5" style={{ color: "hsl(var(--hud-text-dim))" }}>HEURES DE POINTE</p>
+        <p className="text-[0.625rem] font-bold mb-1.5" style={{ color: "hsl(var(--hud-text-dim))" }}>HEURES DE POINTE</p>
         <div className="flex gap-1">
           {Array.from({ length: 24 }, (_, i) => {
             const peak = config.peakHours.find(p => i >= p.start && i < p.end);
@@ -150,15 +150,15 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
           })}
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>0h</span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>12h</span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>23h</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>0h</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>12h</span>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>23h</span>
         </div>
       </div>
 
       {/* Zone pricing */}
       <div className="space-y-1.5">
-        <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>ZONES TARIFAIRES</p>
+        <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>ZONES TARIFAIRES</p>
         {zones.map(zone => {
           const surge = computeSurge(zone);
           const demandCfg = getDemandConfig(zone.demand);
@@ -170,17 +170,17 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
               <div className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.name}</p>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.name}</p>
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full"
                       style={{ background: demandCfg.bg, color: demandCfg.color }}>
                       {demandCfg.label}
                     </span>
                   </div>
                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       🚗 {zone.activeDrivers} • ⏳ {zone.pendingJobs} jobs
                     </span>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                       Base: {zone.baseFee}€
                     </span>
                   </div>
@@ -189,7 +189,7 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
                   <p className="text-sm font-bold" style={{ color: surge > 1.5 ? "hsl(var(--warning))" : "hsl(var(--success))" }}>
                     {effectivePrice}€
                   </p>
-                  <p className="text-[10px] font-semibold" style={{ color: surge > 1.5 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: surge > 1.5 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                     ×{surge.toFixed(1)}
                   </p>
                 </div>
@@ -204,40 +204,40 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           className="rounded-xl p-3 space-y-3"
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
-          <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>CONFIGURATION</p>
+          <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>CONFIGURATION</p>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Multi. max</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Multi. max</Label>
               <Input type="number" step={0.1} value={config.maxMultiplier}
                 onChange={e => setConfig(c => ({ ...c, maxMultiplier: +e.target.value }))}
-                className="h-7 text-[10px] mt-0.5"
+                className="h-7 text-[0.625rem] mt-0.5"
                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
             </div>
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Cooldown (min)</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Cooldown (min)</Label>
               <Input type="number" value={config.cooldownMinutes}
                 onChange={e => setConfig(c => ({ ...c, cooldownMinutes: +e.target.value }))}
-                className="h-7 text-[10px] mt-0.5"
+                className="h-7 text-[0.625rem] mt-0.5"
                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
             </div>
           </div>
 
           <div>
-            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Bonus météo pluie / orage</Label>
+            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Bonus météo pluie / orage</Label>
             <div className="flex gap-2 mt-0.5">
               <Input type="number" step={0.1} value={config.weatherMultiplier.rain}
                 onChange={e => setConfig(c => ({ ...c, weatherMultiplier: { ...c.weatherMultiplier, rain: +e.target.value } }))}
-                className="h-7 text-[10px] flex-1"
+                className="h-7 text-[0.625rem] flex-1"
                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
               <Input type="number" step={0.1} value={config.weatherMultiplier.storm}
                 onChange={e => setConfig(c => ({ ...c, weatherMultiplier: { ...c.weatherMultiplier, storm: +e.target.value } }))}
-                className="h-7 text-[10px] flex-1"
+                className="h-7 text-[0.625rem] flex-1"
                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
             </div>
           </div>
 
-          <Button size="sm" className="w-full text-[10px] h-7"
+          <Button size="sm" className="w-full text-[0.625rem] h-7"
             onClick={() => { setShowConfig(false); toast.success("Configuration sauvegardée"); }}
             style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
             Appliquer
@@ -250,7 +250,7 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
         <div className="rounded-lg px-3 py-2 flex items-center gap-2"
           style={{ background: "hsl(var(--warning) / 0.05)", border: "1px solid hsl(var(--warning) / 0.15)" }}>
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--warning))" }} />
-          <p className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
             Surge actif — les prix sont majorés de {((avgMultiplier - 1) * 100).toFixed(0)}% en moyenne
           </p>
         </div>

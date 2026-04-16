@@ -132,12 +132,12 @@ export default function DriverTaxiEarningsPage() {
                     const dayLabel = new Date(day.date).toLocaleDateString("en", { weekday: "short" });
                     return (
                       <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[9px] text-muted-foreground font-bold">{day.earnings.toFixed(0)}</span>
+                        <span className="text-[0.5625rem] text-muted-foreground font-bold">{day.earnings.toFixed(0)}</span>
                         <div
                           className="w-full rounded-t-lg transition-all"
                           style={{ height: `${height}%`, background: "hsl(var(--accent))", minHeight: 4 }}
                         />
-                        <span className="text-[9px] text-muted-foreground">{dayLabel}</span>
+                        <span className="text-[0.5625rem] text-muted-foreground">{dayLabel}</span>
                       </div>
                     );
                   })}
@@ -157,7 +157,7 @@ export default function DriverTaxiEarningsPage() {
                         <p className="text-xs font-semibold text-foreground line-clamp-1">
                           {trip.pickupLabel} → {trip.dropoffLabel}
                         </p>
-                        <div className="flex items-center gap-3 mt-0.5 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-3 mt-0.5 text-[0.625rem] text-muted-foreground">
                           <span>{trip.duration} min</span>
                           <span>{trip.distance} km</span>
                           <span>
@@ -167,14 +167,14 @@ export default function DriverTaxiEarningsPage() {
                             })}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-2 mt-0.5 text-[0.625rem] text-muted-foreground">
                           <span>Gross: {trip.grossAmount.toFixed(2)}</span>
                           <span>Fee: -{trip.commission.toFixed(2)}</span>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm font-bold text-foreground">{trip.netAmount.toFixed(2)}</p>
-                        <p className="text-[10px] text-muted-foreground">AED net</p>
+                        <p className="text-[0.625rem] text-muted-foreground">AED net</p>
                       </div>
                     </div>
                   ))}

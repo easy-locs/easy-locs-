@@ -107,12 +107,12 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           </div>
 
           <div className="absolute top-2.5 left-2.5 flex items-start gap-1.5 flex-wrap">
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border backdrop-blur-md ${typeBadge.color}`}>
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold border backdrop-blur-md ${typeBadge.color}`}>
               {subInfo?.emoji && <span className="text-xs">{subInfo.emoji}</span>}
               <span className="line-clamp-1 break-words max-w-[140px]">{typeBadge.label}</span>
             </span>
             {isVerified && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[0.625rem] font-bold backdrop-blur-md"
                 style={{ background: GOLD, color: NAVY, maxWidth: "120px" }}>
                 <CheckCircle className="h-3 w-3 shrink-0" />
                 <span className="line-clamp-1">{t("mp.verified") || "Verified"}</span>
@@ -121,7 +121,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
           </div>
 
           {Array.isArray(item.photo_urls) && item.photo_urls.length > 1 && (
-            <div className="absolute bottom-2.5 left-2.5 backdrop-blur-md rounded-lg px-2 py-0.5 text-[10px] text-white font-medium"
+            <div className="absolute bottom-2.5 left-2.5 backdrop-blur-md rounded-lg px-2 py-0.5 text-[0.625rem] text-white font-medium"
               style={{ background: "hsl(0 0% 0% / 0.45)" }}>
               1/{item.photo_urls.length}
             </div>
@@ -176,7 +176,7 @@ export const ExploreListingCard = memo(function ExploreListingCard({ item }: { i
               {ctaLabel} <ArrowRight className="h-3 w-3" />
             </span>
             {!user && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                 <Lock className="h-3 w-3" /> {t("explore.login_to_contact") || "Login to contact"}
               </span>
             )}

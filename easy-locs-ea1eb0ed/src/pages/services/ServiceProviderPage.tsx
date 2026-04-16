@@ -5,7 +5,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { serviceUseCases } from "@/domains/services/service";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -164,14 +164,14 @@ export default function ServiceProviderPage() {
             <h2 className="text-sm font-bold mb-3">Services</h2>
             <div className="space-y-2">
               {services.map((svc: any) => (
-                <Card key={svc.id}>
+                <AppCard key={svc.id}>
                   <CardContent className="p-3 flex items-center justify-between">
                     <div className="flex-1 min-w-0 space-y-0.5">
                       <h3 className="text-sm font-semibold">{svc.title}</h3>
-                      {svc.description && <p className="text-[11px] text-muted-foreground line-clamp-2">{svc.description}</p>}
+                      {svc.description && <p className="text-[0.6875rem] text-muted-foreground line-clamp-2">{svc.description}</p>}
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-primary">{svc.price} AED{svc.price_type === "hourly" ? "/hr" : ""}</span>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                           <Clock className="h-3 w-3" /> {svc.duration_minutes}min
                         </span>
                       </div>
@@ -180,7 +180,7 @@ export default function ServiceProviderPage() {
                       <Calendar className="h-3 w-3 mr-1" /> Book
                     </Button>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
               {services.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-8">No services listed yet</p>
@@ -193,17 +193,17 @@ export default function ServiceProviderPage() {
               <h2 className="text-sm font-bold mb-3">Reviews</h2>
               <div className="space-y-2">
                 {reviews.slice(0, 5).map((review: any) => (
-                  <Card key={review.id}>
+                  <AppCard key={review.id}>
                     <CardContent className="p-3 space-y-1">
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map(s => (
                           <Star key={s} className={`h-3 w-3 ${s <= (review.rating || 0) ? "fill-amber-500 text-amber-500" : "text-muted-foreground/30"}`} />
                         ))}
-                        <span className="text-[10px] text-muted-foreground ml-2">{new Date(review.created_at).toLocaleDateString()}</span>
+                        <span className="text-[0.625rem] text-muted-foreground ml-2">{new Date(review.created_at).toLocaleDateString()}</span>
                       </div>
                       {review.comment && <p className="text-xs">{review.comment}</p>}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 ))}
               </div>
             </div>

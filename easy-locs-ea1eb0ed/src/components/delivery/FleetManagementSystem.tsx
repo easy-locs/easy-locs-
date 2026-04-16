@@ -62,7 +62,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
         <Truck className="h-4 w-4" style={{ color: "hsl(var(--info))" }} />
         <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Gestion de Flotte</h3>
         {alerts.filter(a => a.severity === "critical").length > 0 && (
-          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
+          <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full animate-pulse"
             style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}>
             ⚠️ {alerts.filter(a => a.severity === "critical").length} critique{alerts.filter(a => a.severity === "critical").length > 1 ? "s" : ""}
           </span>
@@ -79,7 +79,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -93,7 +93,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
           { id: "alerts" as const, label: `🚨 Alertes (${alerts.length})` },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--info) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--info))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -125,14 +125,14 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-3">
                     <span className="text-lg">{typeIcon[v.type] || "🚐"}</span>
                     <div className="flex-1">
-                      <p className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{model || plate}</p>
-                      <p className="text-[10px] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{plate} • {Number(mileage).toLocaleString()} km</p>
+                      <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{model || plate}</p>
+                      <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{plate} • {Number(mileage).toLocaleString()} km</p>
                     </div>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${st.color}15`, color: st.color }}>{st.label}</span>
+                    <span className="text-[0.625rem] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${st.color}15`, color: st.color }}>{st.label}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="flex-1">
-                      <div className="flex justify-between text-[10px] mb-0.5">
+                      <div className="flex justify-between text-[0.625rem] mb-0.5">
                         <span style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Santé</span>
                         <span style={{ color: healthColor }}>{healthScore}%</span>
                       </div>
@@ -141,12 +141,12 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
                       </div>
                     </div>
                     {assignedDriver && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-md" style={{ background: "hsl(var(--info) / 0.08)", color: "hsl(var(--info))" }}>
+                      <span className="text-[0.625rem] px-1.5 py-0.5 rounded-md" style={{ background: "hsl(var(--info) / 0.08)", color: "hsl(var(--info))" }}>
                         👤 {assignedDriver}
                       </span>
                     )}
                   </div>
-                  <div className="flex gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                  <div className="flex gap-3 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                     <span>⛽ {monthlyFuelCost}€/mois</span>
                     <span>🔧 {monthlyMaintCost}€/mois</span>
                     {nextService && <span>📅 Prochain: {nextService}</span>}
@@ -185,12 +185,12 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{cfg.emoji}</span>
                     <div className="flex-1">
-                      <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{m.description || m.title || cfg.label}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                      <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{m.description || m.title || cfg.label}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                         {plate} • {m.date || m.scheduled_date || m.created_at || ""} • {m.cost || 0}€
                       </p>
                     </div>
-                    <span className="text-[10px] font-semibold" style={{ color: st.color }}>{st.label}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: st.color }}>{st.label}</span>
                   </div>
                 </div>
               );
@@ -201,26 +201,26 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
         {tab === "costs" && (
           <motion.div key="costs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             <div className="rounded-xl p-3 space-y-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Répartition mensuelle</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Répartition mensuelle</p>
               {[
                 { label: "Carburant / Énergie", value: costStats.totalFuel, color: "hsl(var(--warning))", icon: "⛽" },
                 { label: "Maintenance", value: costStats.totalMaint, color: "hsl(var(--info))", icon: "🔧" },
                 { label: "Total", value: costStats.total, color: "hsl(var(--destructive))", icon: "💰" },
               ].map(c => (
                 <div key={c.label} className="flex items-center justify-between">
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{c.icon} {c.label}</span>
-                  <span className="text-[11px] font-bold" style={{ color: c.color }}>{c.value}€</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{c.icon} {c.label}</span>
+                  <span className="text-[0.6875rem] font-bold" style={{ color: c.color }}>{c.value}€</span>
                 </div>
               ))}
             </div>
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Coût par véhicule</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>Coût par véhicule</p>
               {allVehicles.filter((v: any) => v.status === "active" || v.status === "online").map((v: any) => {
                 const plate = v.plate || v.vehicle_plate || v.id;
                 const fuelCost = v.monthly_fuel_cost || v.monthlyFuelCost || 0;
                 const maintCost = v.monthly_maint_cost || v.monthlyMaintCost || 0;
                 return (
-                  <div key={v.id} className="flex items-center justify-between text-[10px]">
+                  <div key={v.id} className="flex items-center justify-between text-[0.625rem]">
                     <span style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{typeIcon[v.type] || "🚐"} {plate}</span>
                     <span className="font-bold" style={{ color: "hsl(var(--warning))" }}>{fuelCost + maintCost}€/mois</span>
                   </div>
@@ -234,7 +234,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
           <motion.div key="alerts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
             {alerts.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>✅ Aucune alerte</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>✅ Aucune alerte</p>
               </div>
             ) : alerts.map((a, i) => {
               const sevCfg: Record<string, { color: string; emoji: string }> = {
@@ -246,7 +246,7 @@ export default function FleetManagementSystem({ orgId }: { orgId: string }) {
               return (
                 <div key={i} className="rounded-xl p-3 flex items-center gap-2" style={{ background: `${cfg.color}08`, border: `1px solid ${cfg.color}15` }}>
                   <span className="text-sm">{cfg.emoji}</span>
-                  <p className="text-[10px] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{a.message}</p>
+                  <p className="text-[0.625rem] flex-1" style={{ color: "hsl(var(--hud-text))" }}>{a.message}</p>
                 </div>
               );
             })}

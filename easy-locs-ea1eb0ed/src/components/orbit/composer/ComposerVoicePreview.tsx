@@ -132,7 +132,7 @@ function ComposerVoicePreview({ voicePreview, uploading, disabled, onDiscard, on
           })}
         </div>
 
-        <span className="text-[11px] font-mono tabular-nums text-muted-foreground shrink-0 w-[38px] text-right">
+        <span className="text-[0.6875rem] font-mono tabular-nums text-muted-foreground shrink-0 w-[38px] text-right">
           {playing ? formatDuration(currentTime) : formatDuration(totalDuration)}
         </span>
       </div>

@@ -99,11 +99,11 @@ export default function AdminPaymentsOpsPage() {
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {Number(order.total_amount ?? 0).toFixed(2)} {order.currency ?? "AED"}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                  <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
                     status: {order.status ?? "draft"} · payment: {order.payment_status ?? "unpaid"}
                   </p>
                 </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-bold text-muted-foreground">
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[0.6875rem] font-bold text-muted-foreground">
                   {order.settlement_status ?? "pending"}
                 </span>
               </div>

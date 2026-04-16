@@ -68,7 +68,7 @@ export default function SettingsOrbit() {
     <SubPageShell title="Language & Region" onBack={() => navigate("/settings")} contentClassName="space-y-5">
         {/* Language */}
         <section>
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Language</h2>
+          <h2 className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Language</h2>
           <div className="rounded-2xl overflow-hidden bg-card border border-border/10">
             {LANGUAGES.map((lang, idx) => (
               <button
@@ -78,7 +78,7 @@ export default function SettingsOrbit() {
               >
                 <div>
                   <p className="text-sm font-semibold text-foreground">{lang.label}</p>
-                  <p className="text-[11px] text-muted-foreground">{lang.native}</p>
+                  <p className="text-[0.6875rem] text-muted-foreground">{lang.native}</p>
                 </div>
                 {selectedLang === lang.code && (
                   <Check className="w-4 h-4 shrink-0 text-primary" />
@@ -90,7 +90,7 @@ export default function SettingsOrbit() {
 
         {/* Currency */}
         <section>
-          <h2 className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Currency</h2>
+          <h2 className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground px-1 mb-2">Currency</h2>
           <div className="rounded-2xl overflow-hidden bg-card border border-border/10">
             {CURRENCIES.map((cur, idx) => (
               <button
@@ -102,7 +102,7 @@ export default function SettingsOrbit() {
                   <span className="text-sm font-bold text-muted-foreground w-8">{cur.symbol}</span>
                   <div>
                     <p className="text-sm font-semibold text-foreground">{cur.label}</p>
-                    <p className="text-[11px] text-muted-foreground">{cur.code}</p>
+                    <p className="text-[0.6875rem] text-muted-foreground">{cur.code}</p>
                   </div>
                 </div>
                 {selectedCurrency === cur.code && (

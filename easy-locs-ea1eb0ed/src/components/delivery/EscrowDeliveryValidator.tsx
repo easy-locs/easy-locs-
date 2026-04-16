@@ -200,7 +200,7 @@ export default function EscrowDeliveryValidator({
       {/* Confirmation code entry (buyer/driver validates delivery) */}
       {escrowStatus === "held" && (role === "buyer" || role === "driver") && (
         <div className="space-y-2">
-          <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+          <label className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
             Code de confirmation (6 chiffres — obligatoire)
           </label>
           <Input
@@ -214,7 +214,7 @@ export default function EscrowDeliveryValidator({
 
           {/* GPS status indicator for driver */}
           {role === "driver" && dropoffLat && dropoffLng && (
-            <div className="flex items-center gap-2 text-[10px]">
+            <div className="flex items-center gap-2 text-[0.625rem]">
               <MapPin className="h-3 w-3" style={{
                 color: gpsStatus === "ok" ? "hsl(var(--success))" :
                        gpsStatus === "too_far" || gpsStatus === "low_accuracy" ? "hsl(var(--destructive))" :

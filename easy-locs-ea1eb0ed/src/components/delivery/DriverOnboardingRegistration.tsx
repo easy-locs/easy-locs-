@@ -117,7 +117,7 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
                     <Icon className="h-3.5 w-3.5" style={{ color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }} />
                   )}
                 </div>
-                <span className="text-[10px] font-semibold hidden sm:block"
+                <span className="text-[0.625rem] font-semibold hidden sm:block"
                   style={{ color: isActive ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
                   {s.label}
                 </span>
@@ -136,7 +136,7 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
         {step === "identity" && (
           <motion.div key="identity" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="rounded-xl p-4 space-y-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.15)" }}>
-            <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Informations personnelles</p>
+            <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Informations personnelles</p>
             <Input value={form.fullName} onChange={e => setForm(p => ({ ...p, fullName: e.target.value }))}
               placeholder="Nom complet" className="h-9 text-xs"
               style={{ background: "hsl(var(--background))", borderColor: "hsl(var(--border) / 0.15)", color: "hsl(var(--foreground))" }} />
@@ -149,7 +149,7 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
             <div className="flex gap-2">
               {["moto", "vélo", "voiture", "camionnette"].map(v => (
                 <button key={v} onClick={() => setForm(p => ({ ...p, vehicleType: v }))}
-                  className="flex-1 py-2 rounded-lg text-[10px] font-semibold"
+                  className="flex-1 py-2 rounded-lg text-[0.625rem] font-semibold"
                   style={{
                     background: form.vehicleType === v ? "hsl(var(--primary) / 0.1)" : "hsl(var(--muted) / 0.3)",
                     color: form.vehicleType === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -174,7 +174,7 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
         {step === "documents" && (
           <motion.div key="documents" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="rounded-xl p-4 space-y-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.15)" }}>
-            <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Documents requis</p>
+            <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Documents requis</p>
             {[
               { key: "idUploaded" as const, label: "Pièce d'identité (CNI/Passeport)", required: true },
               { key: "licenseUploaded" as const, label: "Permis de conduire", required: true },
@@ -192,15 +192,15 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                     {doc.label} {doc.required && <span style={{ color: "hsl(var(--destructive))" }}>*</span>}
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {form[doc.key] ? "✅ Uploadé" : "En attente"}
                   </p>
                 </div>
                 {!form[doc.key] && (
-                  <Button size="sm" className="text-[10px] h-7" onClick={() => simulateUpload(doc.key)}
+                  <Button size="sm" className="text-[0.625rem] h-7" onClick={() => simulateUpload(doc.key)}
                     style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
                     <Camera className="h-3 w-3 mr-1" /> Upload
                   </Button>
@@ -225,14 +225,14 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
         {step === "quiz" && (
           <motion.div key="quiz" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
             className="rounded-xl p-4 space-y-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.15)" }}>
-            <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Quiz de formation (min. 75%)</p>
+            <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Quiz de formation (min. 75%)</p>
             {QUIZ_QUESTIONS.map((q, qi) => (
               <div key={qi} className="space-y-1.5">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{qi + 1}. {q.q}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{qi + 1}. {q.q}</p>
                 <div className="grid grid-cols-2 gap-1">
                   {q.options.map((opt, oi) => (
                     <button key={oi} onClick={() => { if (!quizSubmitted) { const a = [...quizAnswers]; a[qi] = oi; setQuizAnswers(a); } }}
-                      className="py-1.5 px-2 rounded-lg text-[10px] text-left"
+                      className="py-1.5 px-2 rounded-lg text-[0.625rem] text-left"
                       style={{
                         background: quizAnswers[qi] === oi
                           ? (quizSubmitted ? (oi === q.correct ? "hsl(var(--success) / 0.15)" : "hsl(var(--destructive) / 0.15)") : "hsl(var(--primary) / 0.1)")
@@ -288,7 +288,7 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
             <Shield className="h-10 w-10 mx-auto" style={{ color: "hsl(var(--primary))" }} />
             <div>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--foreground))" }}>Récapitulatif</p>
-              <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>Vérifiez vos informations avant soumission</p>
+              <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>Vérifiez vos informations avant soumission</p>
             </div>
             <div className="space-y-2 text-left">
               {[
@@ -301,8 +301,8 @@ export default function DriverOnboardingRegistration({ onComplete, className }: 
               ].map(item => (
                 <div key={item.label} className="flex justify-between py-1.5 border-b"
                   style={{ borderColor: "hsl(var(--border) / 0.08)" }}>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{item.label}</span>
-                  <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{item.value}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{item.label}</span>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{item.value}</span>
                 </div>
               ))}
             </div>

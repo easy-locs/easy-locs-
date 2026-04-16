@@ -33,7 +33,7 @@ export default function DriverCompletedDeliveriesPage() {
             <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
               <p className="text-sm font-bold text-foreground">Order #{String(row.id).slice(0, 8)}</p>
               <p className="text-xs text-muted-foreground mt-1">{row.status} · {Number(row.total_amount ?? 0).toFixed(2)} {row.currency ?? "AED"}</p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">{row.updated_at ? new Date(row.updated_at).toLocaleString() : ""}</p>
+              <p className="text-[0.6875rem] text-muted-foreground/70 mt-1">{row.updated_at ? new Date(row.updated_at).toLocaleString() : ""}</p>
             </div>
           ))}
         </div>

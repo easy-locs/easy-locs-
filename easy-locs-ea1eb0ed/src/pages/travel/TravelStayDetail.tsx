@@ -42,9 +42,9 @@ export default function TravelStayDetail() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-bold text-foreground">Hosted by Name</p>
-            <p className="text-[10px] text-muted-foreground">Superhost · Joined 2022</p>
+            <p className="text-[0.625rem] text-muted-foreground">Superhost · Joined 2022</p>
           </div>
-          <Button variant="outline" size="sm" className="h-7 text-[10px]">Contact</Button>
+          <Button variant="outline" size="sm" className="h-7 text-[0.625rem]">Contact</Button>
         </div>
 
         {/* Key info */}
@@ -56,7 +56,7 @@ export default function TravelStayDetail() {
           ].map(({ label, icon: Icon }) => (
             <div key={label} className="flex flex-col items-center gap-1 p-2 rounded-xl bg-muted/20 border border-border/10">
               <Icon className="h-4 w-4 text-primary" />
-              <span className="text-[10px] font-medium text-foreground text-center">{label}</span>
+              <span className="text-[0.625rem] font-medium text-foreground text-center">{label}</span>
             </div>
           ))}
         </div>
@@ -66,7 +66,7 @@ export default function TravelStayDetail() {
           <h2 className="text-sm font-bold text-foreground mb-2">Amenities</h2>
           <div className="flex flex-wrap gap-2">
             {["WiFi", "Kitchen", "Washer", "Air conditioning", "TV", "Parking"].map(a => (
-              <span key={a} className="px-2 py-1 rounded-lg bg-muted/30 border border-border/10 text-[10px] font-medium text-foreground">{a}</span>
+              <span key={a} className="px-2 py-1 rounded-lg bg-muted/30 border border-border/10 text-[0.625rem] font-medium text-foreground">{a}</span>
             ))}
           </div>
         </div>
@@ -106,11 +106,11 @@ export default function TravelStayDetail() {
         <div>
           <div className="flex items-center justify-between mb-2.5">
             <h2 className="text-sm font-bold text-foreground">Reviews</h2>
-            <button className="text-[10px] font-medium text-primary flex items-center gap-0.5">See all <ChevronRight className="h-3 w-3" /></button>
+            <button className="text-[0.625rem] font-medium text-primary flex items-center gap-0.5">See all <ChevronRight className="h-3 w-3" /></button>
           </div>
           <div className="p-3 rounded-xl border border-border/15 bg-card/50">
             <p className="text-xs text-muted-foreground italic">"Perfect location, very clean and cozy."</p>
-            <p className="text-[10px] text-muted-foreground mt-1">— Guest, Feb 2026</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-1">— Guest, Feb 2026</p>
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@ export default function TravelStayDetail() {
         <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/20 shadow-lg backdrop-blur-sm">
           <div>
             <p className="text-lg font-extrabold text-foreground tabular-nums">$75</p>
-            <p className="text-[10px] text-muted-foreground">/night · $475 total</p>
+            <p className="text-[0.625rem] text-muted-foreground">/night · $475 total</p>
           </div>
           <Button size="sm" className="font-bold">Reserve</Button>
         </div>

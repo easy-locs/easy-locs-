@@ -154,7 +154,7 @@ h1{font-size:20px}h2{font-size:14px;color:#666}</style></head>
         <div className="flex gap-1">
           {(["week", "month", "quarter"] as const).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              className="text-[10px] px-2 py-1 rounded-full font-medium"
+              className="text-[0.625rem] px-2 py-1 rounded-full font-medium"
               style={{
                 background: period === p ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-border) / 0.06)",
                 color: period === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -171,22 +171,22 @@ h1{font-size:20px}h2{font-size:14px;color:#666}</style></head>
           style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--success) / 0.06))", border: "1px solid hsl(var(--hud-cyan) / 0.12)" }}>
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                 <Calendar className="h-3 w-3 inline mr-1" />
                 {summary.periodStart} → {summary.periodEnd}
               </p>
               <p className="text-2xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                 {summary.totalAmount.toFixed(2)} <span className="text-sm">{summary.currency}</span>
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                 {summary.totalJobs} livraisons facturées
               </p>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Button size="sm" variant="outline" onClick={exportCSV} className="text-[10px] h-7 px-2">
+              <Button size="sm" variant="outline" onClick={exportCSV} className="text-[0.625rem] h-7 px-2">
                 <Download className="h-3 w-3 mr-1" /> CSV
               </Button>
-              <Button size="sm" variant="outline" onClick={printInvoice} className="text-[10px] h-7 px-2">
+              <Button size="sm" variant="outline" onClick={printInvoice} className="text-[0.625rem] h-7 px-2">
                 <Printer className="h-3 w-3 mr-1" /> Imprimer
               </Button>
             </div>
@@ -199,25 +199,25 @@ h1{font-size:20px}h2{font-size:14px;color:#666}</style></head>
         {rows.length === 0 ? (
           <div className="text-center py-8">
             <FileText className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucune facture pour cette période</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucune facture pour cette période</p>
           </div>
         ) : rows.slice(0, 20).map(row => (
           <div key={row.id} className="flex items-center gap-2 px-3 py-2 rounded-lg"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
             <CheckCircle2 className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+              <p className="text-[0.625rem] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
                 {row.id}
               </p>
-              <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {row.pickupAddress} → {row.dropoffAddress}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>
                 {row.fee.toFixed(2)}€
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {row.deliveredAt.slice(0, 10)}
               </p>
             </div>

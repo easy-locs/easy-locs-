@@ -68,7 +68,7 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
               <span className="text-xs font-bold text-amber-500">+{challenge.reward}</span>
             </div>
           </div>
-          <p className="text-[11px] text-muted-foreground mb-2">{challenge.description}</p>
+          <p className="text-[0.6875rem] text-muted-foreground mb-2">{challenge.description}</p>
 
           {!challenge.completed && (
             <div className="flex items-center gap-2">
@@ -80,14 +80,14 @@ function ChallengeCard({ challenge }: { challenge: Challenge }) {
                   className="h-full rounded-full bg-primary"
                 />
               </div>
-              <span className="text-[10px] font-bold text-muted-foreground shrink-0">
+              <span className="text-[0.625rem] font-bold text-muted-foreground shrink-0">
                 {challenge.current}/{challenge.target}
               </span>
             </div>
           )}
 
           {challenge.completed && (
-            <p className="text-[10px] font-bold text-emerald-500">Completed</p>
+            <p className="text-[0.625rem] font-bold text-emerald-500">Completed</p>
           )}
         </div>
       </div>
@@ -110,11 +110,11 @@ export default function CustomerChallengesPage() {
       <div className="mx-4 mb-4 rounded-2xl p-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/10">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Today's Progress</p>
+            <p className="text-[0.625rem] uppercase font-bold text-muted-foreground tracking-wider">Today's Progress</p>
             <p className="text-2xl font-extrabold text-foreground">{completedCount}/{challenges.length}</p>
           </div>
           <div className="text-right">
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Earned</p>
+            <p className="text-[0.625rem] uppercase font-bold text-muted-foreground tracking-wider">Earned</p>
             <p className="text-lg font-bold text-primary">{earnedReward}/{totalReward} pts</p>
           </div>
           <div className="w-14 h-14 rounded-full flex items-center justify-center bg-primary/10">
@@ -165,7 +165,7 @@ export default function CustomerChallengesPage() {
           </div>
           <div className="flex-1 text-left">
             <p className="text-sm font-bold text-foreground">Refer & Earn</p>
-            <p className="text-[11px] text-muted-foreground">Invite friends, earn 200 pts each</p>
+            <p className="text-[0.6875rem] text-muted-foreground">Invite friends, earn 200 pts each</p>
           </div>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </button>

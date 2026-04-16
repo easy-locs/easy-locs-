@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -253,24 +253,24 @@ export default function HotelRoomsPage() {
         </Button>
 
         {rooms.map(room => (
-          <Card key={room.id} className="bg-card/80 border-border/15">
+          <AppCard key={room.id} className="bg-card/80 border-border/15">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold truncate">{room.name}</h3>
-                    <Badge variant={room.active ? "default" : "secondary"} className="text-[10px]">
+                    <Badge variant={room.active ? "default" : "secondary"} className="text-[0.625rem]">
                       {room.active ? "Active" : "Inactive"}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-3 mt-1 text-[0.625rem] text-muted-foreground">
                     <span className="flex items-center gap-0.5"><Users className="h-3 w-3" /> {room.adults}+{room.children}</span>
                     <span className="flex items-center gap-0.5"><BedDouble className="h-3 w-3" /> {room.bedType}</span>
                     {room.roomSizeSqm && <span className="flex items-center gap-0.5"><Maximize2 className="h-3 w-3" /> {room.roomSizeSqm}m²</span>}
                     <span>{room.totalUnits} unit{room.totalUnits > 1 ? "s" : ""}</span>
                   </div>
                   <p className="text-sm font-bold mt-1.5 tabular-nums">
-                    {(room.basePricePerNight ?? 0).toLocaleString()} {room.currency}<span className="text-[10px] font-normal text-muted-foreground">/night</span>
+                    {(room.basePricePerNight ?? 0).toLocaleString()} {room.currency}<span className="text-[0.625rem] font-normal text-muted-foreground">/night</span>
                     {room.weekendPricePerNight && (
                       <span className="text-xs font-normal text-muted-foreground ml-2">
                         (weekend: {room.weekendPricePerNight.toLocaleString()})
@@ -280,9 +280,9 @@ export default function HotelRoomsPage() {
                   {room.amenitiesJson.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {room.amenitiesJson.slice(0, 4).map(a => (
-                        <Badge key={a} variant="outline" className="text-[9px]">{a}</Badge>
+                        <Badge key={a} variant="outline" className="text-[0.5625rem]">{a}</Badge>
                       ))}
-                      {room.amenitiesJson.length > 4 && <Badge variant="outline" className="text-[9px]">+{room.amenitiesJson.length - 4}</Badge>}
+                      {room.amenitiesJson.length > 4 && <Badge variant="outline" className="text-[0.5625rem]">+{room.amenitiesJson.length - 4}</Badge>}
                     </div>
                   )}
                 </div>
@@ -296,7 +296,7 @@ export default function HotelRoomsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
 
         {rooms.length === 0 && (
@@ -358,7 +358,7 @@ export default function HotelRoomsPage() {
                 onChange={handleImageUpload}
               />
               {form.images.length < MIN_PHOTOS && !editingId && (
-                <p className="text-[10px] text-destructive mt-1">At least {MIN_PHOTOS} photos required</p>
+                <p className="text-[0.625rem] text-destructive mt-1">At least {MIN_PHOTOS} photos required</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -427,7 +427,7 @@ export default function HotelRoomsPage() {
                     key={a}
                     onClick={() => toggleAmenity(a)}
                     className={cn(
-                      "text-[10px] px-2 py-1 rounded-full border transition-colors",
+                      "text-[0.625rem] px-2 py-1 rounded-full border transition-colors",
                       form.amenities.includes(a) ? "bg-primary text-primary-foreground border-primary" : "border-border/30 text-muted-foreground",
                     )}
                   >

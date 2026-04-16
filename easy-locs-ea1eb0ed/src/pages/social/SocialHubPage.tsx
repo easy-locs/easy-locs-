@@ -81,12 +81,12 @@ export default function SocialHubPage() {
         <div className="flex items-center gap-6">
           <div className="flex-1 text-center">
             <p className="text-2xl font-extrabold text-foreground">{followers}</p>
-            <p className="text-[10px] text-muted-foreground">{t("social.followers")}</p>
+            <p className="text-[0.625rem] text-muted-foreground">{t("social.followers")}</p>
           </div>
           <div className="w-px h-8 bg-border/20" />
           <div className="flex-1 text-center">
             <p className="text-2xl font-extrabold text-foreground">{following}</p>
-            <p className="text-[10px] text-muted-foreground">{t("social.following")}</p>
+            <p className="text-[0.625rem] text-muted-foreground">{t("social.following")}</p>
           </div>
         </div>
       </motion.div>
@@ -139,7 +139,7 @@ export default function SocialHubPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-foreground">{section.title}</p>
-                    <p className="text-[11px] text-muted-foreground">{section.description}</p>
+                    <p className="text-[0.6875rem] text-muted-foreground">{section.description}</p>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
                 </motion.button>

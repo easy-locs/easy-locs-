@@ -825,7 +825,7 @@ export default memo(function UnifiedMap({
         <div className="pointer-events-none absolute left-3 right-3 top-3 z-10 flex items-start justify-between gap-3">
           <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border/40 bg-card/85 px-3 py-2 shadow-sm backdrop-blur-md">
             {weather.isRaining ? <CloudRain className="h-4 w-4 shrink-0 text-primary" /> : <CloudSun className="h-4 w-4 shrink-0 text-primary" />}
-            <span className="truncate text-[11px] font-medium text-foreground">Live station · {weather.label}</span>
+            <span className="truncate text-[0.6875rem] font-medium text-foreground">Live station · {weather.label}</span>
           </div>
         </div>
       )}

@@ -55,7 +55,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
           {hasFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg bg-muted transition-colors"
+              className="flex items-center gap-1 text-[0.625rem] font-medium text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg bg-muted transition-colors"
             >
               <X className="h-3 w-3" />
               Clear
@@ -66,7 +66,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
               <button
                 key={opt.value}
                 onClick={() => setTimeRange(opt.value)}
-                className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-[0.6875rem] font-medium transition-colors ${
                   timeRange === opt.value
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -98,7 +98,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
             >
               <Icon className={`h-3.5 w-3.5 mx-auto mb-1 ${config.color}`} />
               <p className="text-sm font-bold text-foreground">{count}</p>
-              <p className="text-[10px] text-muted-foreground">{config.label}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{config.label}</p>
             </button>
           );
         })}
@@ -109,7 +109,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
           <Filter className="h-3 w-3 text-muted-foreground shrink-0" />
           <button
             onClick={() => setComponentFilter(null)}
-            className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-colors ${
+            className={`rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold transition-colors ${
               !componentFilter
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted text-muted-foreground hover:text-foreground"
@@ -121,7 +121,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
             <button
               key={comp}
               onClick={() => setComponentFilter(componentFilter === comp ? null : comp)}
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold transition-colors ${
+              className={`rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold transition-colors ${
                 componentFilter === comp
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -141,7 +141,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
           <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
             <MapPin className="h-8 w-8 mb-2 opacity-30" />
             <p className="text-sm font-medium">No map errors recorded</p>
-            <p className="text-[11px] opacity-60">Errors will appear here as they occur</p>
+            <p className="text-[0.6875rem] opacity-60">Errors will appear here as they occur</p>
           </div>
         ) : (
           <div className="flex items-end gap-px h-28">
@@ -153,7 +153,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
                   className="flex-1 flex flex-col items-center justify-end gap-0.5 group relative"
                 >
                   {point.count > 0 && (
-                    <span className="text-[9px] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-[0.5625rem] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-opacity">
                       {point.count}
                     </span>
                   )}
@@ -164,7 +164,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
                       minHeight: point.count > 0 ? 4 : 1,
                     }}
                   />
-                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-[9px] px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-10 pointer-events-none">
+                  <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover text-popover-foreground text-[0.5625rem] px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-10 pointer-events-none">
                     {point.date.slice(5)} · {point.count} error{point.count !== 1 ? "s" : ""}
                   </div>
                 </div>
@@ -173,7 +173,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
           </div>
         )}
         {hasErrors && (
-          <div className="flex justify-between mt-2 text-[9px] text-muted-foreground">
+          <div className="flex justify-between mt-2 text-[0.5625rem] text-muted-foreground">
             <span>{summary.trend[0]?.date.slice(5)}</span>
             <span>{summary.trend[summary.trend.length - 1]?.date.slice(5)}</span>
           </div>
@@ -231,7 +231,7 @@ const MapErrorTrendsWidget = memo(function MapErrorTrendsWidget() {
                     <div className="flex items-center gap-2">
                       <span className={`font-bold ${config.color}`}>{config.label}</span>
                       <span className="text-muted-foreground">{err.component}</span>
-                      <span className="text-muted-foreground/50 ml-auto text-[10px] shrink-0">
+                      <span className="text-muted-foreground/50 ml-auto text-[0.625rem] shrink-0">
                         {new Date(err.timestamp).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",

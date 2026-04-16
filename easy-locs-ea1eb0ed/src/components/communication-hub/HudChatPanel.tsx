@@ -335,12 +335,12 @@ const HudChatPanelInner = memo(function HudChatPanelInner({ thread, onBack, onTo
         {(thread.conversationType === "booking" || thread.conversationType === "listing" || thread.conversationType === "deal") && (
           <div className="px-4 py-2 shrink-0" style={{ borderTop: "1px solid hsl(var(--border) / 0.06)", background: "hsl(var(--card) / 0.25)" }}>
             <div className="flex items-center gap-2 overflow-x-auto" data-no-swipe>
-              {!thread.dealId && <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={onToggleContext}>Deal</Button>}
-              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => payment.setPaymentLinkDialog(true)}>{t("orbit.payment")}</Button>
-              <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => payment.setRequestMoneyDialog(true)}>Request</Button>
-              {thread.bookingStatus === "pending" && <Button size="sm" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("confirm")}>{t("orbit.confirm")}</Button>}
-              {thread.bookingStatus === "confirmed" && <Button size="sm" variant="outline" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("complete")}>{t("orbit.complete")}</Button>}
-              {!(["cancelled", "completed"].includes(thread.bookingStatus || "")) && <Button size="sm" variant="ghost" className="text-[11px] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("cancel")}>{t("orbit.cancel")}</Button>}
+              {!thread.dealId && <Button size="sm" variant="outline" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={onToggleContext}>Deal</Button>}
+              <Button size="sm" variant="outline" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => payment.setPaymentLinkDialog(true)}>{t("orbit.payment")}</Button>
+              <Button size="sm" variant="outline" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => payment.setRequestMoneyDialog(true)}>Request</Button>
+              {thread.bookingStatus === "pending" && <Button size="sm" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("confirm")}>{t("orbit.confirm")}</Button>}
+              {thread.bookingStatus === "confirmed" && <Button size="sm" variant="outline" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("complete")}>{t("orbit.complete")}</Button>}
+              {!(["cancelled", "completed"].includes(thread.bookingStatus || "")) && <Button size="sm" variant="ghost" className="text-[0.6875rem] h-7 min-h-[44px] sm:min-h-0 gap-1.5 rounded-full px-3 shrink-0" onClick={() => handleBookingAction("cancel")}>{t("orbit.cancel")}</Button>}
             </div>
           </div>
         )}

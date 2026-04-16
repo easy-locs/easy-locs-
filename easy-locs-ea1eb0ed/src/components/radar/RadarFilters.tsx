@@ -44,7 +44,7 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
           onClick={() => setExpanded(!expanded)}
           aria-label="Toggle filters"
           aria-expanded={expanded}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold whitespace-nowrap border transition-all active:scale-95 shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.625rem] font-bold whitespace-nowrap border transition-all active:scale-95 shrink-0"
           style={{
             background: activeCount > 0 ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.8)",
             borderColor: activeCount > 0 ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -54,7 +54,7 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
           <SlidersHorizontal className="w-3 h-3" />
           {tSafe(t, "radar.filters", "Filters")}
           {activeCount > 0 && (
-            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-extrabold" style={{ background: "hsl(var(--accent))", color: "white" }}>
+            <span className="ml-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[0.5625rem] font-extrabold" style={{ background: "hsl(var(--accent))", color: "white" }}>
               {activeCount}
             </span>
           )}
@@ -70,7 +70,7 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
           <button
             onClick={resetAll}
             aria-label="Reset filters"
-            className="flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold text-muted-foreground/70 active:scale-95 transition-all shrink-0"
+            className="flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-semibold text-muted-foreground/70 active:scale-95 transition-all shrink-0"
           >
             <RotateCcw className="w-2.5 h-2.5" />
             {tSafe(t, "radar.reset", "Reset")}
@@ -89,7 +89,7 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
           >
             <div className="rounded-2xl border p-3 space-y-3" style={{ background: "hsl(var(--card) / 0.95)", borderColor: "hsl(var(--border) / 0.15)" }}>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-foreground">
+                <span className="text-[0.6875rem] font-bold text-foreground">
                   {tSafe(t, "radar.all_filters", "All Filters")}
                 </span>
                 <button onClick={() => setExpanded(false)} aria-label="Close filters" className="p-1 rounded-lg active:scale-90 transition-transform">
@@ -103,7 +103,7 @@ export default function RadarFilters({ vertical, values, onChange, resultCount }
 
               {resultCount != null && (
                 <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }}>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[0.625rem] text-muted-foreground">
                     {resultCount} {tSafe(t, "radar.results", "results")}
                   </span>
                 </div>
@@ -122,7 +122,7 @@ function FilterChip({ filter, value, onChange }: { filter: RadarFilterDef; value
     return (
       <button
         onClick={() => onChange(!active)}
-        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
+        className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
         style={{
           background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
           borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -144,7 +144,7 @@ function FilterChip({ filter, value, onChange }: { filter: RadarFilterDef; value
             <button
               key={opt.value}
               onClick={() => onChange(active ? "" : opt.value)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border transition-all shrink-0 active:scale-95"
               style={{
                 background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
                 borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -168,7 +168,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
     const active = value === true;
     return (
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-foreground">{filter.label}</span>
+        <span className="text-[0.6875rem] font-semibold text-foreground">{filter.label}</span>
         <button
           onClick={() => onChange(!active)}
           className="w-10 h-5 rounded-full transition-all relative"
@@ -190,7 +190,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
     const selected = value as string | undefined;
     return (
       <div>
-        <span className="text-[11px] font-semibold text-foreground mb-1.5 block">{filter.label}</span>
+        <span className="text-[0.6875rem] font-semibold text-foreground mb-1.5 block">{filter.label}</span>
         <div className="flex flex-wrap gap-1.5">
           {filter.options.map(opt => {
             const active = selected === opt.value;
@@ -198,7 +198,7 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
               <button
                 key={opt.value}
                 onClick={() => onChange(active ? "" : opt.value)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[10px] font-semibold whitespace-nowrap border transition-all active:scale-95"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[0.625rem] font-semibold whitespace-nowrap border transition-all active:scale-95"
                 style={{
                   background: active ? "hsl(var(--accent) / 0.12)" : "hsl(var(--card) / 0.6)",
                   borderColor: active ? "hsl(var(--accent) / 0.3)" : "hsl(var(--border) / 0.15)",
@@ -218,11 +218,11 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
   if (filter.type === "select" && filter.options) {
     return (
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold text-foreground">{filter.label}</span>
+        <span className="text-[0.6875rem] font-semibold text-foreground">{filter.label}</span>
         <select
           value={(value as string) ?? ""}
           onChange={e => onChange(e.target.value)}
-          className="text-[11px] font-semibold px-2 py-1 rounded-lg border bg-transparent text-foreground"
+          className="text-[0.6875rem] font-semibold px-2 py-1 rounded-lg border bg-transparent text-foreground"
           style={{ borderColor: "hsl(var(--border) / 0.2)" }}
         >
           {filter.options.map(opt => (
@@ -238,8 +238,8 @@ function FilterRow({ filter, value, onChange }: { filter: RadarFilterDef; value:
     return (
       <div>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-[11px] font-semibold text-foreground">{filter.label}</span>
-          <span className="text-[10px] font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
+          <span className="text-[0.6875rem] font-semibold text-foreground">{filter.label}</span>
+          <span className="text-[0.625rem] font-extrabold tabular-nums" style={{ color: "hsl(var(--accent))" }}>
             {numVal > 0 ? numVal.toFixed(1) : "Any"}
           </span>
         </div>

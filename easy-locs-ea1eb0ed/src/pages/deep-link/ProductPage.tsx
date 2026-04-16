@@ -91,7 +91,7 @@ export default function ProductPage() {
             {data.tags?.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {data.tags.slice(0, 5).map((tag: string) => (
-                  <Badge key={tag} variant="secondary" className="text-[10px]">{tag}</Badge>
+                  <Badge key={tag} variant="secondary" className="text-[0.625rem]">{tag}</Badge>
                 ))}
               </div>
             )}
@@ -115,7 +115,7 @@ export default function ProductPage() {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{shop.name}</p>
-                  <p className="text-[10px] text-muted-foreground">View shop</p>
+                  <p className="text-[0.625rem] text-muted-foreground">View shop</p>
                 </div>
               </Link>
             )}

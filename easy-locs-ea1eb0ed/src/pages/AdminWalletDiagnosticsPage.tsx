@@ -8,7 +8,7 @@ import { adminOpsService } from "@/services/admin-ops.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Search, AlertTriangle, CheckCircle2, Clock, ArrowDown, ArrowUp, Lock, Unlock, RefreshCw, ShieldCheck } from "lucide-react";
 import { formatPrice } from "@/lib/currency";
 import { approveWalletReview } from "@/lib/wallet/wallet-engine";
@@ -116,7 +116,7 @@ export default function AdminWalletDiagnosticsPage() {
       {order && (
         <div className="space-y-4">
           {/* Order State */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3">
               <CardTitle className="text-base flex items-center gap-2">
                 Order State
@@ -154,10 +154,10 @@ export default function AdminWalletDiagnosticsPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Financial Breakdown */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Financial Breakdown</CardTitle></CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -175,10 +175,10 @@ export default function AdminWalletDiagnosticsPage() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Splits */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Order Splits ({splits.length})</CardTitle></CardHeader>
             <CardContent>
               {splits.length === 0 ? <p className="text-sm text-muted-foreground">No splits found</p> : (
@@ -198,10 +198,10 @@ export default function AdminWalletDiagnosticsPage() {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Transactions — canonical fields */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Wallet Transactions ({transactions.length})</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -221,10 +221,10 @@ export default function AdminWalletDiagnosticsPage() {
                 {transactions.length === 0 && <p className="text-sm text-muted-foreground">No transactions</p>}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Ledger Timeline — canonical fields */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Ledger Timeline ({ledger.length})</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-1">
@@ -243,10 +243,10 @@ export default function AdminWalletDiagnosticsPage() {
                 {ledger.length === 0 && <p className="text-sm text-muted-foreground">No ledger entries</p>}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
 
           {/* Recent Audit Logs */}
-          <Card>
+          <AppCard>
             <CardHeader className="pb-3"><CardTitle className="text-base">Recent Wallet Audit Logs</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-1 max-h-60 overflow-y-auto">
@@ -265,7 +265,7 @@ export default function AdminWalletDiagnosticsPage() {
                 ))}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
       )}
     </SubPageShell>

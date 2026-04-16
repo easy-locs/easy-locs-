@@ -261,7 +261,7 @@ export default function AppLockScreen({ onUnlock, onGhostMode }: Props) {
       )}
 
       {attemptsLeft <= 5 && attemptsLeft > 0 && (
-        <p className="mt-6 text-[11px] text-center" style={{ color: "hsl(var(--hud-warning) / 0.8)" }}>
+        <p className="mt-6 text-[0.6875rem] text-center" style={{ color: "hsl(var(--hud-warning) / 0.8)" }}>
           <ShieldAlert className="h-3 w-3 inline mr-1" />
           {attemptsLeft} attempt{attemptsLeft !== 1 ? "s" : ""} remaining before data wipe
         </p>

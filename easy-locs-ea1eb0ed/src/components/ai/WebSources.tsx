@@ -42,9 +42,9 @@ const WebSources = ({ sources }: WebSourcesProps) => {
                 </span>
                 <ExternalLink className="h-2.5 w-2.5 text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
-              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{source.domain}</p>
+              <p className="text-[0.625rem] text-muted-foreground mt-0.5 truncate">{source.domain}</p>
             </div>
-            <span className="flex-shrink-0 text-[10px] text-muted-foreground/60 font-mono mt-0.5">[{i + 1}]</span>
+            <span className="flex-shrink-0 text-[0.625rem] text-muted-foreground/60 font-mono mt-0.5">[{i + 1}]</span>
           </a>
         ))}
       </div>

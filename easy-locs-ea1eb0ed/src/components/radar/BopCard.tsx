@@ -1,6 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import { AppCard } from "@/components/ui/card";
+import { AppCard } from "@/components/ui/AppCard";
 import { Inbox } from "lucide-react";
 
 const BOP_ICON_SIZE = "w-9 h-9";
@@ -59,7 +59,7 @@ function BopCardTitle({ children, badge }: { children: React.ReactNode; badge?: 
 
 function BopCardDescription({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 break-words leading-snug">
+    <p className="text-[0.6875rem] text-muted-foreground mt-0.5 line-clamp-2 break-words leading-snug">
       {children}
     </p>
   );
@@ -92,7 +92,7 @@ function BopBadge({ children, variant = "default" }: { children: React.ReactNode
     gem: "bg-purple-500/10 text-purple-600",
   };
   return (
-    <span className={cn("shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-full", styles[variant])}>
+    <span className={cn("shrink-0 text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full", styles[variant])}>
       {children}
     </span>
   );
@@ -100,7 +100,7 @@ function BopBadge({ children, variant = "default" }: { children: React.ReactNode
 
 function BopModuleBadge({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full border", className)}>
+    <span className={cn("text-[0.625rem] font-medium px-1.5 py-0.5 rounded-full border", className)}>
       {children}
     </span>
   );

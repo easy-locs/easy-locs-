@@ -211,7 +211,7 @@ export default function MerchantQrCockpit({
               <BrandedQR value={qrString} size={180} darkMode />
             </div>
             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-              <span className={`px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              <span className={`px-3 py-0.5 rounded-full text-[0.625rem] font-bold uppercase tracking-wider ${
                 generatedQr.mode === "static"
                   ? "bg-primary text-primary-foreground"
                   : generatedQr.mode === "dynamic"

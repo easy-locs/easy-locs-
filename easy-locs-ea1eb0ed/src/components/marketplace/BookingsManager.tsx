@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { CheckCircle2, Clock, X, Send, CreditCard, FileText, Mail, ShoppingCart } from "lucide-react";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
 import { buildInvoiceShareMessage, sanitizePhone, buildWhatsAppLink, buildWhatsAppShareLink } from "@/lib/whatsapp-utils";
@@ -211,7 +211,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
 
   if (bookings.length === 0) {
     return (
-      <Card className="border-dashed border-border/60">
+      <AppCard className="border-dashed border-border/60">
         <CardContent className="py-16 text-center">
           <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
             <ShoppingCart className="h-7 w-7 text-muted-foreground/40" />
@@ -219,7 +219,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
           <p className="text-muted-foreground font-medium">No bookings yet</p>
           <p className="text-xs text-muted-foreground/60 mt-1">Bookings will appear here when customers reserve your services</p>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -229,7 +229,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
         const svc = getService(b.service_id);
 
         return (
-          <Card key={b.id} className="border-border/60 hover:border-accent/30 transition-colors">
+          <AppCard key={b.id} className="border-border/60 hover:border-accent/30 transition-colors">
             <CardContent className="pt-4 pb-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0 space-y-1.5">
@@ -298,7 +298,7 @@ export default function BookingsManager({ bookings, services, provider, onUpdate
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         );
       })}
     </div>

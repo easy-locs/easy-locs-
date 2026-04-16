@@ -95,7 +95,7 @@ export default function CustomerSavedCardsPage() {
                         <span className="text-sm font-bold text-white/90">{card.brand}</span>
                       </div>
                       {card.isDefault && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
+                        <span className="inline-flex items-center gap-1 text-[0.625rem] font-bold uppercase px-2 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm">
                           <Star className="w-2.5 h-2.5" /> Default
                         </span>
                       )}
@@ -107,10 +107,10 @@ export default function CustomerSavedCardsPage() {
 
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-[10px] text-white/50 uppercase font-semibold">Expires</p>
+                        <p className="text-[0.625rem] text-white/50 uppercase font-semibold">Expires</p>
                         <p className="text-sm font-bold text-white">{card.expiry}</p>
                       </div>
-                      <div className="flex items-center gap-1 text-[10px] text-white/50">
+                      <div className="flex items-center gap-1 text-[0.625rem] text-white/50">
                         <Shield className="w-3 h-3" /> Encrypted
                       </div>
                     </div>

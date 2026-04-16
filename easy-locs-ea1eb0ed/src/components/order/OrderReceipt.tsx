@@ -2,7 +2,7 @@
  * OrderReceipt — Digital receipt component showing full order breakdown.
  * Renders from real order + items data.
  */
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Receipt, Store } from "lucide-react";
@@ -43,7 +43,7 @@ export default function OrderReceipt({ order, items }: OrderReceiptProps) {
   const fee = order.delivery_fee ?? order.shipping_fee ?? 0;
 
   return (
-    <Card className="overflow-hidden">
+    <AppCard className="overflow-hidden">
       <CardContent className="p-0">
         {/* Header */}
         <div className="p-4 text-center" style={{ background: "hsl(var(--primary) / 0.05)" }}>
@@ -59,31 +59,31 @@ export default function OrderReceipt({ order, items }: OrderReceiptProps) {
           </div>
           <div className="flex items-center justify-center gap-1.5 text-muted-foreground">
             <Receipt className="h-3.5 w-3.5" />
-            <span className="text-[11px] font-medium">Receipt</span>
+            <span className="text-[0.6875rem] font-medium">Receipt</span>
           </div>
         </div>
 
         <div className="p-4 space-y-3">
           {/* Meta */}
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="flex items-center justify-between text-[0.6875rem] text-muted-foreground">
             <span>#{order.id.slice(0, 8).toUpperCase()}</span>
             <span>{new Date(order.created_at).toLocaleString()}</span>
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-[10px] capitalize">
+            <Badge variant="outline" className="text-[0.625rem] capitalize">
               {order.status}
             </Badge>
             <Badge
               variant={order.payment_status === "released" || order.payment_status === "secured" ? "default" : "secondary"}
-              className="text-[10px]"
+              className="text-[0.625rem]"
             >
               {order.payment_status === "released" ? "Paid" :
                order.payment_status === "secured" ? "Secured" :
                order.payment_status ?? "Pending"}
             </Badge>
             {order.payment_method && (
-              <Badge variant="outline" className="text-[10px] capitalize">
+              <Badge variant="outline" className="text-[0.625rem] capitalize">
                 {order.payment_method}
               </Badge>
             )}
@@ -99,7 +99,7 @@ export default function OrderReceipt({ order, items }: OrderReceiptProps) {
                   <p className="text-xs font-medium text-foreground truncate">
                     {item.quantity}× {item.title}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     @ {fmtPrice(item.unit_price, order.currency)}
                   </p>
                 </div>
@@ -134,13 +134,13 @@ export default function OrderReceipt({ order, items }: OrderReceiptProps) {
           {order.notes && !order.notes.startsWith("idem:") && (
             <>
               <Separator />
-              <p className="text-[10px] text-muted-foreground italic">
+              <p className="text-[0.625rem] text-muted-foreground italic">
                 Note: {order.notes}
               </p>
             </>
           )}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

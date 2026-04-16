@@ -71,7 +71,7 @@ export default function MobilityHubPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-foreground">{item.label}</p>
-                      <p className="text-[11px] text-muted-foreground leading-snug">{item.desc}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground leading-snug">{item.desc}</p>
                     </div>
                     <ChevronRight className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                   </motion.button>

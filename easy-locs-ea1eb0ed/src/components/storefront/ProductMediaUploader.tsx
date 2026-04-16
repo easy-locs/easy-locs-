@@ -141,7 +141,7 @@ export default function ProductMediaUploader({
     <div className="space-y-3">
       {/* Image grid */}
       <div>
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <label className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
           Photos ({images.length}/{MAX_IMAGES})
         </label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-1.5">
@@ -157,7 +157,7 @@ export default function ProductMediaUploader({
 
               {/* Cover badge */}
               {i === coverIndex && (
-                <span className="absolute top-0.5 left-0.5 bg-accent text-accent-foreground text-[10px] font-bold px-1 py-0.5 rounded">
+                <span className="absolute top-0.5 left-0.5 bg-accent text-accent-foreground text-[0.625rem] font-bold px-1 py-0.5 rounded">
                   Cover
                 </span>
               )}
@@ -202,7 +202,7 @@ export default function ProductMediaUploader({
               ) : (
                 <>
                   <ImagePlus className="h-5 w-5" />
-                  <span className="text-[10px] font-medium">Add</span>
+                  <span className="text-[0.625rem] font-medium">Add</span>
                 </>
               )}
             </button>
@@ -220,7 +220,7 @@ export default function ProductMediaUploader({
 
       {/* Video */}
       <div>
-        <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+        <label className="text-[0.625rem] font-medium text-muted-foreground uppercase tracking-wider">
           Video (optional)
         </label>
         <div className="mt-1.5">
@@ -241,7 +241,7 @@ export default function ProductMediaUploader({
               >
                 <X className="h-3 w-3" />
               </button>
-              <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+              <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[0.625rem] px-1.5 py-0.5 rounded">
                 Video ✓
               </span>
             </div>

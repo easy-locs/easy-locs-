@@ -4,7 +4,7 @@
  */
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, ArrowRight } from "lucide-react";
 import { useCanonicalUI } from "@/hooks/useCanonicalUI";
@@ -78,7 +78,7 @@ export function CanonicalBoostBanner({
           <div className="relative z-10 flex flex-col justify-end h-full p-5">
             <Badge
               variant="secondary"
-              className="w-fit mb-2 text-[10px] px-2 py-0.5 bg-primary/10 text-primary border-0"
+              className="w-fit mb-2 text-[0.625rem] px-2 py-0.5 bg-primary/10 text-primary border-0"
             >
               <Sparkles className="h-2.5 w-2.5 mr-1" />
               Sponsored
@@ -103,7 +103,7 @@ export function CanonicalBoostBanner({
   // Default: inline/card
   return (
     <Link to={target} onClick={handleClick} className={className}>
-      <Card className="border-primary/15 bg-primary/[0.03] hover:shadow-md transition-shadow">
+      <AppCard className="border-primary/15 bg-primary/[0.03] hover:shadow-md transition-shadow">
         <CardContent className="p-3 flex items-center gap-3">
           {match.creative.image_url ? (
             <img
@@ -124,7 +124,7 @@ export function CanonicalBoostBanner({
             <div className="flex items-center gap-1.5 mb-0.5">
               <Badge
                 variant="secondary"
-                className="text-[10px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0"
+                className="text-[0.625rem] px-1.5 py-0 h-4 bg-primary/10 text-primary border-0"
               >
                 <Sparkles className="h-2.5 w-2.5 mr-0.5" />
                 Sponsored
@@ -137,7 +137,7 @@ export function CanonicalBoostBanner({
           </div>
           <ArrowRight className="h-4 w-4 text-primary shrink-0" />
         </CardContent>
-      </Card>
+      </AppCard>
     </Link>
   );
 }

@@ -3,7 +3,7 @@
  * Clean 3-tier selection with instant purchase.
  */
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sparkles, Zap, Crown, Loader2 } from "lucide-react";
@@ -48,7 +48,7 @@ export function BoostSelector({ targetType, targetId, shopId, onSuccess }: Boost
           const isSelected = selected === tier;
 
           return (
-            <Card
+            <AppCard
               key={tier}
               className={`cursor-pointer transition-all ${TIER_COLORS[tier]} ${
                 isSelected ? "ring-2 ring-primary shadow-md" : "hover:shadow-sm"
@@ -58,13 +58,13 @@ export function BoostSelector({ targetType, targetId, shopId, onSuccess }: Boost
               <CardContent className="p-3 text-center space-y-1.5">
                 <Icon className={`h-5 w-5 mx-auto ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                 <p className="text-xs font-semibold capitalize">{tier}</p>
-                <Badge variant="outline" className="text-[10px] px-1.5">
+                <Badge variant="outline" className="text-[0.625rem] px-1.5">
                   {config.durationDays}d
                 </Badge>
                 <p className="text-sm font-bold text-primary">{config.locs} LOCS</p>
-                <p className="text-[10px] text-muted-foreground">{config.impressions.toLocaleString()} views</p>
+                <p className="text-[0.625rem] text-muted-foreground">{config.impressions.toLocaleString()} views</p>
               </CardContent>
-            </Card>
+            </AppCard>
           );
         })}
       </div>

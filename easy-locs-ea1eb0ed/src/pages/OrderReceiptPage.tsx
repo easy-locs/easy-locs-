@@ -11,7 +11,7 @@ import OrderReceipt from "@/components/order/OrderReceipt";
 import UnifiedTimeline from "@/components/order/UnifiedTimeline";
 import { buildUnifiedTimeline } from "@/lib/order/unified-order-types";
 import { Loader2, CalendarDays, MapPin, BedDouble, Users, CheckCircle2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -91,7 +91,7 @@ export default function OrderReceiptPage() {
               </p>
             </div>
 
-            <Card>
+            <AppCard>
               <CardContent className="p-4 space-y-3">
                 {booking.hotels && (
                   <div className="flex items-center gap-3">
@@ -100,7 +100,7 @@ export default function OrderReceiptPage() {
                     )}
                     <div>
                       <p className="text-sm font-bold text-foreground">{booking.hotels.name}</p>
-                      <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <p className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                         <MapPin className="h-3 w-3" /> {booking.hotels.city}, {booking.hotels.country}
                       </p>
                     </div>
@@ -158,7 +158,7 @@ export default function OrderReceiptPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             <Button onClick={() => navigate("/travel/stays")} className="w-full rounded-2xl">
               Back to Hotels
@@ -171,20 +171,20 @@ export default function OrderReceiptPage() {
             <OrderReceipt order={order} items={items} />
 
             {timeline.length > 0 && (
-              <Card>
+              <AppCard>
                 <CardContent className="p-4">
                   <p className="text-xs font-semibold text-muted-foreground mb-3">Order Timeline</p>
                   <UnifiedTimeline events={timeline} vertical />
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
             {history.length > 0 && (
-              <Card>
+              <AppCard>
                 <CardContent className="p-4 space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground">Status History</p>
                   {history.map((h: any) => (
-                    <div key={h.id} className="flex items-center justify-between text-[11px] py-1 border-b border-border/30 last:border-0">
+                    <div key={h.id} className="flex items-center justify-between text-[0.6875rem] py-1 border-b border-border/30 last:border-0">
                       <span className="font-medium text-foreground capitalize">{h.status}</span>
                       <span className="text-muted-foreground">
                         {h.actor_type} · {new Date(h.created_at).toLocaleString()}
@@ -192,7 +192,7 @@ export default function OrderReceiptPage() {
                     </div>
                   ))}
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
             <Button onClick={() => navigate(`/order/${order.id}`)} className="w-full rounded-2xl">

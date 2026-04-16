@@ -268,7 +268,7 @@ export default function SecurityGate({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 text-[0.625rem] text-muted-foreground">
           <Shield className="w-3 h-3" />
           <span>
             {isSetup

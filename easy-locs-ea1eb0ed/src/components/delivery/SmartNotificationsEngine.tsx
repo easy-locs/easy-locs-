@@ -87,7 +87,7 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
           { id: "smart-rules" as const, label: "🧠 Règles IA" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -103,10 +103,10 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
             {/* Channel headers */}
             <div className="flex items-center gap-2 px-3 py-1">
               <span className="flex-1" />
-              <span className="w-8 text-center text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Push</span>
-              <span className="w-8 text-center text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Email</span>
-              <span className="w-8 text-center text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>SMS</span>
-              <span className="w-8 text-center text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>App</span>
+              <span className="w-8 text-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Push</span>
+              <span className="w-8 text-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Email</span>
+              <span className="w-8 text-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>SMS</span>
+              <span className="w-8 text-center text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>App</span>
             </div>
 
             {categories.map(cat => (
@@ -114,8 +114,8 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                 <span className="text-sm">{cat.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{cat.label}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{cat.description}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{cat.label}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{cat.description}</p>
                 </div>
                 {(["push", "email", "sms", "inApp"] as const).map(ch => (
                   <button key={ch} onClick={() => toggleChannel(cat.id, ch)}
@@ -124,7 +124,7 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
                       background: cat[ch] ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-bg))",
                       border: `1px solid ${cat[ch] ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.1)"}`,
                     }}>
-                    <span className="text-[10px]">{cat[ch] ? "✓" : "—"}</span>
+                    <span className="text-[0.625rem]">{cat[ch] ? "✓" : "—"}</span>
                   </button>
                 ))}
               </div>
@@ -144,8 +144,8 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <Mail className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
               <div className="flex-1">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Digest Email</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Résumé périodique de votre activité</p>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Digest Email</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Résumé périodique de votre activité</p>
               </div>
               <button onClick={() => setDigest(d => ({ ...d, enabled: !d.enabled }))}
                 className="w-10 h-5 rounded-full transition-all relative"
@@ -159,11 +159,11 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
               <>
                 {/* Frequency */}
                 <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Fréquence</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Fréquence</p>
                   <div className="flex gap-1">
                     {(["realtime", "daily", "weekly"] as const).map(f => (
                       <button key={f} onClick={() => setDigest(d => ({ ...d, frequency: f }))}
-                        className="flex-1 py-1.5 rounded-md text-[10px] font-semibold"
+                        className="flex-1 py-1.5 rounded-md text-[0.625rem] font-semibold"
                         style={{
                           background: digest.frequency === f ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-bg))",
                           color: digest.frequency === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -178,22 +178,22 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
                   <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
                     style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                     <Clock className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
-                    <span className="text-[11px] flex-1" style={{ color: "hsl(var(--hud-text))" }}>Heure d'envoi</span>
+                    <span className="text-[0.6875rem] flex-1" style={{ color: "hsl(var(--hud-text))" }}>Heure d'envoi</span>
                     <input type="time" value={digest.time} onChange={e => setDigest(d => ({ ...d, time: e.target.value }))}
-                      className="text-[11px] px-2 py-1 rounded-md" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.1)" }} />
+                      className="text-[0.6875rem] px-2 py-1 rounded-md" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.1)" }} />
                   </div>
                 )}
 
                 {/* Content toggles */}
                 <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Contenu du digest</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Contenu du digest</p>
                   {[
                     { key: "includeMetrics" as const, label: "📊 Métriques de performance" },
                     { key: "includeAlerts" as const, label: "⚠️ Alertes et actions requises" },
                     { key: "includeLeaderboard" as const, label: "🏆 Position au classement" },
                   ].map(item => (
                     <div key={item.key} className="flex items-center justify-between px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--hud-bg))" }}>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{item.label}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{item.label}</span>
                       <button onClick={() => setDigest(d => ({ ...d, [item.key]: !d[item.key] }))}
                         className="w-8 h-4 rounded-full transition-all relative"
                         style={{ background: digest[item.key] ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.2)" }}>
@@ -215,7 +215,7 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
 
         {tab === "smart-rules" && (
           <motion.div key="rules" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-2">
-            <p className="text-[10px] px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            <p className="text-[0.625rem] px-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               Règles automatiques basées sur le contexte et le comportement.
             </p>
             {rules.map(r => (
@@ -227,11 +227,11 @@ export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{r.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{r.name}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                       Si: {r.condition}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-cyan) / 0.7)" }}>
                       → {r.action}
                     </p>
                   </div>

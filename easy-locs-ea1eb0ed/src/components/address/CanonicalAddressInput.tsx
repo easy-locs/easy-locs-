@@ -139,7 +139,7 @@ export function CanonicalAddressInput({
   return (
     <div ref={wrapperRef} className={cn("relative", className)}>
       {contextLabel && (
-        <p className="text-[10px] font-semibold text-muted-foreground mb-1 px-1">{contextLabel}</p>
+        <p className="text-[0.625rem] font-semibold text-muted-foreground mb-1 px-1">{contextLabel}</p>
       )}
 
       <div className="relative min-w-0">
@@ -192,7 +192,7 @@ export function CanonicalAddressInput({
                 {dbSaved.length > 0 && (
                   <>
                     <div className="px-2 pt-1.5 pb-0.5">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Saved</p>
+                      <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">Saved</p>
                     </div>
                     {dbSaved.map((addr) => (
                       <DropdownItem
@@ -229,7 +229,7 @@ export function CanonicalAddressInput({
                 {recents.length > 0 && (
                   <>
                     <div className="px-2 pt-1.5 pb-0.5">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Recent</p>
+                      <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">Recent</p>
                     </div>
                     {recents.slice(0, 3).map((r) => (
                       <DropdownItem
@@ -320,7 +320,7 @@ function DropdownItem({
         <p className="text-sm font-medium text-foreground truncate">{label}</p>
         {sub && <p className="text-xs text-muted-foreground truncate">{sub}</p>}
       </div>
-      {detail && <span className="text-[10px] text-muted-foreground shrink-0">{detail}</span>}
+      {detail && <span className="text-[0.625rem] text-muted-foreground shrink-0">{detail}</span>}
       {badge && <span className="text-xs shrink-0">{badge}</span>}
     </button>
   );

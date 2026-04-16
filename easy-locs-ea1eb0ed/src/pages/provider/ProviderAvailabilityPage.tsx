@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { serviceUseCases } from "@/domains/services/service";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Clock, Loader2, Save } from "lucide-react";
@@ -89,7 +89,7 @@ export default function ProviderAvailabilityPage() {
               {DAYS.map((dayName, i) => {
                 const slot = schedule[i] || { enabled: false, startTime: "09:00", endTime: "18:00" };
                 return (
-                  <Card key={i}>
+                  <AppCard key={i}>
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium">{dayName}</span>
@@ -115,7 +115,7 @@ export default function ProviderAvailabilityPage() {
                         </div>
                       )}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 );
               })}
             </div>

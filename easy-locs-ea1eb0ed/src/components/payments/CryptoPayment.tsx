@@ -127,10 +127,10 @@ export default function CryptoPayment({
           </div>
           <div>
             <p className="text-xs font-bold text-foreground">Pay with Crypto</p>
-            <p className="text-[10px] text-muted-foreground">Bitcoin, Ethereum, USDC, and more</p>
+            <p className="text-[0.625rem] text-muted-foreground">Bitcoin, Ethereum, USDC, and more</p>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[0.625rem] text-muted-foreground">
           Powered by Coinbase Commerce. You&apos;ll be redirected to a secure payment page.
         </p>
       </div>
@@ -141,7 +141,7 @@ export default function CryptoPayment({
             <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
             <div>
               <p className="text-xs font-bold text-amber-500">Waiting for blockchain confirmation</p>
-              <p className="text-[10px] text-muted-foreground">This may take a few minutes</p>
+              <p className="text-[0.625rem] text-muted-foreground">This may take a few minutes</p>
             </div>
           </div>
 
@@ -156,7 +156,7 @@ export default function CryptoPayment({
 
           {chargeData.addresses && Object.entries(chargeData.addresses).length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">
                 Or send directly to:
               </p>
               {Object.entries(chargeData.addresses).map(([network, address]) => (
@@ -165,8 +165,8 @@ export default function CryptoPayment({
                   onClick={() => copyAddress(address)}
                   className="w-full flex items-center gap-2 p-2 rounded-lg bg-card border border-border/20 text-left"
                 >
-                  <span className="text-[10px] font-bold uppercase text-muted-foreground w-12">{network}</span>
-                  <span className="text-[10px] font-mono text-foreground flex-1 truncate">{address}</span>
+                  <span className="text-[0.625rem] font-bold uppercase text-muted-foreground w-12">{network}</span>
+                  <span className="text-[0.625rem] font-mono text-foreground flex-1 truncate">{address}</span>
                   <Copy className="h-3 w-3 text-muted-foreground shrink-0" />
                 </button>
               ))}

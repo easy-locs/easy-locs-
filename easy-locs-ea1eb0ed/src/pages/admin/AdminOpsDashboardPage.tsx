@@ -66,7 +66,7 @@ export default function AdminOpsDashboardPage() {
 function Metric({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4">
-      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider">{title}</p>
+      <p className="text-[0.6875rem] text-muted-foreground font-medium uppercase tracking-wider">{title}</p>
       <p className="text-xl font-bold mt-1">{value}</p>
     </div>
   );

@@ -184,7 +184,7 @@ export default function RadarPlaceSearch() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-foreground line-clamp-2 break-words leading-snug">{result.label}</p>
-                      <p className="text-[10px] text-muted-foreground line-clamp-2 break-words leading-snug">
+                      <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words leading-snug">
                         {[result.district, result.city, result.country_code].filter(Boolean).join(" · ")}
                         {result.place_type !== "address" && (
                           <span className="ml-1 capitalize text-primary/70">{result.place_type}</span>
@@ -200,7 +200,7 @@ export default function RadarPlaceSearch() {
                       {etaChips.map(chip => (
                         <span
                           key={chip.category}
-                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold bg-muted/60 text-muted-foreground"
+                          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[0.625rem] font-semibold bg-muted/60 text-muted-foreground"
                         >
                           <span>{chip.emoji}</span>
                           <span>{chip.minutes}min</span>
@@ -208,7 +208,7 @@ export default function RadarPlaceSearch() {
                       ))}
                       {decoration?.live_context.traffic && (
                         <span className={cn(
-                          "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-semibold",
+                          "inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[0.625rem] font-semibold",
                           decoration.live_context.traffic === "heavy" || decoration.live_context.traffic === "severe"
                             ? "bg-destructive/10 text-destructive"
                             : "bg-muted/60 text-muted-foreground"

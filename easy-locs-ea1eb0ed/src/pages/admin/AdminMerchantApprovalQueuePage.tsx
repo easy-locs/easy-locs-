@@ -57,7 +57,7 @@ export default function AdminMerchantApprovalQueuePage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {row.category} · {row.area || row.city || "Dubai"}
               </p>
-              <span className="inline-block mt-2 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-bold text-muted-foreground">
+              <span className="inline-block mt-2 rounded-full bg-muted px-2.5 py-0.5 text-[0.625rem] font-bold text-muted-foreground">
                 Status {row.onboarding_status || "draft"}
               </span>
 

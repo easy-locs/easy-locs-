@@ -2,7 +2,7 @@ import { db } from "@/services/db";
 import { useParams, Link } from "react-router-dom";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SEOHead from "@/components/SEOHead";
@@ -233,14 +233,14 @@ export default function StorePage() {
         <div ref={servicesRef} className="max-w-5xl mx-auto px-4 py-8">
           <h2 className="text-xl font-bold text-foreground mb-6">{t("mp.my_services") || "Services"} ({showcase.services.length})</h2>
           {showcase.services.length === 0 ? (
-            <Card><CardContent className="py-12 text-center text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</CardContent></Card>
+            <AppCard><CardContent className="py-12 text-center text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</CardContent></AppCard>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {showcase.services.map((s: any) => {
                 const photo = s.photo_url || (Array.isArray(s.photo_urls) && s.photo_urls[0]);
                 const slug = s.booking_slug;
                 return (
-                  <Card key={s.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <AppCard key={s.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                     {photo && (
                       <div className="aspect-video bg-muted">
                         <img src={photo} alt={s.title} className="w-full h-full object-cover" loading="lazy" />
@@ -258,7 +258,7 @@ export default function StorePage() {
                         </Button>
                       )}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 );
               })}
             </div>

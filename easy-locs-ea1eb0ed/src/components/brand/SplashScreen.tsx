@@ -411,7 +411,7 @@ const PremiumProgressBar = memo(function PremiumProgressBar({
       transition={{ delay: 1.2, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
     >
       <motion.span
-        className="text-[9px] font-medium tracking-widest tabular-nums"
+        className="text-[0.5625rem] font-medium tracking-widest tabular-nums"
         style={{ color: color1.replace(/\)$/, " / 0.5)") }}
         animate={{ opacity: progress >= 100 ? 0 : 1 }}
       >
@@ -637,7 +637,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
                 </motion.span>
               </div>
 
-              <div className="flex items-center gap-[0.4em] text-[10px] tracking-[0.35em] uppercase font-medium">
+              <div className="flex items-center gap-[0.4em] text-[0.625rem] tracking-[0.35em] uppercase font-medium">
                 {taglineWords.map((word, i) => (
                   <TaglineWord
                     key={i}
@@ -658,7 +658,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
             </motion.div>
 
             <motion.span
-              className="absolute bottom-8 text-[10px] tracking-wider uppercase"
+              className="absolute bottom-8 text-[0.625rem] tracking-wider uppercase"
               style={{ color: "hsl(0 0% 100% / 0.2)" }}
               initial={{ opacity: 0 }}
               animate={{ opacity: isExiting ? 0 : 1 }}

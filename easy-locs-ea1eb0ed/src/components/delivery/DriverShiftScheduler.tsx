@@ -111,7 +111,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
           <Calendar className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
           Planning des shifts
         </h3>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+        <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full"
           style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
           {openShifts} ouvert{openShifts > 1 ? "s" : ""}
         </span>
@@ -128,7 +128,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -137,7 +137,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["calendar", "swaps", "coverage"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -159,7 +159,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
                   background: selectedDay === i ? "hsl(var(--primary) / 0.1)" : "hsl(var(--muted) / 0.2)",
                   border: `1px solid ${selectedDay === i ? "hsl(var(--primary) / 0.3)" : "transparent"}`,
                 }}>
-                <p className="text-[10px] font-semibold" style={{ color: selectedDay === i ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: selectedDay === i ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
                   {DAYS[d.getDay() === 0 ? 6 : d.getDay() - 1]}
                 </p>
                 <p className="text-xs font-bold" style={{ color: selectedDay === i ? "hsl(var(--primary))" : "hsl(var(--foreground))" }}>
@@ -174,7 +174,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
             {dayShifts.length === 0 ? (
               <div className="text-center py-6">
                 <Calendar className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun créneau ce jour</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Aucun créneau ce jour</p>
               </div>
             ) : dayShifts.map(s => (
               <div key={s.id} className="rounded-xl p-3 flex items-center gap-3"
@@ -183,26 +183,26 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
                   border: `1px solid ${statusColor(s.status)}20`,
                 }}>
                 <div className="text-center shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.startTime}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.endTime}</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.startTime}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{s.endTime}</p>
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-3 w-3" style={{ color: statusColor(s.status) }} />
-                    <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.zone}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.zone}</span>
                     {s.autoRotation && <RefreshCw className="h-2.5 w-2.5" style={{ color: "hsl(var(--info))" }} />}
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {s.status === "open" ? "Créneau libre" : s.driverName}
                   </p>
                 </div>
                 {s.status === "open" ? (
-                  <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => claimShift(s.id)}
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => claimShift(s.id)}
                     style={{ background: "hsl(var(--success))", color: "#fff" }}>
                     Prendre
                   </Button>
                 ) : (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                  <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                     style={{ background: statusColor(s.status) + "15", color: statusColor(s.status) }}>
                     {s.status === "active" ? "Actif" : s.status === "completed" ? "Terminé" : "Planifié"}
                   </span>
@@ -225,16 +225,16 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
             <div key={sw.id} className="rounded-xl p-3 space-y-2"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.1)" }}>
               <div className="flex items-center gap-2">
-                <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{sw.fromDriver}</span>
+                <span className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{sw.fromDriver}</span>
                 <ArrowLeftRight className="h-3 w-3" style={{ color: "hsl(var(--info))" }} />
-                <span className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{sw.toDriver}</span>
+                <span className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{sw.toDriver}</span>
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{sw.date}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{sw.date}</p>
               <div className="flex gap-2">
-                <Button size="sm" className="flex-1 text-[10px] h-6"
+                <Button size="sm" className="flex-1 text-[0.625rem] h-6"
                   onClick={() => { haptic("success"); toast.success("Swap accepté"); }}
                   style={{ background: "hsl(var(--success))", color: "#fff" }}>Accepter</Button>
-                <Button size="sm" variant="outline" className="flex-1 text-[10px] h-6"
+                <Button size="sm" variant="outline" className="flex-1 text-[0.625rem] h-6"
                   onClick={() => { haptic("light"); toast("Swap refusé"); }}
                   style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--muted-foreground))" }}>Refuser</Button>
               </div>
@@ -250,11 +250,11 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
             <div key={z.zone} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-2.5">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                   <MapPin className="h-3 w-3 inline mr-1" style={{ color: "hsl(var(--primary))" }} />
                   Zone {z.zone}
                 </p>
-                <span className="text-[10px] font-bold" style={{ color: z.pct >= 80 ? "hsl(var(--success))" : z.pct >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
+                <span className="text-[0.625rem] font-bold" style={{ color: z.pct >= 80 ? "hsl(var(--success))" : z.pct >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
                   {z.pct.toFixed(0)}%
                 </span>
               </div>
@@ -262,7 +262,7 @@ export default function DriverShiftScheduler({ orgId, className }: { orgId: stri
                 <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${z.pct}%` }}
                   style={{ background: z.pct >= 80 ? "hsl(var(--success))" : z.pct >= 50 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }} />
               </div>
-              <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {z.covered}/{z.total} créneaux couverts
               </p>
             </div>

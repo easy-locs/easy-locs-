@@ -97,7 +97,7 @@ export function MyQrCodeCard({
     <div className={`flex flex-col items-center gap-3 ${compact ? "p-3" : "p-5"} rounded-2xl border border-border bg-card w-full`}>
       <div className="text-center">
         <p className={`${compact ? "text-xs" : "text-sm"} font-semibold text-foreground`}>{title}</p>
-        {subtitle && <p className="text-[10px] text-muted-foreground mt-0.5">{subtitle}</p>}
+        {subtitle && <p className="text-[0.625rem] text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
 
       <div className="relative p-3 bg-white rounded-xl">

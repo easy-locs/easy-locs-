@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Store, Loader2, Sparkles, Zap, Check, Tag } from "lucide-react";
@@ -204,7 +204,7 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
   };
 
   return (
-    <Card className="max-w-lg mx-auto">
+    <AppCard className="max-w-lg mx-auto">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Store className="h-5 w-5 text-primary" />
@@ -276,27 +276,27 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
 
         {/* AI Suggestions */}
         {suggestion && (
-          <Card className="border-primary/20 bg-primary/5">
+          <AppCard className="border-primary/20 bg-primary/5">
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-primary">
                 <Zap className="h-3 w-3" /> AI Suggestions
               </div>
               <div className="flex flex-wrap gap-1.5">
-                <Badge variant="secondary" className="text-[10px]">{suggestion.vertical}</Badge>
-                <Badge variant="outline" className="text-[10px]">{suggestion.category}</Badge>
-                {suggestion.subcategory && <Badge variant="outline" className="text-[10px]">{suggestion.subcategory}</Badge>}
+                <Badge variant="secondary" className="text-[0.625rem]">{suggestion.vertical}</Badge>
+                <Badge variant="outline" className="text-[0.625rem]">{suggestion.category}</Badge>
+                {suggestion.subcategory && <Badge variant="outline" className="text-[0.625rem]">{suggestion.subcategory}</Badge>}
                 {suggestion.tags.map(t => (
-                  <Badge key={t} variant="outline" className="text-[10px] gap-0.5">
+                  <Badge key={t} variant="outline" className="text-[0.625rem] gap-0.5">
                     <Tag className="h-2 w-2" /> {t}
                   </Badge>
                 ))}
               </div>
-              {suggestion.tagline && <p className="text-[11px] text-muted-foreground italic">"{suggestion.tagline}"</p>}
-              <div className="flex items-center gap-1 text-[10px] text-success">
+              {suggestion.tagline && <p className="text-[0.6875rem] text-muted-foreground italic">"{suggestion.tagline}"</p>}
+              <div className="flex items-center gap-1 text-[0.625rem] text-success">
                 <Check className="h-2.5 w-2.5" /> Will be applied on creation
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         <Button className="w-full h-11 font-semibold gap-2" onClick={handleCreate} disabled={loading || orgCreating || !name.trim()}>
@@ -304,6 +304,6 @@ Return: {"vertical":"food|grocery|shops|services|property|healthcare|mobility|ex
           Create Shop
         </Button>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

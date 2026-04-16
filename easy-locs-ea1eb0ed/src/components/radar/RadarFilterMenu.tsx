@@ -75,7 +75,7 @@ export function RadarFilterMenu() {
               <button
                 key={sub.value}
                 onClick={() => pickSub(sub.value)}
-                className="flex items-center gap-1 rounded-full border border-border/20 bg-muted/60 px-3 py-1.5 text-[11px] text-foreground active:scale-[0.95] transition-transform duration-75"
+                className="flex items-center gap-1 rounded-full border border-border/20 bg-muted/60 px-3 py-1.5 text-[0.6875rem] text-foreground active:scale-[0.95] transition-transform duration-75"
               >
                 <span>{sub.emoji}</span> {sub.label}
               </button>

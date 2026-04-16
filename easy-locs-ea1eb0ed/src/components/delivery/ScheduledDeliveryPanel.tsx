@@ -76,13 +76,13 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
 
       <div className="space-y-2.5">
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Retrait *</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Retrait *</Label>
           <Input value={form.pickup_address} onChange={e => set("pickup_address", e.target.value)}
             placeholder="Adresse de retrait" className="h-9 text-xs mt-1"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
         </div>
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Livraison *</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Livraison *</Label>
           <Input value={form.dropoff_address} onChange={e => set("dropoff_address", e.target.value)}
             placeholder="Adresse de livraison" className="h-9 text-xs mt-1"
             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -90,13 +90,13 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Date *</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Date *</Label>
             <Input type="date" value={form.scheduled_date} onChange={e => set("scheduled_date", e.target.value)}
               className="h-9 text-xs mt-1"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           </div>
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Heure</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Heure</Label>
             <Input type="time" value={form.scheduled_time} onChange={e => set("scheduled_time", e.target.value)}
               className="h-9 text-xs mt-1"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -105,13 +105,13 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
             <Input value={form.package_description} onChange={e => set("package_description", e.target.value)}
               placeholder="Type de colis" className="h-9 text-xs mt-1"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           </div>
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais (€)</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais (€)</Label>
             <Input type="number" step="0.5" value={form.delivery_fee} onChange={e => set("delivery_fee", +e.target.value)}
               className="h-9 text-xs mt-1"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -120,13 +120,13 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
 
         {/* Recurrence */}
         <div className="rounded-lg p-3" style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-          <p className="text-[10px] font-semibold flex items-center gap-1 mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold flex items-center gap-1 mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <Repeat className="h-3 w-3" /> Récurrence
           </p>
           <div className="flex gap-1.5">
             {(["none", "daily", "weekly", "monthly"] as const).map(r => (
               <button key={r} onClick={() => set("recurrence", r)}
-                className="flex-1 py-1.5 rounded-md text-[10px] font-semibold transition-all"
+                className="flex-1 py-1.5 rounded-md text-[0.625rem] font-semibold transition-all"
                 style={{
                   background: form.recurrence === r ? "hsl(var(--info) / 0.12)" : "transparent",
                   color: form.recurrence === r ? "hsl(var(--info))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -138,12 +138,12 @@ export default function ScheduledDeliveryPanel({ onDone }: Props) {
           </div>
           {form.recurrence !== "none" && (
             <div className="mt-2 flex items-center gap-2">
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Nombre :</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>Nombre :</Label>
               <Input type="number" min={1} max={30} value={form.recurrence_count}
                 onChange={e => set("recurrence_count", Math.min(30, +e.target.value))}
                 className="h-7 w-16 text-xs"
                 style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                 ({form.recurrence_count} mission{form.recurrence_count > 1 ? "s" : ""})
               </span>
             </div>

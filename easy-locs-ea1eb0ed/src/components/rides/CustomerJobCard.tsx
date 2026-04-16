@@ -68,8 +68,8 @@ export function CustomerJobCard({ job }: { job: MobilityJob }) {
           <span className="text-xs font-bold truncate">{statusInfo.label}</span>
         </div>
         <div className="flex items-center gap-1 shrink-0">
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{job.service_level.replace(/_/g, ' ')}</Badge>
-          <Badge variant="outline" className="text-[10px] px-1.5 py-0">{job.currency}</Badge>
+          <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0">{job.service_level.replace(/_/g, ' ')}</Badge>
+          <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0">{job.currency}</Badge>
         </div>
       </div>
 

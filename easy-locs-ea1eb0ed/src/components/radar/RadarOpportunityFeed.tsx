@@ -149,7 +149,7 @@ export function RadarOpportunityFeed({ className }: { className?: string }) {
                       {MODULE_LABELS[routeModule]}
                     </BopModuleBadge>
                     {opp.zone_key && (
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                         <MapPin className="w-3 h-3" />
                         {opp.city || opp.zone_key}
                       </span>

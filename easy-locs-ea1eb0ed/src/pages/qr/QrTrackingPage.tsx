@@ -79,7 +79,7 @@ export default function QrTrackingPage() {
                       </p>
                     </div>
                     <span className={cn(
-                      "text-[10px] font-bold px-2.5 py-1 rounded-full",
+                      "text-[0.625rem] font-bold px-2.5 py-1 rounded-full",
                       order.status === "ready" ? "bg-emerald-500/15 text-emerald-400" :
                       order.status === "preparing" ? "bg-amber-500/15 text-amber-400" :
                       "bg-primary/10 text-primary"
@@ -95,7 +95,7 @@ export default function QrTrackingPage() {
                           i <= currentIdx ? "bg-primary" : "bg-muted"
                         )} />
                         <span className={cn(
-                          "text-[10px]",
+                          "text-[0.625rem]",
                           i <= currentIdx ? "text-primary font-medium" : "text-muted-foreground"
                         )}>
                           {step.label}

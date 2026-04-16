@@ -57,7 +57,7 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
     <div className="mb-5">
       <div className="flex items-center gap-1.5 px-1 mb-1.5">
         <Star className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "hsl(226 24% 14%)" }}>
+        <span className="text-[0.625rem] font-bold uppercase tracking-widest" style={{ color: "hsl(226 24% 14%)" }}>
           {tSafe(t, "home.frequent", "Frequent")}
         </span>
       </div>
@@ -73,7 +73,7 @@ const SmartShortcuts = memo(({ topRoutes }: Props) => {
             }}
           >
             <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} />
-            <span className="text-[10px] font-bold text-foreground line-clamp-2 break-words">{tSafe(t, labelKey, fallback)}</span>
+            <span className="text-[0.625rem] font-bold text-foreground line-clamp-2 break-words">{tSafe(t, labelKey, fallback)}</span>
           </Link>
         ))}
       </div>

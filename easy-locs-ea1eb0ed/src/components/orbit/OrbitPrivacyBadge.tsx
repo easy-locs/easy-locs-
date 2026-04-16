@@ -24,7 +24,7 @@ export default function OrbitPrivacyBadge({ encrypted = true, compact = false }:
   }
 
   return (
-    <Badge variant="outline" className="gap-1 text-[10px] font-medium shrink-0" style={{
+    <Badge variant="outline" className="gap-1 text-[0.625rem] font-medium shrink-0" style={{
       borderColor: encrypted ? "hsl(var(--hud-success) / 0.25)" : "hsl(var(--border) / 0.2)",
       color: encrypted ? "hsl(var(--hud-success))" : "hsl(var(--muted-foreground))",
       background: encrypted ? "hsl(var(--hud-success) / 0.08)" : "transparent",

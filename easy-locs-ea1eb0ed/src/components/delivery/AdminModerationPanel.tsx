@@ -135,7 +135,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--hud-surface))" }}>
         {(["drivers", "disputes"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: tab === t ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -152,7 +152,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       ) : tab === "drivers" ? (
         <div className="space-y-1.5">
           {drivers.length === 0 ? (
-            <p className="text-[10px] text-center py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun chauffeur</p>
+            <p className="text-[0.625rem] text-center py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun chauffeur</p>
           ) : (
             drivers.sort((a, b) => (a.avg_rating || 5) - (b.avg_rating || 5)).map(driver => {
               const risk = getRiskLevel(driver);
@@ -165,17 +165,17 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                     onClick={() => setSelectedDriver(isSelected ? null : driver.id)}>
                     <div className="w-2 h-8 rounded-full" style={{ background: risk.color }} />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                      <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                         {driver.name || driver.user_id.slice(0, 8)}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        {driver.avg_rating != null && <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>⭐ {driver.avg_rating.toFixed(1)}</span>}
-                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        {driver.avg_rating != null && <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>⭐ {driver.avg_rating.toFixed(1)}</span>}
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                           ✅ {driver.total_completed || 0} • ❌ {driver.total_cancelled || 0}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-semibold"
                       style={{ background: risk.color + "15", color: risk.color }}>
                       {risk.level}
                     </span>
@@ -188,7 +188,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                         <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
                           <Textarea value={actionNote} onChange={e => setActionNote(e.target.value)}
                             placeholder="Note de modération…"
-                            className="min-h-[50px] text-[10px] mt-2"
+                            className="min-h-[50px] text-[0.625rem] mt-2"
                             style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-1">
                             {[
@@ -197,7 +197,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                               { action: "ban" as const, label: "❌ Bannir", color: "--destructive" },
                               { action: "reinstate" as const, label: "✅ Réactiver", color: "--success" },
                             ].map(({ action, label, color }) => (
-                              <Button key={action} size="sm" className="text-[10px] h-7 px-1"
+                              <Button key={action} size="sm" className="text-[0.625rem] h-7 px-1"
                                 onClick={() => handleDriverAction(driver.id, driver.user_id, action)}
                                 style={{ background: `hsl(var(${color}) / 0.1)`, color: `hsl(var(${color}))` }}>
                                 {label}
@@ -216,7 +216,7 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
       ) : (
         <div className="space-y-1.5">
           {disputes.length === 0 ? (
-            <p className="text-[10px] text-center py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun litige</p>
+            <p className="text-[0.625rem] text-center py-6" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun litige</p>
           ) : (
             disputes.map(dispute => {
               const isOpen = dispute.status !== "resolved";
@@ -232,17 +232,17 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                     onClick={() => setSelectedDispute(isSelected ? null : dispute.id)}>
                     <span className="text-sm">{isOpen ? "⚠️" : "✅"}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{dispute.reason}</p>
+                      <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{dispute.reason}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                           Par: {dispute.raised_by_role}
                         </span>
-                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                           {dispute.created_at ? new Date(dispute.created_at).toLocaleDateString("fr") : ""}
                         </span>
                       </div>
                     </div>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold"
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-semibold"
                       style={{
                         background: isOpen ? "hsl(var(--warning) / 0.1)" : "hsl(var(--success) / 0.1)",
                         color: isOpen ? "hsl(var(--warning))" : "hsl(var(--success))",
@@ -257,20 +257,20 @@ export default function AdminModerationPanel({ orgId }: { orgId: string }) {
                         className="overflow-hidden">
                         <div className="px-3 pb-3 space-y-2 border-t" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
                           {dispute.description && (
-                            <p className="text-[10px] pt-2" style={{ color: "hsl(var(--hud-text-dim))" }}>{dispute.description}</p>
+                            <p className="text-[0.625rem] pt-2" style={{ color: "hsl(var(--hud-text-dim))" }}>{dispute.description}</p>
                           )}
                           {dispute.resolution && (
                             <div className="px-2 py-1.5 rounded-lg" style={{ background: "hsl(var(--success) / 0.05)" }}>
-                              <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>✅ {dispute.resolution}</p>
+                              <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>✅ {dispute.resolution}</p>
                             </div>
                           )}
                           {isOpen && (
                             <>
                               <Textarea value={resolutionNote} onChange={e => setResolutionNote(e.target.value)}
                                 placeholder="Résolution du litige…"
-                                className="min-h-[50px] text-[10px]"
+                                className="min-h-[50px] text-[0.625rem]"
                                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-                              <Button size="sm" className="w-full text-[10px] h-7"
+                              <Button size="sm" className="w-full text-[0.625rem] h-7"
                                 onClick={() => resolveDispute(dispute.id)}
                                 style={{ background: "hsl(var(--success))", color: "#fff" }}>
                                 <CheckCircle2 className="h-3 w-3 mr-1" /> Résoudre le litige

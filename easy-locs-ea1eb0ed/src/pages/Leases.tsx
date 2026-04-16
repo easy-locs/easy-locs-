@@ -196,7 +196,7 @@ const Leases = () => {
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-semibold text-foreground text-sm">{tenantName}</span>
                             <LeaseStatusBadge status={lease.status} />
-                            <span className="text-[10px] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                            <span className="text-[0.625rem] font-medium bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                               {leaseTypeLabel(lease.lease_type)}
                             </span>
                           </div>

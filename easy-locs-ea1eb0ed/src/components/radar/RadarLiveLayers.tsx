@@ -91,7 +91,7 @@ export function LayerToggleBar({ layers, onToggle, mode }: LayerToggleBarProps) 
           key={l.key}
           onClick={() => onToggle(l.key)}
           className={cn(
-            "flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all shrink-0",
+            "flex items-center gap-1 px-2 py-1 rounded-full text-[0.625rem] font-semibold whitespace-nowrap transition-all shrink-0",
             layers[l.key]
               ? "bg-primary/15 text-primary border border-primary/20"
               : "bg-muted/50 text-muted-foreground border border-transparent"
@@ -132,9 +132,9 @@ export function WeatherOverlay({ contexts }: { contexts: GeoLiveContext[] }) {
       animate={{ scale: 1, opacity: 1 }}
     >
       {icon}
-      <span className="text-[10px] font-semibold capitalize text-foreground">{type}</span>
+      <span className="text-[0.625rem] font-semibold capitalize text-foreground">{type}</span>
       {primary.weather_speed_factor < 0.8 && (
-        <span className="text-[10px] text-destructive font-bold">
+        <span className="text-[0.625rem] text-destructive font-bold">
           {Math.round((1 - primary.weather_speed_factor) * 100)}% slower
         </span>
       )}
@@ -165,7 +165,7 @@ export function TrafficOverlay({ contexts }: { contexts: GeoLiveContext[] }) {
       animate={{ scale: 1, opacity: 1 }}
     >
       <Car className="w-3 h-3" style={{ color }} />
-      <span className="text-[10px] font-semibold capitalize" style={{ color }}>{level} traffic</span>
+      <span className="text-[0.625rem] font-semibold capitalize" style={{ color }}>{level} traffic</span>
       {level === "severe" && (
         <motion.span
           className="w-1.5 h-1.5 rounded-full"
@@ -206,11 +206,11 @@ export function ZoneEventAlerts({ events }: { events: ZoneEvent[] }) {
               {EVENT_ICONS[evt.event_type] ?? <AlertTriangle className="w-3 h-3" />}
             </div>
             <div className="flex-1 min-w-0">
-               <p className="text-[10px] font-bold text-foreground break-words leading-snug">
+               <p className="text-[0.625rem] font-bold text-foreground break-words leading-snug">
                  {evt.title ?? evt.event_type.replace(/_/g, " ")}
                </p>
               {evt.description && (
-                <p className="text-[10px] text-muted-foreground break-words leading-snug">{evt.description}</p>
+                <p className="text-[0.625rem] text-muted-foreground break-words leading-snug">{evt.description}</p>
               )}
             </div>
             {evt.severity === "critical" && (
@@ -242,11 +242,11 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
       animate={{ opacity: 1, y: 0 }}
     >
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-bold text-foreground flex items-center gap-1">
+        <span className="text-[0.625rem] font-bold text-foreground flex items-center gap-1">
           <TrendingUp className="w-3 h-3" style={{ color: trendColor }} />
           Demand Forecast
         </span>
-        <span className="text-[10px] text-muted-foreground">
+        <span className="text-[0.625rem] text-muted-foreground">
           {prediction.prediction_minutes}min ahead
         </span>
       </div>
@@ -255,7 +255,7 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
         {/* Current */}
         <div className="text-center">
           <div className="text-lg font-extrabold text-foreground">{prediction.current_demand}</div>
-          <div className="text-[10px] text-muted-foreground">Now</div>
+          <div className="text-[0.625rem] text-muted-foreground">Now</div>
         </div>
 
         {/* Arrow */}
@@ -273,7 +273,7 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
           <div className="text-lg font-extrabold" style={{ color: trendColor }}>
             {prediction.predicted_demand}
           </div>
-          <div className="text-[10px] text-muted-foreground">Predicted</div>
+          <div className="text-[0.625rem] text-muted-foreground">Predicted</div>
         </div>
 
         {/* Confidence */}
@@ -281,7 +281,7 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
           <div className="text-xs font-bold text-muted-foreground">
             {Math.round(prediction.confidence * 100)}%
           </div>
-          <div className="text-[10px] text-muted-foreground">conf.</div>
+          <div className="text-[0.625rem] text-muted-foreground">conf.</div>
         </div>
       </div>
 
@@ -290,7 +290,7 @@ export function DemandPredictionCard({ prediction }: { prediction: DemandPredict
         <div className="mt-2 space-y-0.5">
           {prediction.recommended_actions.slice(0, 2).map((a, i) => (
             <div key={i} className={cn(
-              "flex items-center gap-1.5 px-2 py-1 rounded text-[10px]",
+              "flex items-center gap-1.5 px-2 py-1 rounded text-[0.625rem]",
               a.priority === "critical" ? "bg-destructive/10 text-destructive"
                 : a.priority === "high" ? "bg-warning/10 text-warning"
                 : "bg-muted/50 text-muted-foreground",
@@ -317,8 +317,8 @@ export function RiderSupplyChip({ riders }: { riders: RiderRuntimeState[] }) {
       animate={{ scale: 1, opacity: 1 }}
     >
       <Users className="w-3 h-3 text-primary" />
-      <span className="text-[10px] font-bold text-foreground">{available.length}</span>
-      <span className="text-[10px] text-muted-foreground">riders nearby</span>
+      <span className="text-[0.625rem] font-bold text-foreground">{available.length}</span>
+      <span className="text-[0.625rem] text-muted-foreground">riders nearby</span>
       <motion.div
         className="w-1.5 h-1.5 rounded-full bg-success shrink-0"
         animate={{ opacity: [1, 0.4, 1] }}

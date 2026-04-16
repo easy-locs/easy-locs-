@@ -42,7 +42,7 @@ export default function CreatorDashboardPage() {
       rightAction={
         <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/10">
           <Star className="w-3 h-3 text-amber-500" />
-          <span className="text-[10px] font-bold text-amber-500">Starter</span>
+          <span className="text-[0.625rem] font-bold text-amber-500">Starter</span>
         </div>
       }
       noContentPad
@@ -56,7 +56,7 @@ export default function CreatorDashboardPage() {
       >
         <div className="flex items-center justify-between mb-3">
           <div>
-            <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">Total Earnings</p>
+            <p className="text-[0.625rem] uppercase font-bold text-muted-foreground tracking-wider">Total Earnings</p>
             <p className="text-3xl font-extrabold text-foreground">174.50 <span className="text-sm font-bold text-muted-foreground">AED</span></p>
           </div>
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-primary/10">
@@ -65,17 +65,17 @@ export default function CreatorDashboardPage() {
         </div>
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-[10px] text-muted-foreground">Tips</p>
+            <p className="text-[0.625rem] text-muted-foreground">Tips</p>
             <p className="text-sm font-bold text-foreground">89.50 AED</p>
           </div>
           <div className="w-px h-6 bg-border/20" />
           <div>
-            <p className="text-[10px] text-muted-foreground">Affiliate</p>
+            <p className="text-[0.625rem] text-muted-foreground">Affiliate</p>
             <p className="text-sm font-bold text-foreground">85.00 AED</p>
           </div>
           <div className="w-px h-6 bg-border/20" />
           <div>
-            <p className="text-[10px] text-muted-foreground">Followers</p>
+            <p className="text-[0.625rem] text-muted-foreground">Followers</p>
             <p className="text-sm font-bold text-foreground">248</p>
           </div>
         </div>
@@ -91,20 +91,20 @@ export default function CreatorDashboardPage() {
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${action.color}`}>
               <action.icon className="w-5 h-5 text-white" />
             </div>
-            <span className="text-[10px] font-bold text-muted-foreground">{action.label}</span>
+            <span className="text-[0.625rem] font-bold text-muted-foreground">{action.label}</span>
           </button>
         ))}
       </div>
 
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[13px] font-bold text-foreground">Performance</h2>
+          <h2 className="text-[0.8125rem] font-bold text-foreground">Performance</h2>
           <div className="flex gap-1">
             {(["7d", "30d", "90d"] as PeriodKey[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-[0.625rem] font-bold transition-all ${
                   period === p ? "bg-primary text-primary-foreground" : "bg-muted/30 text-muted-foreground"
                 }`}
               >
@@ -126,10 +126,10 @@ export default function CreatorDashboardPage() {
                 <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${stat.bg}`}>
                   <stat.icon className={`w-3.5 h-3.5 ${stat.color}`} />
                 </div>
-                <span className="text-[10px] font-semibold text-muted-foreground">{stat.label}</span>
+                <span className="text-[0.625rem] font-semibold text-muted-foreground">{stat.label}</span>
               </div>
               <p className="text-lg font-bold text-foreground">{stat.value}</p>
-              <p className="text-[10px] font-bold text-emerald-500">{stat.change}</p>
+              <p className="text-[0.625rem] font-bold text-emerald-500">{stat.change}</p>
             </motion.div>
           ))}
         </div>
@@ -137,7 +137,7 @@ export default function CreatorDashboardPage() {
 
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+          <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
             <ShoppingBag className="w-3.5 h-3.5 text-primary" /> Top Content
           </h2>
         </div>
@@ -156,17 +156,17 @@ export default function CreatorDashboardPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground truncate">{content.title}</p>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                  <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                     <Eye className="w-3 h-3" /> {content.views}
                   </span>
-                  <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                  <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                     <Heart className="w-3 h-3" /> {content.likes}
                   </span>
                 </div>
               </div>
               <div className="text-right shrink-0">
                 <p className="text-xs font-bold text-emerald-500">{content.earnings} AED</p>
-                <p className="text-[9px] text-muted-foreground capitalize">{content.type}</p>
+                <p className="text-[0.5625rem] text-muted-foreground capitalize">{content.type}</p>
               </div>
             </motion.div>
           ))}
@@ -175,7 +175,7 @@ export default function CreatorDashboardPage() {
 
       <div className="px-4 mb-4">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[13px] font-bold text-foreground flex items-center gap-1.5">
+          <h2 className="text-[0.8125rem] font-bold text-foreground flex items-center gap-1.5">
             <Link2 className="w-3.5 h-3.5 text-purple-500" /> Affiliate Performance
           </h2>
         </div>
@@ -193,7 +193,7 @@ export default function CreatorDashboardPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-bold text-foreground truncate">{aff.product}</p>
-                <p className="text-[10px] text-muted-foreground">{aff.clicks} clicks · {aff.conversions} sales</p>
+                <p className="text-[0.625rem] text-muted-foreground">{aff.clicks} clicks · {aff.conversions} sales</p>
               </div>
               <p className="text-xs font-bold text-emerald-500 shrink-0">{aff.earnings} AED</p>
             </motion.div>
@@ -224,9 +224,9 @@ export default function CreatorDashboardPage() {
               </div>
               <div className="flex-1">
                 <p className="text-xs font-bold" style={{ color: t.active ? t.color : "hsl(var(--foreground))" }}>{t.tier}</p>
-                <p className="text-[10px] text-muted-foreground">{t.req}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t.req}</p>
               </div>
-              {t.active && <span className="text-[9px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Current</span>}
+              {t.active && <span className="text-[0.5625rem] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">Current</span>}
             </div>
           ))}
         </div>

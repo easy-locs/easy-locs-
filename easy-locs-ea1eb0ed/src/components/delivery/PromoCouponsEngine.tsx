@@ -65,7 +65,7 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -78,7 +78,7 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
           { id: "create" as const, label: "➕ Créer" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--warning) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -92,8 +92,8 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
         {tab === "create" ? (
           <motion.div key="create" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="rounded-xl p-3 space-y-2.5" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎟️ Nouveau coupon</p>
-            <Input placeholder="Code promo (ex: SUMMER25)" className="h-8 text-[10px] uppercase" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>🎟️ Nouveau coupon</p>
+            <Input placeholder="Code promo (ex: SUMMER25)" className="h-8 text-[0.625rem] uppercase" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             <div className="grid grid-cols-3 gap-1.5">
               {(["percentage", "fixed", "free_delivery"] as const).map(t => {
                 const cfg = typeCfg[t];
@@ -101,22 +101,22 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                   <button key={t} className="py-2 rounded-lg text-center"
                     style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                     <p className="text-sm">{cfg.icon}</p>
-                    <p className="text-[10px] font-semibold mt-0.5" style={{ color: cfg.color }}>{cfg.label}</p>
+                    <p className="text-[0.625rem] font-semibold mt-0.5" style={{ color: cfg.color }}>{cfg.label}</p>
                   </button>
                 );
               })}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Input placeholder="Valeur (ex: 20)" type="number" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
-              <Input placeholder="Min. commande (€)" type="number" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input placeholder="Valeur (ex: 20)" type="number" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input placeholder="Min. commande (€)" type="number" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Input placeholder="Limite totale" type="number" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
-              <Input placeholder="Limite / utilisateur" type="number" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input placeholder="Limite totale" type="number" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input placeholder="Limite / utilisateur" type="number" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <Input type="date" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
-              <Input type="date" className="h-8 text-[10px]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input type="date" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
+              <Input type="date" className="h-8 text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.12)", color: "hsl(var(--hud-text))" }} />
             </div>
             <Button size="sm" className="w-full text-xs h-9" style={{ background: "hsl(var(--warning))", color: "#fff" }}>
               🎟️ Créer le coupon
@@ -139,11 +139,11 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                 <div key={c.id} className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${c.active ? cfg.color + "20" : "hsl(var(--hud-border) / 0.08)"}` }}>
                   <div className="flex items-center gap-3">
                     <div className="px-2 py-1 rounded-md" style={{ background: `${cfg.color}12`, border: `1px dashed ${cfg.color}30` }}>
-                      <p className="text-[11px] font-mono font-bold" style={{ color: cfg.color }}>{c.code}</p>
+                      <p className="text-[0.6875rem] font-mono font-bold" style={{ color: cfg.color }}>{c.code}</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{cfg.label}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                         {c.type === "percentage" ? `-${c.value}%` : c.type === "fixed" ? `-${c.value}€` : "Livraison offerte"}
                         {minOrder ? ` • Min ${minOrder}€` : ""}
                       </p>
@@ -161,8 +161,8 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                   {/* Usage bar */}
                   <div>
                     <div className="flex justify-between mb-0.5">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Utilisations</span>
-                      <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{usageCount}/{usageLimit}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Utilisations</span>
+                      <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{usageCount}/{usageLimit}</span>
                     </div>
                     <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                       <div className="h-full rounded-full transition-all" style={{ width: `${usagePercent}%`, background: cfg.color }} />
@@ -170,7 +170,7 @@ export default function PromoCouponsEngine({ orgId }: { orgId: string }) {
                   </div>
 
                   {/* ROI */}
-                  <div className="flex items-center gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                  <div className="flex items-center gap-3 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                     <span>💰 {c.revenue || 0}€ revenus</span>
                     <span>📈 {c.conversions || 0} conversions</span>
                     <span>📅 {validFrom} → {validTo}</span>

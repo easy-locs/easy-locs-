@@ -159,7 +159,7 @@ const PaymentProvidersSettings = () => {
       {/* SaaS architecture disclaimer */}
       <div className="flex items-start gap-2.5 bg-accent/5 border border-accent/20 rounded-lg p-3 mb-6">
         <Shield className="h-4 w-4 text-accent shrink-0 mt-0.5" />
-        <p className="text-[11px] text-muted-foreground leading-relaxed">
+        <p className="text-[0.6875rem] text-muted-foreground leading-relaxed">
           <strong className="text-foreground">SaaS Architecture:</strong> {t("page.settings.saas_disclaimer") || "Easy-Locs only collects subscription fees. All operational payments go directly to your organization's accounts. No funds transit through the platform."}
         </p>
       </div>
@@ -174,7 +174,7 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">Stripe Connect</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.stripe_desc")}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.stripe_desc")}</p>
               </div>
             </div>
             <StatusBadge status={stripeStatus} />
@@ -213,12 +213,12 @@ const PaymentProvidersSettings = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">SEPA Direct Debit</p>
-                  <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_desc") || "Automatic SEPA direct debit (SEPA zone only)"}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.sepa_desc") || "Automatic SEPA direct debit (SEPA zone only)"}</p>
                 </div>
               </div>
               <StatusBadge status={stripeStatus === "connected" ? "connected" : "missing"} />
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">{t("page.settings.sepa_via_stripe") || "Enabled via Stripe Connect."}</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-1">{t("page.settings.sepa_via_stripe") || "Enabled via Stripe Connect."}</p>
           </div>
         ) : (
           <div className="border border-border/50 rounded-xl p-4 bg-muted/30">
@@ -228,7 +228,7 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">SEPA Direct Debit</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.sepa_unavailable") || "Not available — your country is not in the SEPA zone"}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.sepa_unavailable") || "Not available — your country is not in the SEPA zone"}</p>
               </div>
             </div>
           </div>
@@ -243,7 +243,7 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{t("page.settings.bank_transfer") || "Bank Transfer"}</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.bank_transfer_desc") || "Clients pay directly via wire transfer"}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.bank_transfer_desc") || "Clients pay directly via wire transfer"}</p>
               </div>
             </div>
             <StatusBadge status={bankStatus} />
@@ -277,7 +277,7 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">{t("page.settings.payment_link") || "Payment Link"}</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.payment_link_desc") || "Custom payment link (Stripe, PayPal.me, Wise, etc.)"}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.payment_link_desc") || "Custom payment link (Stripe, PayPal.me, Wise, etc.)"}</p>
               </div>
             </div>
             <StatusBadge status={linkStatus} />
@@ -294,7 +294,7 @@ const PaymentProvidersSettings = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">PayPal</p>
-                <p className="text-[10px] text-muted-foreground">{t("page.settings.paypal_desc")}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t("page.settings.paypal_desc")}</p>
               </div>
             </div>
             <StatusBadge status={paypalStatus} />
@@ -305,7 +305,7 @@ const PaymentProvidersSettings = () => {
         {/* Default provider */}
         <div className="border border-border rounded-xl p-4">
           <label className="block text-sm font-medium text-foreground mb-1.5">{t("page.settings.default_provider") || "Default Payment Provider"}</label>
-          <p className="text-[10px] text-muted-foreground mb-2">If the default provider is not fully configured, the system will automatically fallback to the next available method.</p>
+          <p className="text-[0.625rem] text-muted-foreground mb-2">If the default provider is not fully configured, the system will automatically fallback to the next available method.</p>
           <select value={defaultProvider} onChange={(e) => setDefaultProvider(e.target.value)} className={inputClass}>
             <option value="stripe">Stripe (Card)</option>
             {sepaEligible && <option value="sepa">SEPA Direct Debit</option>}

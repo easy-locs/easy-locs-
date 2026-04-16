@@ -169,7 +169,7 @@ function ChatMessageBubble({
           border: "1px solid hsl(var(--border) / 0.04)",
         }}>
           <Timer className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
-          <span className="text-[11px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+          <span className="text-[0.6875rem] italic" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
             {t("orbit.msg_expired")}
           </span>
         </div>
@@ -196,10 +196,10 @@ function ChatMessageBubble({
           }}
         >
           <EyeOff className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
-          <span className="text-[12.5px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+          <span className="text-[0.78125rem] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
             {t("orbit.msg_deleted")}
           </span>
-          <span className="text-[10px] font-medium tabular-nums ml-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{safeFormatTime(msg.created_at)}</span>
+          <span className="text-[0.625rem] font-medium tabular-nums ml-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{safeFormatTime(msg.created_at)}</span>
         </div>
       </div>
     );
@@ -214,11 +214,11 @@ function ChatMessageBubble({
         <div className="flex justify-center my-3 px-4">
           <div className="w-full max-w-[85%] space-y-1.5">
             <p
-              className="text-[11px] text-center font-medium"
+              className="text-[0.6875rem] text-center font-medium"
               style={{ color: "hsl(var(--muted-foreground))" }}
             >
               {actionData.text}
-              <span className="ml-2 opacity-50 text-[10px]">{safeFormatTime(msg.created_at)}</span>
+              <span className="ml-2 opacity-50 text-[0.625rem]">{safeFormatTime(msg.created_at)}</span>
             </p>
             <ThreadActionCard payload={actionData.action} />
           </div>
@@ -229,7 +229,7 @@ function ChatMessageBubble({
     return (
       <div className="flex justify-center my-3">
         <div
-          className="text-[11px] px-4 py-1.5 rounded-full max-w-[85%] text-center break-words font-medium"
+          className="text-[0.6875rem] px-4 py-1.5 rounded-full max-w-[85%] text-center break-words font-medium"
           style={{
             background: "hsl(var(--card) / 0.6)",
             color: "hsl(var(--muted-foreground))",
@@ -237,7 +237,7 @@ function ChatMessageBubble({
           }}
         >
           {msg.content}
-          <span className="ml-2 opacity-50 text-[10px]">{safeFormatTime(msg.created_at)}</span>
+          <span className="ml-2 opacity-50 text-[0.625rem]">{safeFormatTime(msg.created_at)}</span>
         </div>
       </div>
     );
@@ -288,10 +288,10 @@ function ChatMessageBubble({
             background: "hsl(var(--card) / 0.5)",
             borderLeft: "2px solid hsl(var(--primary) / 0.5)",
           }}>
-            <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary) / 0.8)" }}>
+            <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary) / 0.8)" }}>
               {msg.reply_to_sender_name || t("orbit.reply_fallback")}
             </p>
-            <p className="text-[11px] line-clamp-2 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.6)", overflowWrap: "anywhere" }}>
+            <p className="text-[0.6875rem] line-clamp-2 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.6)", overflowWrap: "anywhere" }}>
               {msg.reply_to_content || ""}
             </p>
           </div>
@@ -299,14 +299,14 @@ function ChatMessageBubble({
 
         {/* Sender name — resolved via canonical read model */}
         {!isMe && !isConsecutive && !bubbleModel.isSystem && (
-          <p className="text-[11px] font-semibold mb-0.5" style={{ color: "hsl(var(--primary))" }}>
+          <p className="text-[0.6875rem] font-semibold mb-0.5" style={{ color: "hsl(var(--primary))" }}>
             {bubbleModel.senderDisplay.displayName}
           </p>
         )}
 
         {/* Email indicator */}
         {isInboundEmail && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+          <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
             color: "hsl(var(--primary))",
             background: "hsl(var(--primary) / 0.08)",
           }}>
@@ -316,7 +316,7 @@ function ChatMessageBubble({
 
         {/* Payment badge */}
         {(isPayment || isPaymentReceipt) && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+          <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
             color: isPaymentReceipt ? "hsl(var(--hud-success))" : "hsl(var(--primary))",
             background: isPaymentReceipt ? "hsl(var(--hud-success) / 0.08)" : "hsl(var(--primary) / 0.08)",
           }}>
@@ -333,7 +333,7 @@ function ChatMessageBubble({
             : remaining < 86_400_000 ? `${Math.ceil(remaining / 3_600_000)}h`
             : `${Math.ceil(remaining / 86_400_000)}d`;
           return (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+            <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
               color: "hsl(var(--hud-warning))",
               background: "hsl(var(--hud-warning) / 0.08)",
             }}>
@@ -344,7 +344,7 @@ function ChatMessageBubble({
 
         {/* Security badge */}
         {hasSecurityLevel && (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
+          <span className="inline-flex items-center gap-1 text-[0.625rem] font-medium mb-1 rounded-md px-1.5 py-0.5" style={{
             color: "hsl(var(--hud-warning))",
             background: "hsl(var(--hud-warning) / 0.1)",
           }}>
@@ -354,7 +354,7 @@ function ChatMessageBubble({
 
         {/* Category badge */}
         {msg.category !== "general" && !isInboundEmail && !isPayment && (
-          <span className="text-[10px] mb-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{getCategoryIcon(msg.category)}</span>
+          <span className="text-[0.625rem] mb-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{getCategoryIcon(msg.category)}</span>
         )}
 
         {/* Media routing — canonical type-based via MessageBubbleRouter */}
@@ -405,7 +405,7 @@ function ChatMessageBubble({
           const isEmojiOnly = /^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]{1,12}$/u.test(displayContent) && displayContent.trim().length <= 12;
           return (
             <>
-              <p className={`${isEmojiOnly ? "text-[36px] leading-[1.2] py-1" : "text-[13.5px] leading-[1.45]"} whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
+              <p className={`${isEmojiOnly ? "text-[2.25rem] leading-[1.2] py-1" : "text-[0.84375rem] leading-[1.45]"} whitespace-pre-wrap ${blurred ? "blur-lg transition-all" : ""}`} style={{
                 color: "hsl(var(--foreground))",
                 overflowWrap: "anywhere",
                 ...(securityPolicy.antiScreenshot ? { userSelect: "none" as const, WebkitUserSelect: "none" as const } : {}),
@@ -425,14 +425,14 @@ function ChatMessageBubble({
 
         {/* Original text preview for translated messages */}
         {!isMe && msg.translated_content && !showOriginal && !isVoice && (
-          <p className="text-[11px] mt-1.5 pt-1.5 italic whitespace-pre-wrap" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)", color: "hsl(var(--muted-foreground) / 0.4)" }}>
+          <p className="text-[0.6875rem] mt-1.5 pt-1.5 italic whitespace-pre-wrap" style={{ borderTop: "1px solid hsl(var(--border) / 0.08)", color: "hsl(var(--muted-foreground) / 0.4)" }}>
             {msg.content.length > 100 ? msg.content.slice(0, 100) + "…" : msg.content}
           </p>
         )}
 
         {/* Translate button */}
         {!isMe && msg.sender_locale && msg.sender_locale !== locale && !isVoice && (
-          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[10px] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <button onClick={() => onTranslate(msg)} className="mt-1 inline-flex items-center gap-1.5 text-[0.625rem] hover:opacity-80 transition-opacity min-h-[44px] sm:min-h-0 py-1" style={{ color: "hsl(var(--muted-foreground))" }}>
             {translatingMsgId === msg.id ? <Loader2 className="h-3 w-3 sm:h-2.5 sm:w-2.5 animate-spin" /> : <Globe className="h-3 w-3 sm:h-2.5 sm:w-2.5" />}
             {showOriginal ? t("orbit.translation") : msg.translated_content ? t("orbit.original") : t("orbit.translate")}
           </button>
@@ -441,7 +441,7 @@ function ChatMessageBubble({
         {isMe && rawMsg.failed && onRetry && (
           <button
             onClick={(e) => { e.stopPropagation(); onRetry(rawMsg); }}
-            className="flex items-center gap-1 mt-1 text-[11px] font-medium transition-opacity hover:opacity-80"
+            className="flex items-center gap-1 mt-1 text-[0.6875rem] font-medium transition-opacity hover:opacity-80"
             style={{ color: "hsl(var(--destructive))" }}
           >
             <RotateCcw className="h-3 w-3" /> {t("orbit.tap_retry")}
@@ -480,7 +480,7 @@ export function DateSeparator({ date }: { date: string }) {
   return (
     <div className="flex items-center justify-center my-5">
       <div
-        className="px-4 py-1 rounded-full text-[11px] font-semibold tracking-wide"
+        className="px-4 py-1 rounded-full text-[0.6875rem] font-semibold tracking-wide"
         style={{
           background: "hsl(var(--card) / 0.6)",
           color: "hsl(var(--muted-foreground))",

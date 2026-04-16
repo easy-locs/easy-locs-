@@ -119,25 +119,25 @@ export const CallRow = memo(function CallRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-1 min-w-0">
             <span
-              className="text-[13.5px] font-semibold line-clamp-1 break-words"
+              className="text-[0.84375rem] font-semibold line-clamp-1 break-words"
               style={{ color: call.status === "missed" ? "hsl(var(--hud-danger))" : "hsl(var(--foreground))" }}
             >
               {primaryLabel}
             </span>
             {primaryLabel !== friendlyId && (
-              <span className="text-[9.5px] font-medium truncate max-w-[72px]" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
+              <span className="text-[0.59375rem] font-medium truncate max-w-[72px]" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
                 {friendlyId}
               </span>
             )}
           </div>
           {secondaryLabel && (
-            <span className="text-[11px] mt-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+            <span className="text-[0.6875rem] mt-0.5 block" style={{ color: "hsl(var(--muted-foreground) / 0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
               {secondaryLabel}
             </span>
           )}
         </div>
         <div className="flex items-center gap-1 shrink-0 pl-1">
-          <span className="text-[10.5px] tabular-nums whitespace-nowrap" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
+          <span className="text-[0.65625rem] tabular-nums whitespace-nowrap" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>
             {formatCallTime(call.created_at)}
           </span>
           <button

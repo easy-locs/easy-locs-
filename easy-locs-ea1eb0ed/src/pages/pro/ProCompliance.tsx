@@ -222,7 +222,7 @@ export default function ProCompliance() {
                 )}
               </div>
               <span
-                className="rounded-full px-2.5 py-1 text-[10px] font-bold shrink-0"
+                className="rounded-full px-2.5 py-1 text-[0.625rem] font-bold shrink-0"
                 style={{ background: cfg.bg, color: cfg.color }}
               >
                 {cfg.label}

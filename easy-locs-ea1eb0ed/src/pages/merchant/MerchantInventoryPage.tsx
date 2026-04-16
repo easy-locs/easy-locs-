@@ -78,7 +78,7 @@ export default function MerchantInventoryPage() {
                       Stock {qty} · {qty > 0 ? "Available" : "Sold out"}
                     </p>
                   </div>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                  <span className={`rounded-full px-2.5 py-0.5 text-[0.6875rem] font-bold ${
                     qty <= 0
                       ? "bg-destructive/10 text-destructive"
                       : qty <= 5

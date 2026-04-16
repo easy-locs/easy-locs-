@@ -81,7 +81,7 @@ export default function HomePromoCarousel() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
 
                   <span
-                    className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase text-white backdrop-blur-md"
+                    className="absolute top-2.5 left-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.625rem] font-bold uppercase text-white backdrop-blur-md"
                     style={{ background: `${accent}cc`, border: `1px solid ${accent}50` }}
                   >
                     <Tag className="w-2.5 h-2.5" />
@@ -89,7 +89,7 @@ export default function HomePromoCarousel() {
                   </span>
 
                   {row.ends_at && (
-                    <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-white/90 backdrop-blur-md" style={{ background: "hsl(0 0% 0% / 0.4)" }}>
+                    <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.625rem] font-semibold text-white/90 backdrop-blur-md" style={{ background: "hsl(0 0% 0% / 0.4)" }}>
                       <Clock className="w-2.5 h-2.5" />
                       Limited
                     </span>
@@ -103,11 +103,11 @@ export default function HomePromoCarousel() {
                 <div className="p-3 space-y-1.5">
                   <p className="text-sm font-bold text-foreground line-clamp-1">{row.title}</p>
                   <div className="flex items-center justify-between">
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">
+                    <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
                       {row.seed_merchants?.name}
                     </p>
                     {row.minimum_order_amount > 0 && (
-                      <span className="text-[10px] text-muted-foreground shrink-0">
+                      <span className="text-[0.625rem] text-muted-foreground shrink-0">
                         Min {formatMoneyByCountry(Number(row.minimum_order_amount ?? 0), row.seed_merchants?.country || "AE")}
                       </span>
                     )}

@@ -170,7 +170,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--warning) / 0.08), hsl(var(--hud-cyan) / 0.06))", border: "1px solid hsl(var(--warning) / 0.12)" }}>
         <p className="text-2xl font-extrabold tabular-nums" style={{ color: "hsl(var(--warning))" }}>{data.levelName}</p>
-        <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+        <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           {data.xp} XP • Prochain niveau: {data.nextLevelXp} XP
         </p>
         <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-border) / 0.1)" }}>
@@ -192,7 +192,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
               style={{ background: `hsl(var(${s.color}) / 0.06)`, border: `1px solid hsl(var(${s.color}) / 0.1)` }}>
               <Icon className="h-3.5 w-3.5 mx-auto mb-0.5" style={{ color: `hsl(var(${s.color}))` }} />
               <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
             </div>
           );
         })}
@@ -201,7 +201,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       {/* Performance bars */}
       <div className="rounded-xl p-3 space-y-2"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <TrendingUp className="h-3 w-3 inline mr-1" /> Performance
         </p>
         {[
@@ -211,8 +211,8 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
         ].map(m => (
           <div key={m.label}>
             <div className="flex justify-between mb-0.5">
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{m.label}</span>
-              <span className="text-[10px] font-bold" style={{ color: `hsl(${m.color})` }}>{m.value}%</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{m.label}</span>
+              <span className="text-[0.625rem] font-bold" style={{ color: `hsl(${m.color})` }}>{m.value}%</span>
             </div>
             <div className="h-1.5 rounded-full" style={{ background: "hsl(var(--hud-border) / 0.08)" }}>
               <motion.div className="h-full rounded-full" initial={{ width: 0 }}
@@ -226,7 +226,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
       {/* Badges */}
       <div className="rounded-xl p-3"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <Award className="h-3 w-3 inline mr-1" /> Badges ({data.badges.filter(b => b.earned).length}/{data.badges.length})
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -240,7 +240,7 @@ export default function DriverReputationPanel({ driverId, className }: Props) {
               }}
               title={badge.description}>
               <span className="text-lg">{badge.emoji}</span>
-              <p className="text-[10px] mt-0.5 truncate" style={{ color: badge.earned ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <p className="text-[0.625rem] mt-0.5 truncate" style={{ color: badge.earned ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {badge.name}
               </p>
             </motion.div>

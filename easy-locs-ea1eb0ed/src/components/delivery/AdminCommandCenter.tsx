@@ -137,14 +137,14 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
         </h3>
         <div className="flex items-center gap-2">
           {unacknowledged > 0 && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse"
+            <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full animate-pulse"
               style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>
               {unacknowledged} alertes
             </span>
           )}
           <motion.div className="w-2 h-2 rounded-full" style={{ background: "hsl(var(--success))" }}
             animate={{ opacity: [1, 0.4, 1] }} transition={{ repeat: Infinity, duration: 2 }} />
-          <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>LIVE</span>
+          <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>LIVE</span>
         </div>
       </div>
 
@@ -159,7 +159,7 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <k.icon className="h-3 w-3 mx-auto mb-1" style={{ color: `hsl(var(${k.color}))` }} />
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.sub}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.sub}</p>
           </div>
         ))}
       </div>
@@ -173,7 +173,7 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-lg px-2 py-1.5 text-center"
             style={{ background: "hsl(var(--muted) / 0.15)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -181,7 +181,7 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["overview", "zones", "alerts", "moderation"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -201,14 +201,14 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <MapPin className="h-4 w-4 shrink-0" style={{ color: coverageColor(z.coverage) }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Zone {z.name}</p>
+                <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Zone {z.name}</p>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.driversOnline} livreurs</span>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.activeJobs} missions</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.driversOnline} livreurs</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{z.activeJobs} missions</span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold" style={{ color: coverageColor(z.coverage) }}>{z.coverage}%</p>
+                <p className="text-[0.625rem] font-bold" style={{ color: coverageColor(z.coverage) }}>{z.coverage}%</p>
               </div>
             </div>
           ))}
@@ -224,11 +224,11 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
             <div key={z.name} className="rounded-xl p-3 space-y-2"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>
+                <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>
                   <Globe className="h-3 w-3 inline mr-1" style={{ color: "hsl(var(--primary))" }} />
                   Zone {z.name}
                 </p>
-                <span className="text-[10px] font-bold" style={{ color: coverageColor(z.coverage) }}>{z.coverage}% couvert</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: coverageColor(z.coverage) }}>{z.coverage}% couvert</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
                 <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: `${z.coverage}%` }}
@@ -236,16 +236,16 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
               </div>
               <div className="grid grid-cols-3 gap-1.5">
                 <div className="text-center py-1 rounded-lg" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{z.driversOnline}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>En ligne</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>{z.driversOnline}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>En ligne</p>
                 </div>
                 <div className="text-center py-1 rounded-lg" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{z.activeJobs}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Missions</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{z.activeJobs}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Missions</p>
                 </div>
                 <div className="text-center py-1 rounded-lg" style={{ background: "hsl(var(--muted) / 0.3)" }}>
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--info))" }}>{z.avgEta}m</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>ETA moy.</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--info))" }}>{z.avgEta}m</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>ETA moy.</p>
                 </div>
               </div>
             </div>
@@ -267,13 +267,13 @@ export default function AdminCommandCenter({ orgId, className }: { orgId: string
               }}>
               <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: severityColor(a.severity) }} />
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.message}</p>
-                <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.message}</p>
+                <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {a.zone} — {a.timestamp.toLocaleTimeString("fr-FR")}
                 </p>
               </div>
               {!a.acknowledged && (
-                <Button size="sm" className="text-[10px] h-6 px-2 shrink-0" onClick={() => acknowledgeAlert(a.id)}
+                <Button size="sm" className="text-[0.625rem] h-6 px-2 shrink-0" onClick={() => acknowledgeAlert(a.id)}
                   style={{ background: severityColor(a.severity) + "15", color: severityColor(a.severity) }}>
                   OK
                 </Button>

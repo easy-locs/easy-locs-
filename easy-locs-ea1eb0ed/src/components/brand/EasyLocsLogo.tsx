@@ -426,7 +426,7 @@ function SplashLogo({
         </span>
       </div>
       <span
-        className="text-[10px] tracking-[0.35em] uppercase font-medium"
+        className="text-[0.625rem] tracking-[0.35em] uppercase font-medium"
         style={{ color: withAlpha(colors[0], 0.7), transition: "color 0.8s ease" }}
       >
         Connect • Locate • Grow

@@ -5,7 +5,7 @@ import { db } from "@/services/db";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import {
   Activity, CheckCircle, Clock, Cpu, Heart,
   RefreshCw, XCircle, Pause, Shield, Wrench,
@@ -265,7 +265,7 @@ export default function AdminControlRoomPage() {
                 { label: "Errors", value: errorEngines.length, icon: XCircle, color: "text-red-400" },
                 { label: "Disabled", value: disabledEngines.length, icon: Pause, color: "text-gray-400" },
               ].map(s => (
-                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                   <CardContent className="p-4 flex items-center gap-3">
                     <s.icon className={`w-8 h-8 ${s.color}`} />
                     <div>
@@ -273,17 +273,17 @@ export default function AdminControlRoomPage() {
                       <p className="text-xs text-gray-400">{s.label}</p>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <Shield className="w-4 h-4 inline mr-1" /> Permanent vs Runtime
                   </CardTitle>
-                  <p className="text-[10px] text-gray-500 mt-1">Static audit reference — not live telemetry</p>
+                  <p className="text-[0.625rem] text-gray-500 mt-1">Static audit reference — not live telemetry</p>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-400">Backend workers</span><span className="text-emerald-400 font-bold">{serverEngines.length}</span></div>
@@ -292,9 +292,9 @@ export default function AdminControlRoomPage() {
                   <div className="flex justify-between"><span className="text-gray-400">Runtime-only</span><span className="text-amber-400 font-bold">{runtimeOnly}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Patch types permanent</span><span className="text-emerald-400 font-bold">{permanentPatchTypes}/{RUNTIME_PATCH_TYPES.length}</span></div>
                 </CardContent>
-              </Card>
+              </AppCard>
 
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer
@@ -307,10 +307,10 @@ export default function AdminControlRoomPage() {
                   <div className="flex justify-between"><span className="text-gray-400">Total actions</span><span className="text-emerald-400 font-bold">{browserReport.totalActions}</span></div>
                   <div className="flex justify-between"><span className="text-gray-400">Browser errors</span><span className="text-red-400 font-bold">{browserReport.totalErrors}</span></div>
                 </CardContent>
-              </Card>
+              </AppCard>
 
               {latestHealth && (
-                <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                       <Heart className="w-4 h-4 inline mr-1" /> Latest Health
@@ -323,12 +323,12 @@ export default function AdminControlRoomPage() {
                     <div className="flex justify-between"><span className="text-gray-400">Success rate</span><span className="text-blue-400 font-bold">{latestHealth.avg_success_rate}%</span></div>
                     <div className="flex justify-between"><span className="text-gray-400">Runs/hour</span><span className="text-white font-bold">{latestHealth.total_runs_last_hour}</span></div>
                   </CardContent>
-                </Card>
+                </AppCard>
               )}
             </div>
 
             {(driftLogs.length > 0 || fraudLogs.length > 0 || blockedPublishes.length > 0) && (
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                     <AlertTriangle className="w-4 h-4 inline mr-1" /> Recent Alerts
@@ -345,15 +345,15 @@ export default function AdminControlRoomPage() {
                     <div key={l.id} className="text-orange-400"><ArrowRight className="w-3 h-3 inline mr-1" />{l.effect_summary}</div>
                   ))}
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                   <Layers className="w-4 h-4 inline mr-1" /> Engine Tier Summary
                 </CardTitle>
-                <p className="text-[10px] text-gray-500 mt-1">Live from engine_supervisor — {engines.length} engines</p>
+                <p className="text-[0.625rem] text-gray-500 mt-1">Live from engine_supervisor — {engines.length} engines</p>
               </CardHeader>
               <CardContent className="space-y-1 text-xs">
                 {(() => {
@@ -374,21 +374,21 @@ export default function AdminControlRoomPage() {
                           <span className="text-emerald-400 font-bold">{okCount}</span>
                           <span className="text-gray-500">/</span>
                           <span className="text-gray-300">{items.length}</span>
-                          {errorCount > 0 && <span className="text-red-400 text-[10px]">({errorCount} err)</span>}
-                          {disabledCount > 0 && <span className="text-gray-500 text-[10px]">({disabledCount} off)</span>}
+                          {errorCount > 0 && <span className="text-red-400 text-[0.625rem]">({errorCount} err)</span>}
+                          {disabledCount > 0 && <span className="text-gray-500 text-[0.625rem]">({disabledCount} off)</span>}
                         </div>
                       </div>
                     );
                   });
                 })()}
               </CardContent>
-            </Card>
+            </AppCard>
 
             <div className="space-y-3">
               <h2 className="text-sm font-semibold text-gray-300">Worker Groups</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {[...groups.entries()].sort().map(([group, items]) => (
-                  <Card key={group} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                  <AppCard key={group} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium" style={{ color: "hsl(var(--accent))" }}>{group}</span>
@@ -404,7 +404,7 @@ export default function AdminControlRoomPage() {
                         {items.length > 5 && <div className="text-xs text-gray-500">+{items.length - 5} more</div>}
                       </div>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 ))}
               </div>
             </div>
@@ -414,7 +414,7 @@ export default function AdminControlRoomPage() {
         {tab === "core" && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-emerald-400"><Layers className="w-4 h-4 inline mr-1" />What works permanently</CardTitle></CardHeader>
                 <CardContent className="space-y-1 text-xs text-gray-300">
                   <div>{serverEngines.length} backend ENGINE_ACTIONS in run-engine-cron (24/7)</div>
@@ -423,9 +423,9 @@ export default function AdminControlRoomPage() {
                   <div>{permanentPatchTypes}/{RUNTIME_PATCH_TYPES.length} runtime patch types eliminated by CSS</div>
                   <div>{okEngines.length} engines healthy right now</div>
                 </CardContent>
-              </Card>
+              </AppCard>
 
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-400"><AlertTriangle className="w-4 h-4 inline mr-1" />What remains temporary</CardTitle></CardHeader>
                 <CardContent className="space-y-1 text-xs text-gray-300">
                   <div>Dotted i18n label patching (runtime titleize only)</div>
@@ -434,10 +434,10 @@ export default function AdminControlRoomPage() {
                   <div>Sentinel/God/Omega browser loops (stop with tab close)</div>
                   <div>{browserEngines.length} browser-class engines (observers, not critical writers)</div>
                 </CardContent>
-              </Card>
+              </AppCard>
             </div>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Eye className="w-4 h-4 inline mr-1" /> UI Engine Coverage (useUiEngine — Live)</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -446,7 +446,7 @@ export default function AdminControlRoomPage() {
                     return (
                       <div key={p.route} className="text-xs p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(226 24% 14%)" }}>
                         <span className="text-white font-medium">{p.name}</span>
-                        <div className="text-gray-500 mt-0.5 font-mono text-[10px]">{p.route}</div>
+                        <div className="text-gray-500 mt-0.5 font-mono text-[0.625rem]">{p.route}</div>
                         {liveReport ? (
                           <div className="mt-1 space-y-0.5">
                             <div className="flex justify-between">
@@ -465,16 +465,16 @@ export default function AdminControlRoomPage() {
                             </div>
                           </div>
                         ) : (
-                          <div className="mt-1 text-[10px] text-gray-600">awaiting report</div>
+                          <div className="mt-1 text-[0.625rem] text-gray-600">awaiting report</div>
                         )}
                       </div>
                     );
                   })}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Monitor className="w-4 h-4 inline mr-1" /> Browser Engine Observer (Live)</CardTitle></CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm mb-3">
@@ -518,16 +518,16 @@ export default function AdminControlRoomPage() {
                   <div className="mt-3 border-t border-white/5 pt-2">
                     <p className="text-xs text-gray-500 mb-1">Recent browser engine logs</p>
                     {browserReport.recentLogs.slice(-5).map((l, i) => (
-                      <div key={i} className={`text-[10px] font-mono ${l.level === "error" ? "text-red-400" : l.level === "warn" ? "text-amber-400" : "text-gray-500"}`}>
+                      <div key={i} className={`text-[0.625rem] font-mono ${l.level === "error" ? "text-red-400" : l.level === "warn" ? "text-amber-400" : "text-gray-500"}`}>
                         [{l.category}/{l.engineId}] {l.message}
                       </div>
                     ))}
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Top Impact Workers</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -542,10 +542,10 @@ export default function AdminControlRoomPage() {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {topFailers.length > 0 && (
-              <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">Workers with Failures</CardTitle></CardHeader>
                 <CardContent>
                   <div className="space-y-2">
@@ -561,30 +561,30 @@ export default function AdminControlRoomPage() {
                     ))}
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
             {(orphanCleanupLogs.length > 0 || staleFlowLogs.length > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {orphanCleanupLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                  <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-orange-400">Orphan Cleanup Progress</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {orphanCleanupLogs.slice(0, 5).map(l => (
                         <div key={l.id} className="text-gray-300">{l.db_rows_affected} orphans cleaned — {l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
                       ))}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 )}
                 {staleFlowLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                  <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-amber-400">Stale Flow Detection</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {staleFlowLogs.slice(0, 5).map(l => (
                         <div key={l.id} className="text-gray-300">{l.db_rows_affected} stale flows expired — {l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
                       ))}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 )}
               </div>
             )}
@@ -592,29 +592,29 @@ export default function AdminControlRoomPage() {
             {(trustLogs.length > 0 || fraudLogs.length > 0) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {trustLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                  <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-blue-400">Latest Trust Recomputes</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {trustLogs.slice(0, 5).map(l => (
                         <div key={l.id} className="text-gray-300">{l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
                       ))}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 )}
                 {fraudLogs.length > 0 && (
-                  <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                  <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                     <CardHeader className="pb-2"><CardTitle className="text-sm text-red-400">Latest Fraud Flags</CardTitle></CardHeader>
                     <CardContent className="space-y-1 text-xs">
                       {fraudLogs.slice(0, 5).map(l => (
                         <div key={l.id} className="text-gray-300">{l.effect_summary} <span className="text-gray-500">{timeAgo(l.started_at)}</span></div>
                       ))}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 )}
               </div>
             )}
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}><Shield className="w-4 h-4 inline mr-1" /> Sentinel Cron History (Backend Workers)</CardTitle></CardHeader>
               <CardContent>
                 {sentinelEngines.length === 0 ? (
@@ -634,7 +634,7 @@ export default function AdminControlRoomPage() {
                     </div>
                     {sentinelLogs.length > 0 && (
                       <div className="space-y-1">
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wide">Recent Activity</p>
+                        <p className="text-[0.625rem] text-gray-500 uppercase tracking-wide">Recent Activity</p>
                         {sentinelLogs.slice(0, 8).map(l => (
                           <div key={l.id} className="flex items-center justify-between text-xs">
                             <div className="flex items-center gap-2">
@@ -649,7 +649,7 @@ export default function AdminControlRoomPage() {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           </div>
         )}
 
@@ -667,7 +667,7 @@ export default function AdminControlRoomPage() {
                   <div className="flex items-center gap-2 min-w-0">
                     <StatusBadge status={e.enabled ? e.status : "disabled"} />
                     <span className="text-sm font-medium text-white">{e.engine_name}</span>
-                    {e.runtime_class === "server" && <Badge className="bg-emerald-500/20 text-emerald-400 text-[10px]">backend</Badge>}
+                    {e.runtime_class === "server" && <Badge className="bg-emerald-500/20 text-emerald-400 text-[0.625rem]">backend</Badge>}
                     {e.kill_switch && <Badge variant="destructive" className="text-xs">KILLED</Badge>}
                   </div>
                   <div className="flex items-center gap-3 text-xs text-gray-400">
@@ -699,16 +699,16 @@ export default function AdminControlRoomPage() {
                 { label: "Patch Types Permanent", value: permanentPatchTypes, color: "text-emerald-400" },
                 { label: "Patch Types Runtime", value: runtimePatchTypes, color: "text-amber-400" },
               ].map(s => (
-                <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+                <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                   <CardContent className="p-4 text-center">
                     <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
                     <p className="text-xs text-gray-400">{s.label}</p>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Source Fix Registry</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -728,9 +728,9 @@ export default function AdminControlRoomPage() {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
-            <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+            <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
               <CardHeader className="pb-2"><CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Runtime Patch Status</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
@@ -745,7 +745,7 @@ export default function AdminControlRoomPage() {
                   ))}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </div>
         )}
 
@@ -776,7 +776,7 @@ export default function AdminControlRoomPage() {
         {tab === "health" && (
           <div className="space-y-3">
             {healthSnaps.map(s => (
-              <Card key={s.id} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+              <AppCard key={s.id} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-gray-400">{new Date(s.snapshot_at).toLocaleString()}</span>
@@ -805,7 +805,7 @@ export default function AdminControlRoomPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
             {healthSnaps.length === 0 && <p className="text-gray-500 text-sm">No health snapshots yet</p>}
           </div>
@@ -874,7 +874,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
           { label: "Corrections/min", value: correctionsPerMin, icon: RotateCcw, color: isStormActive ? "text-red-400" : "text-amber-400" },
           { label: "Safe Mode", value: health.safeModes, icon: Shield, color: health.safeModes > 0 ? "text-purple-400" : "text-gray-500" },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardContent className="p-4 flex items-center gap-3">
               <s.icon className={`w-7 h-7 ${s.color}`} />
               <div>
@@ -882,12 +882,12 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
                 <p className="text-xs text-gray-400">{s.label}</p>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       {(health.crashed > 0 || health.frozen > 0 || isStormActive) && (
-        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-red-400">
               <AlertCircle className="w-4 h-4 inline mr-1" /> Active Alerts
@@ -904,11 +904,11 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
               <div className="text-purple-400"><Shield className="w-3 h-3 inline mr-1" />Global storm pause active — non-critical engines paused until {storm.globalPausedUntil ? new Date(storm.globalPausedUntil).toLocaleTimeString() : "—"}</div>
             )}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Scheduler
@@ -920,12 +920,12 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
             <div className="flex justify-between"><span className="text-gray-400">Avg tick</span><span className="text-white">{scheduler.avgTickDurationMs}ms</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Active locks</span><span className="text-amber-400">{scheduler.activeDomainLocks.length}</span></div>
             {Object.entries(scheduler.byFrequency || {}).map(([freq, count]) => (
-              <div key={freq} className="flex justify-between text-[10px]"><span className="text-gray-500 capitalize">{freq}</span><span className="text-gray-300">{String(count)}</span></div>
+              <div key={freq} className="flex justify-between text-[0.625rem]"><span className="text-gray-500 capitalize">{freq}</span><span className="text-gray-300">{String(count)}</span></div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Shield className="w-4 h-4 inline mr-1" /> Storm Guard
@@ -938,9 +938,9 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
             <div className="flex justify-between"><span className="text-gray-400">Per-engine limit</span><span className="text-gray-300">{storm.limits?.perEnginePerMinute}/min</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Loop detection</span><span className="text-gray-300">{storm.limits?.loopDetectionCount}x in {(storm.limits?.loopDetectionWindowMs ?? 0) / 1000}s</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <TrendingDown className="w-4 h-4 inline mr-1" /> Optimizer
@@ -952,15 +952,15 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
             <div className="flex justify-between"><span className="text-gray-400">Slow tick threshold</span><span className="text-gray-300">{optimizer.thresholds?.slowTickMs}ms</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Error rate threshold</span><span className="text-gray-300">{optimizer.thresholds?.highErrorRatePercent}%</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Cpu className="w-4 h-4 inline mr-1" /> All Engines — Real-time Status
           </CardTitle>
-          <p className="text-[10px] text-gray-500 mt-1">Auto-refreshes every 5 seconds</p>
+          <p className="text-[0.625rem] text-gray-500 mt-1">Auto-refreshes every 5 seconds</p>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -989,13 +989,13 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
                     <tr key={engine.id} className="border-b border-white/5 hover:bg-white/2">
                       <td className="py-2 pr-4">
                         <div className="font-medium text-white truncate max-w-[160px]">{engine.name}</div>
-                        <div className="text-gray-500 text-[10px]">{engine.domain}</div>
+                        <div className="text-gray-500 text-[0.625rem]">{engine.domain}</div>
                       </td>
                       <td className="py-2 pr-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${statusBg(engine.status)}`}>
+                        <span className={`px-2 py-0.5 rounded-full text-[0.625rem] font-medium ${statusBg(engine.status)}`}>
                           {engine.status}
                         </span>
-                        {engine.inSafeMode && <span className="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-purple-500/15 text-purple-400">safe</span>}
+                        {engine.inSafeMode && <span className="ml-1 px-1.5 py-0.5 rounded text-[0.625rem] bg-purple-500/15 text-purple-400">safe</span>}
                       </td>
                       <td className="py-2 pr-4">
                         {lastTickAgo !== null
@@ -1015,7 +1015,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
                       </td>
                       <td className="py-2 pr-4">
                         <span className={engine.totalRestarts > 0 ? "text-amber-400" : "text-gray-500"}>{engine.totalRestarts}</span>
-                        {engine.consecutiveFailures > 0 && <span className="ml-1 text-red-400 text-[10px]">({engine.consecutiveFailures} fails)</span>}
+                        {engine.consecutiveFailures > 0 && <span className="ml-1 text-red-400 text-[0.625rem]">({engine.consecutiveFailures} fails)</span>}
                       </td>
                       <td className="py-2 pr-4">
                         <span className={engine.correctionsApplied > 0 ? "text-sky-400" : "text-gray-500"}>
@@ -1037,10 +1037,10 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
             </table>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {recentIncidents.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Incident History (last 100)
@@ -1058,11 +1058,11 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {optimizer.recentActions && optimizer.recentActions.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <TrendingDown className="w-4 h-4 inline mr-1" /> Recent Optimizer Actions
@@ -1083,7 +1083,7 @@ function RuntimeEnginePanel({ runtimeStats }: RuntimeEnginePanelProps) {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       <RuntimeStabilitySection />
@@ -1101,7 +1101,7 @@ function RuntimeStabilitySection() {
 
   return (
     <>
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Shield className="w-4 h-4 inline mr-1" /> Runtime Enforcement Metrics
@@ -1137,9 +1137,9 @@ function RuntimeStabilitySection() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Activity className="w-4 h-4 inline mr-1" /> Server Kill Switches
@@ -1157,9 +1157,9 @@ function RuntimeStabilitySection() {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <AlertTriangle className="w-4 h-4 inline mr-1" /> Domain Degradation Modes
@@ -1179,10 +1179,10 @@ function RuntimeStabilitySection() {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {Object.keys(domainMetrics).length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(225 22% 13%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <TrendingDown className="w-4 h-4 inline mr-1" /> Anomaly Detection — Domain Metrics
@@ -1208,7 +1208,7 @@ function RuntimeStabilitySection() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </>
   );
@@ -1321,7 +1321,7 @@ function GovernancePanel() {
       sev === "error" ? "bg-orange-500/20 text-orange-400" :
       sev === "warning" ? "bg-amber-500/20 text-amber-400" :
       "bg-blue-500/20 text-blue-400";
-    return <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${cls}`}>{sev}</span>;
+    return <span className={`px-1.5 py-0.5 rounded text-[0.625rem] font-medium ${cls}`}>{sev}</span>;
   };
 
   return (
@@ -1334,17 +1334,17 @@ function GovernancePanel() {
           { label: "Arch Debt", value: summary.architectureDebt, color: summary.architectureDebt > 0 ? "text-amber-400" : "text-emerald-400" },
           { label: "Dedup Cache", value: dedupCacheSize, color: "text-purple-400" },
         ].map((s) => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Eye className="w-4 h-4 inline mr-1" /> Page Open
@@ -1356,9 +1356,9 @@ function GovernancePanel() {
             <div className="flex justify-between"><span className="text-gray-400">Failed</span><span className="text-red-400 font-bold">{pageStats.failed}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Avg duration</span><span className="text-blue-400 font-bold">{Math.round(pageStats.avgDuration)}ms</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Activity className="w-4 h-4 inline mr-1" /> Action Wiring
@@ -1370,9 +1370,9 @@ function GovernancePanel() {
             <div className="flex justify-between"><span className="text-gray-400">Dead clicks</span><span className="text-red-400 font-bold">{actionStats.deadClicks}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Dead rate</span><span className={`font-bold ${actionStats.deadClickRate > 0.05 ? "text-red-400" : "text-emerald-400"}`}>{(actionStats.deadClickRate * 100).toFixed(1)}%</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Heart className="w-4 h-4 inline mr-1" /> Runtime
@@ -1384,11 +1384,11 @@ function GovernancePanel() {
             <div className="flex justify-between"><span className="text-gray-400">Error subs</span><span className="text-red-400 font-bold">{runtimeStats.errorSubscriptions}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Fatal events</span><span className={`font-bold ${runtimeStats.fatalEvents > 0 ? "text-red-400" : "text-emerald-400"}`}>{runtimeStats.fatalEvents}</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <ArrowRight className="w-4 h-4 inline mr-1" /> Flow Closure
@@ -1401,9 +1401,9 @@ function GovernancePanel() {
             <div className="flex justify-between"><span className="text-gray-400">Blocked</span><span className="text-amber-400 font-bold">{flowStats.blockedFlows}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Closure rate</span><span className={`font-bold ${flowStats.closureRate < 0.9 ? "text-amber-400" : "text-emerald-400"}`}>{(flowStats.closureRate * 100).toFixed(0)}%</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Wrench className="w-4 h-4 inline mr-1" /> Auto-Remediation
@@ -1419,11 +1419,11 @@ function GovernancePanel() {
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       {engineBreakdown.length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Cpu className="w-4 h-4 inline mr-1" /> Violations by Engine
@@ -1435,20 +1435,20 @@ function GovernancePanel() {
                 <div key={engine} className="flex items-center gap-3 p-2 rounded border border-white/5" style={{ backgroundColor: "hsl(228 28% 10%)" }}>
                   <span className="text-xs text-gray-300 w-40 truncate">{engine.replace(/-/g, " ")}</span>
                   <div className="flex-1 flex gap-2">
-                    {counts.critical > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">{counts.critical} crit</span>}
-                    {counts.error > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400">{counts.error} err</span>}
-                    {counts.warning > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">{counts.warning} warn</span>}
-                    {counts.info > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">{counts.info} info</span>}
+                    {counts.critical > 0 && <span className="text-[0.625rem] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400">{counts.critical} crit</span>}
+                    {counts.error > 0 && <span className="text-[0.625rem] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400">{counts.error} err</span>}
+                    {counts.warning > 0 && <span className="text-[0.625rem] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400">{counts.warning} warn</span>}
+                    {counts.info > 0 && <span className="text-[0.625rem] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400">{counts.info} info</span>}
                   </div>
                   <span className="text-white font-bold text-sm">{counts.total}</span>
                 </div>
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
             <Layers className="w-4 h-4 inline mr-1" /> Governance Engines (13)
@@ -1467,15 +1467,15 @@ function GovernancePanel() {
                 >
                   <CheckCircle className={`w-3.5 h-3.5 flex-shrink-0 ${engViolCount > 0 ? "text-amber-400" : "text-emerald-400"}`} />
                   <span className="text-xs text-gray-300 truncate flex-1">{eng.name}</span>
-                  {engViolCount > 0 && <span className="text-[10px] text-amber-400 font-bold">{engViolCount}</span>}
+                  {engViolCount > 0 && <span className="text-[0.625rem] text-amber-400 font-bold">{engViolCount}</span>}
                 </div>
               );
             })}
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
@@ -1564,9 +1564,9 @@ function GovernancePanel() {
                 >
                   {severityBadge(v.severity)}
                   <span className="text-gray-300 flex-1 line-clamp-1">{v.message}</span>
-                  {v.engine && <span className="text-purple-400 text-[10px] whitespace-nowrap">{v.engine}</span>}
-                  {v.code && <span className="text-cyan-400 text-[10px] whitespace-nowrap">{v.code}</span>}
-                  <span className="text-gray-500 text-[10px] whitespace-nowrap">{v.type.replace(/_/g, " ")}</span>
+                  {v.engine && <span className="text-purple-400 text-[0.625rem] whitespace-nowrap">{v.engine}</span>}
+                  {v.code && <span className="text-cyan-400 text-[0.625rem] whitespace-nowrap">{v.code}</span>}
+                  <span className="text-gray-500 text-[0.625rem] whitespace-nowrap">{v.type.replace(/_/g, " ")}</span>
                   {expandedId === v.id ? <ChevronUp className="w-3 h-3 text-gray-500" /> : <ChevronDown className="w-3 h-3 text-gray-500" />}
                 </div>
                 {expandedId === v.id && (
@@ -1592,17 +1592,17 @@ function GovernancePanel() {
                     {Object.keys(v.metadata).length > 0 && (
                       <div>
                         <span className="text-gray-500">Metadata:</span>
-                        <pre className="mt-1 text-[10px] text-gray-400 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(v.metadata, null, 2)}</pre>
+                        <pre className="mt-1 text-[0.625rem] text-gray-400 overflow-x-auto whitespace-pre-wrap">{JSON.stringify(v.metadata, null, 2)}</pre>
                       </div>
                     )}
                     <div className="flex gap-2 pt-1">
                       {(v.status ?? "new") === "new" && (
-                        <Button size="sm" variant="outline" className="text-[10px] h-6 border-blue-500/30 text-blue-400 hover:bg-blue-500/10" onClick={() => handleAcknowledge(v.id)}>
+                        <Button size="sm" variant="outline" className="text-[0.625rem] h-6 border-blue-500/30 text-blue-400 hover:bg-blue-500/10" onClick={() => handleAcknowledge(v.id)}>
                           Acknowledge
                         </Button>
                       )}
                       {(v.status ?? "new") !== "resolved" && (
-                        <Button size="sm" variant="outline" className="text-[10px] h-6 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" onClick={() => handleResolve(v.id)}>
+                        <Button size="sm" variant="outline" className="text-[0.625rem] h-6 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10" onClick={() => handleResolve(v.id)}>
                           Resolve
                         </Button>
                       )}
@@ -1613,10 +1613,10 @@ function GovernancePanel() {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
 
       {Object.keys(summary.byType).length > 0 && (
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               Violations by Type
@@ -1632,7 +1632,7 @@ function GovernancePanel() {
               ))}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );
@@ -1759,17 +1759,17 @@ function EngineMemoryPanel() {
           { label: "Recurring Bugs", value: recurrentBugs.length, color: recurrentBugs.length === 0 ? "text-emerald-400" : "text-red-400" },
           { label: "Avg Score", value: memStats.avgScore.toFixed(2), color: scoreColor(memStats.avgScore) },
         ].map(s => (
-          <Card key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard key={s.label} className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardContent className="p-4 text-center">
               <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
               <p className="text-xs text-gray-400">{s.label}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
               <Brain className="w-4 h-4 inline mr-1" /> Memory Status
@@ -1783,10 +1783,10 @@ function EngineMemoryPanel() {
             <div className="flex justify-between"><span className="text-gray-400">Total recurrences</span><span className={`font-bold ${memStats.totalRecurrences === 0 ? "text-emerald-400" : "text-red-400"}`}>{memStats.totalRecurrences}</span></div>
             <div className="flex justify-between"><span className="text-gray-400">Supabase</span><span className={memStats.supabaseAvailable ? "text-emerald-400" : "text-amber-400"}>{memStats.supabaseAvailable ? "Connected" : "Offline (local cache)"}</span></div>
           </CardContent>
-        </Card>
+        </AppCard>
 
         {learningReport && (
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>
                 <Activity className="w-4 h-4 inline mr-1" /> Learning Engine
@@ -1800,12 +1800,12 @@ function EngineMemoryPanel() {
               <div className="flex justify-between"><span className="text-gray-400">Auto-disabled</span><span className="text-amber-400 font-bold">{learningReport.disabledFixes}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Last run</span><span className="text-gray-300">{learningReport.lastRun ? timeAgo(new Date(learningReport.lastRun).toISOString()) : "never"}</span></div>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
 
       {recurrentBugs.length > 0 && (
-        <Card className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+        <AppCard className="border-red-500/20" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-red-400">
               <AlertTriangle className="w-4 h-4 inline mr-1" /> Recurring Bugs (target: 0)
@@ -1817,7 +1817,7 @@ function EngineMemoryPanel() {
               return (
                 <div key={f.issue_signature} className="flex items-center justify-between text-xs border-b border-white/5 pb-2">
                   <div className="min-w-0">
-                    <span className="text-white font-mono text-[10px]">{f.issue_signature}</span>
+                    <span className="text-white font-mono text-[0.625rem]">{f.issue_signature}</span>
                     <div className="text-gray-500 mt-0.5">{f.domain} / {f.category} — {f.recurrence_after_fix} recurrences</div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -1828,7 +1828,7 @@ function EngineMemoryPanel() {
               );
             })}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {recurrentBugs.length === 0 && memStats.totalFixes > 0 && (
@@ -1838,10 +1838,10 @@ function EngineMemoryPanel() {
         </div>
       )}
 
-      <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+      <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Top 10 Fixes (by Score)</CardTitle>
-          <p className="text-[10px] text-gray-500 mt-1">Score = 50% success rate + 20% speed + 30% recurrence eliminated</p>
+          <p className="text-[0.625rem] text-gray-500 mt-1">Score = 50% success rate + 20% speed + 30% recurrence eliminated</p>
         </CardHeader>
         <CardContent>
           {topFixes.length === 0 ? (
@@ -1855,15 +1855,15 @@ function EngineMemoryPanel() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 min-w-0">
                         <span className="text-gray-500 text-xs w-5">#{idx + 1}</span>
-                        <span className="text-white font-mono text-[10px] truncate max-w-[250px]">{f.issue_signature}</span>
-                        {f.auto_apply && <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400">auto</span>}
-                        {f.disabled && <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-500/20 text-red-400">disabled</span>}
+                        <span className="text-white font-mono text-[0.625rem] truncate max-w-[250px]">{f.issue_signature}</span>
+                        {f.auto_apply && <span className="px-1.5 py-0.5 rounded text-[0.625rem] bg-emerald-500/20 text-emerald-400">auto</span>}
+                        {f.disabled && <span className="px-1.5 py-0.5 rounded text-[0.625rem] bg-red-500/20 text-red-400">disabled</span>}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className={`text-sm font-bold ${scoreColor(f.score)}`}>{f.score.toFixed(3)}</span>
                         <button
                           onClick={() => handleToggle(f.issue_signature, f.disabled || !f.auto_apply)}
-                          className={`px-2 py-0.5 rounded text-[10px] border ${
+                          className={`px-2 py-0.5 rounded text-[0.625rem] border ${
                             f.auto_apply && !f.disabled
                               ? "border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
                               : "border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
@@ -1873,7 +1873,7 @@ function EngineMemoryPanel() {
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-1.5 text-[10px] text-gray-500">
+                    <div className="flex items-center gap-4 mt-1.5 text-[0.625rem] text-gray-500">
                       <div className="flex items-center gap-1">
                         <span>Success</span>
                         <span className={scoreColor(bd.successRate)}>{(bd.successRate * 100).toFixed(0)}%</span>
@@ -1900,11 +1900,11 @@ function EngineMemoryPanel() {
             </div>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
 
       {Object.keys(memStats.byDomain).length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Type</CardTitle>
             </CardHeader>
@@ -1916,9 +1916,9 @@ function EngineMemoryPanel() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
 
-          <Card className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
+          <AppCard className="border-white/10" style={{ backgroundColor: "hsl(226 22% 14%)" }}>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm" style={{ color: "hsl(var(--accent))" }}>Fixes by Domain</CardTitle>
             </CardHeader>
@@ -1930,7 +1930,7 @@ function EngineMemoryPanel() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
       )}
     </div>

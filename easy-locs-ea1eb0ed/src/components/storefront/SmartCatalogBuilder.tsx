@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, Loader2, Sparkles, Zap, Check, Tag } from "lucide-react";
@@ -118,7 +118,7 @@ Return: {"title":"optimized product title","description":"compelling product des
   };
 
   return (
-    <Card>
+    <AppCard>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-sm">
           <Package className="h-4 w-4 text-primary" />
@@ -128,15 +128,15 @@ Return: {"title":"optimized product title","description":"compelling product des
       <CardContent className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <div className="col-span-2">
-            <Label className="text-[10px]">Product Name *</Label>
+            <Label className="text-[0.625rem]">Product Name *</Label>
             <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Margherita Pizza" className="h-8 text-xs mt-0.5" />
           </div>
           <div>
-            <Label className="text-[10px]">Price *</Label>
+            <Label className="text-[0.625rem]">Price *</Label>
             <Input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0.00" className="h-8 text-xs mt-0.5" />
           </div>
           <div>
-            <Label className="text-[10px]">Type</Label>
+            <Label className="text-[0.625rem]">Type</Label>
             <Select value={itemType} onValueChange={setItemType}>
               <SelectTrigger className="h-8 text-xs mt-0.5"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -149,7 +149,7 @@ Return: {"title":"optimized product title","description":"compelling product des
         </div>
 
         <div>
-          <Label className="text-[10px]">Description</Label>
+          <Label className="text-[0.625rem]">Description</Label>
           <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Describe your product..." className="text-xs mt-0.5" rows={2} />
         </div>
 
@@ -164,23 +164,23 @@ Return: {"title":"optimized product title","description":"compelling product des
         />
 
         {/* AI Suggest */}
-        <Button variant="outline" size="sm" className="w-full h-8 text-[11px] gap-1.5" onClick={handleAISuggest} disabled={aiLoading || !title.trim()}>
+        <Button variant="outline" size="sm" className="w-full h-8 text-[0.6875rem] gap-1.5" onClick={handleAISuggest} disabled={aiLoading || !title.trim()}>
           {aiLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-primary" />}
           {aiLoading ? "Generating..." : "AI Auto-fill"}
         </Button>
 
         {suggestion && (
           <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/20 space-y-1.5">
-            <div className="flex items-center gap-1 text-[10px] font-semibold text-primary">
+            <div className="flex items-center gap-1 text-[0.625rem] font-semibold text-primary">
               <Zap className="h-2.5 w-2.5" /> AI Suggestions Applied
             </div>
             <div className="flex flex-wrap gap-1">
-              <Badge variant="secondary" className="text-[10px]">{suggestion.category}</Badge>
+              <Badge variant="secondary" className="text-[0.625rem]">{suggestion.category}</Badge>
               {suggestion.tags.map(t => (
-                <Badge key={t} variant="outline" className="text-[10px] gap-0.5"><Tag className="h-2 w-2" /> {t}</Badge>
+                <Badge key={t} variant="outline" className="text-[0.625rem] gap-0.5"><Tag className="h-2 w-2" /> {t}</Badge>
               ))}
             </div>
-            <p className="text-[10px] text-muted-foreground line-clamp-2">{suggestion.description}</p>
+            <p className="text-[0.625rem] text-muted-foreground line-clamp-2">{suggestion.description}</p>
           </div>
         )}
 
@@ -189,6 +189,6 @@ Return: {"title":"optimized product title","description":"compelling product des
           Add Product
         </Button>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

@@ -235,13 +235,13 @@ export default function ProSettingsSection() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">UUID complet</p>
-              <p className="font-mono text-[10px] text-muted-foreground/70 break-words">{userId}</p>
+              <p className="font-mono text-[0.625rem] text-muted-foreground/70 break-words">{userId}</p>
             </div>
           </div>
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">Numéro de sécurité</p>
-              <p className="font-mono text-[10px] text-muted-foreground/70">
+              <p className="font-mono text-[0.625rem] text-muted-foreground/70">
                 {userId.replace(/-/g, '').substring(0, 20).replace(/(.{5})/g, '$1 ').trim()}
               </p>
             </div>
@@ -603,7 +603,7 @@ export default function ProSettingsSection() {
           </div>
           <div>
             <p className="text-xs font-semibold text-foreground">Chiffrement actif — AES-256-GCM</p>
-            <p className="text-[10px] text-muted-foreground leading-relaxed mt-0.5">
+            <p className="text-[0.625rem] text-muted-foreground leading-relaxed mt-0.5">
               Vos messages, appels et fichiers sont protégés par un chiffrement de bout en bout.
               Ni Easy-Locs ni aucun tiers ne peut accéder à vos conversations.
               Le protocole utilise des clés éphémères Diffie-Hellman avec rotation automatique.
@@ -647,7 +647,7 @@ function ToggleRow({ icon, label, description, checked, onChange, badge, badgeCo
           <div className="flex items-center gap-2">
             <Label className="text-sm font-medium text-foreground">{label}</Label>
             {badge && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider"
+              <span className="px-1.5 py-0.5 rounded text-[0.625rem] font-bold tracking-wider"
                 style={{ background: `${badgeColor}20`, color: badgeColor }}>
                 {badge}
               </span>

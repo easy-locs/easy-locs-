@@ -72,7 +72,7 @@ export default function DeliveryParcelPage() {
       rightAction={etaMin != null ? (
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
           <Clock className="w-3 h-3 text-primary" />
-          <span className="text-[10px] font-bold text-primary">~{etaMin}min</span>
+          <span className="text-[0.625rem] font-bold text-primary">~{etaMin}min</span>
         </div>
       ) : undefined}
       noContentPad
@@ -91,7 +91,7 @@ export default function DeliveryParcelPage() {
             {station.surge > 1.05 && (
               <div className="flex items-center gap-1 ml-auto">
                 <Zap className="w-3 h-3 text-destructive" />
-                <span className="text-[10px] font-bold text-destructive">Surge</span>
+                <span className="text-[0.625rem] font-bold text-destructive">Surge</span>
               </div>
             )}
           </motion.div>
@@ -115,7 +115,7 @@ export default function DeliveryParcelPage() {
                 )}
               >
                 <span className="text-xl block mb-1">{t.emoji}</span>
-                <span className={cn("text-[11px] font-medium", parcelType === t.id ? "text-foreground" : "text-muted-foreground")}>{t.label}</span>
+                <span className={cn("text-[0.6875rem] font-medium", parcelType === t.id ? "text-foreground" : "text-muted-foreground")}>{t.label}</span>
               </button>
             ))}
           </div>
@@ -146,7 +146,7 @@ export default function DeliveryParcelPage() {
             ) : (
               <div className="flex flex-col items-center gap-1 text-muted-foreground">
                 <Camera className="w-5 h-5" />
-                <span className="text-[10px]">Tap to upload photo</span>
+                <span className="text-[0.625rem]">Tap to upload photo</span>
               </div>
             )}
             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />

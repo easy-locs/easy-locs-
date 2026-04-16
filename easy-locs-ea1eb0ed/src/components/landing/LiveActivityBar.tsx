@@ -41,7 +41,7 @@ export default function LiveActivityBar() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-green-500">LIVE</span>
+            <span className="text-[0.625rem] font-bold uppercase tracking-wider text-green-500">LIVE</span>
           </div>
           <AnimatePresence mode="wait">
             <motion.div
@@ -53,8 +53,8 @@ export default function LiveActivityBar() {
               className="flex items-center gap-1.5 min-w-0 overflow-hidden flex-1"
             >
               <event.icon className="h-3.5 w-3.5 shrink-0" style={{ color: event.color }} />
-              <span className="text-[10px] sm:text-xs text-muted-foreground line-clamp-1 break-words">{event.text}</span>
-              <span className="text-[10px] sm:text-[10px] text-muted-foreground/50 shrink-0 hidden sm:inline">{t("landing.live.just_now") || "just now"}</span>
+              <span className="text-[0.625rem] sm:text-xs text-muted-foreground line-clamp-1 break-words">{event.text}</span>
+              <span className="text-[0.625rem] sm:text-[0.625rem] text-muted-foreground/50 shrink-0 hidden sm:inline">{t("landing.live.just_now") || "just now"}</span>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -63,13 +63,13 @@ export default function LiveActivityBar() {
           <div className="flex items-center gap-1.5">
             <Activity className="h-3.5 w-3.5 text-accent" />
             <span className="text-xs font-bold text-foreground tabular-nums">{activeUsers.toLocaleString()}</span>
-            <span className="text-[10px] text-muted-foreground">{t("landing.live.online") || "online now"}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{t("landing.live.online") || "online now"}</span>
           </div>
           <div className="w-px h-4 bg-border/30" />
           <div className="flex items-center gap-1.5">
             <ShoppingBag className="h-3.5 w-3.5 text-accent" />
             <span className="text-xs font-bold text-foreground tabular-nums">1,247</span>
-            <span className="text-[10px] text-muted-foreground">{t("landing.live.orders_today") || "orders today"}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{t("landing.live.orders_today") || "orders today"}</span>
           </div>
         </div>
       </div>

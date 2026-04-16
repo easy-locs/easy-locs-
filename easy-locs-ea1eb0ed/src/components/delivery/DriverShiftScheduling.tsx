@@ -108,11 +108,11 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
           Planning shifts
         </h3>
         <div className="flex gap-1">
-          <Button size="sm" className="text-[10px] h-7 px-2" onClick={autoRotate}
+          <Button size="sm" className="text-[0.625rem] h-7 px-2" onClick={autoRotate}
             style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
             🔄 Auto-rotation
           </Button>
-          <Button size="sm" className="text-[10px] h-7 px-2" onClick={() => setShowAdd(!showAdd)}
+          <Button size="sm" className="text-[0.625rem] h-7 px-2" onClick={() => setShowAdd(!showAdd)}
             style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
             <Plus className="h-3 w-3" />
           </Button>
@@ -124,7 +124,7 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setWeekOffset(w => w - 1)}>
           <ChevronLeft className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }} />
         </Button>
-        <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{weekLabel}</span>
+        <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{weekLabel}</span>
         <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => setWeekOffset(w => w + 1)}>
           <ChevronRight className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }} />
         </Button>
@@ -144,10 +144,10 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
                 background: isSelected ? "hsl(var(--hud-cyan) / 0.1)" : isToday ? "hsl(var(--hud-cyan) / 0.05)" : "hsl(var(--hud-surface))",
                 border: `1px solid ${isSelected ? "hsl(var(--hud-cyan) / 0.3)" : isToday ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)"}`,
               }}>
-              <p className="text-[10px] font-semibold" style={{ color: isToday ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem] font-semibold" style={{ color: isToday ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}>
                 {DAYS_FR[i]}
               </p>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
                 {new Date(date).getDate()}
               </p>
               {dayShifts.length > 0 && (
@@ -171,41 +171,41 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Chauffeur</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Chauffeur</Label>
                   <Input value={newShift.driverName} onChange={e => setNewShift(p => ({ ...p, driverName: e.target.value }))}
-                    placeholder="Nom" className="h-7 text-[10px] mt-0.5"
+                    placeholder="Nom" className="h-7 text-[0.625rem] mt-0.5"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Date</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Date</Label>
                   <Input type="date" value={newShift.date} onChange={e => setNewShift(p => ({ ...p, date: e.target.value }))}
-                    className="h-7 text-[10px] mt-0.5"
+                    className="h-7 text-[0.625rem] mt-0.5"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Début</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Début</Label>
                   <Input type="time" value={newShift.startTime} onChange={e => setNewShift(p => ({ ...p, startTime: e.target.value }))}
-                    className="h-7 text-[10px] mt-0.5"
+                    className="h-7 text-[0.625rem] mt-0.5"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Fin</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Fin</Label>
                   <Input type="time" value={newShift.endTime} onChange={e => setNewShift(p => ({ ...p, endTime: e.target.value }))}
-                    className="h-7 text-[10px] mt-0.5"
+                    className="h-7 text-[0.625rem] mt-0.5"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Zone</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Zone</Label>
                   <select value={newShift.zone} onChange={e => setNewShift(p => ({ ...p, zone: e.target.value }))}
-                    className="w-full h-7 text-[10px] mt-0.5 rounded-md px-1"
+                    className="w-full h-7 text-[0.625rem] mt-0.5 rounded-md px-1"
                     style={{ background: "hsl(var(--hud-bg))", border: "1px solid hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }}>
                     {ZONES.map(z => <option key={z} value={z}>{z}</option>)}
                   </select>
                 </div>
               </div>
-              <Button size="sm" className="w-full text-[10px] h-7" onClick={addShift}
+              <Button size="sm" className="w-full text-[0.625rem] h-7" onClick={addShift}
                 style={{ background: "hsl(var(--success))", color: "#fff" }}>Ajouter le shift</Button>
             </div>
           </motion.div>
@@ -215,11 +215,11 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
       {/* Day shifts detail */}
       {selectedDay && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>
             {new Date(selectedDay).toLocaleDateString("fr", { weekday: "long", day: "numeric", month: "long" })}
           </p>
           {shifts.filter(s => s.date === selectedDay).length === 0 ? (
-            <p className="text-[10px] text-center py-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun shift ce jour</p>
+            <p className="text-[0.625rem] text-center py-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>Aucun shift ce jour</p>
           ) : (
             shifts.filter(s => s.date === selectedDay).map(shift => {
               const cfg = getStatusConfig(shift.status);
@@ -228,18 +228,18 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
                   style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                   <div className="w-2 h-8 rounded-full" style={{ background: cfg.color }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{shift.driverName}</p>
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{shift.driverName}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                         <Clock className="h-2.5 w-2.5 inline mr-0.5" />{shift.startTime}–{shift.endTime}
                       </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded"
+                      <span className="text-[0.625rem] px-1.5 py-0.5 rounded"
                         style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                         📍 {shift.zone}
                       </span>
                     </div>
                   </div>
-                  <span className="text-[10px] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: cfg.color }}>{cfg.label}</span>
                   <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => deleteShift(shift.id)}>
                     <Trash2 className="h-3 w-3" style={{ color: "hsl(var(--destructive) / 0.5)" }} />
                   </Button>
@@ -264,7 +264,7 @@ export default function DriverShiftScheduling({ orgId }: { orgId: string }) {
           <div key={label} className="rounded-lg px-2 py-1.5 text-center"
             style={{ background: `hsl(var(${color}) / 0.05)`, border: `1px solid hsl(var(${color}) / 0.1)` }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>

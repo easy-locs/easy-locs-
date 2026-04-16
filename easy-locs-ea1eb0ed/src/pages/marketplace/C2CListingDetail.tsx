@@ -180,7 +180,7 @@ export default function C2CListingDetail() {
           <div className="flex items-start justify-between gap-3">
             <h1 className="text-xl font-bold text-foreground leading-tight">{listing.title}</h1>
             {isExpired && (
-              <span className="shrink-0 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600">
+              <span className="shrink-0 flex items-center gap-1 text-[0.6875rem] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600">
                 <Clock className="h-3 w-3" /> {t("page.c2c.expired")}
               </span>
             )}
@@ -241,7 +241,7 @@ export default function C2CListingDetail() {
             <Tag className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs text-muted-foreground capitalize">{listing.category.replace(/^c2c_/, "").replace(/_/g, " ")}</span>
             {listing.status === "sold" && (
-              <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600">
+              <span className="flex items-center gap-1 text-[0.6875rem] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600">
                 <CheckCircle className="h-3 w-3" /> {t("page.c2c.sold")}
               </span>
             )}

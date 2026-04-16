@@ -76,7 +76,7 @@ export const PaymentList: Story = {
             </div>
             <div style={{ textAlign: "right" }}>
               <p className="text-sm font-bold text-foreground">{p.amount}</p>
-              <p className="text-[10px] text-muted-foreground uppercase">{p.status}</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase">{p.status}</p>
             </div>
           </div>
         </AppCard>
@@ -97,7 +97,7 @@ export const ScrollableList: Story = {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">Property {i + 1}</p>
-                <p className="text-[11px] text-muted-foreground">Unit {String.fromCharCode(65 + (i % 8))}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">Unit {String.fromCharCode(65 + (i % 8))}</p>
               </div>
             </div>
           </AppCard>

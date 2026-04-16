@@ -50,7 +50,7 @@ export default function StoryCTABar({ story }: StoryCTABarProps) {
         </div>
         {story.statusLabel && (
           <span
-            className="inline-block mt-2 px-2.5 py-0.5 rounded-lg text-[11px] font-bold"
+            className="inline-block mt-2 px-2.5 py-0.5 rounded-lg text-[0.6875rem] font-bold"
             style={{ background: "hsl(var(--accent))", color: "hsl(226 24% 14%)" }}
           >
             {story.statusLabel}
@@ -89,11 +89,11 @@ export default function StoryCTABar({ story }: StoryCTABarProps) {
       <div className="flex justify-center gap-8 mt-3">
         <button onClick={() => handleCTA("save")} className="flex flex-col items-center gap-0.5 text-white/60 active:text-white transition-colors">
           <Bookmark className="h-5 w-5" />
-          <span className="text-[10px] font-medium">{t("story.save") || "Save"}</span>
+          <span className="text-[0.625rem] font-medium">{t("story.save") || "Save"}</span>
         </button>
         <button onClick={() => handleCTA("share")} className="flex flex-col items-center gap-0.5 text-white/60 active:text-white transition-colors">
           <Share2 className="h-5 w-5" />
-          <span className="text-[10px] font-medium">{t("story.share") || "Share"}</span>
+          <span className="text-[0.625rem] font-medium">{t("story.share") || "Share"}</span>
         </button>
       </div>
     </div>

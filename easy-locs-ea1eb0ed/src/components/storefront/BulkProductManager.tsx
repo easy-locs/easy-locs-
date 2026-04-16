@@ -5,7 +5,7 @@ import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -124,36 +124,36 @@ export default function BulkProductManager({ shopId }: Props) {
     if (fileRef.current) fileRef.current.value = "";
   };
 
-  if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
+  if (isLoading) return <AppCard><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></AppCard>;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold flex items-center gap-2">
             <Edit3 className="h-4 w-4 text-primary" /> Bulk Management
           </h3>
-          <Badge variant="outline" className="text-[10px]">{items.length} products</Badge>
+          <Badge variant="outline" className="text-[0.625rem]">{items.length} products</Badge>
         </div>
 
         {/* Actions bar */}
         <div className="flex gap-1.5 flex-wrap">
-          <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={exportCSV}>
+          <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={exportCSV}>
             <Download className="h-3 w-3 mr-1" /> Export CSV
           </Button>
-          <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => fileRef.current?.click()} disabled={importing}>
+          <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => fileRef.current?.click()} disabled={importing}>
             {importing ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Upload className="h-3 w-3 mr-1" />} Import CSV
           </Button>
           <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={importCSV} />
           {selected.size > 0 && (
             <>
-              <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => bulkUpdate.mutate({ available: true })} disabled={bulkUpdate.isPending}>
+              <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => bulkUpdate.mutate({ available: true })} disabled={bulkUpdate.isPending}>
                 <Eye className="h-3 w-3 mr-1" /> Publish ({selected.size})
               </Button>
-              <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => bulkUpdate.mutate({ available: false })} disabled={bulkUpdate.isPending}>
+              <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => bulkUpdate.mutate({ available: false })} disabled={bulkUpdate.isPending}>
                 <EyeOff className="h-3 w-3 mr-1" /> Unpublish
               </Button>
-              <Button size="sm" variant="destructive" className="h-7 text-[10px]" onClick={() => { if (confirm(`Delete ${selected.size} items?`)) bulkDelete.mutate(); }}>
+              <Button size="sm" variant="destructive" className="h-7 text-[0.625rem]" onClick={() => { if (confirm(`Delete ${selected.size} items?`)) bulkDelete.mutate(); }}>
                 <Trash2 className="h-3 w-3 mr-1" /> Delete
               </Button>
             </>
@@ -162,7 +162,7 @@ export default function BulkProductManager({ shopId }: Props) {
 
         {/* Product list */}
         <div className="space-y-1">
-          <button onClick={toggleAll} className="flex items-center gap-2 text-[10px] text-muted-foreground px-1 py-0.5">
+          <button onClick={toggleAll} className="flex items-center gap-2 text-[0.625rem] text-muted-foreground px-1 py-0.5">
             {selected.size === items.length && items.length > 0 ? <CheckSquare className="h-3 w-3" /> : <Square className="h-3 w-3" />}
             Select all
           </button>
@@ -173,13 +173,13 @@ export default function BulkProductManager({ shopId }: Props) {
               </button>
               {item.photo_url && <img loading="lazy" src={item.photo_url} alt="" className="w-8 h-8 rounded object-cover" />}
               <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
+                <p className="text-[0.6875rem] font-medium line-clamp-2 break-words leading-snug">{item.title}</p>
                 <div className="flex items-center gap-2">
-                  {item.sku && <span className="text-[10px] text-muted-foreground font-mono">{item.sku}</span>}
-                  <Badge className={`text-[10px] ${item.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
+                  {item.sku && <span className="text-[0.625rem] text-muted-foreground font-mono">{item.sku}</span>}
+                  <Badge className={`text-[0.625rem] ${item.available ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"}`}>
                     {item.available ? "Live" : "Hidden"}
                   </Badge>
-                  {item.stock_quantity !== null && <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>}
+                  {item.stock_quantity !== null && <span className="text-[0.625rem] text-muted-foreground">Stock: {item.stock_quantity}</span>}
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -190,7 +190,7 @@ export default function BulkProductManager({ shopId }: Props) {
                     onChange={e => setNewPrice(e.target.value)}
                     onBlur={() => { if (newPrice) updatePrice.mutate({ id: item.id, price: parseFloat(newPrice) }); else setEditingPrice(null); }}
                     onKeyDown={e => { if (e.key === "Enter" && newPrice) updatePrice.mutate({ id: item.id, price: parseFloat(newPrice) }); }}
-                    className="h-6 w-16 text-[10px] text-right"
+                    className="h-6 w-16 text-[0.625rem] text-right"
                   />
                 ) : (
                   <button onClick={() => { setEditingPrice(item.id); setNewPrice(String(item.price)); }} className="text-xs font-bold text-primary hover:underline">
@@ -202,6 +202,6 @@ export default function BulkProductManager({ shopId }: Props) {
           ))}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

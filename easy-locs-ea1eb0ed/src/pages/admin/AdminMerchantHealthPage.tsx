@@ -79,7 +79,7 @@ export default function AdminMerchantHealthPage() {
               <p className="text-xs text-muted-foreground">
                 Flag {row.isOpen ? "Open" : "Closed"} · Schedule {row.computedOpen ? "Open" : "Closed"}
               </p>
-              <p className="text-[11px] text-muted-foreground/70">
+              <p className="text-[0.6875rem] text-muted-foreground/70">
                 {row.openReason}
               </p>
             </div>

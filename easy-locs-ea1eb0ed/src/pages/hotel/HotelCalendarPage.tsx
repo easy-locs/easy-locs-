@@ -157,7 +157,7 @@ export default function HotelCalendarPage() {
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 text-[10px]">
+        <div className="flex items-center gap-3 text-[0.625rem]">
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-emerald-500/40" /> Available</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-blue-500/40" /> Booked</span>
           <span className="flex items-center gap-1"><span className="h-2.5 w-2.5 rounded-sm bg-red-500/40" /> Blocked</span>
@@ -167,12 +167,12 @@ export default function HotelCalendarPage() {
         <ScrollArea className="w-full">
           <div className="min-w-[600px]">
             <div className="grid" style={{ gridTemplateColumns: `140px repeat(${days.length}, 32px)` }}>
-              <div className="h-8 flex items-center px-2 text-[10px] font-medium text-muted-foreground sticky left-0 bg-background z-10">
+              <div className="h-8 flex items-center px-2 text-[0.625rem] font-medium text-muted-foreground sticky left-0 bg-background z-10">
                 Room Type
               </div>
               {days.map(d => (
                 <div key={d.toISOString()} className={cn(
-                  "h-8 flex items-center justify-center text-[10px]",
+                  "h-8 flex items-center justify-center text-[0.625rem]",
                   isToday(d) && "font-bold text-primary",
                   isBefore(d, new Date()) && !isToday(d) && "text-muted-foreground/40",
                 )}>
@@ -182,7 +182,7 @@ export default function HotelCalendarPage() {
 
               {rooms.map(room => (
                 <React.Fragment key={room.id}>
-                  <div className="h-8 flex items-center px-2 text-[11px] font-medium truncate sticky left-0 bg-background z-10 border-t border-border/10">
+                  <div className="h-8 flex items-center px-2 text-[0.6875rem] font-medium truncate sticky left-0 bg-background z-10 border-t border-border/10">
                     {room.name}
                   </div>
                   {days.map(d => {
@@ -195,7 +195,7 @@ export default function HotelCalendarPage() {
                       <button
                         key={`${room.id}-${dateStr}`}
                         className={cn(
-                          "h-8 w-8 rounded-sm text-[9px] font-medium border border-transparent transition-colors",
+                          "h-8 w-8 rounded-sm text-[0.5625rem] font-medium border border-transparent transition-colors",
                           isPast ? "bg-muted/30 text-muted-foreground/30 cursor-default" : STATUS_COLORS[status],
                           !isPast && "hover:ring-1 hover:ring-primary/50 cursor-pointer",
                         )}

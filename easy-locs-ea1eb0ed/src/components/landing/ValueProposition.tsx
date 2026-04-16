@@ -90,7 +90,7 @@ export default function ValueProposition() {
               >
                 <adv.icon className="h-6 w-6" style={{ color: `hsl(var(--${adv.color}))` }} />
               </motion.div>
-              <h3 className="font-bold text-[15px] text-foreground mb-2">{t(adv.titleKey)}</h3>
+              <h3 className="font-bold text-[0.9375rem] text-foreground mb-2">{t(adv.titleKey)}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{t(adv.descKey)}</p>
             </motion.div>
           ))}

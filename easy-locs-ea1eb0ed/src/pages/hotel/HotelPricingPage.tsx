@@ -6,7 +6,7 @@ import {
   Plus, Trash2, Loader2, CalendarDays, TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -126,14 +126,14 @@ export default function HotelPricingPage() {
         )}
 
         {currentRoom && (
-          <Card className="bg-card/80 border-border/15">
+          <AppCard className="bg-card/80 border-border/15">
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">Base price: <span className="font-bold text-foreground">{currentRoom.basePricePerNight} AED</span>/night</p>
               {currentRoom.weekendPricePerNight && (
                 <p className="text-xs text-muted-foreground">Weekend: <span className="font-bold text-foreground">{currentRoom.weekendPricePerNight} AED</span>/night</p>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         <Button className="w-full" onClick={() => { setForm({ periodName: "", startDate: "", endDate: "", pricePerNight: 0, minStayNights: 1 }); setFormOpen(true); }}>
@@ -141,25 +141,25 @@ export default function HotelPricingPage() {
         </Button>
 
         {pricing.map(sp => (
-          <Card key={sp.id} className="bg-card/80 border-border/15">
+          <AppCard key={sp.id} className="bg-card/80 border-border/15">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-bold">{sp.periodName}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {sp.startDate} → {sp.endDate}
                 </p>
                 <p className="text-sm font-bold mt-0.5 tabular-nums">
-                  {sp.pricePerNight.toLocaleString()} AED<span className="text-[10px] font-normal text-muted-foreground">/night</span>
+                  {sp.pricePerNight.toLocaleString()} AED<span className="text-[0.625rem] font-normal text-muted-foreground">/night</span>
                 </p>
                 {sp.minStayNights > 1 && (
-                  <p className="text-[10px] text-muted-foreground">Min stay: {sp.minStayNights} nights</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Min stay: {sp.minStayNights} nights</p>
                 )}
               </div>
               <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(sp.id)}>
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
 
         {pricing.length === 0 && selectedRoom && (

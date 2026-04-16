@@ -48,14 +48,14 @@ export default memo(function TransactionRow({ id, title, amount, currency, type,
         <Icon style={{ color: config.color }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-foreground leading-snug line-clamp-2 break-words">{title}</p>
+        <p className="text-[0.8125rem] font-semibold text-foreground leading-snug line-clamp-2 break-words">{title}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <p className="text-[10px] text-muted-foreground">{timeStr}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{timeStr}</p>
           {status === "pending" && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>{t("wallet.txPending")}</span>
+            <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>{t("wallet.txPending")}</span>
           )}
           {status === "failed" && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 50%)" }}>{t("wallet.txFailed")}</span>
+            <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 70% 50% / 0.1)", color: "hsl(0 70% 50%)" }}>{t("wallet.txFailed")}</span>
           )}
         </div>
       </div>

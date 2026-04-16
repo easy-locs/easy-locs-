@@ -61,7 +61,7 @@ export default function SmartEntityActions({
             transition={{ delay: i * 0.05 }}
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAction(action); }}
             disabled={!!loading}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[14px] transition-all active:scale-90 disabled:opacity-40"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[0.875rem] transition-all active:scale-90 disabled:opacity-40"
             style={{ background: "hsl(var(--primary) / 0.08)" }}
             title={action.label}
           >
@@ -93,7 +93,7 @@ export default function SmartEntityActions({
                 <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin inline-block" />
               ) : action.icon}
             </span>
-            <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
               {action.label}
             </span>
           </motion.button>

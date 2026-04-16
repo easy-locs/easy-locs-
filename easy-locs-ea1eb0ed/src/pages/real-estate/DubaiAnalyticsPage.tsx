@@ -11,12 +11,13 @@ import type {
   DLDPropertyType,
 } from "@/domains/real-estate/canonical-types";
 import {
-  ArrowLeft, TrendingUp, TrendingDown, BarChart3,
+  ArrowLeft, TrendingUp, TrendingDown, BarChart3, Scale,
   MapPin, ChevronRight, X, SlidersHorizontal, Activity, Share2,
 } from "lucide-react";
 import ShareButtons from "@/components/public/ShareButtons";
 import BuildingPriceHistory from "@/components/analytics/BuildingPriceHistory";
 import ComparableSales from "@/components/analytics/ComparableSales";
+import PriceComparisonOverlay from "@/components/analytics/PriceComparisonOverlay";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend,
 } from "recharts";
@@ -25,8 +26,8 @@ import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
-const navy = "hsl(226 24% 14%)";
-const goldHex = "#EAB308";
+const navy = "hsl(var(--navy, 226 24% 14%))";
+const goldAccent = "hsl(var(--accent))";
 
 type PeriodMode = "month" | "quarter" | "year";
 
@@ -110,10 +111,10 @@ function ChangeIndicator({ value }: { value: number }) {
   const isPositive = value >= 0;
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-[11px] font-bold px-1.5 py-0.5 rounded-full"
+      className="inline-flex items-center gap-0.5 text-[0.6875rem] font-bold px-1.5 py-0.5 rounded-full"
       style={{
-        background: isPositive ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-        color: isPositive ? "#16a34a" : "#dc2626",
+        background: isPositive ? "hsl(var(--success) / 0.12)" : "hsl(var(--destructive) / 0.12)",
+        color: isPositive ? "hsl(var(--success))" : "hsl(var(--destructive))",
       }}
     >
       {isPositive ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
@@ -141,8 +142,8 @@ function KPICard({ label, value, change, icon }: {
         </div>
         {change !== undefined && <ChangeIndicator value={change} />}
       </div>
-      <p className="text-[20px] font-extrabold text-white leading-tight">{value}</p>
-      <p className="text-[10px] text-white/50 mt-0.5 uppercase tracking-wider font-medium">{label}</p>
+      <p className="text-[1.25rem] font-extrabold text-white leading-tight">{value}</p>
+      <p className="text-[0.625rem] text-white/50 mt-0.5 uppercase tracking-wider font-medium">{label}</p>
     </motion.div>
   );
 }
@@ -171,7 +172,7 @@ function DistrictRankingTable({
         <select
           value={sortKey}
           onChange={e => setSortKey(e.target.value as typeof sortKey)}
-          className="text-[11px] px-2 py-1 rounded-lg border"
+          className="text-[0.6875rem] px-2 py-1 rounded-lg border"
           style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
         >
           <option value="transactionCount">{t("dld.sort_by_volume")}</option>
@@ -195,30 +196,30 @@ function DistrictRankingTable({
               className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-extrabold shrink-0"
               style={{
                 background: i < 3 ? "rgba(234,179,8,0.15)" : "hsl(var(--muted))",
-                color: i < 3 ? goldHex : "hsl(var(--muted-foreground))",
+                color: i < 3 ? goldAccent : "hsl(var(--muted-foreground))",
               }}
             >
               {i + 1}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-bold truncate text-foreground">
+              <p className="text-[0.8125rem] font-bold truncate text-foreground">
                 {d.district}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[0.625rem] text-muted-foreground">
                   {d.transactionCount} {t("dld.txn")} · AED {formatAED(d.totalAmount)}
                 </span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full capitalize"
+                <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full capitalize"
                   style={{ background: "hsl(var(--muted))", color: "hsl(var(--muted-foreground))" }}>
                   {localizeType(d.dominantType, t)}
                 </span>
               </div>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-[12px] font-bold text-foreground">
+              <p className="text-[0.75rem] font-bold text-foreground">
                 AED {d.avgPricePerSqft.toLocaleString()}
               </p>
-              <p className="text-[10px] text-muted-foreground">{t("dld.per_sqft")}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{t("dld.per_sqft")}</p>
               <ChangeIndicator value={d.changePercent} />
             </div>
             <ChevronRight size={14} className="text-muted-foreground shrink-0" />
@@ -276,11 +277,11 @@ function TrendCharts({
                 border: "none",
                 borderRadius: "10px",
                 color: "#fff",
-                fontSize: "11px",
+                fontSize: "0.6875rem",
               }}
               formatter={(value: number) => [`AED ${value.toLocaleString()}${t("dld.per_sqft")}`, ""]}
             />
-            <Legend wrapperStyle={{ fontSize: "10px" }} />
+            <Legend wrapperStyle={{ fontSize: "0.625rem" }} />
             {districts.map((d, i) => (
               <Line
                 key={d}
@@ -344,11 +345,11 @@ function VolumeChart({
                 border: "none",
                 borderRadius: "10px",
                 color: "#fff",
-                fontSize: "11px",
+                fontSize: "0.6875rem",
               }}
             />
-            <Legend wrapperStyle={{ fontSize: "10px" }} />
-            <Bar yAxisId="left" dataKey="transactions" fill={goldHex} radius={[4, 4, 0, 0]} name={t("dld.chart_transactions")} />
+            <Legend wrapperStyle={{ fontSize: "0.625rem" }} />
+            <Bar yAxisId="left" dataKey="transactions" fill={goldAccent} radius={[4, 4, 0, 0]} name={t("dld.chart_transactions")} />
             <Bar yAxisId="right" dataKey="volume" fill="#3B82F6" radius={[4, 4, 0, 0]} name={t("dld.chart_volume_m")} />
           </BarChart>
         </ResponsiveContainer>
@@ -423,7 +424,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
         width: ${size}px; height: ${size}px; border-radius: 50%;
         background: rgba(234,179,8,${opacity}); border: 2px solid rgba(234,179,8,0.8);
         cursor: pointer; display: flex; align-items: center; justify-content: center;
-        font-size: 9px; font-weight: 700; color: #fff; text-align: center;
+        font-size: 0.5625rem; font-weight: 700; color: #fff; text-align: center;
         line-height: 1.1; padding: 2px; box-shadow: 0 0 ${size/2}px rgba(234,179,8,${opacity * 0.5});
       `;
       el.innerHTML = `<span>${s.transactionCount}</span>`;
@@ -445,15 +446,15 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
     <MapErrorBoundary fallbackHeight={280} fallbackTitle="District heatmap unavailable" fallbackIcon={MapPin}>
     <div className="mt-4 rounded-xl overflow-hidden" style={{ background: navy, border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="p-3">
-        <p className="text-[11px] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
+        <p className="text-[0.6875rem] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
         <div ref={mapContainerRef} className="rounded-lg overflow-hidden" style={{ height: 280 }} />
       </div>
       <div className="px-3 pb-3 flex items-center gap-2">
-        <span className="text-[9px] text-white/40">{t("dld.heatmap_low")}</span>
+        <span className="text-[0.5625rem] text-white/40">{t("dld.heatmap_low")}</span>
         <div className="flex-1 h-1.5 rounded-full" style={{
           background: "linear-gradient(to right, rgba(234,179,8,0.1), rgba(234,179,8,0.7))"
         }} />
-        <span className="text-[9px] text-white/40">{t("dld.heatmap_high")}</span>
+        <span className="text-[0.5625rem] text-white/40">{t("dld.heatmap_high")}</span>
       </div>
     </div>
     </MapErrorBoundary>
@@ -466,7 +467,7 @@ function HeatmapGrid({ summaries, onSelect, t }: { summaries: DLDDistrictSummary
   return (
     <div className="mt-4 rounded-xl overflow-hidden" style={{ background: navy, border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="p-3">
-        <p className="text-[11px] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
+        <p className="text-[0.6875rem] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
         <div className="grid grid-cols-3 gap-1.5">
           {summaries.map(s => {
             const intensity = s.transactionCount / maxTx;
@@ -478,20 +479,20 @@ function HeatmapGrid({ summaries, onSelect, t }: { summaries: DLDDistrictSummary
                 className="p-2 rounded-lg text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: bg }}
               >
-                <p className="text-[10px] font-bold text-white truncate">{s.district}</p>
-                <p className="text-[9px] text-white/60">{s.transactionCount} {t("dld.tx_label")}</p>
-                <p className="text-[9px] text-white/60">AED {formatAED(s.avgPricePerSqft)}{t("dld.per_sqft")}</p>
+                <p className="text-[0.625rem] font-bold text-white truncate">{s.district}</p>
+                <p className="text-[0.5625rem] text-white/60">{s.transactionCount} {t("dld.tx_label")}</p>
+                <p className="text-[0.5625rem] text-white/60">AED {formatAED(s.avgPricePerSqft)}{t("dld.per_sqft")}</p>
               </button>
             );
           })}
         </div>
       </div>
       <div className="px-3 pb-3 flex items-center gap-2">
-        <span className="text-[9px] text-white/40">{t("dld.heatmap_low")}</span>
+        <span className="text-[0.5625rem] text-white/40">{t("dld.heatmap_low")}</span>
         <div className="flex-1 h-1.5 rounded-full" style={{
           background: "linear-gradient(to right, rgba(234,179,8,0.1), rgba(234,179,8,0.7))"
         }} />
-        <span className="text-[9px] text-white/40">{t("dld.heatmap_high")}</span>
+        <span className="text-[0.5625rem] text-white/40">{t("dld.heatmap_high")}</span>
       </div>
     </div>
   );
@@ -575,7 +576,7 @@ function DistrictDetailDrawer({
           style={{ background: navy }}>
           <div>
             <h2 className="text-base font-bold text-white">{district}</h2>
-            <p className="text-[11px] text-white/50">{t("dld.district_details")}</p>
+            <p className="text-[0.6875rem] text-white/50">{t("dld.district_details")}</p>
           </div>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center bg-white/10">
             <X size={16} color="#fff" />
@@ -585,16 +586,16 @@ function DistrictDetailDrawer({
         <div className="p-4 space-y-4">
           <div className="grid grid-cols-3 gap-2">
             <div className="p-3 rounded-xl text-center" style={{ background: "hsl(var(--muted))" }}>
-              <p className="text-[18px] font-extrabold text-foreground">{stats.totalTx}</p>
-              <p className="text-[10px] text-muted-foreground">{t("dld.transactions")}</p>
+              <p className="text-[1.125rem] font-extrabold text-foreground">{stats.totalTx}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{t("dld.transactions")}</p>
             </div>
             <div className="p-3 rounded-xl text-center" style={{ background: "hsl(var(--muted))" }}>
-              <p className="text-[18px] font-extrabold text-foreground">AED {formatAED(stats.totalAmount)}</p>
-              <p className="text-[10px] text-muted-foreground">{t("dld.total_volume")}</p>
+              <p className="text-[1.125rem] font-extrabold text-foreground">AED {formatAED(stats.totalAmount)}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{t("dld.total_volume")}</p>
             </div>
             <div className="p-3 rounded-xl text-center" style={{ background: "hsl(var(--muted))" }}>
-              <p className="text-[18px] font-extrabold text-foreground">{stats.avgPrice.toLocaleString()}</p>
-              <p className="text-[10px] text-muted-foreground">AED {t("dld.per_sqft")}</p>
+              <p className="text-[1.125rem] font-extrabold text-foreground">{stats.avgPrice.toLocaleString()}</p>
+              <p className="text-[0.625rem] text-muted-foreground">AED {t("dld.per_sqft")}</p>
             </div>
           </div>
 
@@ -603,11 +604,11 @@ function DistrictDetailDrawer({
             <div className="space-y-1.5">
               {stats.typeBreakdown.map(tb => (
                 <div key={tb.type} className="flex items-center gap-2">
-                  <span className="text-[11px] capitalize w-20 text-muted-foreground">{localizeType(tb.type, t)}</span>
+                  <span className="text-[0.6875rem] capitalize w-20 text-muted-foreground">{localizeType(tb.type, t)}</span>
                   <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted))" }}>
-                    <div className="h-full rounded-full" style={{ width: `${tb.pct}%`, background: goldHex }} />
+                    <div className="h-full rounded-full" style={{ width: `${tb.pct}%`, background: goldAccent }} />
                   </div>
-                  <span className="text-[11px] font-bold w-10 text-right text-foreground">{tb.pct}%</span>
+                  <span className="text-[0.6875rem] font-bold w-10 text-right text-foreground">{tb.pct}%</span>
                 </div>
               ))}
             </div>
@@ -622,8 +623,8 @@ function DistrictDetailDrawer({
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis dataKey="month" tick={{ fontSize: 9, fill: "#888" }} tickLine={false} axisLine={false} />
                     <YAxis tick={{ fontSize: 9, fill: "#888" }} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ background: navy, border: "none", borderRadius: "8px", color: "#fff", fontSize: "10px" }} />
-                    <Line type="monotone" dataKey="price" stroke={goldHex} strokeWidth={2} dot={{ r: 3 }} />
+                    <Tooltip contentStyle={{ background: navy, border: "none", borderRadius: "8px", color: "#fff", fontSize: "0.625rem" }} />
+                    <Line type="monotone" dataKey="price" stroke={goldAccent} strokeWidth={2} dot={{ r: 3 }} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -634,7 +635,7 @@ function DistrictDetailDrawer({
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-xs font-bold text-foreground">{t("dld.top_transactions")}</h3>
               {paginatedTx.total > 0 && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[0.625rem] text-muted-foreground">
                   {paginatedTx.offset + 1}–{Math.min(paginatedTx.offset + paginatedTx.data.length, paginatedTx.total)} of {paginatedTx.total}
                 </span>
               )}
@@ -649,12 +650,12 @@ function DistrictDetailDrawer({
                   style={{ background: "hsl(var(--muted))" }}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[12px] font-bold text-foreground">
+                    <span className="text-[0.75rem] font-bold text-foreground">
                       AED {tx.amount.toLocaleString()}
                     </span>
-                    <span className="text-[10px] capitalize text-muted-foreground">{localizeType(tx.propertyType, t)}</span>
+                    <span className="text-[0.625rem] capitalize text-muted-foreground">{localizeType(tx.propertyType, t)}</span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-2 mt-1 text-[0.625rem] text-muted-foreground">
                     <span>{tx.areaSqft.toLocaleString()} {t("dld.sqft")}</span>
                     <span>·</span>
                     <span>AED {tx.pricePerSqft.toLocaleString()} {t("dld.per_sqft")}</span>
@@ -663,7 +664,7 @@ function DistrictDetailDrawer({
                     <span>{tx.transactionDate}</span>
                   </div>
                   {tx.buildingName && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{tx.buildingName}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">{tx.buildingName}</p>
                   )}
                 </motion.div>
               ))}
@@ -673,18 +674,18 @@ function DistrictDetailDrawer({
                 <button
                   onClick={() => onPageChange(txPage - 1)}
                   disabled={txPage <= 0}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-30"
+                  className="px-3 py-1.5 rounded-lg text-[0.6875rem] font-medium transition-all disabled:opacity-30"
                   style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
                 >
                   {t("dld.prev_page")}
                 </button>
-                <span className="text-[11px] font-medium text-muted-foreground">
+                <span className="text-[0.6875rem] font-medium text-muted-foreground">
                   {txPage + 1} / {totalPages}
                 </span>
                 <button
                   onClick={() => onPageChange(txPage + 1)}
                   disabled={txPage >= totalPages - 1}
-                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all disabled:opacity-30"
+                  className="px-3 py-1.5 rounded-lg text-[0.6875rem] font-medium transition-all disabled:opacity-30"
                   style={{ background: "hsl(var(--muted))", color: "hsl(var(--foreground))" }}
                 >
                   {t("dld.next_page")}
@@ -728,7 +729,7 @@ function FilterPanel({
     >
       <div className="py-3 space-y-3">
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
+          <label className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
             {t("dld.period")}
           </label>
           <div className="flex gap-1.5 mb-2">
@@ -742,10 +743,10 @@ function FilterPanel({
                     : YEAR_OPTIONS;
                   onFiltersChange({ ...filters, period: opts[0].value });
                 }}
-                className="px-2.5 py-1 rounded-md text-[10px] font-medium transition-all"
+                className="px-2.5 py-1 rounded-md text-[0.625rem] font-medium transition-all"
                 style={{
                   background: periodMode === m.value ? navy : "transparent",
-                  color: periodMode === m.value ? goldHex : "hsl(var(--muted-foreground))",
+                  color: periodMode === m.value ? goldAccent : "hsl(var(--muted-foreground))",
                   border: `1px solid ${periodMode === m.value ? navy : "hsl(var(--border))"}`,
                 }}
               >
@@ -758,9 +759,9 @@ function FilterPanel({
               <button
                 key={p.value}
                 onClick={() => onFiltersChange({ ...filters, period: p.value })}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all"
+                className="px-3 py-1.5 rounded-lg text-[0.6875rem] font-medium whitespace-nowrap transition-all"
                 style={{
-                  background: filters.period === p.value ? goldHex : "hsl(var(--muted))",
+                  background: filters.period === p.value ? goldAccent : "hsl(var(--muted))",
                   color: filters.period === p.value ? navy : "hsl(var(--muted-foreground))",
                 }}
               >
@@ -770,7 +771,7 @@ function FilterPanel({
           </div>
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
+          <label className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
             {t("dld.property_type")}
           </label>
           <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -781,9 +782,9 @@ function FilterPanel({
                   ...filters,
                   propertyType: opt.value === "all" ? undefined : opt.value,
                 })}
-                className="px-3 py-1.5 rounded-lg text-[11px] font-medium whitespace-nowrap transition-all"
+                className="px-3 py-1.5 rounded-lg text-[0.6875rem] font-medium whitespace-nowrap transition-all"
                 style={{
-                  background: (filters.propertyType || "all") === opt.value ? goldHex : "hsl(var(--muted))",
+                  background: (filters.propertyType || "all") === opt.value ? goldAccent : "hsl(var(--muted))",
                   color: (filters.propertyType || "all") === opt.value ? navy : "hsl(var(--muted-foreground))",
                 }}
               >
@@ -793,13 +794,13 @@ function FilterPanel({
           </div>
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
+          <label className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
             {t("dld.district")}
           </label>
           <select
             value={filters.district || ""}
             onChange={e => onFiltersChange({ ...filters, district: e.target.value || undefined })}
-            className="w-full text-[12px] px-3 py-2 rounded-lg border"
+            className="w-full text-[0.75rem] px-3 py-2 rounded-lg border"
             style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
           >
             <option value="">{t("dld.all_districts")}</option>
@@ -809,7 +810,7 @@ function FilterPanel({
           </select>
         </div>
         <div>
-          <label className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
+          <label className="text-[0.625rem] uppercase tracking-wider text-muted-foreground font-medium mb-1 block">
             {t("dld.price_range")}
           </label>
           <div className="flex gap-2 items-center">
@@ -818,16 +819,16 @@ function FilterPanel({
               placeholder={t("dld.min_price")}
               value={filters.minPrice || ""}
               onChange={e => onFiltersChange({ ...filters, minPrice: e.target.value ? Number(e.target.value) : undefined })}
-              className="flex-1 text-[12px] px-3 py-2 rounded-lg border"
+              className="flex-1 text-[0.75rem] px-3 py-2 rounded-lg border"
               style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
             />
-            <span className="text-[10px] text-muted-foreground">–</span>
+            <span className="text-[0.625rem] text-muted-foreground">–</span>
             <input
               type="number"
               placeholder={t("dld.max_price")}
               value={filters.maxPrice || ""}
               onChange={e => onFiltersChange({ ...filters, maxPrice: e.target.value ? Number(e.target.value) : undefined })}
-              className="flex-1 text-[12px] px-3 py-2 rounded-lg border"
+              className="flex-1 text-[0.75rem] px-3 py-2 rounded-lg border"
               style={{ background: "hsl(var(--card))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
             />
           </div>
@@ -874,6 +875,7 @@ export default function DubaiAnalyticsPage() {
   const hasSubjectContext = useRef(Boolean(urlType || urlBedrooms !== undefined || urlSubjectPrice));
 
   const [districts, setDistricts] = useState<string[]>([]);
+  const [showPriceCompare, setShowPriceCompare] = useState(false);
   const districtRequestVersion = useRef(0);
 
   useEffect(() => {
@@ -1013,20 +1015,20 @@ export default function DubaiAnalyticsPage() {
           <div className="flex-1">
             <h1 className="text-lg font-bold text-white">{t("dld.page_title")}</h1>
             <div className="flex items-center gap-2">
-              <p className="text-[11px] text-white/50">{t("dld.page_subtitle")}</p>
+              <p className="text-[0.6875rem] text-white/50">{t("dld.page_subtitle")}</p>
               {!loading && (
                 <span
-                  className="inline-flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                  className="inline-flex items-center gap-1 text-[0.5625rem] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
                   style={{
                     background: dataSource === "live" ? "rgba(34,197,94,0.15)" : "rgba(234,179,8,0.15)",
-                    color: dataSource === "live" ? "#22c55e" : goldHex,
+                    color: dataSource === "live" ? "#22c55e" : goldAccent,
                     border: `1px solid ${dataSource === "live" ? "rgba(34,197,94,0.3)" : "rgba(234,179,8,0.3)"}`,
                   }}
                 >
                   <span
                     className="w-1.5 h-1.5 rounded-full"
                     style={{
-                      background: dataSource === "live" ? "#22c55e" : goldHex,
+                      background: dataSource === "live" ? "#22c55e" : goldAccent,
                     }}
                   />
                   {dataSource === "live" ? t("dld.data_live") : t("dld.data_demo")}
@@ -1038,7 +1040,7 @@ export default function DubaiAnalyticsPage() {
           <button
             onClick={() => setShowFilters(f => !f)}
             className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
-            style={{ background: showFilters ? goldHex : "rgba(255,255,255,0.1)" }}
+            style={{ background: showFilters ? goldAccent : "rgba(255,255,255,0.1)" }}
           >
             <SlidersHorizontal size={16} color={showFilters ? navy : "#fff"} />
           </button>
@@ -1049,18 +1051,18 @@ export default function DubaiAnalyticsPage() {
             <KPICard
               label={t("dld.total_transactions")}
               value={kpis.totalTransactions.toLocaleString()}
-              icon={<Activity size={14} color={goldHex} />}
+              icon={<Activity size={14} color={goldAccent} />}
             />
             <KPICard
               label={t("dld.total_volume")}
               value={`AED ${formatAED(kpis.totalVolume)}`}
-              icon={<BarChart3 size={14} color={goldHex} />}
+              icon={<BarChart3 size={14} color={goldAccent} />}
             />
             <KPICard
               label={t("dld.avg_price_sqft")}
               value={`AED ${kpis.avgPricePerSqft.toLocaleString()}`}
               change={kpis.changeVsPrevious}
-              icon={<TrendingUp size={14} color={goldHex} />}
+              icon={<TrendingUp size={14} color={goldAccent} />}
             />
             <KPICard
               label={t("dld.period_label")}
@@ -1069,7 +1071,7 @@ export default function DubaiAnalyticsPage() {
                 const found = all.find(p => p.value === kpis.period);
                 return found ? t(found.i18nKey) : kpis.period;
               })()}
-              icon={<MapPin size={14} color={goldHex} />}
+              icon={<MapPin size={14} color={goldAccent} />}
             />
           </div>
         )}
@@ -1116,18 +1118,38 @@ export default function DubaiAnalyticsPage() {
             />
 
             {(activeBuildingDistrict || filters.district) && (
-              <ComparableSales
-                district={activeBuildingDistrict || filters.district || ""}
-                propertyType={activeBuildingPropertyType || filters.propertyType}
-                bedrooms={activeBuildingBedrooms}
-                subjectPricePerSqft={activeBuildingPricePerSqft}
-              />
+              <>
+                <ComparableSales
+                  district={activeBuildingDistrict || filters.district || ""}
+                  propertyType={activeBuildingPropertyType || filters.propertyType}
+                  bedrooms={activeBuildingBedrooms}
+                  subjectPricePerSqft={activeBuildingPricePerSqft}
+                />
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowPriceCompare(true)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all active:scale-[0.98]"
+                    style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))", border: "1px solid hsl(var(--accent) / 0.2)" }}
+                  >
+                    <Scale size={16} />
+                    {t("dld.compare_buildings")}
+                  </button>
+                </div>
+              </>
             )}
           </>
         )}
 
         <div className="h-8" />
       </div>
+
+      <PriceComparisonOverlay
+        visible={showPriceCompare}
+        onClose={() => setShowPriceCompare(false)}
+        subjectBuilding={activeBuilding || undefined}
+        subjectDistrict={activeBuildingDistrict || filters.district}
+        subjectPrice={activeBuildingPricePerSqft}
+      />
 
       <AnimatePresence>
         {selectedDistrict && (

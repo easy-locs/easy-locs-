@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Separator } from "@/components/ui/separator";
 import {
   CheckCircle2, X, Send, CreditCard, FileText, Edit, RefreshCw,
@@ -34,7 +34,7 @@ function IdDocumentCard({ booking }: { booking: any }) {
   }, [booking.id_document_url]);
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="pt-4 space-y-2">
         <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
           <FileText className="h-4 w-4 text-accent" /> Identity Document
@@ -66,7 +66,7 @@ function IdDocumentCard({ booking }: { booking: any }) {
           </a>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }
 
@@ -122,7 +122,7 @@ export default function BookingDetailDrawer({
           {/* Summary Tab */}
           <TabsContent value="summary" className="space-y-4 mt-4">
             {/* Customer Info */}
-            <Card>
+            <AppCard>
               <CardContent className="pt-4 space-y-2">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <User className="h-4 w-4 text-accent" /> Customer
@@ -144,10 +144,10 @@ export default function BookingDetailDrawer({
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Service Info */}
-            <Card>
+            <AppCard>
               <CardContent className="pt-4 space-y-2">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-accent" /> Service
@@ -182,10 +182,10 @@ export default function BookingDetailDrawer({
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Payment Info */}
-            <Card>
+            <AppCard>
               <CardContent className="pt-4 space-y-2">
                 <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-accent" /> Payment
@@ -207,16 +207,16 @@ export default function BookingDetailDrawer({
                   <p className="text-xs text-muted-foreground">Payment link sent ✓</p>
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
 
             {/* Customer Notes */}
             {booking.notes && (
-              <Card>
+              <AppCard>
                 <CardContent className="pt-4">
                   <h3 className="text-sm font-semibold text-foreground mb-1">Customer Message</h3>
                   <p className="text-sm text-muted-foreground italic">"{booking.notes}"</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             )}
 
             {/* ID Documents */}

@@ -172,7 +172,7 @@ export default function ShopOrderPage() {
           <div className="bg-primary/10 px-4 py-2 flex items-center gap-2 text-xs font-medium text-primary">
             {tableNumber && <span>🍽️ Table {tableNumber}</span>}
             {mode === "desk" && <span>🏪 Front Desk Order</span>}
-            {qrCode && <span className="ml-auto text-[10px] text-muted-foreground">QR: {qrCode.slice(0, 12)}…</span>}
+            {qrCode && <span className="ml-auto text-[0.625rem] text-muted-foreground">QR: {qrCode.slice(0, 12)}…</span>}
           </div>
         )}
 
@@ -215,7 +215,7 @@ export default function ShopOrderPage() {
                 </div>
               </div>
               <span className={cn(
-                "text-[10px] font-bold px-2.5 py-1 rounded-full",
+                "text-[0.625rem] font-bold px-2.5 py-1 rounded-full",
                 isOpen ? "bg-emerald-500/15 text-emerald-400" : "bg-red-500/15 text-red-400"
               )}>
                 {isOpen ? "Open" : "Closed"}
@@ -227,11 +227,11 @@ export default function ShopOrderPage() {
         {/* Service modes */}
         <div className="px-4 py-3 flex gap-2">
           {["Delivery", "Pickup", "Dine-in"].map((m) => (
-            <span key={m} className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2.5 py-1">
+            <span key={m} className="text-[0.625rem] font-medium text-muted-foreground bg-muted rounded-full px-2.5 py-1">
               {m}
             </span>
           ))}
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground ml-auto">
+          <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground ml-auto">
             <Clock className="w-3 h-3" /> 20-40 min
           </span>
         </div>
@@ -268,7 +268,7 @@ export default function ShopOrderPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground line-clamp-2 break-words">{product.name}</p>
                   {product.description && (
-                    <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{product.description}</p>
+                    <p className="text-[0.625rem] text-muted-foreground line-clamp-2 mt-0.5">{product.description}</p>
                   )}
                   <p className="text-sm font-bold text-primary mt-1">{fmtPrice(product.price || 0, currency)}</p>
                 </div>

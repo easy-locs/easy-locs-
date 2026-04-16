@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ShieldCheck, AlertTriangle, XCircle, CheckCircle, Activity, Wrench } from "lucide-react";
 import { db } from "@/services/db";
-import { Card } from "@/components/ui/card";
+import { AppCard } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { tc } from "@/lib/i18n-canonical";
@@ -76,7 +76,7 @@ export default function AdminPlatformHealthPage() {
         </button>
         <div>
           <h1 className="text-base font-bold text-foreground">{tc("admin.platform_health")}</h1>
-          <p className="text-[10px] text-muted-foreground">{tc("admin.platform_health_desc")}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{tc("admin.platform_health_desc")}</p>
         </div>
         <Button size="sm" variant="outline" className="ml-auto text-xs rounded-2xl active:scale-[0.98] transition-all duration-200" onClick={loadStats} disabled={loading}>
           <Wrench className="w-3 h-3 mr-1" /> {tc("admin.refresh")}
@@ -90,13 +90,13 @@ export default function AdminPlatformHealthPage() {
           <>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {statCards.map(s => (
-                <Card key={s.label} className="p-3 flex flex-col gap-1 rounded-2xl">
+                <AppCard key={s.label} className="p-3 flex flex-col gap-1 rounded-2xl">
                   <div className="flex items-center gap-2">
                     <s.icon className={`w-4 h-4 ${s.color}`} />
-                    <span className="text-[10px] font-medium text-muted-foreground">{s.label}</span>
+                    <span className="text-[0.625rem] font-medium text-muted-foreground">{s.label}</span>
                   </div>
                   <p className={`text-xl font-extrabold tabular-nums ${s.color}`}>{s.value}</p>
-                </Card>
+                </AppCard>
               ))}
             </div>
 
@@ -106,17 +106,17 @@ export default function AdminPlatformHealthPage() {
               </h2>
               <div className="space-y-2 max-h-[400px] overflow-y-auto">
                 {blockedList.slice(0, 50).map((e: any) => (
-                  <Card key={e.id} className="p-3 flex items-center gap-3 rounded-2xl">
+                  <AppCard key={e.id} className="p-3 flex items-center gap-3 rounded-2xl">
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-foreground truncate">{e.name ?? "?"}</p>
-                      <p className="text-[10px] text-muted-foreground">{e.vertical ?? "?"} • {e.category ?? "?"}</p>
-                      <p className="text-[10px] text-destructive/80 truncate">{e.blocking_reason ?? tc("admin.no_reason")}</p>
+                      <p className="text-[0.625rem] text-muted-foreground">{e.vertical ?? "?"} • {e.category ?? "?"}</p>
+                      <p className="text-[0.625rem] text-destructive/80 truncate">{e.blocking_reason ?? tc("admin.no_reason")}</p>
                     </div>
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] text-muted-foreground">{tc("admin.score")}</p>
+                      <p className="text-[0.625rem] text-muted-foreground">{tc("admin.score")}</p>
                       <p className="text-sm font-extrabold text-destructive tabular-nums">{e.overall_quality_score ?? 0}</p>
                     </div>
-                  </Card>
+                  </AppCard>
                 ))}
                 {blockedList.length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-4">{tc("admin.no_blocked")} 🎉</p>

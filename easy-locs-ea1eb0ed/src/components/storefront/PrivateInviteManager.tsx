@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,11 +105,11 @@ export default function PrivateInviteManager({ shopId, shopSlug }: Props) {
                   <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{inv.email}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {inv.accepted ? (
-                      <Badge className="text-[10px] bg-success/10 text-success">Accepted</Badge>
+                      <Badge className="text-[0.625rem] bg-success/10 text-success">Accepted</Badge>
                     ) : expired ? (
-                      <Badge variant="destructive" className="text-[10px]">Expired</Badge>
+                      <Badge variant="destructive" className="text-[0.625rem]">Expired</Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-[0.625rem]">
                         <Clock className="h-2 w-2 mr-0.5" /> Pending
                       </Badge>
                     )}

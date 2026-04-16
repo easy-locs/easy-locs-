@@ -55,7 +55,7 @@ function InboxRowShell({
           </span>
           {lastMessageTime && (
             <span
-              className="text-[11px] tabular-nums whitespace-nowrap shrink-0 mt-0.5"
+              className="text-[0.6875rem] tabular-nums whitespace-nowrap shrink-0 mt-0.5"
               style={{ color: hasUnread ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.45)" }}
             >
               {formatOrbitTimestamp(lastMessageTime)}
@@ -81,7 +81,7 @@ function InboxRowShell({
 
         <div className="flex items-center gap-2 mt-0.5">
           <p
-            className={`text-[13px] flex-1 min-w-0 ${!lastMessage ? "italic" : ""}`}
+            className={`text-[0.8125rem] flex-1 min-w-0 ${!lastMessage ? "italic" : ""}`}
             style={{
               color: hasUnread ? "hsl(var(--foreground) / 0.65)" : "hsl(var(--muted-foreground) / 0.45)",
               fontWeight: hasUnread ? 500 : 400,
@@ -97,7 +97,7 @@ function InboxRowShell({
           </p>
           {hasUnread && (
             <span
-              className="text-[11px] font-bold rounded-full h-[20px] min-w-[20px] flex items-center justify-center px-1.5 shrink-0"
+              className="text-[0.6875rem] font-bold rounded-full h-[20px] min-w-[20px] flex items-center justify-center px-1.5 shrink-0"
               style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
             >
               {unreadCount > 99 ? "99+" : unreadCount}

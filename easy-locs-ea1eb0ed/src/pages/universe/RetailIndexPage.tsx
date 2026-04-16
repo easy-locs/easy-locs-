@@ -76,7 +76,7 @@ export default function RetailIndexPage() {
                   className="flex-none flex flex-col items-center gap-1.5 w-20 py-3 px-2 rounded-2xl bg-card border border-border/40 hover:border-primary/30 transition-all snap-start active:scale-[0.95]"
                 >
                   <span className="text-2xl">{sub.emoji}</span>
-                  <span className="text-[11px] font-medium text-foreground text-center leading-tight line-clamp-2">{sub.label}</span>
+                  <span className="text-[0.6875rem] font-medium text-foreground text-center leading-tight line-clamp-2">{sub.label}</span>
                 </Link>
               ))}
             </div>

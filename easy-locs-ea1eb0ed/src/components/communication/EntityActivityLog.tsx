@@ -176,10 +176,10 @@ export default function EntityActivityLog({ entityType, entityId, orgId, maxItem
               <div className="ml-2">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-medium text-foreground">{event.title}</p>
-                  <Badge variant="outline" className="text-[10px] px-1 py-0">{event.type}</Badge>
+                  <Badge variant="outline" className="text-[0.625rem] px-1 py-0">{event.type}</Badge>
                 </div>
-                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{event.description}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <p className="text-[0.6875rem] text-muted-foreground mt-0.5 line-clamp-2">{event.description}</p>
+                <p className="text-[0.625rem] text-muted-foreground/60 mt-0.5">
                   {(() => {
                     try {
                       return formatDistanceToNow(new Date(event.timestamp), { addSuffix: true, locale: fr });

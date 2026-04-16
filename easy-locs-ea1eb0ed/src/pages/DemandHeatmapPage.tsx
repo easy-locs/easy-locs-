@@ -40,15 +40,15 @@ export default function DemandHeatmapPage() {
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Demand</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Demand</p>
                   <p className="text-sm font-semibold text-foreground">{zone.active_requests}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Supply</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Supply</p>
                   <p className="text-sm font-semibold text-foreground">{zone.active_drivers}</p>
                 </div>
                 <div>
-                  <p className="text-[10px] text-muted-foreground">Predicted</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Predicted</p>
                   <p className="text-sm font-semibold text-foreground">{zone.predicted_demand}</p>
                 </div>
               </div>

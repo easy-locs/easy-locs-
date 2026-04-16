@@ -87,7 +87,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -95,7 +95,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["live", "anomalies", "maintenance", "explorer"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "live" ? "📡 Live" : v === "anomalies" ? "🔍 Anomalies" : v === "maintenance" ? "🔧 Préventif" : "📊 Explorer"}
           </button>
@@ -111,8 +111,8 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
                 border: `1px solid ${m.status === "critical" ? "hsl(var(--destructive) / 0.2)" : m.status === "warning" ? "hsl(var(--warning) / 0.15)" : "hsl(var(--border) / 0.08)"}`,
               }}>
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.name}</p>
-                <p className="text-[10px]" style={{ color: m.change >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.name}</p>
+                <p className="text-[0.625rem]" style={{ color: m.change >= 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                   {m.trend === "up" ? "↑" : m.trend === "down" ? "↓" : "→"} {m.change > 0 ? "+" : ""}{m.change}%
                 </p>
               </div>
@@ -148,16 +148,16 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
                 }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.type}: {a.metric}</p>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.type}: {a.metric}</p>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{
                       background: a.severity === "high" ? "hsl(var(--destructive) / 0.1)" : a.severity === "medium" ? "hsl(var(--warning) / 0.1)" : "hsl(var(--info) / 0.1)",
                       color: a.severity === "high" ? "hsl(var(--destructive))" : a.severity === "medium" ? "hsl(var(--warning))" : "hsl(var(--info))",
                     }}>{a.severity}</span>
                   </div>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{a.description}</p>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>{a.description}</p>
                 </div>
                 {!a.resolved && (
-                  <Button size="sm" className="text-[10px] h-6 px-2 shrink-0" onClick={() => resolveAnomaly(a.id)}
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2 shrink-0" onClick={() => resolveAnomaly(a.id)}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     Résoudre
                   </Button>
@@ -170,7 +170,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
 
       {view === "maintenance" && (
         <div className="space-y-2">
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Maintenance prédictive (ML)</p>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Maintenance prédictive (ML)</p>
           {MAINTENANCE_PREDS.map(m => (
             <div key={m.vehicle + m.component} className="rounded-xl p-3"
               style={{
@@ -178,8 +178,8 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
                 border: `1px solid ${m.failureProbability >= 60 ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--border) / 0.08)"}`,
               }}>
               <div className="flex items-center justify-between mb-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.vehicle} — {m.component}</p>
-                <span className="text-[10px] font-bold" style={{
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{m.vehicle} — {m.component}</p>
+                <span className="text-[0.625rem] font-bold" style={{
                   color: m.failureProbability >= 70 ? "hsl(var(--destructive))" : m.failureProbability >= 50 ? "hsl(var(--warning))" : "hsl(var(--success))",
                 }}>{m.failureProbability}%</span>
               </div>
@@ -189,7 +189,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
                     background: m.failureProbability >= 70 ? "hsl(var(--destructive))" : m.failureProbability >= 50 ? "hsl(var(--warning))" : "hsl(var(--success))",
                   }} />
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 ⏳ ~{m.estimatedDays}j avant panne • 💡 {m.recommendation}
               </p>
             </div>
@@ -202,7 +202,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
           <div className="rounded-xl p-4 text-center" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.15)" }}>
             <Database className="h-8 w-8 mx-auto" style={{ color: "hsl(var(--primary))" }} />
             <p className="text-sm font-bold mt-2" style={{ color: "hsl(var(--foreground))" }}>Data Lake Explorer</p>
-            <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
               Explorez les données en temps réel de l'écosystème logistique
             </p>
           </div>
@@ -211,10 +211,10 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
               <Database className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />
               <div className="flex-1">
-                <p className="text-[10px] font-mono font-semibold" style={{ color: "hsl(var(--primary))" }}>{t.table}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.rows} rows • {t.size}</p>
+                <p className="text-[0.625rem] font-mono font-semibold" style={{ color: "hsl(var(--primary))" }}>{t.table}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{t.rows} rows • {t.size}</p>
               </div>
-              <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>{t.updated}</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>{t.updated}</span>
             </div>
           ))}
         </div>

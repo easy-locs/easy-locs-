@@ -198,7 +198,7 @@ function GridPreview({ items, onRemove }: { items: PreviewItem[]; onRemove: (id:
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center p-3" style={{ background: "hsl(var(--muted) / 0.3)" }}>
               <FileText className="h-8 w-8 mb-2" style={{ color: "hsl(var(--muted-foreground))" }} />
-              <span className="text-[10px] text-center line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <span className="text-[0.625rem] text-center line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {item.media.file.name}
               </span>
             </div>
@@ -214,7 +214,7 @@ function GridPreview({ items, onRemove }: { items: PreviewItem[]; onRemove: (id:
             className="absolute bottom-0 left-0 right-0 px-2 py-1"
             style={{ background: "linear-gradient(transparent, hsl(0 0% 0% / 0.6))" }}
           >
-            <p className="text-[10px] text-white truncate">{item.media.file.name}</p>
+            <p className="text-[0.625rem] text-white truncate">{item.media.file.name}</p>
           </div>
         </div>
       ))}

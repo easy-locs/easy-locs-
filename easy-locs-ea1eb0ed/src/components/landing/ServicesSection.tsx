@@ -67,12 +67,12 @@ export default function ServicesSection() {
                     <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
                     <span className="text-xs font-semibold text-foreground">{svc.rating}</span>
                   </div>
-                  <div className="flex items-center gap-1 mt-1.5 text-[10px] text-muted-foreground">
+                  <div className="flex items-center gap-1 mt-1.5 text-[0.625rem] text-muted-foreground">
                     <CheckCircle className="h-3 w-3 text-green-500" />
                     {svc.pros}+ verified pros
                   </div>
                 </div>
-                <span className="text-[10px] font-semibold text-accent mt-auto">
+                <span className="text-[0.625rem] font-semibold text-accent mt-auto">
                   Book now →
                 </span>
               </Link>

@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { adminOpsService } from "@/services/admin-ops.service";
 import { useAuth } from "@/contexts/AuthContext";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -70,39 +70,39 @@ export default function OpsCenter() {
 
         {/* KPI cards */}
         <div className="grid grid-cols-2 gap-3">
-          <Card>
+          <AppCard>
             <CardContent className="p-3">
               <Store className="h-4 w-4 text-primary mb-1" />
               <p className="text-xl font-bold">{shops.length}</p>
-              <p className="text-[10px] text-muted-foreground">Total Shops</p>
+              <p className="text-[0.625rem] text-muted-foreground">Total Shops</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3">
               <ShoppingBag className="h-4 w-4 text-success mb-1" />
               <p className="text-xl font-bold">{orders.length}</p>
-              <p className="text-[10px] text-muted-foreground">Total Orders</p>
+              <p className="text-[0.625rem] text-muted-foreground">Total Orders</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3">
               <TrendingUp className="h-4 w-4 text-warning mb-1" />
               <p className="text-xl font-bold">{totalRevenue > 0 ? `€${fmtNum(totalRevenue)}` : "€0"}</p>
-              <p className="text-[10px] text-muted-foreground">Revenue</p>
+              <p className="text-[0.625rem] text-muted-foreground">Revenue</p>
             </CardContent>
-          </Card>
-          <Card>
+          </AppCard>
+          <AppCard>
             <CardContent className="p-3">
               <Rocket className="h-4 w-4 text-info mb-1" />
               <p className="text-xl font-bold">{avgScore}%</p>
-              <p className="text-[10px] text-muted-foreground">Avg Launch Score</p>
+              <p className="text-[0.625rem] text-muted-foreground">Avg Launch Score</p>
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
 
         {/* Alerts */}
         {alerts.length > 0 && (
-          <Card>
+          <AppCard>
             <CardContent className="p-3 space-y-2">
               <h3 className="text-xs font-semibold flex items-center gap-1.5">
                 <AlertTriangle className="h-3.5 w-3.5 text-warning" /> Alerts
@@ -117,11 +117,11 @@ export default function OpsCenter() {
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {/* System Health */}
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-3">
             <h3 className="text-xs font-semibold flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-success" /> System Health
@@ -136,21 +136,21 @@ export default function OpsCenter() {
               </div>
             ))}
           </CardContent>
-        </Card>
+        </AppCard>
 
         {/* Pending orders */}
         {pendingOrders > 0 && (
-          <Card>
+          <AppCard>
             <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-semibold">Pending Orders</h3>
-                <Badge variant="destructive" className="text-[10px]">{pendingOrders} pending</Badge>
+                <Badge variant="destructive" className="text-[0.625rem]">{pendingOrders} pending</Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1">
+              <p className="text-[0.625rem] text-muted-foreground mt-1">
                 Go to your shop's Orders tab to review and accept pending orders.
               </p>
             </CardContent>
-          </Card>
+          </AppCard>
         )}
       </div>
     </DashboardLayout>

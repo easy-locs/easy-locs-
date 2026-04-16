@@ -98,7 +98,7 @@ export default function IntegrationUptimeSparklines({ refreshToken }: Integratio
   if (loading && !data) {
     return (
       <div className="rounded-2xl border border-border bg-card p-3">
-        <div className="h-16 flex items-center justify-center text-[10px] text-muted-foreground">
+        <div className="h-16 flex items-center justify-center text-[0.625rem] text-muted-foreground">
           Loading uptime…
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function IntegrationUptimeSparklines({ refreshToken }: Integratio
   if (error && !data) {
     return (
       <div className="rounded-2xl border border-border bg-card p-3">
-        <div className="text-[10px] text-red-400 bg-red-500/10 rounded-lg p-2">
+        <div className="text-[0.625rem] text-red-400 bg-red-500/10 rounded-lg p-2">
           {error}
         </div>
       </div>
@@ -122,7 +122,7 @@ export default function IntegrationUptimeSparklines({ refreshToken }: Integratio
       <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-muted/30">
         <span className="text-sm font-bold text-foreground">📡 Integration Uptime (24h)</span>
         {error && data && (
-          <span className="text-[10px] text-red-400 bg-red-500/10 rounded px-1.5 py-0.5">stale</span>
+          <span className="text-[0.625rem] text-red-400 bg-red-500/10 rounded px-1.5 py-0.5">stale</span>
         )}
       </div>
       <div className="divide-y divide-border/10">
@@ -156,13 +156,13 @@ export default function IntegrationUptimeSparklines({ refreshToken }: Integratio
               <div className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
               <div className="w-20 shrink-0">
                 <p className="text-xs font-semibold text-foreground">{meta.label}</p>
-                <p className={`text-[10px] font-mono font-bold ${pctColor}`}>
+                <p className={`text-[0.625rem] font-mono font-bold ${pctColor}`}>
                   {isNotConfigured ? "N/C" : uptimePct === null ? "N/A" : `${uptimePct}%`}
                 </p>
               </div>
               <div className="flex-1 flex justify-end">
                 {isNotConfigured ? (
-                  <span className="text-[10px] text-muted-foreground/50">not configured</span>
+                  <span className="text-[0.625rem] text-muted-foreground/50">not configured</span>
                 ) : (
                   <Sparkline data={series} color={meta.color} />
                 )}

@@ -366,7 +366,7 @@ export default function HotelCheckout() {
           </div>
 
           <div className="rounded-2xl p-4 bg-card border border-border/20">
-            <p className="text-[11px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
               Enter card details
             </p>
             <Suspense
@@ -485,7 +485,7 @@ export default function HotelCheckout() {
               ))}
             </div>
             <h2 className="text-sm font-bold text-foreground break-words">{hotel.name}</h2>
-            <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+            <p className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
               <MapPin className="h-3 w-3" /> {hotel.city}, {hotel.country}
             </p>
           </div>
@@ -497,14 +497,14 @@ export default function HotelCheckout() {
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-[10px] text-muted-foreground">Check-in</p>
+                <p className="text-[0.625rem] text-muted-foreground">Check-in</p>
                 <p className="text-xs font-semibold text-foreground">{format(new Date(checkIn), "EEE, MMM d")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-4 w-4 text-primary" />
               <div>
-                <p className="text-[10px] text-muted-foreground">Check-out</p>
+                <p className="text-[0.625rem] text-muted-foreground">Check-out</p>
                 <p className="text-xs font-semibold text-foreground">{format(new Date(checkOut), "EEE, MMM d")}</p>
               </div>
             </div>
@@ -521,7 +521,7 @@ export default function HotelCheckout() {
             <BedDouble className="h-4 w-4 text-primary" />
             <span className="text-sm text-foreground font-medium">{room.name}</span>
           </div>
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-3 text-[0.625rem] text-muted-foreground">
             <span>{room.capacity} guests max</span>
             <span>{room.bed_type}</span>
             {room.size_m2 && <span>{room.size_m2}m2</span>}
@@ -534,16 +534,16 @@ export default function HotelCheckout() {
             <p className="text-sm text-foreground">{ratePlan.name}</p>
             <div className="flex flex-wrap gap-1.5">
               {ratePlan.refundable ? (
-                <Badge variant="outline" className="text-[10px] border-success/30 text-success">
+                <Badge variant="outline" className="text-[0.625rem] border-success/30 text-success">
                   <Shield className="h-3 w-3 mr-0.5" /> Free Cancellation
                 </Badge>
               ) : (
-                <Badge variant="outline" className="text-[10px] border-destructive/30 text-destructive">
+                <Badge variant="outline" className="text-[0.625rem] border-destructive/30 text-destructive">
                   Non-refundable
                 </Badge>
               )}
               {ratePlan.includes_breakfast && (
-                <Badge variant="outline" className="text-[10px] border-primary/30 text-primary">
+                <Badge variant="outline" className="text-[0.625rem] border-primary/30 text-primary">
                   <Coffee className="h-3 w-3 mr-0.5" /> Breakfast
                 </Badge>
               )}
@@ -588,7 +588,7 @@ export default function HotelCheckout() {
         )}
 
         <section>
-          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Payment Method</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Payment Method</p>
           <div className="space-y-2">
             {paymentMethods.map((pm) => (
               <button
@@ -607,11 +607,11 @@ export default function HotelCheckout() {
                 <div className="flex-1 text-left">
                   <span className="text-sm font-semibold text-foreground">{pm.label}</span>
                   {pm.detail && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{pm.detail}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">{pm.detail}</p>
                   )}
                 </div>
                 {pm.key === "wallet" && walletInsufficient && (
-                  <span className="text-[10px] font-semibold text-destructive">Insufficient</span>
+                  <span className="text-[0.625rem] font-semibold text-destructive">Insufficient</span>
                 )}
               </button>
             ))}

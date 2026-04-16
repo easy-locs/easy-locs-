@@ -63,25 +63,29 @@ export default function CustomerTrackingPage() {
 
       if (error || !data) { toast.error("Livraison introuvable"); setLoading(false); return; }
 
-      const trackingData: TrackingData = data as any;
+      interface MobilityJobRecord extends TrackingData {
+        rider_user_id?: string | null;
+      }
+      const jobRecord = data as MobilityJobRecord;
+      const trackingData: TrackingData = { ...jobRecord };
 
-      // Fetch driver info if assigned
-      if ((data as any).rider_user_id) {
+      if (jobRecord.rider_user_id) {
         const { data: presence } = await db
           .from("rider_presence")
           .select("lat, lng, vehicle_type")
-          .eq("user_id", (data as any).rider_user_id)
+          .eq("user_id", jobRecord.rider_user_id)
           .maybeSingle();
 
         if (presence) {
-          trackingData.driver_lat = presence.lat;
-          trackingData.driver_lng = presence.lng;
-          trackingData.driver_vehicle = presence.vehicle_type;
+          const p = presence as { lat: number; lng: number; vehicle_type: string };
+          trackingData.driver_lat = p.lat;
+          trackingData.driver_lng = p.lng;
+          trackingData.driver_vehicle = p.vehicle_type;
         }
 
         const { data: profile } = await db("profiles")
           .select("name, first_name, last_name")
-          .eq("id", (data as any).rider_user_id)
+          .eq("id", jobRecord.rider_user_id)
           .maybeSingle();
 
         if (profile) trackingData.driver_name = profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || undefined;
@@ -115,9 +119,12 @@ export default function CustomerTrackingPage() {
     const channel = createRealtimeChannel(`track-${tracking.id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${tracking.id}` },
         (payload) => {
-          const updated = payload.new as any;
-          setTracking(prev => prev ? { ...prev, ...updated } : null);
-          computeETA(updated);
+          const updated = payload.new as Partial<TrackingData>;
+          setTracking(prev => {
+            const merged = prev ? { ...prev, ...updated } : null;
+            if (merged) computeETA(merged);
+            return merged;
+          });
           // Status notification
           const newStatus = updated.status;
           if (newStatus === "accepted") toast("🚗 Votre livreur est en route !");
@@ -177,7 +184,7 @@ export default function CustomerTrackingPage() {
                   <p className="text-2xl mb-1">✅</p>
                   <p className="text-sm font-bold" style={{ color: "hsl(var(--success))" }}>Livré !</p>
                   {tracking.delivered_at && (
-                    <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
                       {new Date(tracking.delivered_at).toLocaleString("fr")}
                     </p>
                   )}
@@ -188,7 +195,7 @@ export default function CustomerTrackingPage() {
                     <Clock className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
                     <span className="text-lg font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{eta}</span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                     Estimation d'arrivée
                   </p>
                 </>
@@ -219,14 +226,14 @@ export default function CustomerTrackingPage() {
                           )}
                         </div>
                         <div className="pb-4">
-                          <p className="text-[11px] font-semibold" style={{ color: isActive ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+                          <p className="text-[0.6875rem] font-semibold" style={{ color: isActive ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                             {step.label}
                           </p>
                           {isCurrent && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                               className="flex items-center gap-1 mt-0.5">
                               <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--hud-cyan))" }} />
-                              <span className="text-[10px]" style={{ color: "hsl(var(--hud-cyan))" }}>En cours</span>
+                              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-cyan))" }}>En cours</span>
                             </motion.div>
                           )}
                         </div>
@@ -248,9 +255,9 @@ export default function CustomerTrackingPage() {
                 <div className="flex-1">
                   <p className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{tracking.driver_name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{tracking.driver_vehicle}</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{tracking.driver_vehicle}</span>
                     {tracking.driver_rating != null && (
-                      <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>⭐ {tracking.driver_rating.toFixed(1)}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>⭐ {tracking.driver_rating.toFixed(1)}</span>
                     )}
                   </div>
                 </div>
@@ -260,7 +267,7 @@ export default function CustomerTrackingPage() {
             {/* Package details */}
             <div className="rounded-xl p-3 space-y-2"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>DÉTAILS</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text-dim))" }}>DÉTAILS</p>
               {[
                 { label: "Colis", value: tracking.package_description || "Colis standard" },
                 { label: "Retrait", value: tracking.pickup_address },
@@ -269,8 +276,8 @@ export default function CustomerTrackingPage() {
               ].map(({ label, value }) => (
                 <div key={label} className="flex justify-between py-1 border-b"
                   style={{ borderColor: "hsl(var(--hud-border) / 0.05)" }}>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{label}</span>
-                  <span className="text-[10px] font-semibold text-right max-w-[60%] truncate" style={{ color: "hsl(var(--hud-text))" }}>{value}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{label}</span>
+                  <span className="text-[0.625rem] font-semibold text-right max-w-[60%] truncate" style={{ color: "hsl(var(--hud-text))" }}>{value}</span>
                 </div>
               ))}
             </div>
@@ -279,7 +286,7 @@ export default function CustomerTrackingPage() {
             <div className="rounded-lg px-3 py-2 flex items-center gap-2"
               style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.1)" }}>
               <Shield className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--success))" }} />
-              <p className="text-[10px]" style={{ color: "hsl(var(--success))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>
                 Communiquez le code de confirmation uniquement au livreur lors de la remise.
               </p>
             </div>

@@ -31,7 +31,7 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
     >
       {rank != null && (
         <div className="w-5 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(30 80% 50%)" : "hsl(var(--muted-foreground))" }}>
+          <span className="text-[0.6875rem] font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(30 80% 50%)" : "hsl(var(--muted-foreground))" }}>
             {rank}
           </span>
         </div>
@@ -45,34 +45,34 @@ function RadarTaxiCard({ item, rank, selected, onSelect, onNavigate, onMessage }
         <div className="flex items-center gap-1.5">
           <AppCardTitle lines={1} className="font-bold">{item.title}</AppCardTitle>
           {item.isSponsored && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
+            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[0.625rem] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
               Ad
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="text-[11px] text-muted-foreground capitalize">{item.subcategory || "Ride"}</span>
+          <span className="text-[0.6875rem] text-muted-foreground capitalize">{item.subcategory || "Ride"}</span>
         </div>
 
         <div className="flex items-center gap-2 mt-1">
           {item.ratingValue != null && item.ratingValue > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
+            <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{item.ratingValue.toFixed(1)}
             </span>
           )}
           {item.distanceLabel && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
               <MapPin className="w-2.5 h-2.5" />{item.distanceLabel}
             </span>
           )}
           {item.statusLabel && (
-            <span className="flex items-center gap-0.5 text-[10px] font-medium" style={{ color: "hsl(30 80% 50%)" }}>
+            <span className="flex items-center gap-0.5 text-[0.625rem] font-medium" style={{ color: "hsl(30 80% 50%)" }}>
               <Clock className="w-2.5 h-2.5" />{item.statusLabel}
             </span>
           )}
           {item.priceLabel && (
-            <span className="text-[10px] font-extrabold tabular-nums text-foreground">{item.priceLabel}</span>
+            <span className="text-[0.625rem] font-extrabold tabular-nums text-foreground">{item.priceLabel}</span>
           )}
         </div>
       </div>

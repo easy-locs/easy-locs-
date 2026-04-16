@@ -348,7 +348,7 @@ export default function DriverTaxiDashboardPage() {
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ background: "hsl(142 71% 45%)" }} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground line-clamp-1">{offer.pickupLabel}</p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-1">{offer.pickupAddress}</p>
+                    <p className="text-[0.625rem] text-muted-foreground line-clamp-1">{offer.pickupAddress}</p>
                   </div>
                 </div>
                 <div className="ml-1.5 border-l-2 border-dashed border-border/30 h-3" />
@@ -356,7 +356,7 @@ export default function DriverTaxiDashboardPage() {
                   <div className="w-3 h-3 rounded-full shrink-0" style={{ background: "hsl(var(--accent))" }} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground line-clamp-1">{offer.dropoffLabel}</p>
-                    <p className="text-[10px] text-muted-foreground line-clamp-1">{offer.dropoffAddress}</p>
+                    <p className="text-[0.625rem] text-muted-foreground line-clamp-1">{offer.dropoffAddress}</p>
                   </div>
                 </div>
               </div>
@@ -365,17 +365,17 @@ export default function DriverTaxiDashboardPage() {
                 <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
                   <Navigation className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(var(--accent))" }} />
                   <p className="text-sm font-bold text-foreground">{offer.distanceToPickup} km</p>
-                  <p className="text-[10px] text-muted-foreground">to pickup</p>
+                  <p className="text-[0.625rem] text-muted-foreground">to pickup</p>
                 </div>
                 <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
                   <DollarSign className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(var(--accent))" }} />
                   <p className="text-sm font-bold text-foreground">{offer.estimatedPrice}</p>
-                  <p className="text-[10px] text-muted-foreground">{offer.currency}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{offer.currency}</p>
                 </div>
                 <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
                   <Star className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(var(--accent))" }} />
                   <p className="text-sm font-bold text-foreground">{offer.clientRating ? offer.clientRating.toFixed(1) : "—"}</p>
-                  <p className="text-[10px] text-muted-foreground">Client</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Client</p>
                 </div>
               </div>
 

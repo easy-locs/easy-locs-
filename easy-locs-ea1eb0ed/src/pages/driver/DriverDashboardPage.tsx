@@ -111,7 +111,7 @@ export default function DriverDashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-bold text-foreground">{model.isOnline ? "You're Online" : "You're Offline"}</p>
-                <p className="text-[11px] text-muted-foreground">{model.isOnline ? "Receiving job offers" : "Go online to receive jobs"}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">{model.isOnline ? "Receiving job offers" : "Go online to receive jobs"}</p>
               </div>
             </div>
             <button
@@ -136,7 +136,7 @@ export default function DriverDashboardPage() {
               <button
                 onClick={handleToggleAvailable}
                 className={cn(
-                  "rounded-full px-4 py-1.5 text-[10px] font-bold transition-colors",
+                  "rounded-full px-4 py-1.5 text-[0.625rem] font-bold transition-colors",
                   model.isAvailable ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                 )}
               >
@@ -151,7 +151,7 @@ export default function DriverDashboardPage() {
             <SmartIcon className="w-4 h-4 text-primary" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-primary uppercase tracking-wider">AI Tip</p>
+            <p className="text-[0.625rem] font-bold text-primary uppercase tracking-wider">AI Tip</p>
             <p className="text-xs text-foreground/80 leading-relaxed mt-0.5">{smartTip.tip}</p>
           </div>
         </div>
@@ -161,13 +161,13 @@ export default function DriverDashboardPage() {
             <div key={s.label} className="rounded-2xl border border-border/15 bg-card p-3 flex flex-col items-center gap-1">
               <s.icon className={cn("w-4 h-4", s.color)} />
               <span className="text-sm font-bold text-foreground tabular-nums">{s.value}</span>
-              <span className="text-[10px] text-muted-foreground font-medium">{s.label}</span>
+              <span className="text-[0.625rem] text-muted-foreground font-medium">{s.label}</span>
             </div>
           ))}
         </div>
 
         <div>
-          <p className="text-[11px] uppercase tracking-wider font-bold text-muted-foreground mb-3">Quick Actions</p>
+          <p className="text-[0.6875rem] uppercase tracking-wider font-bold text-muted-foreground mb-3">Quick Actions</p>
           <div className="grid grid-cols-2 gap-2.5">
             {QUICK_ACTIONS.map(a => (
               <button
@@ -181,7 +181,7 @@ export default function DriverDashboardPage() {
                 <a.icon className="w-5 h-5" />
                 <div>
                   <p className="text-sm font-bold leading-tight">{a.label}</p>
-                  <p className="text-[10px] opacity-80">{a.desc}</p>
+                  <p className="text-[0.625rem] opacity-80">{a.desc}</p>
                 </div>
               </button>
             ))}
@@ -194,7 +194,7 @@ export default function DriverDashboardPage() {
               <Activity className="w-4 h-4 text-muted-foreground" />
               <span className="text-sm font-bold text-foreground">Performance</span>
             </div>
-            <button onClick={() => navigate("/driver/earnings")} className="text-[11px] font-semibold text-primary flex items-center gap-0.5">
+            <button onClick={() => navigate("/driver/earnings")} className="text-[0.6875rem] font-semibold text-primary flex items-center gap-0.5">
               Details <ChevronRight className="w-3 h-3" />
             </button>
           </div>
@@ -206,7 +206,7 @@ export default function DriverDashboardPage() {
               <div key={row.label} className="flex items-center justify-between py-2 border-t border-border/10 first:border-0">
                 <div>
                   <p className="text-xs font-semibold text-foreground">{row.label}</p>
-                  <p className="text-[10px] text-muted-foreground">{row.sub}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{row.sub}</p>
                 </div>
                 <span className="text-sm font-bold text-foreground tabular-nums">{row.amount}</span>
               </div>
@@ -220,7 +220,7 @@ export default function DriverDashboardPage() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-foreground">Trust Score</p>
-            <p className="text-[11px] text-muted-foreground">Verified driver — 5% commission only</p>
+            <p className="text-[0.6875rem] text-muted-foreground">Verified driver — 5% commission only</p>
           </div>
           <div className="flex items-center gap-1 bg-emerald-500/10 rounded-full px-2.5 py-1">
             <Star className="w-3 h-3 text-emerald-500" />

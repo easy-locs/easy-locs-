@@ -2,7 +2,7 @@ import SEOHead from "@/components/SEOHead";
 import Navbar from "@/components/landing/Navbar";
 import Footer from "@/components/landing/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Link } from "react-router-dom";
 import { Anchor, Bike, Camera, Mountain, Music, Palette, Sailboat, Sun, TreePine, Utensils } from "lucide-react";
 
@@ -80,13 +80,13 @@ const ActivitiesPage = () => (
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {activities.map((a) => (
-              <Card key={a.name} className="border-border">
+              <AppCard key={a.name} className="border-border">
                 <CardContent className="p-6">
                   <a.icon className="h-10 w-10 text-primary mb-4" />
                   <h3 className="text-lg font-semibold text-foreground mb-2">{a.name}</h3>
                   <p className="text-muted-foreground text-sm">{a.desc}</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>

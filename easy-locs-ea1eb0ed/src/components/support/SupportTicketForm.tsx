@@ -72,7 +72,7 @@ export default function SupportTicketForm({ orderId, onClose, onSuccess, default
 
       <div className="space-y-3">
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Issue type</label>
+          <label className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Issue type</label>
           <select
             value={ticketType}
             onChange={e => setTicketType(e.target.value)}
@@ -83,7 +83,7 @@ export default function SupportTicketForm({ orderId, onClose, onSuccess, default
         </div>
 
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Subject</label>
+          <label className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Subject</label>
           <input
             type="text"
             value={subject}
@@ -94,7 +94,7 @@ export default function SupportTicketForm({ orderId, onClose, onSuccess, default
         </div>
 
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Details</label>
+          <label className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Details</label>
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}

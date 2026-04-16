@@ -45,7 +45,7 @@ export default function CustomerPaymentActivityPage() {
               <p className="text-xs text-muted-foreground mt-1">
                 {row.entry_type || "transaction"}
               </p>
-              <p className="text-[11px] text-muted-foreground/70 mt-1">
+              <p className="text-[0.6875rem] text-muted-foreground/70 mt-1">
                 {row.created_at ? new Date(row.created_at).toLocaleString() : ""}
               </p>
             </div>

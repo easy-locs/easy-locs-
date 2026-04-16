@@ -592,7 +592,7 @@ const InventoryBuilder = ({ propertyId, tenantId, reportType, propertyLabel, onB
                             <div key={i} className="relative group">
                               <img loading="lazy" src={url} alt={`Photo ${i + 1}`} className="h-16 w-16 object-cover rounded border border-border/50" />
                               <button onClick={() => removePhoto(room.id, item.id, i)}
-                                className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-4 h-4 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">
+                                className="absolute -top-1 -right-1 bg-destructive text-white rounded-full w-4 h-4 flex items-center justify-center text-[0.625rem] opacity-0 group-hover:opacity-100 transition-opacity">
                                 ×
                               </button>
                             </div>

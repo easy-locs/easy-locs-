@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -131,10 +131,10 @@ export default function WarehouseManager({ shopId }: Props) {
           <Warehouse className="h-4 w-4 text-primary" /> Warehouses
         </h3>
         <div className="flex gap-1">
-          <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1" onClick={() => setShowTransfer(!showTransfer)}>
+          <Button size="sm" variant="outline" className="h-7 text-[0.625rem] gap-1" onClick={() => setShowTransfer(!showTransfer)}>
             <ArrowRight className="h-3 w-3" /> Transfer
           </Button>
-          <Button size="sm" className="h-7 text-[10px] gap-1" onClick={() => setShowCreate(!showCreate)}>
+          <Button size="sm" className="h-7 text-[0.625rem] gap-1" onClick={() => setShowCreate(!showCreate)}>
             <Plus className="h-3 w-3" /> Add
           </Button>
         </div>
@@ -142,35 +142,35 @@ export default function WarehouseManager({ shopId }: Props) {
 
       {/* Create warehouse */}
       {showCreate && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
-            <div><Label className="text-[10px]">Name</Label><Input value={newWh.name} onChange={e => setNewWh(p => ({ ...p, name: e.target.value }))} className="h-7 text-xs mt-1" placeholder="Main Warehouse" /></div>
-            <div><Label className="text-[10px]">Address</Label><Input value={newWh.address} onChange={e => setNewWh(p => ({ ...p, address: e.target.value }))} className="h-7 text-xs mt-1" /></div>
+            <div><Label className="text-[0.625rem]">Name</Label><Input value={newWh.name} onChange={e => setNewWh(p => ({ ...p, name: e.target.value }))} className="h-7 text-xs mt-1" placeholder="Main Warehouse" /></div>
+            <div><Label className="text-[0.625rem]">Address</Label><Input value={newWh.address} onChange={e => setNewWh(p => ({ ...p, address: e.target.value }))} className="h-7 text-xs mt-1" /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label className="text-[10px]">City</Label><Input value={newWh.city} onChange={e => setNewWh(p => ({ ...p, city: e.target.value }))} className="h-7 text-xs mt-1" /></div>
-              <div><Label className="text-[10px]">Country</Label><Input value={newWh.country} onChange={e => setNewWh(p => ({ ...p, country: e.target.value }))} className="h-7 text-xs mt-1" /></div>
+              <div><Label className="text-[0.625rem]">City</Label><Input value={newWh.city} onChange={e => setNewWh(p => ({ ...p, city: e.target.value }))} className="h-7 text-xs mt-1" /></div>
+              <div><Label className="text-[0.625rem]">Country</Label><Input value={newWh.country} onChange={e => setNewWh(p => ({ ...p, country: e.target.value }))} className="h-7 text-xs mt-1" /></div>
             </div>
             <Button size="sm" className="w-full h-7 text-xs" onClick={createWarehouse} disabled={creating}>
               {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Create Warehouse"}
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Transfer form */}
       {showTransfer && warehouses.length >= 2 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-[10px]">From</Label>
+                <Label className="text-[0.625rem]">From</Label>
                 <select value={transfer.from_id} onChange={e => setTransfer(p => ({ ...p, from_id: e.target.value }))} className="w-full h-7 text-xs bg-muted rounded-lg px-2 border-none mt-1">
                   <option value="">Select</option>
                   {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
                 </select>
               </div>
               <div>
-                <Label className="text-[10px]">To</Label>
+                <Label className="text-[0.625rem]">To</Label>
                 <select value={transfer.to_id} onChange={e => setTransfer(p => ({ ...p, to_id: e.target.value }))} className="w-full h-7 text-xs bg-muted rounded-lg px-2 border-none mt-1">
                   <option value="">Select</option>
                   {warehouses.map((w: any) => <option key={w.id} value={w.id}>{w.name}</option>)}
@@ -179,54 +179,54 @@ export default function WarehouseManager({ shopId }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-[10px]">Product</Label>
+                <Label className="text-[0.625rem]">Product</Label>
                 <select value={transfer.item_id} onChange={e => setTransfer(p => ({ ...p, item_id: e.target.value }))} className="w-full h-7 text-xs bg-muted rounded-lg px-2 border-none mt-1">
                   <option value="">Select</option>
                   {items.map((i: any) => <option key={i.id} value={i.id}>{i.title}</option>)}
                 </select>
               </div>
-              <div><Label className="text-[10px]">Qty</Label><Input type="number" value={transfer.quantity} onChange={e => setTransfer(p => ({ ...p, quantity: e.target.value }))} className="h-7 text-xs mt-1" min="1" /></div>
+              <div><Label className="text-[0.625rem]">Qty</Label><Input type="number" value={transfer.quantity} onChange={e => setTransfer(p => ({ ...p, quantity: e.target.value }))} className="h-7 text-xs mt-1" min="1" /></div>
             </div>
             <Button size="sm" className="w-full h-7 text-xs" onClick={createTransfer} disabled={transferring}>
               {transferring ? <Loader2 className="h-3 w-3 animate-spin" /> : "Create Transfer"}
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Warehouses list */}
       {isLoading ? (
         <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin" /></div>
       ) : warehouses.length === 0 ? (
-        <Card><CardContent className="py-6 text-center text-xs text-muted-foreground">No warehouses. Add your first one!</CardContent></Card>
+        <AppCard><CardContent className="py-6 text-center text-xs text-muted-foreground">No warehouses. Add your first one!</CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {warehouses.map((wh: any) => {
             const stock = getStockForWarehouse(wh.id);
             const totalUnits = stock.reduce((s: number, st: any) => s + (st.quantity || 0), 0);
             return (
-              <Card key={wh.id}>
+              <AppCard key={wh.id}>
                 <CardContent className="p-3">
                   <div className="flex items-center gap-2">
                     <Warehouse className="h-4 w-4 text-primary shrink-0" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-semibold">{wh.name}</span>
-                        {wh.is_default && <Badge variant="secondary" className="text-[10px]">Default</Badge>}
+                        {wh.is_default && <Badge variant="secondary" className="text-[0.625rem]">Default</Badge>}
                       </div>
                       {wh.city && (
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <p className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                           <MapPin className="h-2.5 w-2.5" />{wh.city}, {wh.country}
                         </p>
                       )}
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-bold">{totalUnits}</p>
-                      <p className="text-[10px] text-muted-foreground">units</p>
+                      <p className="text-[0.625rem] text-muted-foreground">units</p>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>
@@ -247,7 +247,7 @@ export default function WarehouseManager({ shopId }: Props) {
                   <Check className="h-2.5 w-2.5" />
                 </Button>
               ) : (
-                <Badge variant="secondary" className="text-[10px]">{t.status}</Badge>
+                <Badge variant="secondary" className="text-[0.625rem]">{t.status}</Badge>
               )}
             </div>
           ))}

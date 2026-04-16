@@ -14,7 +14,7 @@ export function OrbitUploadQueuePreview({ queue, onRemove }: Props) {
         <div key={item.localId} className="flex items-center justify-between gap-2 rounded-xl border p-2">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium break-words leading-snug">{item.file.name}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {item.kind} · {formatBytes(item.file.size)} · {item.status}
               {item.status === "uploading" ? ` · ${item.progress}%` : ""}
             </p>

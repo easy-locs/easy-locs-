@@ -36,7 +36,7 @@ export default function YouBackgroundPage({ onBack }: Props) {
             </button>
           ))}
         </div>
-        <p className="text-[10px] mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.bg_hint")}</p>
+        <p className="text-[0.625rem] mt-3" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.bg_hint")}</p>
       </div>
     </div>
   );

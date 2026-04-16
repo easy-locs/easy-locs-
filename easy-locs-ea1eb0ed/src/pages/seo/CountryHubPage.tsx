@@ -7,7 +7,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCountryBySlug, SEO_COUNTRIES, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableCountry } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Building2, Briefcase, Compass, Star, Home } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -146,7 +146,7 @@ const CountryHubPage = () => {
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[...phase1Cities, ...phase2Cities].map(city => (
-              <Card key={city.slug} className="border-border hover:border-primary/50 hover:shadow-sm transition-all">
+              <AppCard key={city.slug} className="border-border hover:border-primary/50 hover:shadow-sm transition-all">
                 <CardContent className="p-5">
                   <Link to={`/city/${city.slug}`} className="block">
                     <h3 className="text-lg font-semibold text-foreground mb-2">{city.name}</h3>
@@ -158,7 +158,7 @@ const CountryHubPage = () => {
                     <Link to={`/marketplace/${city.slug}`} className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded hover:bg-primary/20">Marketplace</Link>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>

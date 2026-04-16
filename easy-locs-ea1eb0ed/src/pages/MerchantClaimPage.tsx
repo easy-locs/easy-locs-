@@ -19,7 +19,7 @@ import { trackOutreachEvent } from "@/lib/merchant/outreach-service";
 import { checkOtpAbuse } from "@/lib/security/fraud-otp";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -191,13 +191,13 @@ export default function MerchantClaimPage() {
   if (!merchant) {
     return (
       <SubPageShell noContentPad className="flex items-center justify-center p-4">
-        <Card className="max-w-sm w-full">
+        <AppCard className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <Store className="h-10 w-10 mx-auto text-muted-foreground" />
             <h2 className="text-lg font-bold text-foreground">Restaurant not found</h2>
             <p className="text-sm text-muted-foreground">This activation link may have expired or the restaurant has already been claimed.</p>
           </CardContent>
-        </Card>
+        </AppCard>
       </SubPageShell>
     );
   }
@@ -205,7 +205,7 @@ export default function MerchantClaimPage() {
   if (merchant.onboarding_status !== "imported_not_claimed") {
     return (
       <SubPageShell noContentPad className="flex items-center justify-center p-4">
-        <Card className="max-w-sm w-full">
+        <AppCard className="max-w-sm w-full">
           <CardContent className="pt-6 text-center space-y-3">
             <CheckCircle2 className="h-10 w-10 mx-auto text-primary" />
             <h2 className="text-lg font-bold text-foreground">Already Claimed</h2>
@@ -214,7 +214,7 @@ export default function MerchantClaimPage() {
               Go to Dashboard
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       </SubPageShell>
     );
   }
@@ -245,7 +245,7 @@ export default function MerchantClaimPage() {
                   <h1 className="text-2xl font-bold text-foreground">
                     Is this your restaurant?
                   </h1>
-                  <Card className="text-left">
+                  <AppCard className="text-left">
                     <CardContent className="pt-4 space-y-2">
                       <h3 className="text-lg font-bold text-foreground">{merchant.merchant_name}</h3>
                       {merchant.name_ar && <p className="text-sm text-muted-foreground font-medium" dir="rtl">{merchant.name_ar}</p>}
@@ -255,22 +255,22 @@ export default function MerchantClaimPage() {
                       </p>
                       {merchant.phone && <p className="text-xs text-muted-foreground">📞 {merchant.phone}</p>}
                     </CardContent>
-                  </Card>
+                  </AppCard>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="rounded-xl bg-muted/50 border border-border p-3 text-center">
                       <div className="text-xl mb-1">💰</div>
                       <div className="text-sm font-bold text-foreground">0 AED</div>
-                      <div className="text-[10px] text-muted-foreground">to join</div>
+                      <div className="text-[0.625rem] text-muted-foreground">to join</div>
                     </div>
                     <div className="rounded-xl bg-muted/50 border border-border p-3 text-center">
                       <div className="text-xl mb-1">📊</div>
                       <div className="text-sm font-bold text-foreground">5%</div>
-                      <div className="text-[10px] text-muted-foreground">commission</div>
+                      <div className="text-[0.625rem] text-muted-foreground">commission</div>
                     </div>
                     <div className="rounded-xl bg-muted/50 border border-border p-3 text-center">
                       <div className="text-xl mb-1">⚡</div>
                       <div className="text-sm font-bold text-foreground">2 min</div>
-                      <div className="text-[10px] text-muted-foreground">to activate</div>
+                      <div className="text-[0.625rem] text-muted-foreground">to activate</div>
                     </div>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export default function MerchantClaimPage() {
                     >
                       <Phone className="h-5 w-5 mb-2 text-primary" />
                       <div className="text-sm font-semibold text-foreground">Phone</div>
-                      <div className="text-[11px] text-muted-foreground">SMS code</div>
+                      <div className="text-[0.6875rem] text-muted-foreground">SMS code</div>
                     </button>
                     <button
                       onClick={() => setVerifyMethod("email")}
@@ -304,7 +304,7 @@ export default function MerchantClaimPage() {
                     >
                       <Mail className="h-5 w-5 mb-2 text-primary" />
                       <div className="text-sm font-semibold text-foreground">Email</div>
-                      <div className="text-[11px] text-muted-foreground">Email code</div>
+                      <div className="text-[0.6875rem] text-muted-foreground">Email code</div>
                     </button>
                   </div>
                   <div>
@@ -318,7 +318,7 @@ export default function MerchantClaimPage() {
                       placeholder={verifyMethod === "phone" ? "+971 5X XXX XXXX" : "owner@restaurant.com"}
                       className="h-11"
                     />
-                    <p className="text-[11px] text-muted-foreground mt-1">
+                    <p className="text-[0.6875rem] text-muted-foreground mt-1">
                       We'll send a verification code to this {verifyMethod === "phone" ? "number" : "address"}
                     </p>
                   </div>
@@ -366,14 +366,14 @@ export default function MerchantClaimPage() {
                     By claiming <span className="font-semibold text-foreground">{merchant.merchant_name}</span>,
                     you confirm that you are the authorized owner or manager.
                   </p>
-                  <Card>
+                  <AppCard>
                     <CardContent className="pt-4 text-left space-y-2 text-sm">
                       <p><span className="text-muted-foreground">Restaurant:</span> <strong>{merchant.merchant_name}</strong></p>
                       <p><span className="text-muted-foreground">Verified via:</span> {verifyMethod} — {verifyValue} <CheckCircle2 className="inline h-3.5 w-3.5 text-emerald-500" /></p>
                       <p><span className="text-muted-foreground">Location:</span> {merchant.area}, {merchant.city || "Dubai"}</p>
                     </CardContent>
-                  </Card>
-                  <p className="text-[11px] text-muted-foreground">
+                  </AppCard>
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     False claims may result in account suspension.
                   </p>
                 </div>

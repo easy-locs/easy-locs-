@@ -135,7 +135,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
           <Settings className="h-3.5 w-3.5" style={{ color: "hsl(var(--hud-cyan))" }} />
           Règles de dispatch ({rules.length})
         </h3>
-        <Button size="sm" className="text-[10px] h-7 px-3" onClick={() => setShowCreate(!showCreate)}
+        <Button size="sm" className="text-[0.625rem] h-7 px-3" onClick={() => setShowCreate(!showCreate)}
           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
           <Plus className="h-3 w-3 mr-1" /> Nouvelle
         </Button>
@@ -148,13 +148,13 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
             className="overflow-hidden">
             <div className="rounded-xl p-3 space-y-2"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
-              <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom de la règle</Label>
+              <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom de la règle</Label>
               <div className="flex gap-2">
                 <Input value={newRuleName} onChange={e => setNewRuleName(e.target.value)}
                   placeholder="Ex: Zone centre express"
                   className="h-8 text-xs flex-1"
                   style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-                <Button size="sm" className="h-8 text-[10px] px-3" onClick={addRule}
+                <Button size="sm" className="h-8 text-[0.625rem] px-3" onClick={addRule}
                   style={{ background: "hsl(var(--success))", color: "#fff" }}>Créer</Button>
               </div>
             </div>
@@ -165,7 +165,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
       {/* Info */}
       <div className="rounded-lg px-3 py-2"
         style={{ background: "hsl(var(--info) / 0.05)", border: "1px solid hsl(var(--info) / 0.1)" }}>
-        <p className="text-[10px]" style={{ color: "hsl(var(--info))" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--info))" }}>
           <Shield className="h-3 w-3 inline mr-1" />
           Les règles s'appliquent par ordre de priorité. La première règle correspondante est utilisée. Le fallback élargit automatiquement la recherche.
         </p>
@@ -185,21 +185,21 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
               {/* Header */}
               <div className="flex items-center gap-3 px-3 py-2.5 cursor-pointer"
                 onClick={() => setExpandedId(isExpanded ? null : rule.id)}>
-                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                   style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
                   {rule.priority}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{rule.name}</p>
+                  <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{rule.name}</p>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {rule.conditions.vehicleTypes?.map(v => (
-                      <span key={v} className="text-[10px] px-1 py-0.5 rounded"
+                      <span key={v} className="text-[0.625rem] px-1 py-0.5 rounded"
                         style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                         {v}
                       </span>
                     ))}
                     {rule.actions.autoAssign && (
-                      <span className="text-[10px] px-1 py-0.5 rounded"
+                      <span className="text-[0.625rem] px-1 py-0.5 rounded"
                         style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                         <Zap className="h-2 w-2 inline" /> Auto
                       </span>
@@ -225,11 +225,11 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                     <div className="px-3 pb-3 space-y-3 border-t" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
                       {/* Conditions */}
                       <div className="pt-2">
-                        <p className="text-[10px] font-bold mb-2" style={{ color: "hsl(var(--hud-cyan))" }}>CONDITIONS</p>
+                        <p className="text-[0.625rem] font-bold mb-2" style={{ color: "hsl(var(--hud-cyan))" }}>CONDITIONS</p>
 
                         {/* Vehicle types */}
                         <div className="space-y-1 mb-2">
-                          <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Véhicules</Label>
+                          <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Véhicules</Label>
                           <div className="flex gap-1">
                             {vehicleOptions.map(v => (
                               <button key={v.value} onClick={() => {
@@ -237,7 +237,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                                 const next = current.includes(v.value) ? current.filter(x => x !== v.value) : [...current, v.value];
                                 updateCondition(rule.id, "vehicleTypes", next);
                               }}
-                                className="text-[10px] px-2 py-1 rounded-lg transition-all"
+                                className="text-[0.625rem] px-2 py-1 rounded-lg transition-all"
                                 style={{
                                   background: rule.conditions.vehicleTypes?.includes(v.value) ? "hsl(var(--hud-cyan) / 0.1)" : "hsl(var(--hud-bg))",
                                   border: `1px solid ${rule.conditions.vehicleTypes?.includes(v.value) ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.08)"}`,
@@ -251,7 +251,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
 
                         {/* Priority levels */}
                         <div className="space-y-1 mb-2">
-                          <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Niveaux de priorité</Label>
+                          <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Niveaux de priorité</Label>
                           <div className="flex gap-1">
                             {priorityOptions.map(p => (
                               <button key={p.value} onClick={() => {
@@ -259,7 +259,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                                 const next = current.includes(p.value) ? current.filter(x => x !== p.value) : [...current, p.value];
                                 updateCondition(rule.id, "priorityLevels", next);
                               }}
-                                className="text-[10px] px-2 py-1 rounded-lg transition-all"
+                                className="text-[0.625rem] px-2 py-1 rounded-lg transition-all"
                                 style={{
                                   background: rule.conditions.priorityLevels?.includes(p.value) ? "hsl(var(--warning) / 0.1)" : "hsl(var(--hud-bg))",
                                   border: `1px solid ${rule.conditions.priorityLevels?.includes(p.value) ? "hsl(var(--warning) / 0.3)" : "hsl(var(--hud-border) / 0.08)"}`,
@@ -274,34 +274,34 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                         {/* Sliders */}
                         <div className="grid grid-cols-3 gap-2">
                           <div>
-                            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max</Label>
+                            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max</Label>
                             <div className="flex items-center gap-1 mt-0.5">
                               <input type="range" min={1} max={50} value={rule.conditions.maxDistanceKm || 15}
                                 onChange={e => updateCondition(rule.id, "maxDistanceKm", +e.target.value)}
                                 className="w-full h-1 rounded-full appearance-none" style={{ background: "hsl(var(--hud-border) / 0.15)" }} />
-                              <span className="text-[10px] font-bold w-8 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>
+                              <span className="text-[0.625rem] font-bold w-8 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>
                                 {rule.conditions.maxDistanceKm}km
                               </span>
                             </div>
                           </div>
                           <div>
-                            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Note min</Label>
+                            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Note min</Label>
                             <div className="flex items-center gap-1 mt-0.5">
                               <input type="range" min={0} max={5} step={0.5} value={rule.conditions.minRating || 0}
                                 onChange={e => updateCondition(rule.id, "minRating", +e.target.value)}
                                 className="w-full h-1 rounded-full appearance-none" style={{ background: "hsl(var(--hud-border) / 0.15)" }} />
-                              <span className="text-[10px] font-bold w-6 text-right" style={{ color: "hsl(var(--warning))" }}>
+                              <span className="text-[0.625rem] font-bold w-6 text-right" style={{ color: "hsl(var(--warning))" }}>
                                 {rule.conditions.minRating}
                               </span>
                             </div>
                           </div>
                           <div>
-                            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Accept. min</Label>
+                            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Accept. min</Label>
                             <div className="flex items-center gap-1 mt-0.5">
                               <input type="range" min={0} max={100} step={5} value={rule.conditions.minAcceptanceRate || 0}
                                 onChange={e => updateCondition(rule.id, "minAcceptanceRate", +e.target.value)}
                                 className="w-full h-1 rounded-full appearance-none" style={{ background: "hsl(var(--hud-border) / 0.15)" }} />
-                              <span className="text-[10px] font-bold w-8 text-right" style={{ color: "hsl(var(--success))" }}>
+                              <span className="text-[0.625rem] font-bold w-8 text-right" style={{ color: "hsl(var(--success))" }}>
                                 {rule.conditions.minAcceptanceRate}%
                               </span>
                             </div>
@@ -311,11 +311,11 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
 
                       {/* Actions */}
                       <div>
-                        <p className="text-[10px] font-bold mb-2" style={{ color: "hsl(var(--success))" }}>ACTIONS</p>
+                        <p className="text-[0.625rem] font-bold mb-2" style={{ color: "hsl(var(--success))" }}>ACTIONS</p>
                         <div className="grid grid-cols-2 gap-2">
                           <div className="flex items-center justify-between px-2 py-1.5 rounded-lg"
                             style={{ background: "hsl(var(--hud-bg))" }}>
-                            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Auto-assign</span>
+                            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Auto-assign</span>
                             <button onClick={() => updateAction(rule.id, "autoAssign", !rule.actions.autoAssign)}
                               className="w-7 h-3.5 rounded-full transition-all relative"
                               style={{ background: rule.actions.autoAssign ? "hsl(var(--success))" : "hsl(var(--hud-border) / 0.2)" }}>
@@ -325,7 +325,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                           </div>
                           <div className="flex items-center justify-between px-2 py-1.5 rounded-lg"
                             style={{ background: "hsl(var(--hud-bg))" }}>
-                            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Fallback</span>
+                            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Fallback</span>
                             <button onClick={() => updateAction(rule.id, "fallbackEnabled", !rule.actions.fallbackEnabled)}
                               className="w-7 h-3.5 rounded-full transition-all relative"
                               style={{ background: rule.actions.fallbackEnabled ? "hsl(var(--success))" : "hsl(var(--hud-border) / 0.2)" }}>
@@ -342,11 +342,11 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
                             { label: "Délai fallback", value: rule.actions.fallbackDelaySeconds, key: "fallbackDelaySeconds", unit: "s", max: 600 },
                           ].map(({ label, value, key, unit, max }) => (
                             <div key={key}>
-                              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
+                              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
                               <Input type="number" value={value} onChange={e => updateAction(rule.id, key, +e.target.value)}
-                                className="h-6 text-[10px] mt-0.5"
+                                className="h-6 text-[0.625rem] mt-0.5"
                                 style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-                              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{unit}</span>
+                              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{unit}</span>
                             </div>
                           ))}
                         </div>
@@ -354,7 +354,7 @@ export default function AutomatedDispatchRules({ orgId }: { orgId: string }) {
 
                       {/* Delete */}
                       {rule.id !== "default" && (
-                        <Button size="sm" variant="ghost" className="w-full text-[10px] h-7"
+                        <Button size="sm" variant="ghost" className="w-full text-[0.625rem] h-7"
                           onClick={() => deleteRule(rule.id)}
                           style={{ color: "hsl(var(--destructive))" }}>
                           <Trash2 className="h-3 w-3 mr-1" /> Supprimer cette règle

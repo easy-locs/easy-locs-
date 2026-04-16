@@ -34,7 +34,7 @@ export function LiveOrderTrackingCard({
           return (
             <div key={label} className="flex-1 text-center">
               <div className={`h-1.5 rounded-full ${active ? "bg-primary" : "bg-muted"}`} />
-              <p className={`text-[10px] mt-1 ${active ? "font-bold text-foreground" : "text-muted-foreground"}`}>{label}</p>
+              <p className={`text-[0.625rem] mt-1 ${active ? "font-bold text-foreground" : "text-muted-foreground"}`}>{label}</p>
             </div>
           );
         })}

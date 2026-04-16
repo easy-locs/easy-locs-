@@ -66,7 +66,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
   const showDealRoom = !!(thread.dealId || thread.conversationType === "deal");
 
   const SectionTitle = ({ icon: Icon, label, color = "hsl(var(--primary))" }: { icon: any; label: string; color?: string }) => (
-    <h4 className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2" style={{ color }}>
+    <h4 className="text-[0.6875rem] font-bold uppercase tracking-wider flex items-center gap-1.5 mb-2" style={{ color }}>
       <Icon className="h-3 w-3" /> {label}
     </h4>
   );
@@ -98,7 +98,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
             </div>
             <div className="flex items-center gap-1">
               <Shield className="h-3 w-3" style={{ color: "hsl(var(--hud-success) / 0.5)" }} />
-              <span className="text-[10px] uppercase tracking-wider" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>{t("orbit.context.verified")}</span>
+              <span className="text-[0.625rem] uppercase tracking-wider" style={{ color: "hsl(var(--hud-success) / 0.5)" }}>{t("orbit.context.verified")}</span>
             </div>
           </div>
 
@@ -116,7 +116,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold truncate" style={{ color: "hsl(var(--foreground))" }}>{thread.name}</p>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{
+                  <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0" style={{
                     borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--muted-foreground))",
                     background: "hsl(var(--card) / 0.5)",
                   }}>
@@ -127,13 +127,13 @@ export default function HudContextPanel({ thread, orgId }: Props) {
             </div>
             <div className="space-y-1.5">
               {thread.email && (
-                <span className="flex items-center gap-2 text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <span className="flex items-center gap-2 text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <Mail className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground))" }} />
                   <span className="truncate">EL-{(thread.userId || "").replace(/-/g, "").substring(0, 8).toUpperCase() || t("orbit.context.contact")}</span>
                 </span>
               )}
               {thread.peerUserId && (
-                <span className="flex items-center gap-2 text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <span className="flex items-center gap-2 text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <Phone className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground))" }} />
                   <span className="font-mono">EL-{thread.peerUserId.replace(/-/g, "").substring(0, 8).toUpperCase()}</span>
                 </span>
@@ -150,7 +150,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                 { icon: Lock, label: t("orbit.context.encrypted"), active: true },
                 { icon: Clock, label: t("orbit.context.session_active"), active: true },
               ].map((s, i) => (
-                <div key={i} className="flex items-center gap-2 text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <div key={i} className="flex items-center gap-2 text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <s.icon className="h-3 w-3" style={{ color: s.active ? "hsl(var(--hud-success) / 0.6)" : "hsl(var(--muted-foreground) / 0.3)" }} />
                   <span>{s.label}</span>
                   {s.active && <div className="h-1.5 w-1.5 rounded-full ml-auto" style={{ background: "hsl(var(--hud-success))" }} />}
@@ -182,7 +182,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                         <div key={lease.id} className="text-xs space-y-0.5 mb-2 last:mb-0">
                           <div className="flex items-center justify-between">
                             <span className="font-medium" style={{ color: "hsl(var(--foreground))" }}>{lease.lease_type}</span>
-                            <Badge variant="outline" className="text-[10px] px-1 py-0" style={lease.status === "active" ? { background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" } : {}}>{lease.status}</Badge>
+                            <Badge variant="outline" className="text-[0.625rem] px-1 py-0" style={lease.status === "active" ? { background: "hsl(var(--hud-success) / 0.1)", color: "hsl(var(--hud-success))" } : {}}>{lease.status}</Badge>
                           </div>
                           <p style={{ color: "hsl(var(--muted-foreground))" }}>{lease.start_date} → {lease.end_date || "∞"}</p>
                           <p className="font-semibold" style={{ color: "hsl(var(--primary))" }}>{lease.rent_amount}€ + {lease.charges_amount || 0}€</p>
@@ -210,7 +210,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.interventions.map(i => (
                         <div key={i.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--muted-foreground))" }}>{i.title}</span>
-                          <Badge variant="outline" className="text-[10px] px-1 py-0" style={i.priority === "urgent" ? { color: "hsl(var(--hud-danger))" } : {}}>{i.status}</Badge>
+                          <Badge variant="outline" className="text-[0.625rem] px-1 py-0" style={i.priority === "urgent" ? { color: "hsl(var(--hud-danger))" } : {}}>{i.status}</Badge>
                         </div>
                       ))}
                     </HudCard>
@@ -221,7 +221,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                       {propertyCtx.documents.map(d => (
                         <div key={d.id} className="flex items-center justify-between text-xs py-1">
                           <span className="truncate flex-1" style={{ color: "hsl(var(--muted-foreground))" }}>{d.title}</span>
-                          <Badge variant="outline" className="text-[10px] px-1 py-0">{d.doc_type}</Badge>
+                          <Badge variant="outline" className="text-[0.625rem] px-1 py-0">{d.doc_type}</Badge>
                         </div>
                       ))}
                     </HudCard>
@@ -254,16 +254,16 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                   <HudCard>
                     <SectionTitle icon={Calendar} label={t("orbit.context.booking")} />
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0" style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--muted-foreground))" }}>
+                      <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0" style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--muted-foreground))" }}>
                         {moduleConfig.emoji} {moduleConfig.label}
                       </Badge>
                       {thread.bookingStatus && (
-                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                        <Badge variant="outline" className={`text-[0.625rem] px-1.5 py-0 font-medium ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                           {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                         </Badge>
                       )}
                     </div>
-                    {thread.bookingId && <p className="text-[10px] font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>#{thread.bookingId.slice(0, 8)}</p>}
+                    {thread.bookingId && <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>#{thread.bookingId.slice(0, 8)}</p>}
                     {thread.serviceTitle && <p className="text-xs font-medium mt-1" style={{ color: "hsl(var(--foreground))" }}>{thread.serviceTitle}</p>}
                     {thread.totalPrice != null && (
                       <p className="text-sm font-bold mt-1" style={{ color: "hsl(var(--primary))" }}>
@@ -284,8 +284,8 @@ export default function HudContextPanel({ thread, orgId }: Props) {
                     <HudCard>
                       <SectionTitle icon={Building} label={t("orbit.context.service")} />
                       <p className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>{bookingCtx.service.title}</p>
-                      {bookingCtx.service.category && <Badge variant="outline" className="text-[10px] px-1 py-0 mt-1">{bookingCtx.service.category}</Badge>}
-                      {bookingCtx.service.city && <p className="text-[11px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
+                      {bookingCtx.service.category && <Badge variant="outline" className="text-[0.625rem] px-1 py-0 mt-1">{bookingCtx.service.category}</Badge>}
+                      {bookingCtx.service.city && <p className="text-[0.6875rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>📍 {bookingCtx.service.city}, {bookingCtx.service.country}</p>}
                       <p className="text-xs font-semibold mt-1" style={{ color: "hsl(var(--primary))" }}>{bookingCtx.service.price} {bookingCtx.service.currency}</p>
                     </HudCard>
                   )}
@@ -316,9 +316,9 @@ export default function HudContextPanel({ thread, orgId }: Props) {
             <HudCard>
               <SectionTitle icon={Building} label={t("orbit.context.listing")} />
               {thread.listingTitle && <p className="text-xs font-medium" style={{ color: "hsl(var(--foreground))" }}>{thread.listingTitle}</p>}
-              {thread.listingType && <Badge variant="outline" className="text-[10px] px-1.5 py-0 mt-1">{thread.listingType}</Badge>}
+              {thread.listingType && <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0 mt-1">{thread.listingType}</Badge>}
               {thread.bookingStatus && (
-                <Badge variant="outline" className={`text-[10px] px-1.5 py-0 font-medium mt-1 ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
+                <Badge variant="outline" className={`text-[0.625rem] px-1.5 py-0 font-medium mt-1 ${STATUS_COLORS[thread.bookingStatus] || ""}`}>
                   {STATUS_LABELS[thread.bookingStatus] || thread.bookingStatus}
                 </Badge>
               )}
@@ -368,7 +368,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
             <SectionTitle icon={Sparkles} label={t("orbit.context.ai_summary") || "AI Insights"} color="hsl(var(--hud-purple))" />
             <div className="flex items-center gap-2 py-1">
               <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20 animate-pulse" />
-              <p className="text-[11px] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+              <p className="text-[0.6875rem] italic" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                 {t("orbit.context.ai_placeholder") || "AI-powered conversation insights — coming soon"}
               </p>
             </div>
@@ -380,7 +380,7 @@ export default function HudContextPanel({ thread, orgId }: Props) {
       <div className="flex-shrink-0 flex flex-col" style={{ maxHeight: "35%", borderTop: "1px solid hsl(var(--border) / 0.08)" }}>
         <div className="px-4 py-2.5 flex items-center gap-1.5">
           <History className="h-3.5 w-3.5" style={{ color: "hsl(var(--muted-foreground))" }} />
-          <h4 className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--foreground))" }}>Activity Timeline</h4>
+          <h4 className="text-[0.6875rem] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--foreground))" }}>Activity Timeline</h4>
         </div>
         <div className="flex-1 px-4 pb-4 min-h-0 overflow-y-auto">
           <EntityActivityLog

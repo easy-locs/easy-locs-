@@ -645,7 +645,7 @@ export default function QrScannerPage() {
           <div className="px-4 pb-3">
             <div className="flex gap-1 p-1 rounded-2xl bg-muted/40 backdrop-blur-sm">
               <button type="button" onClick={() => { setTab("scan"); handleReset(); }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97]"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-bold transition-all active:scale-[0.97]"
                 style={{
                   background: tab === "scan" ? "hsl(var(--card))" : "transparent",
                   color: tab === "scan" ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
@@ -654,7 +654,7 @@ export default function QrScannerPage() {
                 <ScanLine className="h-3.5 w-3.5" /> Scan
               </button>
               <button type="button" onClick={() => setTab("myqr")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-[0.97]"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[0.6875rem] font-bold transition-all active:scale-[0.97]"
                 style={{
                   background: tab === "myqr" ? "hsl(var(--card))" : "transparent",
                   color: tab === "myqr" ? "hsl(var(--foreground))" : "hsl(var(--muted-foreground))",
@@ -680,7 +680,7 @@ export default function QrScannerPage() {
                       <CheckCircle2 className="h-10 w-10 text-emerald-500" />
                     </motion.div>
                     <p className="text-xl font-bold text-foreground">Payment sent!</p>
-                    {txId && <p className="text-[11px] text-muted-foreground font-mono">TX: {txId.slice(0, 16)}…</p>}
+                    {txId && <p className="text-[0.6875rem] text-muted-foreground font-mono">TX: {txId.slice(0, 16)}…</p>}
                     <button type="button" onClick={() => navigate("/wallet", { replace: true })}
                       className="mt-4 rounded-2xl bg-primary px-8 py-3 text-sm font-bold text-primary-foreground active:scale-[0.97] transition-transform">
                       Done
@@ -696,7 +696,7 @@ export default function QrScannerPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-bold line-clamp-1 break-words" style={{ color: "hsl(0 0% 100%)" }}>{pendingPayment.recipientName}</p>
-                        <p className="text-[10px]" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{pendingPayment.kind === "shop" ? "Merchant" : "User"} · {pendingPayment.currency}</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(0 0% 100% / 0.45)" }}>{pendingPayment.kind === "shop" ? "Merchant" : "User"} · {pendingPayment.currency}</p>
                       </div>
                     </div>
                     <div className="bg-card p-5 space-y-4">
@@ -727,7 +727,7 @@ export default function QrScannerPage() {
                         onChange={(e) => setManualAmount(e.target.value)}
                         placeholder="Custom amount"
                         className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-lg font-semibold text-foreground outline-none"
-                        style={{ fontSize: "16px" }}
+                        style={{ fontSize: "1rem" }}
                       />
                       {error && <p className="text-xs text-destructive font-medium">{error}</p>}
                       <div className="grid grid-cols-2 gap-3">

@@ -4,7 +4,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Users, Repeat, Share2, DollarSign, Loader2, BarChart3 } from "lucide-react";
 
@@ -58,31 +58,31 @@ export default function GrowthDashboard({ shopId }: Props) {
         <h4 className="text-sm font-semibold flex items-center gap-2">
           <TrendingUp className="h-4 w-4 text-primary" /> Growth
         </h4>
-        <Badge variant="outline" className="text-[10px]">Last 7 days</Badge>
+        <Badge variant="outline" className="text-[0.625rem]">Last 7 days</Badge>
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         {kpis.map(kpi => (
-          <Card key={kpi.label}>
+          <AppCard key={kpi.label}>
             <CardContent className="p-3 text-center">
               <kpi.icon className={`h-4 w-4 mx-auto mb-1 ${kpi.color}`} />
               <p className="text-lg font-bold text-foreground">{kpi.value}</p>
-              <p className="text-[10px] text-muted-foreground">{kpi.label}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{kpi.label}</p>
               {kpi.change !== undefined && kpi.change !== 0 && (
-                <Badge variant={kpi.change > 0 ? "default" : "destructive"} className="text-[10px] mt-1">
+                <Badge variant={kpi.change > 0 ? "default" : "destructive"} className="text-[0.625rem] mt-1">
                   {kpi.change > 0 ? "+" : ""}{kpi.change.toFixed(0)}%
                 </Badge>
               )}
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
       {/* Mini chart — last 7 days bar */}
       {last7.length > 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3">
-            <p className="text-[10px] font-medium text-muted-foreground mb-2 flex items-center gap-1">
+            <p className="text-[0.625rem] font-medium text-muted-foreground mb-2 flex items-center gap-1">
               <BarChart3 className="h-3 w-3" /> Daily Revenue
             </p>
             <div className="flex items-end gap-1 h-12">
@@ -92,7 +92,7 @@ export default function GrowthDashboard({ shopId }: Props) {
                 return (
                   <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                     <div className="w-full rounded-t bg-primary/70 transition-all" style={{ height: `${h}px` }} />
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-[0.625rem] text-muted-foreground">
                       {new Date(m.metric_date).toLocaleDateString(undefined, { weekday: "narrow" })}
                     </span>
                   </div>
@@ -100,16 +100,16 @@ export default function GrowthDashboard({ shopId }: Props) {
               })}
             </div>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {metrics.length === 0 && (
-        <Card>
+        <AppCard>
           <CardContent className="py-6 text-center">
             <BarChart3 className="h-8 w-8 mx-auto text-muted-foreground/30 mb-2" />
             <p className="text-xs text-muted-foreground">Growth metrics will appear as orders come in</p>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

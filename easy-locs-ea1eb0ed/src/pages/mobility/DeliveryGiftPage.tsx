@@ -69,7 +69,7 @@ export default function DeliveryGiftPage() {
       rightAction={etaMin != null ? (
         <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-pink-500/10">
           <Clock className="w-3 h-3 text-pink-500" />
-          <span className="text-[10px] font-bold text-pink-500">~{etaMin}min</span>
+          <span className="text-[0.625rem] font-bold text-pink-500">~{etaMin}min</span>
         </div>
       ) : undefined}
       noContentPad
@@ -100,7 +100,7 @@ export default function DeliveryGiftPage() {
                 )}
               >
                 <span className="text-xl block mb-1">{g.emoji}</span>
-                <span className="text-[11px] text-muted-foreground">{g.label}</span>
+                <span className="text-[0.6875rem] text-muted-foreground">{g.label}</span>
               </button>
             ))}
           </div>
@@ -126,7 +126,7 @@ export default function DeliveryGiftPage() {
             ) : (
               <div className="flex flex-col items-center gap-1 text-muted-foreground">
                 <Camera className="w-5 h-5" />
-                <span className="text-[10px]">Tap to upload photo</span>
+                <span className="text-[0.625rem]">Tap to upload photo</span>
               </div>
             )}
             <input type="file" accept="image/*" capture="environment" onChange={handlePhotoUpload} className="hidden" />

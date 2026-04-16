@@ -125,7 +125,7 @@ export default function MobileMoneyPayment({
             <p className="text-xs font-bold" style={{ color: provider === p.key ? p.color : undefined }}>
               {p.label}
             </p>
-            <p className="text-[9px] text-muted-foreground mt-0.5">{p.countries}</p>
+            <p className="text-[0.5625rem] text-muted-foreground mt-0.5">{p.countries}</p>
           </button>
         ))}
       </div>
@@ -154,7 +154,7 @@ export default function MobileMoneyPayment({
           <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
           <div>
             <p className="text-xs font-bold text-amber-500">Waiting for confirmation</p>
-            <p className="text-[10px] text-muted-foreground">Please approve the payment on your phone</p>
+            <p className="text-[0.625rem] text-muted-foreground">Please approve the payment on your phone</p>
           </div>
         </div>
       )}

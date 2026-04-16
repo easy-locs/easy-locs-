@@ -134,7 +134,7 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute top-0.5 end-0.5 h-[18px] min-w-[18px] px-1 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-card pointer-events-none"
+            className="absolute top-0.5 end-0.5 h-[18px] min-w-[18px] px-1 bg-destructive text-destructive-foreground text-[0.625rem] font-bold rounded-full flex items-center justify-center ring-2 ring-card pointer-events-none"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </motion.span>
@@ -171,7 +171,7 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
                     <div className="flex items-center gap-2.5">
                       <h3 className="text-base font-bold text-foreground tracking-tight">{t("notif.title") || "Notifications"}</h3>
                       {unreadCount > 0 && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive tabular-nums">
+                        <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive tabular-nums">
                           {unreadCount}
                         </span>
                       )}
@@ -193,14 +193,14 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
                         key={f.key}
                         onClick={() => setActiveFilter(f.key)}
                         type="button"
-                        className={`shrink-0 flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-lg transition-all duration-150 ${
+                        className={`shrink-0 flex items-center gap-1.5 text-[0.6875rem] font-medium px-3 py-1.5 rounded-lg transition-all duration-150 ${
                           activeFilter === f.key
                             ? "bg-foreground text-card shadow-sm"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
                         <span>{f.label}</span>
-                        {f.count > 0 && activeFilter !== f.key && <span className="text-[10px] opacity-60 tabular-nums">{f.count}</span>}
+                        {f.count > 0 && activeFilter !== f.key && <span className="text-[0.625rem] opacity-60 tabular-nums">{f.count}</span>}
                       </button>
                     ))}
                   </div>
@@ -242,7 +242,7 @@ const NotificationBell = ({ onOpen }: { onOpen?: () => void } = {}) => {
                               {n.title}
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{n.body}</p>
-                            <span className="text-[10px] text-muted-foreground/50 tabular-nums mt-1 block">
+                            <span className="text-[0.625rem] text-muted-foreground/50 tabular-nums mt-1 block">
                               {(() => { try { return formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: dfLocale }); } catch { return ""; } })()}
                             </span>
                           </div>

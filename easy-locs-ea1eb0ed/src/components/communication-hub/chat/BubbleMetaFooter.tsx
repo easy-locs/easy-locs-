@@ -46,12 +46,12 @@ function BubbleMetaFooterInner(props: Props) {
 
   return (
     <div className="flex items-center justify-end gap-1 mt-0.5 -mb-0.5 select-none">
-      {editedAt && <span className="text-[10px] italic mr-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>edited</span>}
-      {securityEmoji && <span className="text-[10px] mr-0.5" title={securityLabel}>{securityEmoji}</span>}
+      {editedAt && <span className="text-[0.625rem] italic mr-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.35)" }}>edited</span>}
+      {securityEmoji && <span className="text-[0.625rem] mr-0.5" title={securityLabel}>{securityEmoji}</span>}
       {isMe && typeof progress === "number" && progress > 0 && progress < 100 && (
-        <span className="text-[10px] tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{progress}%</span>
+        <span className="text-[0.625rem] tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{progress}%</span>
       )}
-      <span className="text-[10px] font-medium tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+      <span className="text-[0.625rem] font-medium tabular-nums" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
         {safeFormatTime(createdAt)}
       </span>
       {isMe && isPendingOffline ? (

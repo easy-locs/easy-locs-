@@ -50,14 +50,14 @@ function FlightCard({ offer, onSelect, loading }: { offer: FlightOffer; onSelect
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-xs font-bold text-foreground line-clamp-1 break-words">{firstSeg.airline}</p>
-          <p className="text-[10px] text-muted-foreground">{firstSeg.flightNumber} · {firstSeg.aircraft ?? firstSeg.cabinClass}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{firstSeg.flightNumber} · {firstSeg.aircraft ?? firstSeg.cabinClass}</p>
         </div>
         <div className="text-right shrink-0">
           <p className="text-sm font-extrabold tabular-nums" style={{ color: NAVY }}>
             {offer.currency} {offer.totalPrice.toFixed(0)}
           </p>
           {offer.seatsRemaining && offer.seatsRemaining <= 5 && (
-            <p className="text-[9px] font-bold" style={{ color: "hsl(0 72% 58%)" }}>
+            <p className="text-[0.5625rem] font-bold" style={{ color: "hsl(0 72% 58%)" }}>
               {offer.seatsRemaining} left
             </p>
           )}
@@ -67,11 +67,11 @@ function FlightCard({ offer, onSelect, loading }: { offer: FlightOffer; onSelect
       <div className="flex items-center gap-2">
         <div className="text-center min-w-[48px]">
           <p className="text-sm font-bold text-foreground tabular-nums">{formatTime(firstSeg.departureTime)}</p>
-          <p className="text-[10px] text-muted-foreground">{firstSeg.origin}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{firstSeg.origin}</p>
         </div>
 
         <div className="flex-1 flex flex-col items-center gap-0.5 px-1">
-          <p className="text-[10px] text-muted-foreground tabular-nums">{formatDuration(offer.totalDuration)}</p>
+          <p className="text-[0.625rem] text-muted-foreground tabular-nums">{formatDuration(offer.totalDuration)}</p>
           <div className="w-full flex items-center gap-0.5">
             <div className="flex-1 h-px" style={{ background: `${GOLD}40` }} />
             {offer.stops > 0 && (
@@ -82,30 +82,30 @@ function FlightCard({ offer, onSelect, loading }: { offer: FlightOffer; onSelect
             )}
             <Plane className="h-2.5 w-2.5 rotate-90 shrink-0" style={{ color: GOLD }} />
           </div>
-          <p className="text-[10px] font-semibold" style={{ color: offer.stops === 0 ? "hsl(142 71% 45%)" : GOLD }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: offer.stops === 0 ? "hsl(142 71% 45%)" : GOLD }}>
             {offer.stops === 0 ? "Direct" : `${offer.stops} stop${offer.stops > 1 ? "s" : ""}`}
           </p>
         </div>
 
         <div className="text-center min-w-[48px]">
           <p className="text-sm font-bold text-foreground tabular-nums">{formatTime(lastSeg.arrivalTime)}</p>
-          <p className="text-[10px] text-muted-foreground">{lastSeg.destination}</p>
+          <p className="text-[0.625rem] text-muted-foreground">{lastSeg.destination}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border/10">
         {offer.refundable && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(142 71% 45% / 0.1)", color: "hsl(142 71% 45%)" }}>
+          <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(142 71% 45% / 0.1)", color: "hsl(142 71% 45%)" }}>
             Refundable
           </span>
         )}
         {offer.changeable && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${GOLD}15`, color: NAVY }}>
+          <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: `${GOLD}15`, color: NAVY }}>
             Changeable
           </span>
         )}
         {firstSeg.baggageAllowance?.checkedBag && (
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-muted/20 text-muted-foreground">
+          <span className="text-[0.5625rem] font-bold px-1.5 py-0.5 rounded-full bg-muted/20 text-muted-foreground">
             {firstSeg.baggageAllowance.checkedBag.weight ?? 23}kg bag
           </span>
         )}
@@ -145,7 +145,7 @@ export default function FlightResultsPage() {
             <p className="text-xs font-bold text-foreground flex-1">
               {searchParams.origin} <ArrowRight className="inline h-3 w-3 mx-0.5" /> {searchParams.destination}
             </p>
-            <span className="text-[10px] text-muted-foreground shrink-0 tabular-nums">
+            <span className="text-[0.625rem] text-muted-foreground shrink-0 tabular-nums">
               {searchParams.departureDate}
             </span>
           </div>
@@ -156,7 +156,7 @@ export default function FlightResultsPage() {
             <button
               key={s}
               onClick={() => setSortBy(s)}
-              className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors"
+              className="shrink-0 px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold border transition-colors"
               style={{
                 background: sortBy === s ? NAVY : "transparent",
                 color: sortBy === s ? "#fff" : "var(--muted-foreground)",
@@ -166,7 +166,7 @@ export default function FlightResultsPage() {
               {s === "price" ? "Cheapest" : s === "duration" ? "Fastest" : "Earliest"}
             </button>
           ))}
-          <span className="text-[10px] text-muted-foreground ml-auto tabular-nums">
+          <span className="text-[0.625rem] text-muted-foreground ml-auto tabular-nums">
             {sorted.length} result{sorted.length !== 1 ? "s" : ""}
           </span>
         </div>

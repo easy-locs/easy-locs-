@@ -16,11 +16,11 @@ export function OrderStatusChip({ status, variant = "customer", size = "sm" }: O
   return (
     <span
       className={`inline-flex items-center gap-1 font-semibold rounded-full whitespace-nowrap ${
-        size === "sm" ? "text-[10px] px-2.5 py-0.5" : "text-xs px-3 py-1"
+        size === "sm" ? "text-[0.625rem] px-2.5 py-0.5" : "text-xs px-3 py-1"
       }`}
       style={{ color: meta.color, background: meta.bg }}
     >
-      <span className="text-[10px]">{meta.icon}</span>
+      <span className="text-[0.625rem]">{meta.icon}</span>
       {label}
     </span>
   );
@@ -31,7 +31,7 @@ export function PaymentStatusChip({ status, size = "sm" }: { status: string; siz
   return (
     <span
       className={`inline-flex items-center font-semibold rounded-full whitespace-nowrap ${
-        size === "sm" ? "text-[10px] px-2.5 py-0.5" : "text-xs px-3 py-1"
+        size === "sm" ? "text-[0.625rem] px-2.5 py-0.5" : "text-xs px-3 py-1"
       }`}
       style={{ color: meta.color, background: meta.bg }}
     >

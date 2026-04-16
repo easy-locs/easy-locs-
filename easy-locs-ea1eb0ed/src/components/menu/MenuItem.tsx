@@ -40,7 +40,7 @@ export const MenuItem = memo(function MenuItem({ node, compact, showChevron, onC
         <p className="text-sm font-semibold text-foreground truncate">{label}</p>
         {node.badge && (
           <span
-            className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
             style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}
           >
             {node.badge}

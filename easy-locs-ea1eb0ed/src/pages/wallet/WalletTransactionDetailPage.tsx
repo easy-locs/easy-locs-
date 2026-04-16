@@ -167,12 +167,12 @@ export default function WalletTransactionDetailPage() {
 
         {tx.metadata && Object.keys(tx.metadata).length > 0 && (
           <div className="rounded-2xl bg-card border border-border/20 p-4">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">{t("wallet.txMetadata")}</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-2">{t("wallet.txMetadata")}</p>
             <div className="space-y-1.5">
               {Object.entries(tx.metadata).map(([key, value]) => (
                 <div key={key} className="flex items-start justify-between gap-2">
-                  <span className="text-[11px] text-muted-foreground/70 shrink-0">{key}</span>
-                  <span className="text-[11px] text-muted-foreground font-mono text-right break-words">
+                  <span className="text-[0.6875rem] text-muted-foreground/70 shrink-0">{key}</span>
+                  <span className="text-[0.6875rem] text-muted-foreground font-mono text-right break-words">
                     {typeof value === "object" ? JSON.stringify(value) : String(value)}
                   </span>
                 </div>

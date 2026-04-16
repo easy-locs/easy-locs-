@@ -108,7 +108,7 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -116,7 +116,7 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["providers", "auctions", "compare"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "providers" ? "🏪 Prestataires" : v === "auctions" ? "🔨 Enchères" : "⚖️ Comparer"}
           </button>
@@ -133,23 +133,23 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
                   style={{ background: "hsl(var(--primary) / 0.08)" }}>{p.logo}</div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
                     {p.verified && <CheckCircle2 className="h-3 w-3" style={{ color: "hsl(var(--success))" }} />}
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     ⭐ {p.rating} ({p.reviews}) • ⏱️ ~{p.avgDeliveryTime}min • 🛡️ SLA {p.slaGuarantee}%
                   </p>
                   <div className="flex gap-1 mt-0.5">
                     {p.specialties.map(s => (
-                      <span key={s} className="text-[10px] px-1 py-0.5 rounded" style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>{s}</span>
+                      <span key={s} className="text-[0.625rem] px-1 py-0.5 rounded" style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}>{s}</span>
                     ))}
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>
                     {fmt(p.priceRange.min)}-{fmt(p.priceRange.max)} F
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>Réponse ~{p.responseTime}min</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>Réponse ~{p.responseTime}min</p>
                 </div>
               </div>
             </div>
@@ -164,12 +164,12 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.description}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{a.description}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     📍 {a.origin} → {a.destination} • ⚖️ {a.weight}kg
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "hsl(var(--warning) / 0.1)", color: "hsl(var(--warning))" }}>
                   ⏰ {Math.round((a.deadline.getTime() - Date.now()) / 60000)}min
                 </span>
@@ -178,16 +178,16 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
                 {a.bids.sort((x, y) => y.score - x.score).map((b, i) => (
                   <div key={b.providerId} className="flex items-center gap-2 px-2 py-1.5 rounded-lg"
                     style={{ background: i === 0 ? "hsl(var(--success) / 0.05)" : "transparent" }}>
-                    {i === 0 && <span className="text-[10px]">🏆</span>}
-                    <p className="flex-1 text-[10px] font-medium" style={{ color: "hsl(var(--foreground))" }}>{b.providerName}</p>
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>{b.amount.toLocaleString()} F</span>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>~{b.eta}min</span>
-                    <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary))" }}>{b.score}/100</span>
+                    {i === 0 && <span className="text-[0.625rem]">🏆</span>}
+                    <p className="flex-1 text-[0.625rem] font-medium" style={{ color: "hsl(var(--foreground))" }}>{b.providerName}</p>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>{b.amount.toLocaleString()} F</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>~{b.eta}min</span>
+                    <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{b.score}/100</span>
                   </div>
                 ))}
               </div>
               {a.bids.length > 0 && (
-                <Button size="sm" className="w-full text-[10px] h-7" variant="outline"
+                <Button size="sm" className="w-full text-[0.625rem] h-7" variant="outline"
                   onClick={() => { haptic("medium"); toast.success(`Enchère attribuée à ${a.bids.sort((x, y) => y.score - x.score)[0].providerName}`); }}
                   style={{ borderColor: "hsl(var(--success) / 0.3)", color: "hsl(var(--success))" }}>
                   <Award className="h-2.5 w-2.5 mr-1" /> Attribuer au meilleur
@@ -195,7 +195,7 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
               )}
             </div>
           ))}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Nouvelle enchère inversée créée"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <Gavel className="h-3 w-3 mr-1" /> Créer une enchère inversée
@@ -206,11 +206,11 @@ export default function DeliveryMarketplace({ orgId, className }: { orgId: strin
       {view === "compare" && (
         <div className="space-y-2">
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.08)" }}>
-            <div className="grid grid-cols-5 gap-0 text-[10px] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
+            <div className="grid grid-cols-5 gap-0 text-[0.625rem] font-bold p-2" style={{ background: "hsl(var(--muted) / 0.4)", color: "hsl(var(--muted-foreground))" }}>
               <span>Prestataire</span><span>Note</span><span>Délai</span><span>SLA</span><span>Prix min</span>
             </div>
             {PROVIDERS.sort((a, b) => b.rating - a.rating).map(p => (
-              <div key={p.id} className="grid grid-cols-5 gap-0 text-[10px] p-2 items-center" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
+              <div key={p.id} className="grid grid-cols-5 gap-0 text-[0.625rem] p-2 items-center" style={{ borderTop: "1px solid hsl(var(--border) / 0.05)" }}>
                 <span className="font-semibold truncate" style={{ color: "hsl(var(--foreground))" }}>{p.logo} {p.name}</span>
                 <span style={{ color: "hsl(var(--warning))" }}>⭐ {p.rating}</span>
                 <span style={{ color: "hsl(var(--info))" }}>{p.avgDeliveryTime}min</span>

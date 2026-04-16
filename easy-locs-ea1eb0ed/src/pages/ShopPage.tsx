@@ -322,7 +322,7 @@ export default function ShopPage() {
             <img loading="eager" src={coverImage.url} alt={`${shop.name} cover — ${verticalUI.displayTitle}${shop.city ? ` in ${shop.city}` : ""}`} className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
             {attribution && (
-              <span className="absolute bottom-1 right-2 text-[10px] text-white/50 bg-black/20 px-1.5 py-0.5 rounded">
+              <span className="absolute bottom-1 right-2 text-[0.625rem] text-white/50 bg-black/20 px-1.5 py-0.5 rounded">
                 {attribution}
               </span>
             )}
@@ -371,12 +371,12 @@ export default function ShopPage() {
                     </span>
                   )}
                   {shop.city && (
-                    <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-0.5 text-[0.6875rem] text-muted-foreground">
                       <MapPin className="h-3 w-3" />
                       {shop.city}
                     </span>
                   )}
-                  <Badge variant="outline" className="text-[10px] h-4 px-1.5">
+                  <Badge variant="outline" className="text-[0.625rem] h-4 px-1.5">
                     {shop.vertical || "Shop"}
                   </Badge>
                 </div>
@@ -464,7 +464,7 @@ export default function ShopPage() {
                       <h3 className="text-sm font-bold text-foreground">Popular Items</h3>
                       <button
                         onClick={() => setActiveTab("menu")}
-                        className="text-[11px] text-primary font-medium flex items-center gap-0.5"
+                        className="text-[0.6875rem] text-primary font-medium flex items-center gap-0.5"
                       >
                         Full Menu <ChevronRight className="h-3 w-3" />
                       </button>
@@ -484,7 +484,7 @@ export default function ShopPage() {
                               </div>
                             )}
                             <div className="p-2.5 space-y-0.5">
-                              <p className="text-[11px] font-semibold text-foreground line-clamp-2 leading-tight">{item.name || item.title}</p>
+                              <p className="text-[0.6875rem] font-semibold text-foreground line-clamp-2 leading-tight">{item.name || item.title}</p>
                               <p className="text-xs font-bold text-primary">{fx.formatPrice(item.price, item.currency)}</p>
                             </div>
                           </button>
@@ -514,7 +514,7 @@ export default function ShopPage() {
                     <button
                       onClick={() => setActiveCategory(null)}
                       aria-pressed={!activeCategory}
-                      className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all ${
+                      className={`px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all ${
                         !activeCategory ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
                       }`}
                     >
@@ -525,7 +525,7 @@ export default function ShopPage() {
                         key={cat.id}
                         onClick={() => setActiveCategory(cat.id)}
                         aria-pressed={activeCategory === cat.id}
-                        className={`px-3 py-1.5 rounded-full text-[11px] font-semibold whitespace-nowrap shrink-0 transition-all ${
+                        className={`px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold whitespace-nowrap shrink-0 transition-all ${
                           activeCategory === cat.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"
                         }`}
                       >
@@ -538,7 +538,7 @@ export default function ShopPage() {
                 {/* Item count + locked currency */}
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-xs text-muted-foreground">{filteredItems.length} items</p>
-                  <span className="text-[10px] font-semibold text-muted-foreground px-2 py-1 rounded-lg bg-muted/40">
+                  <span className="text-[0.625rem] font-semibold text-muted-foreground px-2 py-1 rounded-lg bg-muted/40">
                     {fx.displayCurrency}
                   </span>
                 </div>
@@ -561,12 +561,12 @@ export default function ShopPage() {
                           <div className="flex-1 min-w-0 space-y-1">
                             <h4 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{item.name || item.title}</h4>
                             {item.description && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">{item.description}</p>
+                              <p className="text-[0.6875rem] text-muted-foreground line-clamp-2 leading-relaxed">{item.description}</p>
                             )}
                             <div className="flex items-center gap-2 pt-0.5">
                               <span className="text-sm font-bold text-primary">{fx.formatPrice(item.price, item.currency)}</span>
                               {item.compare_at_price && item.compare_at_price > item.price && (
-                                <span className="text-[10px] text-muted-foreground line-through">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
+                                <span className="text-[0.625rem] text-muted-foreground line-through">{fx.formatPrice(item.compare_at_price, item.currency)}</span>
                               )}
                             </div>
                           </div>
@@ -577,7 +577,7 @@ export default function ShopPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="h-7 px-3 text-[10px] font-semibold rounded-lg gap-1"
+                              className="h-7 px-3 text-[0.625rem] font-semibold rounded-lg gap-1"
                               onClick={() => { cart.addItem(item.id, item.price); analytics.trackAddToCart(item.id, item.price, item.currency); }}
                               disabled={cart.loading}
                             >
@@ -773,7 +773,7 @@ export default function ShopPage() {
                   </div>
                 )}
                 {fx.isConverted && (
-                  <p className="text-[10px] text-muted-foreground text-right">≈ converted from {shop.currency || "AED"}</p>
+                  <p className="text-[0.625rem] text-muted-foreground text-right">≈ converted from {shop.currency || "AED"}</p>
                 )}
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">Total</span>

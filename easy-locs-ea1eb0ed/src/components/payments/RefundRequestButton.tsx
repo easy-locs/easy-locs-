@@ -62,7 +62,7 @@ export default function RefundRequestButton({
           Your refund request has been submitted for review. You&apos;ll be notified once it&apos;s processed.
         </p>
         {refundId && (
-          <p className="text-[10px] text-muted-foreground font-mono">Ref: {refundId}</p>
+          <p className="text-[0.625rem] text-muted-foreground font-mono">Ref: {refundId}</p>
         )}
       </div>
     );

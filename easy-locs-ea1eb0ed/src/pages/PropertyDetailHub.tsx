@@ -231,7 +231,7 @@ const PropertyDetailHub = () => {
             <div key={i} className="bg-card rounded-xl border border-border p-3 sm:p-4">
               <div className="flex items-center gap-2 mb-1">
                 <kpi.icon className={`h-4 w-4 ${kpi.color}`} />
-                <span className="text-[11px] text-muted-foreground font-medium">{kpi.label}</span>
+                <span className="text-[0.6875rem] text-muted-foreground font-medium">{kpi.label}</span>
               </div>
               <p className="text-lg sm:text-xl font-bold text-foreground">{kpi.value}</p>
             </div>
@@ -243,19 +243,19 @@ const PropertyDetailHub = () => {
           <TabsList className="w-full flex overflow-x-auto gap-1 bg-muted/50 p-1 rounded-xl">
             <TabsTrigger value="tenants" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <Users className="h-3.5 w-3.5" /> {t("nav.tenants") || "Tenants"}
-              {activeTenants.length > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{activeTenants.length}</Badge>}
+              {activeTenants.length > 0 && <Badge variant="secondary" className="text-[0.625rem] px-1.5 py-0">{activeTenants.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <Wallet className="h-3.5 w-3.5" /> {t("nav.payments") || "Payments"}
-              {unpaidRents.length > 0 && <Badge variant="destructive" className="text-[10px] px-1.5 py-0">{unpaidRents.length}</Badge>}
+              {unpaidRents.length > 0 && <Badge variant="destructive" className="text-[0.625rem] px-1.5 py-0">{unpaidRents.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <FileText className="h-3.5 w-3.5" /> {t("nav.documents") || "Documents"}
-              {documents.length > 0 && <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{documents.length}</Badge>}
+              {documents.length > 0 && <Badge variant="secondary" className="text-[0.625rem] px-1.5 py-0">{documents.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="maintenance" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <Wrench className="h-3.5 w-3.5" /> {t("nav.interventions") || "Maintenance"}
-              {openInterventions.length > 0 && <Badge variant="outline" className="text-[10px] px-1.5 py-0">{openInterventions.length}</Badge>}
+              {openInterventions.length > 0 && <Badge variant="outline" className="text-[0.625rem] px-1.5 py-0">{openInterventions.length}</Badge>}
             </TabsTrigger>
             <TabsTrigger value="finances" className="flex items-center gap-1.5 text-xs sm:text-sm min-w-[44px]">
               <TrendingUp className="h-3.5 w-3.5" /> {t("page.property.finances") || "Finances"}
@@ -281,7 +281,7 @@ const PropertyDetailHub = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-semibold text-foreground">{tenant.name}</p>
-                          <Badge variant={active ? "default" : "secondary"} className="text-[10px]">
+                          <Badge variant={active ? "default" : "secondary"} className="text-[0.625rem]">
                             {active ? (t("page.property.active") || "Active") : (t("page.property.ended") || "Ended")}
                           </Badge>
                         </div>
@@ -342,7 +342,7 @@ const PropertyDetailHub = () => {
                       <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
                       <p className="text-xs text-muted-foreground">{doc.doc_type} · {new Date(doc.created_at).toLocaleDateString()}</p>
                     </div>
-                    <Badge variant="outline" className="text-[10px] shrink-0">{doc.status}</Badge>
+                    <Badge variant="outline" className="text-[0.625rem] shrink-0">{doc.status}</Badge>
                   </div>
                 ))}
               </div>
@@ -364,7 +364,7 @@ const PropertyDetailHub = () => {
                         <p className="text-sm font-medium text-foreground">{intv.title}</p>
                         <p className="text-xs text-muted-foreground">{intv.category} · {intv.priority}</p>
                       </div>
-                      <Badge variant="outline" className="text-[10px]">{intv.status}</Badge>
+                      <Badge variant="outline" className="text-[0.625rem]">{intv.status}</Badge>
                     </div>
                   );
                 })}
@@ -416,7 +416,7 @@ const PropertyDetailHub = () => {
                       </p>
                       <p className="text-xs text-muted-foreground">{inv.report_date}</p>
                     </div>
-                    <Badge variant={inv.status === "completed" ? "default" : "secondary"} className="text-[10px]">{inv.status}</Badge>
+                    <Badge variant={inv.status === "completed" ? "default" : "secondary"} className="text-[0.625rem]">{inv.status}</Badge>
                   </div>
                 ))}
               </div>

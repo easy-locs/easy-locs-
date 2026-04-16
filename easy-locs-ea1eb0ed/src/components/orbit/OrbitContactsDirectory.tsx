@@ -66,7 +66,7 @@ const ContactRow = memo(function ContactRow({
       </div>
 
       {timeStr && (
-        <span className="text-[10px] text-muted-foreground shrink-0 whitespace-nowrap">{timeStr}</span>
+        <span className="text-[0.625rem] text-muted-foreground shrink-0 whitespace-nowrap">{timeStr}</span>
       )}
 
       <div className="flex items-center gap-0.5 shrink-0">

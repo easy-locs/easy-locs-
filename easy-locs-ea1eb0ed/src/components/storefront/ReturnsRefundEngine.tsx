@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -103,10 +103,10 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["storefront-returns"] }); toast.success("Updated"); },
   });
 
-  if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
+  if (isLoading) return <AppCard><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></AppCard>;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold flex items-center gap-2">
@@ -114,7 +114,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
             {mode === "seller" ? "Returns & Refunds" : "My Returns"}
           </h3>
           {mode === "buyer" && !creating && orders.length > 0 && (
-            <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => setCreating(true)}>
+            <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => setCreating(true)}>
               <Plus className="h-3 w-3 mr-1" /> Request Return
             </Button>
           )}
@@ -171,14 +171,14 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold">{ret.rma_code || ret.id.slice(0, 8)}</span>
-                      <Badge className={`text-[10px] ${STATUS_COLORS[ret.status] || ""}`}>{ret.status}</Badge>
+                      <Badge className={`text-[0.625rem] ${STATUS_COLORS[ret.status] || ""}`}>{ret.status}</Badge>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">
                       {ret.reason} • {ret.refund_type} • {new Date(ret.created_at).toLocaleDateString()}
                     </p>
-                    {ret.description && <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{ret.description}</p>}
+                    {ret.description && <p className="text-[0.625rem] text-muted-foreground mt-0.5 line-clamp-2">{ret.description}</p>}
                     {ret.tracking_number && (
-                      <p className="text-[10px] text-primary mt-0.5 flex items-center gap-1">
+                      <p className="text-[0.625rem] text-primary mt-0.5 flex items-center gap-1">
                         <Truck className="h-2.5 w-2.5" /> {ret.tracking_number}
                       </p>
                     )}
@@ -193,7 +193,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
                         key={nextStatus}
                         size="sm"
                         variant={nextStatus === "rejected" ? "destructive" : "outline"}
-                        className="h-6 text-[10px]"
+                        className="h-6 text-[0.625rem]"
                         onClick={() => updateStatus.mutate({ id: ret.id, status: nextStatus })}
                       >
                         {nextStatus === "approved" && <CheckCircle className="h-3 w-3 mr-1" />}
@@ -209,7 +209,7 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
                   <div className="flex gap-2 pl-7">
                     <Input
                       placeholder="Tracking number..."
-                      className="h-7 text-[10px] flex-1"
+                      className="h-7 text-[0.625rem] flex-1"
                       onKeyDown={e => {
                         if (e.key === "Enter") {
                           const val = (e.target as HTMLInputElement).value;
@@ -224,6 +224,6 @@ export default function ReturnsRefundEngine({ shopId, mode, orders = [] }: Props
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

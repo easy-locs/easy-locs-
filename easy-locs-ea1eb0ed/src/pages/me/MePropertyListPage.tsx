@@ -68,7 +68,7 @@ export default function MePropertyListPage() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="bg-transparent text-white text-sm flex-1 outline-none placeholder:text-white/40"
-            style={{ fontSize: "16px" }}
+            style={{ fontSize: "1rem" }}
           />
         </div>
       </div>
@@ -132,13 +132,13 @@ export default function MePropertyListPage() {
                     <span className="text-xs font-bold" style={{ color: gold }}>
                       {prop.price.toLocaleString()} {prop.currency}
                     </span>
-                    <span className="text-[10px] capitalize" style={{ color: "#999" }}>
+                    <span className="text-[0.625rem] capitalize" style={{ color: "#999" }}>
                       {prop.listingType.replace(/_/g, " ")}
                     </span>
                   </div>
                 </div>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full capitalize"
+                  className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full capitalize"
                   style={{
                     background: `${STATUS_COLORS[prop.status] ?? "#999"}15`,
                     color: STATUS_COLORS[prop.status] ?? "#999",

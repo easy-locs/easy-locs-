@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -97,31 +97,31 @@ export default function MultiStoreManager() {
 
       {/* Consolidated metrics */}
       <div className="grid grid-cols-3 gap-2">
-        <Card>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <Store className="h-4 w-4 text-primary mx-auto mb-1" />
             <p className="text-lg font-bold">{shops.length}</p>
-            <p className="text-[10px] text-muted-foreground">Stores</p>
+            <p className="text-[0.625rem] text-muted-foreground">Stores</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <Package className="h-4 w-4 text-info mx-auto mb-1" />
             <p className="text-lg font-bold">{fmtNum(totalItems)}</p>
-            <p className="text-[10px] text-muted-foreground">Products</p>
+            <p className="text-[0.625rem] text-muted-foreground">Products</p>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-3 text-center">
             <ShoppingBag className="h-4 w-4 text-success mx-auto mb-1" />
             <p className="text-lg font-bold">{fmtNum(totalOrders)}</p>
-            <p className="text-[10px] text-muted-foreground">Orders</p>
+            <p className="text-[0.625rem] text-muted-foreground">Orders</p>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       {/* Shops list */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-2">
           <h4 className="text-xs font-semibold text-muted-foreground">Your Stores</h4>
           {shops.map((shop: any) => {
@@ -138,8 +138,8 @@ export default function MultiStoreManager() {
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium line-clamp-2 break-words leading-snug">{shop.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge variant="outline" className="text-[10px]">{shop.shop_visibility}</Badge>
-                    <span className="text-[10px] text-muted-foreground">{stats.items} items • {stats.orders} orders</span>
+                    <Badge variant="outline" className="text-[0.625rem]">{shop.shop_visibility}</Badge>
+                    <span className="text-[0.625rem] text-muted-foreground">{stats.items} items • {stats.orders} orders</span>
                   </div>
                 </div>
                 <a href={`/s/${shop.slug}`} target="_blank" rel="noopener noreferrer">
@@ -149,10 +149,10 @@ export default function MultiStoreManager() {
             );
           })}
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Store Groups */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-2">
           <h4 className="text-xs font-semibold text-muted-foreground">Store Groups</h4>
           
@@ -174,13 +174,13 @@ export default function MultiStoreManager() {
                   {memberShopIds.map((sid: string) => {
                     const shop = shops.find((s: any) => s.id === sid);
                     return shop ? (
-                      <Badge key={sid} variant="secondary" className="text-[10px]">{shop.name}</Badge>
+                      <Badge key={sid} variant="secondary" className="text-[0.625rem]">{shop.name}</Badge>
                     ) : null;
                   })}
                 </div>
                 <div className="flex gap-1 flex-wrap">
                   {shops.filter((s: any) => !memberShopIds.includes(s.id)).map((s: any) => (
-                    <Button key={s.id} size="sm" variant="ghost" className="text-[10px] h-5 px-1.5"
+                    <Button key={s.id} size="sm" variant="ghost" className="text-[0.625rem] h-5 px-1.5"
                       onClick={() => addToGroup.mutate({ groupId: g.id, shopId: s.id })}>
                       + {s.name}
                     </Button>
@@ -189,9 +189,9 @@ export default function MultiStoreManager() {
               </div>
             );
           })}
-          {groups.length === 0 && <p className="text-[10px] text-muted-foreground text-center py-2">Create groups to organize your stores</p>}
+          {groups.length === 0 && <p className="text-[0.625rem] text-muted-foreground text-center py-2">Create groups to organize your stores</p>}
         </CardContent>
-      </Card>
+      </AppCard>
     </div>
   );
 }

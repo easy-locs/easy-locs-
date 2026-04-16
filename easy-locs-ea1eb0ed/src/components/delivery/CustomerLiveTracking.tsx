@@ -98,12 +98,12 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
       {/* Header with ETA */}
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.08), hsl(var(--primary) / 0.03))", border: "1px solid hsl(var(--primary) / 0.15)" }}>
-        <p className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Arrivée estimée</p>
+        <p className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>Arrivée estimée</p>
         <motion.p className="text-3xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--primary))" }}
           key={eta} initial={{ scale: 1.1 }} animate={{ scale: 1 }}>
           {eta} <span className="text-sm font-semibold">min</span>
         </motion.p>
-        <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
           Mise à jour automatique en temps réel
         </p>
       </div>
@@ -143,7 +143,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
 
         {/* Label */}
         <div className="absolute bottom-2 left-2 px-2 py-1 rounded-lg" style={{ background: "hsl(var(--background) / 0.85)" }}>
-          <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+          <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
             📍 {driverLat.toFixed(4)}, {driverLng.toFixed(4)}
           </p>
         </div>
@@ -157,10 +157,10 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
           {driverInfo.photo}
         </div>
         <div className="flex-1">
-          <p className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{driverInfo.name}</p>
+          <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{driverInfo.name}</p>
           <div className="flex items-center gap-2">
-            <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{driverInfo.vehicle}</span>
-            <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--warning))" }}>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{driverInfo.vehicle}</span>
+            <span className="text-[0.625rem] flex items-center gap-0.5" style={{ color: "hsl(var(--warning))" }}>
               <Star className="h-2.5 w-2.5" /> {driverInfo.rating}
             </span>
           </div>
@@ -201,7 +201,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
                 )}
               </div>
               <div className="pb-2">
-                <p className="text-[11px] font-semibold" style={{
+                <p className="text-[0.6875rem] font-semibold" style={{
                   color: step.status === "pending" ? "hsl(var(--muted-foreground))" : "hsl(var(--foreground))",
                 }}>
                   {step.label}
@@ -211,7 +211,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
                     </motion.span>
                   )}
                 </p>
-                {step.time && <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{step.time}</p>}
+                {step.time && <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{step.time}</p>}
               </div>
             </div>
           );
@@ -231,8 +231,8 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
                       background: m.sender === "customer" ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.5)",
                       color: m.sender === "customer" ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
                     }}>
-                    <p className="text-[10px]">{m.text}</p>
-                    <p className="text-[10px] mt-0.5 opacity-60">{m.time}</p>
+                    <p className="text-[0.625rem]">{m.text}</p>
+                    <p className="text-[0.625rem] mt-0.5 opacity-60">{m.time}</p>
                   </div>
                 </div>
               ))}
@@ -254,7 +254,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
       {/* Rate after delivery hint */}
       <div className="rounded-xl p-3 text-center"
         style={{ background: "hsl(var(--muted) / 0.15)", border: "1px solid hsl(var(--border) / 0.08)" }}>
-        <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
           ⭐ N'oubliez pas d'évaluer votre livreur après la livraison
         </p>
       </div>

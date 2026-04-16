@@ -77,7 +77,7 @@ export default function MobilityTaxiPage() {
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0" style={{ background: "hsl(142 71% 45% / 0.15)" }}>
             <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />
-            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(142 71% 45%)" }}>0% Fees</span>
+            <span className="text-[0.625rem] font-bold uppercase tracking-wider" style={{ color: "hsl(142 71% 45%)" }}>0% Fees</span>
           </div>
         </header>
 
@@ -132,7 +132,7 @@ export default function MobilityTaxiPage() {
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full shrink-0" style={{ background: "hsl(142 71% 45% / 0.15)", backdropFilter: "blur(8px)" }}>
           <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(142 71% 45%)" }} />
-          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "hsl(142 71% 45%)" }}>0% Fees</span>
+          <span className="text-[0.625rem] font-bold uppercase tracking-wider" style={{ color: "hsl(142 71% 45%)" }}>0% Fees</span>
         </div>
       </header>
 
@@ -158,7 +158,7 @@ export default function MobilityTaxiPage() {
           </div>
           <div className="flex-1 text-left min-w-0">
             <p className="text-sm font-bold text-white">{activeJobs.length} active ride{activeJobs.length > 1 ? "s" : ""}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--accent) / 0.8)" }}>Tap to track your ride</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--accent) / 0.8)" }}>Tap to track your ride</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <Clock className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />

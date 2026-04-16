@@ -93,11 +93,11 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
           Facturation automatisée
         </h3>
         <div className="flex gap-1.5">
-          <Button size="sm" className="text-[10px] h-7" onClick={exportCSV}
+          <Button size="sm" className="text-[0.625rem] h-7" onClick={exportCSV}
             style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--foreground))" }}>
             <Download className="h-3 w-3 mr-1" /> CSV
           </Button>
-          <Button size="sm" className="text-[10px] h-7" onClick={generateBatchInvoices} disabled={generating}
+          <Button size="sm" className="text-[0.625rem] h-7" onClick={generateBatchInvoices} disabled={generating}
             style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
             {generating ? <Loader2 className="h-3 w-3 animate-spin" /> : "+ Générer"}
           </Button>
@@ -115,7 +115,7 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -132,7 +132,7 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["all", "draft", "sent", "paid", "overdue"] as const).map(f => (
           <button key={f} onClick={() => { setFilter(f); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{
               background: filter === f ? "hsl(var(--primary) / 0.1)" : "transparent",
               color: filter === f ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
@@ -167,19 +167,19 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
               style={{ background: "hsl(var(--muted) / 0.2)", border: `1px solid hsl(var(${cfg.color}) / 0.12)` }}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-bold" style={{ color: "hsl(var(--foreground))" }}>{invoiceNumber}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--foreground))" }}>{invoiceNumber}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     {recipientName} • {recipientType === "driver" ? "🚗 Livreur" : "🏪 Vendeur"}
                   </p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                   {cfg.label}
                 </span>
               </div>
 
               <div className="flex items-center justify-between pt-1" style={{ borderTop: "1px solid hsl(var(--border) / 0.1)" }}>
-                <div className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <div className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   <span>HT: {amount}€</span>
                   <span className="mx-1.5">|</span>
                   <span>TVA: {vatAmount}€</span>
@@ -189,7 +189,7 @@ export default function AutomatedInvoicingEngine({ orgId, className }: { orgId: 
                 </p>
               </div>
 
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
                 {issuedAt ? `Émise le ${new Date(issuedAt).toLocaleDateString("fr-FR")}` : ""}
                 {dueAt ? ` • Échéance ${new Date(dueAt).toLocaleDateString("fr-FR")}` : ""}
                 {paidAt ? ` • Payée le ${new Date(paidAt).toLocaleDateString("fr-FR")}` : ""}

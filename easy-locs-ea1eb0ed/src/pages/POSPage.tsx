@@ -16,7 +16,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import SEOHead from "@/components/SEOHead";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -199,7 +199,7 @@ export default function POSPage() {
           {/* ── CATALOG ── */}
           {step === "catalog" && (
             <>
-               <Card>
+               <AppCard>
                 <CardContent className="p-5 space-y-4">
                   <h3 className="text-base font-semibold flex items-center gap-2">
                     <ShoppingCart className="h-5 w-5 text-primary" />
@@ -237,7 +237,7 @@ export default function POSPage() {
                           <span className="text-xs font-semibold line-clamp-2 break-words w-full">{item.title}</span>
                           <span className="text-sm font-bold text-primary tabular-nums">{(item.price || 0).toFixed(2)} L</span>
                           {item.stock_quantity != null && (
-                            <span className="text-[10px] text-muted-foreground">Stock: {item.stock_quantity}</span>
+                            <span className="text-[0.625rem] text-muted-foreground">Stock: {item.stock_quantity}</span>
                           )}
                         </Button>
                       ))}
@@ -258,9 +258,9 @@ export default function POSPage() {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
 
-              <Card>
+              <AppCard>
                 <CardContent className="p-5 space-y-3">
                   <h3 className="text-base font-semibold">Custom Item</h3>
                   <div className="space-y-2">
@@ -286,11 +286,11 @@ export default function POSPage() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
 
               {/* Cart preview */}
               {cart.length > 0 && (
-                <Card className="border-primary/20">
+                <AppCard className="border-primary/20">
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-center justify-between">
                       <h3 className="text-base font-semibold">Cart ({cart.length})</h3>
@@ -323,14 +323,14 @@ export default function POSPage() {
                       Checkout — {fmtPrice(total)}
                     </Button>
                   </CardContent>
-                </Card>
+                </AppCard>
               )}
             </>
           )}
 
           {/* ── CART / CHECKOUT ── */}
           {step === "cart" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-5 space-y-5">
                 <h3 className="text-base font-semibold flex items-center gap-2">
                   <Receipt className="h-5 w-5 text-primary" />
@@ -384,12 +384,12 @@ export default function POSPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* ── QR PAYMENT ── */}
           {step === "payment" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-5 space-y-5">
                 <h3 className="text-base font-semibold text-center flex items-center justify-center gap-2">
                   <QrCode className="h-5 w-5 text-primary" />
@@ -425,12 +425,12 @@ export default function POSPage() {
                   Back to Cart
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* ── RECEIPT ── */}
           {step === "receipt" && receiptData && (
-            <Card>
+            <AppCard>
               <CardContent className="p-6 space-y-5 text-center">
                 <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
                   <Check className="h-10 w-10 text-primary" />
@@ -440,7 +440,7 @@ export default function POSPage() {
 
                 <div className="text-left space-y-2 bg-muted/30 rounded-xl p-4">
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Order ID</p>
+                    <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">Order ID</p>
                     <p className="text-sm font-mono">{receiptData.orderId}</p>
                   </div>
                   <Separator />
@@ -462,7 +462,7 @@ export default function POSPage() {
                   New Sale
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {/* Balance */}

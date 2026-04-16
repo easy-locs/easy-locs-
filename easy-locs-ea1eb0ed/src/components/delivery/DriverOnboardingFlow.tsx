@@ -112,7 +112,7 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
                   }}>
                   <Icon className="h-3 w-3" style={{ color: done || active ? "#fff" : "hsl(var(--hud-text-dim) / 0.4)" }} />
                 </div>
-                <span className="text-[10px] truncate" style={{ color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <span className="text-[0.625rem] truncate" style={{ color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {s.label}
                 </span>
               </div>
@@ -142,15 +142,15 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
                       border: `1px solid ${vehicleType === v.value ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.08)"}`,
                     }}>
                     <p className="text-sm font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{v.label}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{v.desc}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{v.desc}</p>
                   </button>
                 ))}
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Modèle (optionnel)</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Modèle (optionnel)</Label>
                 <Input value={vehicleModel} onChange={e => setVehicleModel(e.target.value)} placeholder="Ex: Renault Kangoo"
                   className="h-8 text-xs" style={{ background: "hsl(var(--hud-border) / 0.06)" }} />
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Plaque (optionnel)</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Plaque (optionnel)</Label>
                 <Input value={licensePlate} onChange={e => setLicensePlate(e.target.value)} placeholder="AA-123-BB"
                   className="h-8 text-xs" style={{ background: "hsl(var(--hud-border) / 0.06)" }} />
               </div>
@@ -160,7 +160,7 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
           {step === "documents" && (
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>📄 Documents</h3>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Téléversez vos documents pour vérification. Optionnel pour commencer.
               </p>
               {[
@@ -170,13 +170,13 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
               ].map(doc => (
                 <div key={doc.label} className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>{doc.label}</p>
-                    {doc.url && <p className="text-[10px] truncate" style={{ color: "hsl(var(--success))" }}>✓ Téléversé</p>}
+                    <p className="text-[0.6875rem] font-medium" style={{ color: "hsl(var(--hud-text))" }}>{doc.label}</p>
+                    {doc.url && <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--success))" }}>✓ Téléversé</p>}
                   </div>
                   <label className="cursor-pointer">
                     <input type="file" className="hidden" accept="image/*,.pdf"
                       onChange={e => e.target.files?.[0] && handleFileUpload(e.target.files[0], doc.setter)} />
-                    <div className="flex items-center gap-1 px-2 py-1 rounded text-[10px]"
+                    <div className="flex items-center gap-1 px-2 py-1 rounded text-[0.625rem]"
                       style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
                       <Upload className="h-3 w-3" /> Upload
                     </div>
@@ -190,17 +190,17 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>📍 Zone de couverture</h3>
               <div className="space-y-2">
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max (km)</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max (km)</Label>
                 <div className="flex items-center gap-3">
                   <input type="range" min={1} max={50} value={maxDistanceKm}
                     onChange={e => setMaxDistanceKm(Number(e.target.value))}
                     className="flex-1 accent-[hsl(var(--hud-cyan))]" />
                   <span className="text-sm font-bold w-12 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>{maxDistanceKm} km</span>
                 </div>
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Ville principale</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Ville principale</Label>
                 <Input value={coverageCity} onChange={e => setCoverageCity(e.target.value)} placeholder="Ex: Paris"
                   className="h-8 text-xs" style={{ background: "hsl(var(--hud-border) / 0.06)" }} />
-                <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes (optionnel)</Label>
+                <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes (optionnel)</Label>
                 <Textarea value={coverageNotes} onChange={e => setCoverageNotes(e.target.value)}
                   placeholder="Zones spécifiques, horaires préférés..."
                   className="text-xs min-h-[60px]" style={{ background: "hsl(var(--hud-border) / 0.06)" }} />
@@ -222,8 +222,8 @@ export default function DriverOnboardingFlow({ onComplete, className }: Props) {
                 ].map(r => (
                   <div key={r.label} className="flex justify-between items-center py-1 border-b"
                     style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{r.label}</span>
-                    <span className="text-[11px] font-medium" style={{ color: "hsl(var(--hud-text))" }}>{r.value}</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{r.label}</span>
+                    <span className="text-[0.6875rem] font-medium" style={{ color: "hsl(var(--hud-text))" }}>{r.value}</span>
                   </div>
                 ))}
               </div>

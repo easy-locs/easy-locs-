@@ -149,7 +149,7 @@ function LocationViewerOverlayInner() {
               {label || (isLive ? t("common.live_location") : t("common.location"))}
             </p>
             {isLive && (
-              <p className="text-[10px] font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
+              <p className="text-[0.625rem] font-medium flex items-center gap-1" style={{ color: "hsl(var(--primary))" }}>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "hsl(var(--primary))" }} />
                 {t("common.sharing_live")}
               </p>
@@ -188,7 +188,7 @@ function LocationViewerOverlayInner() {
       </div>
 
       <div className="flex items-center justify-center gap-3 px-4 py-3 border-t" style={{ borderColor: "hsl(var(--border) / 0.2)" }}>
-        <p className="text-[11px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
           {lat.toFixed(6)}, {lng.toFixed(6)}
         </p>
         <button

@@ -73,7 +73,7 @@ function LocationCard({ envelope, isMe }: Props) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
               </span>
-              <span className="text-[10px] font-bold tracking-wide">LIVE</span>
+              <span className="text-[0.625rem] font-bold tracking-wide">LIVE</span>
             </div>
           )}
 
@@ -94,18 +94,18 @@ function LocationCard({ envelope, isMe }: Props) {
               {isLive ? "Live location" : (geo?.label || "Location")}
             </p>
           </div>
-          <p className="text-[11px] leading-tight line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+          <p className="text-[0.6875rem] leading-tight line-clamp-2" style={{ color: "hsl(var(--muted-foreground))" }}>
             {address}
           </p>
 
           {weather?.condition && (
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
               {weather.condition} · {weather.temperatureC}°C
             </p>
           )}
 
           <div className="flex items-center justify-between pt-0.5">
-            <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               {timing?.localTime || ""}
             </span>
             <div className="flex items-center gap-2">

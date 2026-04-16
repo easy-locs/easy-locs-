@@ -32,7 +32,7 @@ function InputField({ label, value, onChange, type = "text", placeholder }: {
 }) {
   return (
     <div>
-      <label className="text-[10px] font-bold text-muted-foreground block mb-1">{label}</label>
+      <label className="text-[0.625rem] font-bold text-muted-foreground block mb-1">{label}</label>
       <input
         type={type}
         value={value}
@@ -102,7 +102,7 @@ export default function FlightPassengerPage() {
               <p className="text-xs font-bold text-foreground line-clamp-1 break-words">
                 {selectedOffer.segments[0].origin} → {selectedOffer.segments[selectedOffer.segments.length - 1].destination}
               </p>
-              <p className="text-[10px] text-muted-foreground tabular-nums">
+              <p className="text-[0.625rem] text-muted-foreground tabular-nums">
                 {selectedOffer.currency} {selectedOffer.totalPrice.toFixed(0)} · {totalPax} passenger{totalPax > 1 ? "s" : ""}
               </p>
             </div>
@@ -112,7 +112,7 @@ export default function FlightPassengerPage() {
         <div className="p-3 rounded-xl border border-border/15 bg-card/50 space-y-3">
           <div className="flex items-center gap-2 mb-1">
             <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="text-[11px] font-bold text-foreground">Contact Information</span>
+            <span className="text-[0.6875rem] font-bold text-foreground">Contact Information</span>
           </div>
           <InputField label="Email" value={contactEmail} onChange={setContactEmail} type="email" placeholder="your@email.com" />
           <InputField label="Phone" value={contactPhone} onChange={setContactPhone} type="tel" placeholder="+33 6 12 34 56 78" />
@@ -128,9 +128,9 @@ export default function FlightPassengerPage() {
           >
             <div className="flex items-center gap-2 mb-1">
               <User className="h-3.5 w-3.5 text-muted-foreground" />
-              <span className="text-[11px] font-bold text-foreground">
+              <span className="text-[0.6875rem] font-bold text-foreground">
                 Passenger {idx + 1}
-                <span className="text-[10px] font-normal text-muted-foreground ml-1 capitalize">({form.type})</span>
+                <span className="text-[0.625rem] font-normal text-muted-foreground ml-1 capitalize">({form.type})</span>
               </span>
             </div>
 
@@ -139,7 +139,7 @@ export default function FlightPassengerPage() {
                 <button
                   key={t}
                   onClick={() => updateForm(idx, "title", t)}
-                  className="py-1.5 rounded-lg text-[10px] font-semibold border transition-colors"
+                  className="py-1.5 rounded-lg text-[0.625rem] font-semibold border transition-colors"
                   style={{
                     background: form.title === t ? NAVY : "transparent",
                     color: form.title === t ? "#fff" : "var(--muted-foreground)",

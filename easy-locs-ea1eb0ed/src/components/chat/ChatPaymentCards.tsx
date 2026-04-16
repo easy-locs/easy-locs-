@@ -315,7 +315,7 @@ export function ChatPaymentRequestCard({
           <p className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
             {live.title || "Payment request"}
           </p>
-          <p className="text-[10px]" style={{
+          <p className="text-[0.625rem]" style={{
             color: isPaid ? "hsl(var(--hud-success))" : "hsl(var(--hud-text-dim))",
           }}>
             {isPaid ? "Paid ✓" : "Pending"}
@@ -324,7 +324,7 @@ export function ChatPaymentRequestCard({
       </div>
 
       {live.subtitle && (
-        <p className="text-[11px] mb-2 truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.6875rem] mb-2 truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
           {live.subtitle}
         </p>
       )}
@@ -419,12 +419,12 @@ export function ChatPaymentReceiptCard({
           <p className="text-xs font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
             {receipt.title || "Payment sent"}
           </p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Completed</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Completed</p>
         </div>
       </div>
 
       {receipt.subtitle && (
-        <p className="text-[11px] mb-2 truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.6875rem] mb-2 truncate" style={{ color: "hsl(var(--hud-text-dim))" }}>
           {receipt.subtitle}
         </p>
       )}
@@ -437,12 +437,12 @@ export function ChatPaymentReceiptCard({
       </div>
 
       {txId && (
-        <p className="text-[10px] mt-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+        <p className="text-[0.625rem] mt-1.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
           TX: {txId.slice(0, 12)}…
         </p>
       )}
       {date && (
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
           {date}
         </p>
       )}
@@ -481,7 +481,7 @@ export function QrPayCard({
         <QRCode value={link} size={180} level="M" />
       </div>
 
-      <p className="text-[10px] text-muted-foreground break-words text-center">{link}</p>
+      <p className="text-[0.625rem] text-muted-foreground break-words text-center">{link}</p>
 
       <button
         type="button"

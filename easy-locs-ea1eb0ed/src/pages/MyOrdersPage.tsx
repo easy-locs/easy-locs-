@@ -30,21 +30,21 @@ export default function MyOrdersPage() {
             className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-blue-500/[0.06] border border-blue-500/10"
           >
             <Zap className="w-4 h-4 mx-auto mb-1 text-blue-500" />
-            <p className="text-[10px] font-bold text-foreground">Active</p>
+            <p className="text-[0.625rem] font-bold text-foreground">Active</p>
           </button>
           <button
             onClick={() => navigate("/me/order-receipts")}
             className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-emerald-600/[0.06] border border-emerald-600/10"
           >
             <Receipt className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
-            <p className="text-[10px] font-bold text-foreground">Receipts</p>
+            <p className="text-[0.625rem] font-bold text-foreground">Receipts</p>
           </button>
           <button
             onClick={() => navigate("/me/spending-insights")}
             className="rounded-2xl p-3 text-center active:scale-95 transition-transform bg-purple-500/[0.06] border border-purple-500/10"
           >
             <Package className="w-4 h-4 mx-auto mb-1 text-purple-500" />
-            <p className="text-[10px] font-bold text-foreground">Insights</p>
+            <p className="text-[0.625rem] font-bold text-foreground">Insights</p>
           </button>
         </motion.div>
 

@@ -3,7 +3,7 @@
  * Shows pickup, dropoff, and live driver position.
  */
 import { useEffect, useRef, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { formatDistance, formatETA, haversineKm as haversineDistance, estimateETA } from "@/lib/geo/distance";
 import { Truck, MapPin, Package } from "lucide-react";
@@ -41,7 +41,7 @@ export default function OrderTrackingMap({
   const isActive = ["assigned", "accepted", "picked_up", "in_progress", "on_the_way", "arriving_pickup", "arriving_dropoff"].includes(status || "");
 
   return (
-    <Card className="overflow-hidden">
+    <AppCard className="overflow-hidden">
       <CardContent className="p-0">
         <div className="relative h-40 overflow-hidden">
           {(() => {
@@ -78,17 +78,17 @@ export default function OrderTrackingMap({
 
           <div className="absolute top-2 left-2 flex gap-1.5">
             {hasPickup && (
-              <Badge variant="outline" className="bg-card/90 text-[10px] gap-1 border-primary/20">
+              <Badge variant="outline" className="bg-card/90 text-[0.625rem] gap-1 border-primary/20">
                 <Package className="h-2.5 w-2.5 text-primary" /> Pickup
               </Badge>
             )}
             {isActive && hasDriver && (
-              <Badge className="bg-primary text-primary-foreground text-[10px] gap-1 animate-pulse">
+              <Badge className="bg-primary text-primary-foreground text-[0.625rem] gap-1 animate-pulse">
                 <Truck className="h-2.5 w-2.5" /> Live
               </Badge>
             )}
             {hasDropoff && (
-              <Badge variant="outline" className="bg-card/90 text-[10px] gap-1 border-success/20">
+              <Badge variant="outline" className="bg-card/90 text-[0.625rem] gap-1 border-success/20">
                 <MapPin className="h-2.5 w-2.5 text-success" /> Dropoff
               </Badge>
             )}
@@ -96,7 +96,7 @@ export default function OrderTrackingMap({
 
           {etaMin != null && isActive && (
             <div className="absolute top-2 right-2">
-              <Badge className="bg-primary/90 text-primary-foreground text-[10px] gap-1">
+              <Badge className="bg-primary/90 text-primary-foreground text-[0.625rem] gap-1">
                 <Truck className="h-3 w-3" />
                 {formatETA(etaMin)} • {distKm != null && formatDistance(distKm)}
               </Badge>
@@ -104,6 +104,6 @@ export default function OrderTrackingMap({
           )}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

@@ -10,7 +10,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { fetchPublicMarketplaceProviders, fetchPublicMarketplaceServices } from "@/repositories/seo.repository";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Star, Shield, Phone, Globe, Mail, MessageCircle } from "lucide-react";
 import { SEO_SERVICE_CATEGORIES } from "@/lib/seo/seo-data";
@@ -246,7 +246,7 @@ const ProviderSEOPage = () => {
             <h2 className="text-3xl font-bold text-foreground mb-8">Services Offered</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {services.map(svc => (
-                <Card key={svc.id} className="border-border hover:border-primary/50 transition-colors">
+                <AppCard key={svc.id} className="border-border hover:border-primary/50 transition-colors">
                   <CardContent className="p-5">
                     <Link to={svc.booking_slug ? `/book/${svc.booking_slug}` : "#"} className="block">
                       <h3 className="font-semibold text-foreground mb-1">{svc.title}</h3>
@@ -257,7 +257,7 @@ const ProviderSEOPage = () => {
                       </div>
                     </Link>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           </div>

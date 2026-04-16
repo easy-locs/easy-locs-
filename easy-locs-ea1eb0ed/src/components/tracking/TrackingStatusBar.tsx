@@ -54,7 +54,7 @@ export default function TrackingStatusBar({ session, distanceKm, isTracker, onSt
              {session.context_label || session.context_type}
            </p>
           {session.destination_label && (
-            <p className="text-[11px] break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+            <p className="text-[0.6875rem] break-words leading-snug" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
               → {session.destination_label}
             </p>
           )}
@@ -113,7 +113,7 @@ export default function TrackingStatusBar({ session, distanceKm, isTracker, onSt
                 )}
               </div>
               <span
-                className="text-[10px] font-medium text-center leading-tight"
+                className="text-[0.625rem] font-medium text-center leading-tight"
                 style={{
                   color: isDone || isActive ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)",
                 }}
@@ -140,7 +140,7 @@ export default function TrackingStatusBar({ session, distanceKm, isTracker, onSt
       {distanceKm !== null && session.status !== "completed" && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "hsl(var(--hud-bg) / 0.5)" }}>
           <MapPin className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }} />
-          <span className="text-[11px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
+          <span className="text-[0.6875rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>
             {distanceKm < 1 ? `${Math.round(distanceKm * 1000)} m` : `${distanceKm.toFixed(1)} km`} restant
           </span>
         </div>

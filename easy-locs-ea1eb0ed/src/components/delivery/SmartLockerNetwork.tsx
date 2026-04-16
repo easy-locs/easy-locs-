@@ -79,7 +79,7 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -87,7 +87,7 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["lockers", "slots", "analytics"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "lockers" ? "📦 Casiers" : v === "slots" ? "🔲 Emplacements" : "📊 Analytics"}
           </button>
@@ -106,10 +106,10 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.name}</p>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.name}</p>
                       {l.tempControlled && <Thermometer className="h-3 w-3" style={{ color: "hsl(var(--info))" }} />}
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📍 {l.location} • 🔋 {l.batteryLevel}% • 🌡️ {l.temperature}°C
                     </p>
                     <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -118,19 +118,19 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
                         background: fillPct > 90 ? "hsl(var(--destructive))" : fillPct > 70 ? "hsl(var(--warning))" : "hsl(var(--success))",
                       }} />
                     </div>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {l.availableSlots}/{l.totalSlots} libres • {l.dailyUses} utilisations/j
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                   </div>
                 </div>
               </div>
             );
           })}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("QR Code généré pour déverrouillage"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <QrCode className="h-3 w-3 mr-1" /> Générer QR de déverrouillage
@@ -145,26 +145,26 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
             return (
               <div key={s.id} className="rounded-xl p-3 flex items-center gap-3"
                 style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-bold"
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-[0.625rem] font-bold"
                   style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>
                   {s.size}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       {LOCKERS.find(l => l.id === s.lockerId)?.name} — {s.size}
                     </p>
-                    <span className="text-[10px] font-bold px-1 py-0.5 rounded"
+                    <span className="text-[0.625rem] font-bold px-1 py-0.5 rounded"
                       style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     🌡️ {s.tempZone === "ambient" ? "Ambiant" : s.tempZone === "cool" ? "Frais 4°C" : "Surgelé -18°C"}
                     {s.orderId && ` • 📦 ${s.orderId}`}
                     {s.expiresAt && ` • ⏰ ${Math.round((s.expiresAt.getTime() - Date.now()) / 60000)}min`}
                   </p>
                 </div>
                 {s.status === "occupied" && (
-                  <Button size="sm" className="text-[10px] h-6 px-2"
+                  <Button size="sm" className="text-[0.625rem] h-6 px-2"
                     onClick={() => { haptic("light"); toast.success("Casier déverrouillé"); }}
                     style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                     <Unlock className="h-2.5 w-2.5 mr-0.5" /> Ouvrir
@@ -190,10 +190,10 @@ export default function SmartLockerNetwork({ orgId, className }: { orgId: string
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <span className="text-lg">{s.icon}</span>
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.label}</p>
-                <p className="text-[13px] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.value}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.label}</p>
+                <p className="text-[0.8125rem] font-bold" style={{ color: "hsl(var(--primary))" }}>{s.value}</p>
               </div>
-              <span className="text-[10px] font-bold" style={{ color: s.trend > 0 ? "hsl(var(--success))" : s.trend < 0 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))" }}>
+              <span className="text-[0.625rem] font-bold" style={{ color: s.trend > 0 ? "hsl(var(--success))" : s.trend < 0 ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))" }}>
                 {s.trend > 0 ? "↑" : s.trend < 0 ? "↓" : "—"} {Math.abs(s.trend)}%
               </span>
             </div>

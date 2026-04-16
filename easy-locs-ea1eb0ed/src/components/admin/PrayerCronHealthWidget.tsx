@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Bell, Clock, AlertTriangle, CheckCircle2, XCircle, Activity, Zap } from "lucide-react";
@@ -69,7 +69,7 @@ export default function PrayerCronHealthWidget() {
   const circumference = 2 * Math.PI * 6;
 
   return (
-    <Card style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
+    <AppCard style={{ background: NAVY, border: `1px solid ${GOLD}22` }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
           <Bell size={16} style={{ color: GOLD }} />
@@ -78,7 +78,7 @@ export default function PrayerCronHealthWidget() {
         <div className="flex items-center gap-2">
           {health && (
             <Badge
-              className="text-[10px] font-bold tracking-wide"
+              className="text-[0.625rem] font-bold tracking-wide"
               style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}
             >
               <span
@@ -136,7 +136,7 @@ export default function PrayerCronHealthWidget() {
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <XCircle size={12} className="text-red-400" />
-                  <span className="text-[10px] text-muted-foreground">Consecutive Failures</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Consecutive Failures</span>
                 </div>
                 <div className="text-lg font-bold" style={{ color: health.consecutive_failures > 0 ? "hsl(0 80% 60%)" : "white" }}>
                   {health.consecutive_failures}
@@ -145,7 +145,7 @@ export default function PrayerCronHealthWidget() {
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Clock size={12} style={{ color: GOLD }} />
-                  <span className="text-[10px] text-muted-foreground">Last Success</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Last Success</span>
                 </div>
                 <div className="text-sm font-bold text-white truncate" title={health.last_success ?? "Never"}>
                   {formatRelativeTime(health.last_success)}
@@ -154,7 +154,7 @@ export default function PrayerCronHealthWidget() {
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Activity size={12} style={{ color: GOLD }} />
-                  <span className="text-[10px] text-muted-foreground">Failure Rate (24h)</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Failure Rate (24h)</span>
                 </div>
                 <div className="text-lg font-bold" style={{ color: Number(failureRate) > 10 ? "hsl(38 92% 50%)" : "white" }}>
                   {failureRate}%
@@ -166,21 +166,21 @@ export default function PrayerCronHealthWidget() {
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <CheckCircle2 size={12} className="text-green-400" />
-                  <span className="text-[10px] text-muted-foreground">Total Runs (24h)</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Total Runs (24h)</span>
                 </div>
                 <div className="text-lg font-bold text-white">{health.total_24h_runs}</div>
               </div>
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <XCircle size={12} className="text-red-400" />
-                  <span className="text-[10px] text-muted-foreground">Failures (24h)</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Failures (24h)</span>
                 </div>
                 <div className="text-lg font-bold text-red-400">{health.failures_24h}</div>
               </div>
               <div className="rounded-xl p-3" style={{ background: "hsl(220 40% 22%)" }}>
                 <div className="flex items-center gap-1.5 mb-1">
                   <Zap size={12} className="text-orange-400" />
-                  <span className="text-[10px] text-muted-foreground">Edge Fn Failures</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Edge Fn Failures</span>
                 </div>
                 <div className="text-lg font-bold text-orange-400">{health.edge_function_failures_24h}</div>
               </div>
@@ -201,7 +201,7 @@ export default function PrayerCronHealthWidget() {
             )}
 
             <div className="flex items-center justify-end gap-1.5">
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.625rem] text-muted-foreground">
                 {!isVisible
                   ? "Auto-refresh paused"
                   : loading
@@ -221,6 +221,6 @@ export default function PrayerCronHealthWidget() {
           <div className="text-xs text-muted-foreground text-center py-4">Loading...</div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

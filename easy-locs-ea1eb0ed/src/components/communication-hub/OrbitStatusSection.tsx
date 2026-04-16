@@ -365,7 +365,7 @@ export default function OrbitStatusSection() {
                 >
                   <Plus className="h-3.5 w-3.5 text-white" strokeWidth={3} />
                 </div>
-                <span className="text-[11px] font-medium leading-tight block" style={{ color: "hsl(var(--foreground))" }}>
+                <span className="text-[0.6875rem] font-medium leading-tight block" style={{ color: "hsl(var(--foreground))" }}>
                   {t("orbit.status.add")}
                 </span>
               </div>
@@ -403,9 +403,9 @@ export default function OrbitStatusSection() {
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 px-2 pb-2 pt-6"
                     style={{ background: "linear-gradient(transparent, rgba(0,0,0,0.7))" }}>
-                    <p className="text-[11px] font-semibold text-white" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, maxWidth: "100%", minInlineSize: "min(6ch, 100%)" }}
+                    <p className="text-[0.6875rem] font-semibold text-white" style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0, maxWidth: "100%", minInlineSize: "min(6ch, 100%)" }}
                       title={group.userName}>{group.userName}</p>
-                    <p className="text-[10px] text-white/60">{timeAgo(group.lastUpdated)}</p>
+                    <p className="text-[0.625rem] text-white/60">{timeAgo(group.lastUpdated)}</p>
                   </div>
                 </button>
               );
@@ -415,7 +415,7 @@ export default function OrbitStatusSection() {
               <div className="shrink-0 rounded-2xl flex flex-col items-center justify-center px-4"
                 style={{ width: 120, height: 170, background: "hsl(var(--card))" }}>
                 <CircleDot className="h-6 w-6 mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.2)" }} />
-                <p className="text-[10px] text-center leading-tight" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+                <p className="text-[0.625rem] text-center leading-tight" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
                   {t("orbit.status.no_updates")}
                 </p>
               </div>
@@ -430,7 +430,7 @@ export default function OrbitStatusSection() {
             </h2>
             <button
               onClick={() => { haptic("light"); setExploreChannels(true); }}
-              className="text-[13px] font-semibold"
+              className="text-[0.8125rem] font-semibold"
               style={{ color: "hsl(var(--primary))" }}
             >
               {t("orbit.status.explore")}
@@ -447,12 +447,12 @@ export default function OrbitStatusSection() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
-                    <p className="text-[13px] font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.8125rem] font-semibold line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
                       {ch.name}
                     </p>
-                    <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--primary))" }}>&#10003;</span>
+                    <span className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--primary))" }}>&#10003;</span>
                   </div>
-                  <p className="text-[11px] line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                  <p className="text-[0.6875rem] line-clamp-1 break-words" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                     {ch.subscribers}
                   </p>
                 </div>
@@ -467,7 +467,7 @@ export default function OrbitStatusSection() {
             ))}
           </div>
           <div className="px-4 mt-3">
-            <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+            <p className="text-[0.6875rem] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
               {t("orbit.status.find_channels")}
             </p>
           </div>
@@ -585,7 +585,7 @@ export default function OrbitStatusSection() {
                         ? t("orbit.status.select_video")
                         : t("orbit.status.select_photo")}
                     </span>
-                    <span className="text-[11px]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
+                    <span className="text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }}>
                       {composeMode === "video" ? "MP4, MOV · max 30s" : "JPG, PNG, HEIC"}
                     </span>
                   </button>
@@ -600,7 +600,7 @@ export default function OrbitStatusSection() {
               </>
             )}
 
-            <p className="text-[11px] text-center mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+            <p className="text-[0.6875rem] text-center mb-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
               {t("orbit.status.expires_24h")}
             </p>
 
@@ -658,7 +658,7 @@ export default function OrbitStatusSection() {
               <IdentityAvatar avatarUrl={viewingGroup.userAvatar} name={viewingGroup.userName} size="sm" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-white line-clamp-1 break-words">{viewingGroup.userName}</p>
-                <p className="text-[10px] text-white/50">{timeAgo(currentStatus.created_at)}</p>
+                <p className="text-[0.625rem] text-white/50">{timeAgo(currentStatus.created_at)}</p>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setViewingGroup(null); }}

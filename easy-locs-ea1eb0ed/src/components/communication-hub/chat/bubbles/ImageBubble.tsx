@@ -50,13 +50,13 @@ function ImageBubbleInner({ renderSrc, viewerSrc, uploadProgress, uploadStatus, 
         }}
       >
         <ImageOff className="h-8 w-8" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
-        <span className="text-[11px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+        <span className="text-[0.6875rem] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
           Image unavailable
         </span>
         {renderSrc && (
           <button
             onClick={handleRetry}
-            className="flex items-center gap-1 text-[10px] font-medium px-2.5 py-1 rounded-full transition-colors"
+            className="flex items-center gap-1 text-[0.625rem] font-medium px-2.5 py-1 rounded-full transition-colors"
             style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}
           >
             <RefreshCw className="h-3 w-3" /> Retry

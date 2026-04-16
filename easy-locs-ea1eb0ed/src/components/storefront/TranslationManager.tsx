@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -91,20 +91,20 @@ export default function TranslationManager({ shopId }: Props) {
           <button
             key={l.code}
             onClick={() => { setLocale(l.code); setEdits({}); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0 transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.6875rem] font-medium whitespace-nowrap shrink-0 transition-all ${
               locale === l.code ? "bg-primary/10 text-primary border border-primary/20" : "bg-muted/50 text-muted-foreground"
             }`}
           >
             {l.flag} {l.label}
-            {l.count > 0 && <Badge variant="secondary" className="text-[10px] ml-0.5">{l.count}</Badge>}
+            {l.count > 0 && <Badge variant="secondary" className="text-[0.625rem] ml-0.5">{l.count}</Badge>}
           </button>
         ))}
       </div>
 
       {/* Fields */}
-      <Card>
+      <AppCard>
         <CardContent className="p-3 space-y-3">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             Translating to: <strong>{LOCALES.find(l => l.code === locale)?.flag} {LOCALES.find(l => l.code === locale)?.label}</strong>
           </p>
 
@@ -128,7 +128,7 @@ export default function TranslationManager({ shopId }: Props) {
             </Button>
           )}
         </CardContent>
-      </Card>
+      </AppCard>
 
       {/* Existing translations */}
       {currentTranslations.length > 0 && (

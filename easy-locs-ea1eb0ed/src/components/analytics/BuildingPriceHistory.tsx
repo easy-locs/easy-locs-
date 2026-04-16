@@ -156,7 +156,7 @@ export default function BuildingPriceHistory({
           <Search size={14} className="text-muted-foreground" />
           {selectedBuilding ? (
             <div className="flex items-center gap-2 flex-1">
-              <span className="text-[12px] font-medium text-foreground">{selectedBuilding}</span>
+              <span className="text-[0.75rem] font-medium text-foreground">{selectedBuilding}</span>
               <button
                 onClick={e => {
                   e.stopPropagation();
@@ -170,7 +170,7 @@ export default function BuildingPriceHistory({
               </button>
             </div>
           ) : (
-            <span className="text-[12px] text-muted-foreground flex-1">Search buildings...</span>
+            <span className="text-[0.75rem] text-muted-foreground flex-1">Search buildings...</span>
           )}
           <ChevronDown size={14} className="text-muted-foreground" />
         </div>
@@ -186,7 +186,7 @@ export default function BuildingPriceHistory({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Type building name..."
-                className="w-full text-[12px] px-3 py-2 rounded-lg border"
+                className="w-full text-[0.75rem] px-3 py-2 rounded-lg border"
                 style={{ background: "hsl(var(--muted))", borderColor: "hsl(var(--border))", color: "hsl(var(--foreground))" }}
                 autoFocus
               />
@@ -195,14 +195,14 @@ export default function BuildingPriceHistory({
               <button
                 key={b}
                 onClick={() => handleSelect(b)}
-                className="w-full text-left px-3 py-2 text-[12px] hover:bg-muted/50 transition-colors"
+                className="w-full text-left px-3 py-2 text-[0.75rem] hover:bg-muted/50 transition-colors"
                 style={{ color: "hsl(var(--foreground))" }}
               >
                 {b}
               </button>
             ))}
             {filteredBuildings.length === 0 && (
-              <p className="px-3 py-2 text-[11px] text-muted-foreground">No buildings found</p>
+              <p className="px-3 py-2 text-[0.6875rem] text-muted-foreground">No buildings found</p>
             )}
           </div>
         )}
@@ -220,7 +220,7 @@ export default function BuildingPriceHistory({
         <>
           {chartData.length > 1 && (
             <div className="rounded-xl p-3 mb-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border) / 0.5)" }}>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-2">Price/sqft Trend</p>
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider mb-2">Price/sqft Trend</p>
               <ResponsiveContainer width="100%" height={180}>
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -232,7 +232,7 @@ export default function BuildingPriceHistory({
                       border: "none",
                       borderRadius: "8px",
                       color: "#fff",
-                      fontSize: "10px",
+                      fontSize: "0.625rem",
                     }}
                     formatter={(value: number) => [`AED ${value.toLocaleString()}/sqft`, "Avg Price"]}
                   />
@@ -244,7 +244,7 @@ export default function BuildingPriceHistory({
 
           <div className="rounded-xl overflow-hidden" style={{ border: "1px solid hsl(var(--border) / 0.5)" }}>
             <div className="px-3 py-2" style={{ background: "hsl(var(--muted))" }}>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
+              <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider font-medium">
                 {transactions.length} transactions found
               </p>
             </div>
@@ -253,19 +253,19 @@ export default function BuildingPriceHistory({
                 <div key={tx.id} className="px-3 py-2.5 flex items-center gap-3" style={{ background: "hsl(var(--card))" }}>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-bold text-foreground">
+                      <span className="text-[0.75rem] font-bold text-foreground">
                         AED {formatAED(tx.amount)}
                       </span>
-                      <span className="text-[10px] capitalize text-muted-foreground">{tx.propertyType}</span>
+                      <span className="text-[0.625rem] capitalize text-muted-foreground">{tx.propertyType}</span>
                     </div>
-                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
+                    <div className="flex items-center gap-2 mt-0.5 text-[0.625rem] text-muted-foreground">
                       <span>{tx.areaSqft.toLocaleString()} sqft</span>
                       <span>·</span>
                       <span>AED {tx.pricePerSqft.toLocaleString()}/sqft</span>
                       {tx.bedrooms && <><span>·</span><span>{tx.bedrooms} BR</span></>}
                     </div>
                   </div>
-                  <span className="text-[10px] text-muted-foreground shrink-0">{tx.transactionDate}</span>
+                  <span className="text-[0.625rem] text-muted-foreground shrink-0">{tx.transactionDate}</span>
                 </div>
               ))}
             </div>
@@ -276,14 +276,14 @@ export default function BuildingPriceHistory({
       {!loading && selectedBuilding && transactions.length === 0 && (
         <div className="p-6 text-center rounded-xl" style={{ background: "hsl(var(--muted))" }}>
           <Building2 size={24} className="mx-auto text-muted-foreground mb-2" />
-          <p className="text-[12px] text-muted-foreground">No transactions found for this building</p>
+          <p className="text-[0.75rem] text-muted-foreground">No transactions found for this building</p>
         </div>
       )}
 
       {!selectedBuilding && (
         <div className="p-6 text-center rounded-xl" style={{ background: "hsl(var(--muted))" }}>
           <Search size={24} className="mx-auto text-muted-foreground mb-2" />
-          <p className="text-[12px] text-muted-foreground">Search for a building to see its sale history</p>
+          <p className="text-[0.75rem] text-muted-foreground">Search for a building to see its sale history</p>
         </div>
       )}
     </div>

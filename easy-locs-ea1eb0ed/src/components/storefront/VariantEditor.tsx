@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Plus, X, Loader2, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -186,7 +186,7 @@ export default function VariantEditor({ itemId, basePrice }: VariantEditorProps)
 
       <div className="space-y-3">
         {axes.map((axis, ai) => (
-          <Card key={ai}>
+          <AppCard key={ai}>
             <CardContent className="p-3 space-y-2">
               <div className="flex items-center justify-between">
                 <Label className="text-xs font-semibold">{axis.name}</Label>
@@ -215,7 +215,7 @@ export default function VariantEditor({ itemId, basePrice }: VariantEditorProps)
                 </Button>
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
 
@@ -276,7 +276,7 @@ export default function VariantEditor({ itemId, basePrice }: VariantEditorProps)
       )}
 
       {variants.length > 0 && (
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[0.6875rem] text-muted-foreground">
           Base price: {basePrice} AED. Final price per variant = base + adjustment.
         </p>
       )}

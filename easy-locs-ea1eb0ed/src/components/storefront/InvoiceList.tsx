@@ -5,7 +5,7 @@
  */
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/services/db";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Loader2 } from "lucide-react";
 
@@ -50,13 +50,13 @@ export default function InvoiceList({ shopId }: Props) {
 
   if (invoices.length === 0) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="p-6 text-center text-muted-foreground text-sm">
           <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
           <p>No invoices yet</p>
           <p className="text-xs mt-1">Invoices are generated automatically when orders are completed.</p>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -68,19 +68,19 @@ export default function InvoiceList({ shopId }: Props) {
 
       <div className="space-y-2">
         {invoices.map((inv: any) => (
-          <Card key={inv.id}>
+          <AppCard key={inv.id}>
             <CardContent className="p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-xs font-semibold font-mono">{inv.invoice_number}</p>
                   <Badge
                     variant={inv.status === "paid" ? "default" : "secondary"}
-                    className="text-[10px] h-4"
+                    className="text-[0.625rem] h-4"
                   >
                     {inv.status}
                   </Badge>
                 </div>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">
+                <p className="text-[0.625rem] text-muted-foreground truncate mt-0.5">
                   {inv.buyer_name || inv.buyer_email || "—"} · {new Date(inv.issued_at).toLocaleDateString()}
                 </p>
               </div>
@@ -89,13 +89,13 @@ export default function InvoiceList({ shopId }: Props) {
                   {fmtPrice(inv.total || 0, inv.currency)}
                 </p>
                 {inv.tax_amount > 0 && (
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     incl. {inv.tax_name} {fmtPrice(inv.tax_amount, inv.currency)}
                   </p>
                 )}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
         ))}
       </div>
     </div>

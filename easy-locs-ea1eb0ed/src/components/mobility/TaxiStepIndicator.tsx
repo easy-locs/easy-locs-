@@ -34,7 +34,7 @@ export function TaxiStepIndicator({ step }: { step: TaxiFlowStep }) {
           return (
             <span
               key={s.key}
-              className="text-[10px] font-bold uppercase tracking-wider transition-colors"
+              className="text-[0.625rem] font-bold uppercase tracking-wider transition-colors"
               style={{
                 color: active ? "hsl(var(--accent))" : done ? "hsl(var(--foreground))" : "hsl(0 0% 60%)",
               }}

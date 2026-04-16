@@ -13,7 +13,7 @@ import { fetchArticleContent } from "@/lib/utils/article-extractor";
 import { ArticleBody } from "@/components/news/ArticleBody";
 import { useI18n } from "@/lib/i18n";
 
-const NAVY = "hsl(226 22% 14%)";
+const NAVY = "hsl(var(--navy, 226 22% 14%))";
 const GOLD = "hsl(var(--accent))";
 
 const CATEGORY_KEYS: { key: NewsCategory; labelKey: string }[] = [
@@ -203,7 +203,7 @@ function ArticleReader({ item, onClose, t }: { item: CanonicalGlobalFeedItem; on
           <p className="text-xs font-semibold truncate" style={{ color: GOLD }}>
             {item.sourceName}
           </p>
-          <p className="text-[10px] truncate" style={{ color: `${GOLD}77` }}>
+          <p className="text-[0.625rem] truncate" style={{ color: `${GOLD}77` }}>
             {formatRelativeTime(item.publishedAt, t)}
           </p>
         </div>
@@ -254,17 +254,17 @@ function ArticleReader({ item, onClose, t }: { item: CanonicalGlobalFeedItem; on
 
           <div className="flex items-center gap-3 mb-6 flex-wrap">
             <span
-              className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wide"
+              className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wide"
               style={{ background: `${GOLD}18`, color: GOLD }}
             >
               {item.sourceName}
             </span>
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
               <Calendar size={10} />
               {formatFullDate(item.publishedAt)}
             </span>
             {displayBody && getReadingTime(displayBody) && (
-              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                 <Clock size={10} />
                 {t("page.news.read_time", { count: getReadingTime(displayBody) || 0 })}
               </span>
@@ -314,7 +314,7 @@ function ArticleReader({ item, onClose, t }: { item: CanonicalGlobalFeedItem; on
               {item.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-2 py-0.5 rounded-md text-[9px] font-medium"
+                  className="px-2 py-0.5 rounded-md text-[0.5625rem] font-medium"
                   style={{
                     background: "hsl(var(--muted)/0.3)",
                     color: "hsl(var(--muted-foreground))",
@@ -360,17 +360,17 @@ function NewsCard({ item, onRead, t }: { item: CanonicalGlobalFeedItem; onRead: 
       <div className="p-4">
         <div className="flex items-center gap-2 mb-2">
           <span
-            className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide"
+            className="px-2 py-0.5 rounded-md text-[0.625rem] font-bold uppercase tracking-wide"
             style={{ background: `${GOLD}18`, color: GOLD }}
           >
             {item.sourceName}
           </span>
-          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
             <Clock size={10} />
             {formatRelativeTime(item.publishedAt, t)}
           </span>
           {item.body && getReadingTime(item.body) && (
-            <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
               · {getReadingTime(item.body)} min
             </span>
           )}
@@ -380,16 +380,22 @@ function NewsCard({ item, onRead, t }: { item: CanonicalGlobalFeedItem; onRead: 
           {item.title}
         </h3>
 
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2 mb-1">
           {item.summary}
         </p>
 
+        {item.body && item.body !== item.summary && (
+          <p className="text-xs text-muted-foreground/70 leading-relaxed line-clamp-2">
+            {item.body.replace(/<[^>]*>/g, "").slice(0, 200)}
+          </p>
+        )}
+
         <div className="flex items-center justify-between mt-3 pt-2.5" style={{ borderTop: "1px solid hsl(var(--border)/0.5)" }}>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-[0.625rem] text-muted-foreground">
             <Globe size={10} />
             <span>{item.sourceName}</span>
           </div>
-          <div className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: GOLD }}>
+          <div className="flex items-center gap-1 text-[0.625rem] font-semibold" style={{ color: GOLD }}>
             <span>{t("page.news.read")}</span>
           </div>
         </div>
@@ -497,7 +503,7 @@ export default function NewsPage() {
             </h1>
             {error ? (
               <span
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.5rem] font-bold uppercase tracking-wider"
                 style={{ background: "hsl(0 70% 50% / 0.15)", color: "hsl(0 70% 50%)" }}
                 title={error}
               >
@@ -513,14 +519,14 @@ export default function NewsPage() {
               </span>
             ) : source === "static" || source === "fallback" ? (
               <span
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.5rem] font-bold uppercase tracking-wider"
                 style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
               >
                 FALLBACK
               </span>
             ) : isStale ? (
               <span
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.5rem] font-bold uppercase tracking-wider"
                 style={{ background: "hsl(45 93% 47% / 0.15)", color: "hsl(45 93% 47%)" }}
               >
                 <span
@@ -531,13 +537,13 @@ export default function NewsPage() {
               </span>
             ) : (
               <span
-                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider"
-                style={{ background: "#ef444422", color: "#ef4444" }}
+                className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.5rem] font-bold uppercase tracking-wider"
+                style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}
               >
                 <span
                   className="w-1.5 h-1.5 rounded-full"
                   style={{
-                    background: "#ef4444",
+                    background: "hsl(var(--destructive))",
                     animation: "pulse-live 2s ease-in-out infinite",
                   }}
                 />
@@ -545,7 +551,7 @@ export default function NewsPage() {
               </span>
             )}
           </div>
-          <p className="text-[11px] truncate" style={{ color: `${GOLD}99` }}>
+          <p className="text-[0.6875rem] truncate" style={{ color: `${GOLD}99` }}>
             {lastRefreshedAt ? formatLastUpdate(lastRefreshedAt, t) : t("page.news.loading")}
           </p>
         </div>
@@ -588,7 +594,7 @@ export default function NewsPage() {
               <p className="text-xs font-medium" style={{ color: "hsl(0 70% 50%)" }}>
                 {t("page.news.connection_interrupted")}
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(0 70% 50% / 0.7)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(0 70% 50% / 0.7)" }}>
                 {error}
               </p>
             </div>
@@ -631,7 +637,7 @@ export default function NewsPage() {
         )}
 
         <div className="text-center py-2">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-[0.625rem] text-muted-foreground">
             {lastRefreshedAt
               ? `${t("page.news.articles_count", { count: filteredItems.length })} · ${formatLastUpdate(lastRefreshedAt, t)} · ${t("page.news.auto_refresh")}`
               : t("page.news.realtime_news")}

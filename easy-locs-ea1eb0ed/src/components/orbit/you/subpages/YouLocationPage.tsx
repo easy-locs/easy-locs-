@@ -20,7 +20,7 @@ export default function YouLocationPage({ onBack }: Props) {
         <h2 className="text-base font-semibold break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.location_title")}</h2>
       </div>
       <div className="space-y-1 mt-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_duration")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.default_duration")}</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 responsive-grid-4-to-3">
           {[15, 30, 60, 120].map(mins => (
             <button key={mins} onClick={() => setDuration(mins)}
@@ -29,7 +29,7 @@ export default function YouLocationPage({ onBack }: Props) {
             </button>
           ))}
         </div>
-        <p className="text-[10px] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.location_hint")}</p>
+        <p className="text-[0.625rem] mt-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.location_hint")}</p>
       </div>
     </div>
   );

@@ -136,7 +136,7 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
         </h3>
         {optimized && (
           <button onClick={() => { setRoutes([]); setOptimized(false); }}
-            className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+            className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
             <RotateCcw className="h-3 w-3" /> Reset
           </button>
         )}
@@ -146,7 +146,7 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
         <div className="rounded-xl p-6 text-center"
           style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
           <Zap className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--hud-cyan) / 0.3)" }} />
-          <p className="text-[11px] mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+          <p className="text-[0.6875rem] mb-3" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
             Analysez vos missions en attente pour regrouper les livraisons par zone et optimiser les itinéraires.
           </p>
           <Button size="sm" onClick={analyzeAndOptimize} disabled={loading}
@@ -161,19 +161,19 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-cyan) / 0.06)" }}>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{routes.length}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Routes</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Routes</p>
             </div>
             <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--success) / 0.06)" }}>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--success))" }}>
                 {routes.reduce((s, r) => s + r.stops.length, 0)}
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Arrêts</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Arrêts</p>
             </div>
             <div className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--warning) / 0.06)" }}>
               <p className="text-sm font-bold" style={{ color: "hsl(var(--warning))" }}>
                 {Math.round(routes.reduce((s, r) => s + r.totalDistanceKm, 0))} km
               </p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Distance totale</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Distance totale</p>
             </div>
           </div>
 
@@ -184,18 +184,18 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
               className="rounded-xl p-3"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
               <div className="flex justify-between items-center mb-2">
-                <span className="text-[11px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
+                <span className="text-[0.6875rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>
                   Route #{i + 1}
                 </span>
                 <div className="flex gap-2">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
+                  <span className="text-[0.625rem] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
                     {route.totalDistanceKm} km
                   </span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
+                  <span className="text-[0.625rem] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
                     ~{route.estimatedTimeMin} min
                   </span>
                   {route.savingsPercent > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>
                       -{route.savingsPercent}%
                     </span>
                   )}
@@ -204,7 +204,7 @@ export default function RouteOptimizationEngine({ orgId, className }: Props) {
               <div className="flex flex-wrap items-center gap-1">
                 {route.stops.map((stop, si) => (
                   <div key={si} className="flex items-center gap-1">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded truncate max-w-[100px]"
+                    <span className="text-[0.625rem] px-1.5 py-0.5 rounded truncate max-w-[100px]"
                       style={{
                         background: stop.type === "pickup" ? "hsl(var(--info) / 0.08)" : "hsl(var(--success) / 0.08)",
                         color: stop.type === "pickup" ? "hsl(var(--info))" : "hsl(var(--success))",

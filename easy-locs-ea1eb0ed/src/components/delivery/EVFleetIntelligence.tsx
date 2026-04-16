@@ -118,7 +118,7 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -126,7 +126,7 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["fleet", "stations", "carbon"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "fleet" ? "🔋 Véhicules" : v === "stations" ? "⚡ Stations" : "🌱 Carbone"}
           </button>
@@ -147,16 +147,16 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
                   <span className="text-lg">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{v.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{v.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       👤 {v.driver} • 📍 {v.zone} • 🛣️ {v.range}km restants
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[11px] font-bold" style={{ color: v.battery >= 50 ? "hsl(var(--success))" : v.battery >= 25 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
+                    <p className="text-[0.6875rem] font-bold" style={{ color: v.battery >= 50 ? "hsl(var(--success))" : v.battery >= 25 ? "hsl(var(--warning))" : "hsl(var(--destructive))" }}>
                       {v.battery}%
                     </p>
                   </div>
@@ -181,12 +181,12 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <PlugZap className="h-4 w-4" style={{ color: s.available > 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }} />
               <div className="flex-1">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{s.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   {s.available}/{s.slots} dispo {s.fastCharge ? "• ⚡ Charge rapide" : ""}
                 </p>
               </div>
-              <span className="text-[10px] font-bold" style={{ color: s.available > 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
+              <span className="text-[0.625rem] font-bold" style={{ color: s.available > 0 ? "hsl(var(--success))" : "hsl(var(--destructive))" }}>
                 {s.available > 0 ? "Libre" : "Plein"}
               </span>
             </div>
@@ -199,8 +199,8 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
           <div className="rounded-xl p-4 text-center" style={{ background: "hsl(var(--success) / 0.05)", border: "1px solid hsl(var(--success) / 0.15)" }}>
             <Leaf className="h-8 w-8 mx-auto" style={{ color: "hsl(var(--success))" }} />
             <p className="text-2xl font-bold mt-2" style={{ color: "hsl(var(--success))" }}>{totalCO2} kg</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--foreground))" }}>CO₂ évité ce mois</p>
-            <p className="text-[10px] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--foreground))" }}>CO₂ évité ce mois</p>
+            <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>
               Équivalent à {Math.max(1, Math.round(Number(totalCO2) / 22))} arbres plantés 🌳
             </p>
           </div>
@@ -209,12 +209,12 @@ export default function EVFleetIntelligence({ orgId, className }: { orgId: strin
           )}
           {vehicles.map(v => (
             <div key={v.id} className="flex items-center gap-2">
-              <span className="text-[10px] w-24 font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{v.name}</span>
+              <span className="text-[0.625rem] w-24 font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>{v.name}</span>
               <div className="flex-1 h-3 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.3)" }}>
                 <motion.div initial={{ width: 0 }} animate={{ width: `${(v.co2Saved / Math.max(Number(totalCO2), 1)) * 100}%` }}
                   className="h-full rounded-full" style={{ background: "hsl(var(--success) / 0.6)" }} />
               </div>
-              <span className="text-[10px] font-bold w-12 text-right" style={{ color: "hsl(var(--success))" }}>{v.co2Saved}kg</span>
+              <span className="text-[0.625rem] font-bold w-12 text-right" style={{ color: "hsl(var(--success))" }}>{v.co2Saved}kg</span>
             </div>
           ))}
         </div>

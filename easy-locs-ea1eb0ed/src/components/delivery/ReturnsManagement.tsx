@@ -75,7 +75,7 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
         ].map(s => (
           <div key={s.label} className="rounded-lg p-2 text-center" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -89,7 +89,7 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
           { id: "completed" as const, label: "✅ Terminés" },
         ]).map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--warning) / 0.12)" : "transparent",
               color: tab === t.id ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -125,15 +125,15 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{productDesc}</p>
+                    <p className="text-[0.6875rem] font-bold truncate" style={{ color: "hsl(var(--hud-text))" }}>{productDesc}</p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{orderId}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>• {customerName}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{orderId}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>• {customerName}</span>
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-[10px] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
-                    <p className="text-[10px] font-bold mt-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>{Number(refundAmount).toFixed(2)} €</p>
+                    <span className="text-[0.625rem] font-bold" style={{ color: cfg.color }}>{cfg.label}</span>
+                    <p className="text-[0.625rem] font-bold mt-0.5" style={{ color: "hsl(var(--hud-cyan))" }}>{Number(refundAmount).toFixed(2)} €</p>
                   </div>
                 </div>
 
@@ -141,25 +141,25 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
                 {reason && (
                   <div className="flex items-center gap-1.5 px-2 py-1 rounded-md" style={{ background: "hsl(var(--hud-bg))" }}>
                     <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--warning) / 0.6)" }} />
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{reason}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.6)" }}>{reason}</p>
                   </div>
                 )}
 
                 {/* Inspection */}
                 {conditionGrade && GRADE_CFG[conditionGrade] && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded" style={{
                       background: `${GRADE_CFG[conditionGrade].color}15`,
                       color: GRADE_CFG[conditionGrade].color,
                     }}>Grade {conditionGrade}: {GRADE_CFG[conditionGrade].label}</span>
                     {inspectionNotes && (
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{inspectionNotes}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{inspectionNotes}</span>
                     )}
                   </div>
                 )}
 
                 {/* Timeline */}
-                <div className="flex items-center gap-3 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <div className="flex items-center gap-3 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {requestedAt && <span>📅 {new Date(requestedAt).toLocaleDateString("fr-FR")}</span>}
                   {pickupScheduledAt && <span>🚚 {new Date(pickupScheduledAt).toLocaleDateString("fr-FR")}</span>}
                   {receivedAt && <span>📥 {new Date(receivedAt).toLocaleDateString("fr-FR")}</span>}
@@ -168,12 +168,12 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
                 {/* Actions for pending */}
                 {ret.status === "requested" && (
                   <div className="flex gap-2 pt-1">
-                    <Button size="sm" className="flex-1 text-[10px] h-7"
+                    <Button size="sm" className="flex-1 text-[0.625rem] h-7"
                       onClick={() => updateReturn.mutate({ id: ret.id, status: "approved" })}
                       style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>
                       ✅ Approuver
                     </Button>
-                    <Button size="sm" className="flex-1 text-[10px] h-7"
+                    <Button size="sm" className="flex-1 text-[0.625rem] h-7"
                       onClick={() => updateReturn.mutate({ id: ret.id, status: "rejected" })}
                       style={{ background: "hsl(var(--destructive) / 0.12)", color: "hsl(var(--destructive))" }}>
                       ❌ Rejeter
@@ -181,7 +181,7 @@ export default function ReturnsManagement({ orgId }: { orgId: string }) {
                   </div>
                 )}
                 {ret.status === "inspected" && (
-                  <Button size="sm" className="w-full text-[10px] h-7"
+                  <Button size="sm" className="w-full text-[0.625rem] h-7"
                     onClick={() => updateReturn.mutate({ id: ret.id, status: "refunded" })}
                     style={{ background: "hsl(var(--success) / 0.12)", color: "hsl(var(--success))" }}>
                     💰 Procéder au remboursement

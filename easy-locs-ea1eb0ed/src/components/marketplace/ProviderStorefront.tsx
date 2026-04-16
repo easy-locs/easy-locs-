@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPublicProviders, fetchPublicServices, fetchProviderReviews, insertBooking } from "@/repositories/marketplace.repository";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -316,12 +316,12 @@ export default function ProviderStorefront() {
            {t("mp.my_services") || "Services"} ({services.length})
          </h2>
         {services.length === 0 ? (
-          <Card className="border-dashed">
+          <AppCard className="border-dashed">
             <CardContent className="py-16 text-center">
               <Store className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
               <p className="text-muted-foreground">{t("mp.no_services_listed") || "No services listed yet"}</p>
             </CardContent>
-          </Card>
+          </AppCard>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {services.map((s) => (

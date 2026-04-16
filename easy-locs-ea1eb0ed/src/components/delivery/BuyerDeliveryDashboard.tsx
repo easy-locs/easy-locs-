@@ -60,15 +60,37 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
         .order("created_at", { ascending: false })
         .limit(50);
 
-      const orderList = (data || []).map((r: any) => ({
-        ...r,
+      interface MobilityJobRow {
+        id: string;
+        status: string;
+        pickup_address: string;
+        dropoff_address: string;
+        dropoff_lat: number | null;
+        dropoff_lng: number | null;
+        notes: string | null;
+        current_price: number | null;
+        quoted_price: number | null;
+        currency: string | null;
+        created_at: string | null;
+        completed_at: string | null;
+      }
+      const rows = (data || []) as MobilityJobRow[];
+      const orderList: BuyerOrder[] = rows.map(r => ({
+        id: r.id,
+        status: r.status,
+        pickup_address: r.pickup_address,
+        dropoff_address: r.dropoff_address,
+        dropoff_lat: r.dropoff_lat,
+        dropoff_lng: r.dropoff_lng,
         package_description: r.notes,
         delivery_fee: r.current_price ?? r.quoted_price,
+        currency: r.currency,
+        created_at: r.created_at,
         delivered_at: r.completed_at,
         scheduled_at: null,
         confirmation_code: null,
         escrow_status: null,
-      })) as BuyerOrder[];
+      }));
       setOrders(orderList);
 
       // Fetch real escrow statuses for active orders
@@ -127,14 +149,14 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
           <div key={s.label} className="rounded-xl p-2.5 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-lg font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Refresh */}
       <div className="flex justify-end">
-        <Button size="sm" variant="ghost" onClick={refresh} className="text-[10px] h-7">
+        <Button size="sm" variant="ghost" onClick={refresh} className="text-[0.625rem] h-7">
           <RefreshCw className="h-3 w-3 mr-1" /> Actualiser
         </Button>
       </div>
@@ -142,7 +164,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
       {/* Active orders */}
       {active.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
             🔴 Livraisons en cours
           </p>
           {active.map(order => {
@@ -156,13 +178,13 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                   onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}>
                   <span className="text-lg">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                    <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                       {order.package_description || "Colis"}
                     </p>
-                    <p className="text-[10px] truncate" style={{ color: `hsl(${cfg.color})` }}>{cfg.label}</p>
+                    <p className="text-[0.625rem] truncate" style={{ color: `hsl(${cfg.color})` }}>{cfg.label}</p>
                   </div>
                   {order.delivery_fee != null && (
-                    <span className="text-[10px] font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
+                    <span className="text-[0.625rem] font-bold tabular-nums" style={{ color: "hsl(var(--hud-cyan))" }}>
                       {order.delivery_fee.toFixed(2)}€
                     </span>
                   )}
@@ -173,21 +195,21 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                     <div className="flex items-start gap-2">
                       <MapPin className="h-3 w-3 mt-0.5 shrink-0" style={{ color: "hsl(var(--info))" }} />
                       <div>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Collecte</p>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{order.pickup_address}</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Collecte</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{order.pickup_address}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
                       <MapPin className="h-3 w-3 mt-0.5 shrink-0" style={{ color: "hsl(var(--success))" }} />
                       <div>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Livraison</p>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{order.dropoff_address}</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Livraison</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{order.dropoff_address}</p>
                       </div>
                     </div>
                     {order.confirmation_code && (
                       <div className="rounded-lg px-3 py-2 text-center"
                         style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.1)" }}>
-                        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Code de confirmation</p>
+                        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Code de confirmation</p>
                         <p className="text-lg font-extrabold tracking-widest tabular-nums" style={{ color: "hsl(var(--warning))" }}>
                           {order.confirmation_code}
                         </p>
@@ -219,7 +241,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
       {/* Past orders */}
       {past.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
             📋 Historique
           </p>
           {past.slice(0, 10).map(order => {
@@ -229,15 +251,15 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                 <span className="text-sm">{cfg.emoji}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                  <p className="text-[0.625rem] font-medium truncate" style={{ color: "hsl(var(--hud-text))" }}>
                     {order.package_description || "Colis"}
                   </p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                     {order.delivered_at ? new Date(order.delivered_at).toLocaleDateString("fr") : order.created_at ? new Date(order.created_at).toLocaleDateString("fr") : ""}
                   </p>
                 </div>
                 {order.delivery_fee != null && (
-                  <span className="text-[10px] font-bold tabular-nums" style={{ color: `hsl(${cfg.color})` }}>
+                  <span className="text-[0.625rem] font-bold tabular-nums" style={{ color: `hsl(${cfg.color})` }}>
                     {order.delivery_fee.toFixed(2)}€
                   </span>
                 )}

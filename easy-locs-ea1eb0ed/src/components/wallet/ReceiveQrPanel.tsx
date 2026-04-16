@@ -97,7 +97,7 @@ export default function ReceiveQrPanel() {
           background: `radial-gradient(circle, hsl(var(--accent) / 0.12), transparent 70%)`,
         }} />
 
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(var(--accent) / 0.6)" }}>
+        <p className="text-[0.625rem] font-bold uppercase tracking-[0.2em] relative z-10" style={{ color: "hsl(var(--accent) / 0.6)" }}>
           My Payment QR
         </p>
 
@@ -107,7 +107,7 @@ export default function ReceiveQrPanel() {
 
         <div className="text-center relative z-10">
           <p className="text-base font-bold" style={{ color: "hsl(0 0% 100%)" }}>{displayName}</p>
-          <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Easy-Locs Wallet · {currency}</p>
+          <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.4)" }}>Easy-Locs Wallet · {currency}</p>
         </div>
 
         {hasAmount && (
@@ -124,7 +124,7 @@ export default function ReceiveQrPanel() {
       </div>
 
       <div className="space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">
+        <p className="text-[0.625rem] font-bold uppercase tracking-widest text-muted-foreground px-1">
           Request amount (optional)
         </p>
 
@@ -157,7 +157,7 @@ export default function ReceiveQrPanel() {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             className="flex-1 rounded-xl h-12 text-lg font-bold bg-card border border-border/10 px-4 outline-none text-foreground focus:border-accent/30"
-            style={{ fontSize: "16px" }}
+            style={{ fontSize: "1rem" }}
           />
           <div className="px-4 py-3 rounded-xl text-xs font-bold whitespace-nowrap shrink-0" style={{ background: "hsl(var(--accent) / 0.1)", color: GOLD }}>
             {currency}

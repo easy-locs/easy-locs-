@@ -32,12 +32,12 @@ export default function YouMediaPage({ onBack }: Props) {
         <div className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]">
           <div className="min-w-0 flex-1">
             <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.you.auto_download")}</p>
-            <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("orbit.you.auto_download_desc")}</p>
+            <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t("orbit.you.auto_download_desc")}</p>
           </div>
           <Switch checked={autoDownloadMedia} onCheckedChange={setAutoDownloadMedia} />
         </div>
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.quality")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.quality")}</p>
         <div className="grid grid-cols-3 gap-2">
           {qualities.map(({ v, key }) => (
             <button key={v} onClick={() => setMediaQuality(v)}

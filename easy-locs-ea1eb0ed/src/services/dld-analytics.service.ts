@@ -370,6 +370,27 @@ export const dldAnalyticsService = {
     return [...new Set(txs.filter(t => t.buildingName).map(t => t.buildingName!))].sort();
   },
 
+  async getDistrictBuildings(district: string): Promise<Sourced<{ buildings: { name: string; district: string; avgPricePerSqft: number; transactionCount: number; totalVolume: number }[] }>> {
+    const txs = await ensureTransactionsReady();
+    const districtTxs = txs.filter(t => t.district === district && t.buildingName);
+    const buildingMap = new Map<string, { prices: number[]; amounts: number[] }>();
+    for (const tx of districtTxs) {
+      const key = tx.buildingName!;
+      if (!buildingMap.has(key)) buildingMap.set(key, { prices: [], amounts: [] });
+      const entry = buildingMap.get(key)!;
+      entry.prices.push(tx.pricePerSqft);
+      entry.amounts.push(tx.amount);
+    }
+    const buildings = [...buildingMap.entries()].map(([name, { prices, amounts }]) => ({
+      name,
+      district,
+      avgPricePerSqft: Math.round(prices.reduce((a, b) => a + b, 0) / prices.length),
+      transactionCount: prices.length,
+      totalVolume: amounts.reduce((a, b) => a + b, 0),
+    })).sort((a, b) => b.transactionCount - a.transactionCount);
+    return { data: { buildings }, source: "demo" as const };
+  },
+
   async getBuildingsLive(district?: string): Promise<{ name: string; district: string }[] | null> {
     const remote = await fetchFromEdgeFunction<{ name: string; district: string }[]>(
       "dld-analytics/buildings",

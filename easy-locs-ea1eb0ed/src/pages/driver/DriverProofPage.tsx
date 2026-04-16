@@ -59,12 +59,12 @@ export default function DriverProofPage() {
     >
       <div className="space-y-3">
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Recipient name</label>
+          <label className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Recipient name</label>
           <input type="text" value={recipientName} onChange={(e) => setRecipientName(e.target.value)}
             className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground" placeholder="Who received the order?" />
         </div>
         <div>
-          <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Driver note</label>
+          <label className="text-[0.625rem] font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Driver note</label>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3}
             className="w-full rounded-xl border border-border/20 bg-background px-3 py-2.5 text-sm text-foreground resize-none" placeholder="Add a note..." />
         </div>
@@ -73,7 +73,7 @@ export default function DriverProofPage() {
         <Camera className="w-4 h-4 text-muted-foreground" />
         <span className="text-xs text-muted-foreground">Photo upload, GPS & signature can be connected later.</span>
       </div>
-      <p className="text-[11px] text-muted-foreground">Timestamp: {new Date().toLocaleString()}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">Timestamp: {new Date().toLocaleString()}</p>
       <button onClick={submitProof} disabled={submitting}
         className="w-full rounded-2xl bg-primary text-primary-foreground px-4 py-3 text-sm font-bold disabled:opacity-50 active:scale-[0.97] transition-transform">
         {submitting ? "Submitting..." : "Submit Proof"}

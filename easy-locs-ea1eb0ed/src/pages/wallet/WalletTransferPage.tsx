@@ -327,7 +327,7 @@ export default function WalletTransferPage() {
 
       <div className="px-4 space-y-5">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.recipient") || "Recipient"}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.recipient") || "Recipient"}</p>
 
           <AnimatePresence mode="wait">
             {target && !searching ? (
@@ -349,7 +349,7 @@ export default function WalletTransferPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-foreground truncate">{selectedContact?.display_name || target.displayName || t("wallet.unknownUser")}</p>
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className="text-[0.6875rem] text-muted-foreground truncate">
                       {selectedContact?.phone || (target.currency && target.currency !== currency
                         ? `${t("wallet.walletIn") || "Wallet in"} ${target.currency}`
                         : t("wallet.verified") || "Verified account"
@@ -358,7 +358,7 @@ export default function WalletTransferPage() {
                   </div>
                   <button
                     onClick={clearRecipient}
-                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
+                    className="shrink-0 text-[0.6875rem] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
                   >
                     {t("wallet.change") || "Change"}
                   </button>
@@ -406,7 +406,7 @@ export default function WalletTransferPage() {
         )}
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount") || "Amount"}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount") || "Amount"}</p>
           <div className="rounded-2xl bg-card border border-border/10 p-5 text-center">
             <div className="flex items-center justify-center gap-3">
               <span className="text-lg text-muted-foreground font-bold shrink-0">{currency}</span>
@@ -419,7 +419,7 @@ export default function WalletTransferPage() {
                 style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
               />
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1.5">
+            <p className="text-[0.6875rem] text-muted-foreground mt-1.5">
               {t("wallet.balance") || "Balance"}: {formatCurrencyAmount(balance, currency)}
               {Number(amount) > 0 && Number(amount) <= balance && (
                 <span className="ml-1 text-emerald-500">→ {formatCurrencyAmount(balance - Number(amount), currency)} {t("wallet.remaining") || "remaining"}</span>
@@ -441,7 +441,7 @@ export default function WalletTransferPage() {
                     {formatCurrencyAmount(Number(amount), currency)} ≈ {formatCurrencyAmount(convertedAmount, recipientCurrency!)}
                   </span>
                 </div>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                <p className="text-[0.625rem] text-muted-foreground/60 mt-0.5">
                   1 {currency} = {fxRate.toFixed(4)} {recipientCurrency} · {forexSnapshot ? (t("wallet.rateLive") || "Live rate") : (t("wallet.rateApprox") || "Approximate rate")}
                 </p>
               </motion.div>
@@ -452,7 +452,7 @@ export default function WalletTransferPage() {
               <button
                 key={preset}
                 onClick={() => setAmount(String(preset))}
-                className="flex-1 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-95"
+                className="flex-1 py-2 rounded-xl text-[0.6875rem] font-bold transition-all active:scale-95"
                 style={{
                   background: Number(amount) === preset ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.5)",
                   color: Number(amount) === preset ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
@@ -487,12 +487,12 @@ export default function WalletTransferPage() {
             className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/8 border border-amber-500/15"
           >
             <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <p className="text-[11px] text-amber-600 font-medium">{t("wallet.largeTxWarning") || "Large transaction — PIN verification required"}</p>
+            <p className="text-[0.6875rem] text-amber-600 font-medium">{t("wallet.largeTxWarning") || "Large transaction — PIN verification required"}</p>
           </motion.div>
         )}
 
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.note") || "Note"}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.note") || "Note"}</p>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder={t("wallet.notePlaceholder") || "What's it for? (optional)"} className="w-full rounded-xl border border-border/20 bg-card px-3 py-3 text-sm text-foreground resize-none outline-none focus:ring-2 focus:ring-primary/20" />
         </motion.div>
 

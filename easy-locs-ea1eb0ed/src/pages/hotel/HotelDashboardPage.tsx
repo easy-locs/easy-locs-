@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +25,7 @@ function KpiCard({ icon: Icon, label, value, sub, accent }: {
   icon: React.ElementType; label: string; value: string | number; sub?: string; accent?: string;
 }) {
   return (
-    <Card className="bg-card/80 border-border/15">
+    <AppCard className="bg-card/80 border-border/15">
       <CardContent className="p-4 flex items-center gap-3">
         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", accent ?? "bg-primary/10")}>
           <Icon className={cn("h-5 w-5", accent ? "text-white" : "text-primary")} />
@@ -33,10 +33,10 @@ function KpiCard({ icon: Icon, label, value, sub, accent }: {
         <div className="min-w-0">
           <p className="text-xs text-muted-foreground truncate">{label}</p>
           <p className="text-lg font-bold tabular-nums">{value}</p>
-          {sub && <p className="text-[10px] text-muted-foreground">{sub}</p>}
+          {sub && <p className="text-[0.625rem] text-muted-foreground">{sub}</p>}
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }
 
@@ -45,7 +45,7 @@ function BookingRow({ booking, actions }: { booking: HotelBooking; actions?: Rea
     <div className="flex items-center justify-between py-3 px-4 border-b border-border/10 last:border-0">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium truncate">{booking.guestName ?? "Guest"}</p>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[0.625rem] text-muted-foreground">
           {format(new Date(booking.checkIn), "dd MMM")} → {format(new Date(booking.checkOut), "dd MMM")} · {booking.bookingReference}
         </p>
         <p className="text-xs font-medium text-primary tabular-nums">{booking.totalPrice.toLocaleString()} {booking.currency}</p>
@@ -190,7 +190,7 @@ export default function HotelDashboardPage() {
         </div>
 
         {(dashboard?.pendingBookings.length ?? 0) > 0 && (
-          <Card className="bg-card/80 border-border/15">
+          <AppCard className="bg-card/80 border-border/15">
             <CardHeader className="pb-2 px-4 pt-4">
               <CardTitle className="text-sm flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-warning" />
@@ -213,11 +213,11 @@ export default function HotelDashboardPage() {
                 } />
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {(dashboard?.arrivalsToday.length ?? 0) > 0 && (
-          <Card className="bg-card/80 border-border/15">
+          <AppCard className="bg-card/80 border-border/15">
             <CardHeader className="pb-2 px-4 pt-4">
               <CardTitle className="text-sm flex items-center gap-1.5">
                 <LogIn className="h-4 w-4 text-amber-500" />
@@ -235,11 +235,11 @@ export default function HotelDashboardPage() {
                 } />
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {(dashboard?.departuresToday.length ?? 0) > 0 && (
-          <Card className="bg-card/80 border-border/15">
+          <AppCard className="bg-card/80 border-border/15">
             <CardHeader className="pb-2 px-4 pt-4">
               <CardTitle className="text-sm flex items-center gap-1.5">
                 <LogOut className="h-4 w-4 text-purple-500" />
@@ -257,7 +257,7 @@ export default function HotelDashboardPage() {
                 } />
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         )}
 
         {!dashboard?.pendingBookings.length && !dashboard?.arrivalsToday.length && !dashboard?.departuresToday.length && (

@@ -333,10 +333,10 @@ export default function PropertyHub() {
               <ArrowLeft className="h-4 w-4 text-white" />
             </button>
 
-            <h1 className="text-[28px] font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-[1.75rem] font-bold text-white tracking-tight leading-tight">
               Property
             </h1>
-            <p className="text-[13px] text-white/55 mt-1 font-medium">
+            <p className="text-[0.8125rem] text-white/55 mt-1 font-medium">
               Buy, rent & invest — 0% fees for clients
             </p>
           </motion.div>
@@ -355,7 +355,7 @@ export default function PropertyHub() {
               <button
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-[13px] font-bold transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-[0.8125rem] font-bold transition-all"
                 style={{
                   background: activeTab === tab.key ? "hsla(0,0%,100%,0.15)" : "transparent",
                   color: activeTab === tab.key ? "white" : "hsla(0,0%,100%,0.5)",
@@ -380,7 +380,7 @@ export default function PropertyHub() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={getPlaceholder(activeTab)}
-                className="pl-10 h-12 text-[13px] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
+                className="pl-10 h-12 text-[0.8125rem] rounded-xl border-white/8 bg-white/6 text-white placeholder:text-white/28 focus:border-white/25 focus:bg-white/10 transition-all"
               />
             </div>
             <button
@@ -410,13 +410,13 @@ export default function PropertyHub() {
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-foreground uppercase tracking-wider">Filters</p>
                 {hasActiveFilters && (
-                  <button onClick={clearFilters} className="text-[11px] text-primary font-semibold">Clear all</button>
+                  <button onClick={clearFilters} className="text-[0.6875rem] text-primary font-semibold">Clear all</button>
                 )}
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Country</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Country</label>
                   <select
                     value={filters.country}
                     onChange={(e) => updateFilter("country", e.target.value)}
@@ -437,7 +437,7 @@ export default function PropertyHub() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">City</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">City</label>
                   <Input
                     value={filters.city}
                     onChange={(e) => updateFilter("city", e.target.value)}
@@ -446,7 +446,7 @@ export default function PropertyHub() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">District</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">District</label>
                   <Input
                     value={filters.district}
                     onChange={(e) => updateFilter("district", e.target.value)}
@@ -458,7 +458,7 @@ export default function PropertyHub() {
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Min Price</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Min Price</label>
                   <Input
                     type="number"
                     value={filters.minPrice}
@@ -468,7 +468,7 @@ export default function PropertyHub() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Max Price</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Max Price</label>
                   <Input
                     type="number"
                     value={filters.maxPrice}
@@ -481,7 +481,7 @@ export default function PropertyHub() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Beds</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Beds</label>
                   <select
                     value={filters.bedrooms}
                     onChange={(e) => updateFilter("bedrooms", e.target.value)}
@@ -497,7 +497,7 @@ export default function PropertyHub() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Baths</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Baths</label>
                   <select
                     value={filters.bathrooms}
                     onChange={(e) => updateFilter("bathrooms", e.target.value)}
@@ -512,7 +512,7 @@ export default function PropertyHub() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Min m²</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Min m²</label>
                   <Input
                     type="number"
                     value={filters.minArea}
@@ -522,7 +522,7 @@ export default function PropertyHub() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-muted-foreground font-semibold uppercase mb-1 block">Max m²</label>
+                  <label className="text-[0.625rem] text-muted-foreground font-semibold uppercase mb-1 block">Max m²</label>
                   <Input
                     type="number"
                     value={filters.maxArea}
@@ -562,8 +562,8 @@ export default function PropertyHub() {
             <TrendingUp className="h-4 w-4" style={{ color: "hsl(45 93% 58%)" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-bold text-white">{tc("dld.hub_cta_title")}</p>
-            <p className="text-[10px] text-white/50">{tc("dld.hub_cta_subtitle")}</p>
+            <p className="text-[0.8125rem] font-bold text-white">{tc("dld.hub_cta_title")}</p>
+            <p className="text-[0.625rem] text-white/50">{tc("dld.hub_cta_subtitle")}</p>
           </div>
           <ChevronRight className="h-4 w-4 text-white/30 shrink-0" />
         </Link>
@@ -593,7 +593,7 @@ export default function PropertyHub() {
 
       <div className="px-4 mt-3">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[13px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+          <p className="text-[0.8125rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
             {usingFallback ? `${listings.length} demo listings` : `${totalCount} ${totalCount === 1 ? "listing" : "listings"}`}
           </p>
           <div className="flex items-center gap-2">
@@ -758,7 +758,7 @@ export default function PropertyHub() {
                 {listings.length === 0 && (
                   <div className="text-center py-16 col-span-full">
                     <Building2 className="h-12 w-12 mx-auto mb-3" style={{ color: "hsl(var(--muted-foreground))" }} />
-                    <p className="text-[14px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.875rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>
                       No listings found
                     </p>
                     <p className="text-xs mt-1" style={{ color: "hsl(var(--muted-foreground))" }}>

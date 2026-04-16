@@ -119,7 +119,7 @@ export default function DriverJobMarketplace({ className }: Props) {
         <div className="flex items-center gap-2">
           <Package className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Missions disponibles</h3>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+          <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium"
             style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
             {filtered.length}
           </span>
@@ -135,7 +135,7 @@ export default function DriverJobMarketplace({ className }: Props) {
         <div className="flex gap-1 overflow-x-auto">
           {(["all", "urgent", "express", "standard"] as const).map(p => (
             <button key={p} onClick={() => setPriorityFilter(p)}
-              className="text-[10px] px-2.5 py-1 rounded-full font-medium shrink-0"
+              className="text-[0.625rem] px-2.5 py-1 rounded-full font-medium shrink-0"
               style={{
                 background: priorityFilter === p ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)",
                 color: priorityFilter === p ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -149,11 +149,11 @@ export default function DriverJobMarketplace({ className }: Props) {
           <div className="flex items-center gap-1 flex-1">
             <DollarSign className="h-3 w-3" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }} />
             <Input type="number" value={minFee || ""} onChange={e => setMinFee(+e.target.value)}
-              placeholder="Min €" className="h-7 text-[10px] w-20"
+              placeholder="Min €" className="h-7 text-[0.625rem] w-20"
               style={{ background: "hsl(var(--hud-surface))", borderColor: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text))" }} />
           </div>
           <select value={sortBy} onChange={e => setSortBy(e.target.value as SortBy)}
-            className="h-7 text-[10px] px-2 rounded-md"
+            className="h-7 text-[0.625rem] px-2 rounded-md"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text))" }}>
             <option value="newest">Plus récent</option>
             <option value="fee_desc">€ Décroissant</option>
@@ -182,25 +182,25 @@ export default function DriverJobMarketplace({ className }: Props) {
                   <div className="flex items-start justify-between mb-2.5">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ background: badge.bg, color: badge.color }}>
+                        <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium" style={{ background: badge.bg, color: badge.color }}>
                           {badge.label}
                         </span>
                         {job.package_size && (
-                          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{job.package_size}</span>
+                          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{job.package_size}</span>
                         )}
                       </div>
                       <div className="space-y-1">
-                        <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text))" }}>
+                        <p className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--hud-text))" }}>
                           <MapPin className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--success))" }} />
                           <span className="truncate">{job.pickup_address}</span>
                         </p>
-                        <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--hud-text))" }}>
+                        <p className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--hud-text))" }}>
                           <MapPin className="h-2.5 w-2.5 shrink-0" style={{ color: "hsl(var(--destructive))" }} />
                           <span className="truncate">{job.dropoff_address}</span>
                         </p>
                       </div>
                       {job.notes && (
-                        <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                        <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                           📦 {job.notes}
                         </p>
                       )}
@@ -209,18 +209,18 @@ export default function DriverJobMarketplace({ className }: Props) {
                       <p className="text-sm font-extrabold tabular-nums" style={{ color: "hsl(var(--success))" }}>
                         {(job.current_price || 0).toFixed(2)} AED
                       </p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex gap-2">
-                    <Button size="sm" className="flex-1 text-[10px] h-8" onClick={() => acceptJob(job.id)}
+                    <Button size="sm" className="flex-1 text-[0.625rem] h-8" onClick={() => acceptJob(job.id)}
                       style={{ background: "hsl(var(--success))", color: "#fff" }}>
                       <Zap className="h-3 w-3 mr-1" /> Accepter
                     </Button>
-                    <Button size="sm" variant="outline" className="text-[10px] h-8 px-3"
+                    <Button size="sm" variant="outline" className="text-[0.625rem] h-8 px-3"
                       onClick={() => { setBidding(isBidding ? null : job.id); haptic("light"); }}
                       style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-cyan))" }}>
                       💰 Enchérir
@@ -236,7 +236,7 @@ export default function DriverJobMarketplace({ className }: Props) {
                         <Input type="number" step="0.5" value={bidAmount} onChange={e => setBidAmount(e.target.value)}
                           placeholder="Votre prix (€)" className="h-8 text-xs flex-1"
                           style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
-                        <Button size="sm" className="h-8 text-[10px]" onClick={() => acceptJob(job.id)}
+                        <Button size="sm" className="h-8 text-[0.625rem]" onClick={() => acceptJob(job.id)}
                           disabled={!bidAmount}
                           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
                           Envoyer

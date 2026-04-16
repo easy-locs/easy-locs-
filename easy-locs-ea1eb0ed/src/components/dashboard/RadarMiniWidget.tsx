@@ -46,7 +46,7 @@ function RadarMiniWidgetInner({
           <div>
             <h3 className="text-sm font-bold text-foreground">Nearby</h3>
             {userCity && (
-              <p className="text-[10px] text-foreground/40">{userCity}</p>
+              <p className="text-[0.625rem] text-foreground/40">{userCity}</p>
             )}
           </div>
         </div>
@@ -71,12 +71,12 @@ function RadarMiniWidgetInner({
                 <p className="text-xs font-medium text-foreground truncate group-hover:text-[hsl(var(--brand-primary))]">
                   {item.name}
                 </p>
-                <p className="text-[10px] text-foreground/40">{item.category}</p>
+                <p className="text-[0.625rem] text-foreground/40">{item.category}</p>
               </div>
               <div className="text-right shrink-0">
-                <span className="text-[10px] text-foreground/40">{item.distance}</span>
+                <span className="text-[0.625rem] text-foreground/40">{item.distance}</span>
                 {item.rating != null && (
-                  <span className="block text-[10px] text-amber-500">★ {item.rating.toFixed(1)}</span>
+                  <span className="block text-[0.625rem] text-amber-500">★ {item.rating.toFixed(1)}</span>
                 )}
               </div>
             </Link>

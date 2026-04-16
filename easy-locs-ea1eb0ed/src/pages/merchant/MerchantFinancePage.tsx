@@ -86,10 +86,10 @@ function KpiCard({ label, value, icon: Icon, color, trend }: {
           <Icon className={cn("w-4.5 h-4.5", `text-${color}`)} />
         </div>
         {trend && (
-          <span className="text-[10px] font-bold text-emerald-500">{trend}</span>
+          <span className="text-[0.625rem] font-bold text-emerald-500">{trend}</span>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground font-medium line-clamp-2 break-words">{label}</p>
+      <p className="text-[0.6875rem] text-muted-foreground font-medium line-clamp-2 break-words">{label}</p>
       <p className="text-lg font-extrabold text-foreground tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">{value}</p>
     </motion.div>
   );
@@ -274,7 +274,7 @@ export default function MerchantFinancePage() {
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-bold text-foreground">Payments & Finance</h1>
-          <p className="text-[11px] text-muted-foreground">Merchant ledger & analytics</p>
+          <p className="text-[0.6875rem] text-muted-foreground">Merchant ledger & analytics</p>
         </div>
         <button className="w-10 h-10 rounded-xl bg-muted/60 flex items-center justify-center">
           <Download className="w-4.5 h-4.5 text-muted-foreground" />
@@ -292,15 +292,15 @@ export default function MerchantFinancePage() {
       {/* Weekly / Monthly strip */}
       <div className="flex gap-2.5">
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
-          <p className="text-[10px] text-muted-foreground font-medium">This Week</p>
+          <p className="text-[0.625rem] text-muted-foreground font-medium">This Week</p>
           <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(kpis.weekTotal, currency)}</p>
         </div>
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
-          <p className="text-[10px] text-muted-foreground font-medium">This Month</p>
+          <p className="text-[0.625rem] text-muted-foreground font-medium">This Month</p>
           <p className="text-base font-extrabold text-foreground tabular-nums">{formatMoney(kpis.monthTotal, currency)}</p>
         </div>
         <div className="flex-1 rounded-2xl border border-border/20 bg-card p-3.5">
-          <p className="text-[10px] text-muted-foreground font-medium">Today Debits</p>
+          <p className="text-[0.625rem] text-muted-foreground font-medium">Today Debits</p>
           <p className="text-base font-extrabold text-red-500 tabular-nums">{formatMoney(kpis.todayOut, currency)}</p>
         </div>
       </div>
@@ -324,7 +324,7 @@ export default function MerchantFinancePage() {
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
-              "shrink-0 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all whitespace-nowrap",
+              "shrink-0 px-3 py-1.5 rounded-full text-[0.6875rem] font-semibold transition-all whitespace-nowrap",
               filter === f.key
                 ? "bg-primary text-primary-foreground"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -339,7 +339,7 @@ export default function MerchantFinancePage() {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between px-1">
           <h3 className="text-sm font-bold text-foreground">Transaction Ledger</h3>
-          <span className="text-[10px] text-muted-foreground">{filtered.length} transactions</span>
+          <span className="text-[0.625rem] text-muted-foreground">{filtered.length} transactions</span>
         </div>
 
         {loading ? (
@@ -382,7 +382,7 @@ export default function MerchantFinancePage() {
                       </p>
                       {statusIcon(tx.status)}
                     </div>
-                    <p className="text-[11px] text-muted-foreground truncate">
+                    <p className="text-[0.6875rem] text-muted-foreground truncate">
                       {new Date(tx.created_at).toLocaleString(undefined, {
                         month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                       })}

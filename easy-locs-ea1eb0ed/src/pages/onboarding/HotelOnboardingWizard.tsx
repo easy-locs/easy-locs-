@@ -183,7 +183,7 @@ export default function HotelOnboardingWizard() {
         </div>
         <Progress value={progress} className="h-1.5" aria-label={`Registration progress: step ${step + 1} of ${STEPS.length}`} />
         {uiTimedOut && (
-          <p className="text-[10px] text-amber-500/60 mt-1">⚠ UI engine timed out — form remains fully functional</p>
+          <p className="text-[0.625rem] text-amber-500/60 mt-1">⚠ UI engine timed out — form remains fully functional</p>
         )}
       </div>
 

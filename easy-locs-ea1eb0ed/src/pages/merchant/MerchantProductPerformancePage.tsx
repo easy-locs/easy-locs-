@@ -49,7 +49,7 @@ export default function MerchantProductPerformancePage() {
               <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
                 <p className="text-sm font-semibold text-foreground">{row.name}</p>
                 <p className="text-xs text-muted-foreground">Sold {row.qty} · Revenue {Number(row.revenue).toFixed(2)} AED</p>
-                <p className={`text-[11px] font-bold mt-1 ${row.available ? "text-emerald-500" : "text-muted-foreground"}`}>
+                <p className={`text-[0.6875rem] font-bold mt-1 ${row.available ? "text-emerald-500" : "text-muted-foreground"}`}>
                   {row.available ? "Available" : "Unavailable"}
                 </p>
               </div>

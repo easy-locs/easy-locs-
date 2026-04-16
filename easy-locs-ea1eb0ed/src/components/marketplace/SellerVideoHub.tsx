@@ -31,7 +31,7 @@ export default function SellerVideoHub({ services }: SellerVideoHubProps) {
         </div>
         <div>
           <p className="text-sm font-semibold text-foreground">Aucune vidéo</p>
-          <p className="text-[11px] text-muted-foreground mt-1 max-w-[240px] mx-auto">
+          <p className="text-[0.6875rem] text-muted-foreground mt-1 max-w-[240px] mx-auto">
             Ajoutez des vidéos à vos services pour augmenter l'engagement et les conversions.
           </p>
         </div>
@@ -55,7 +55,7 @@ export default function SellerVideoHub({ services }: SellerVideoHubProps) {
         <div className="flex items-center gap-2">
           <Video className="w-4 h-4 text-primary" />
           <h3 className="text-sm font-bold text-foreground">Vidéothèque</h3>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+          <span className="text-[0.625rem] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
             {videoServices.length}
           </span>
         </div>
@@ -108,7 +108,7 @@ export default function SellerVideoHub({ services }: SellerVideoHubProps) {
             <div className="px-3 py-2.5 flex items-center justify-between">
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold text-foreground min-w-0 break-words leading-snug">{svc.title}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {svc.category} • {svc.price} {svc.currency}
                 </p>
               </div>

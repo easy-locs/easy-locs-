@@ -327,7 +327,7 @@ const GuestPortal = () => {
                     <div className="p-4 space-y-2">
                       <div className="flex flex-wrap gap-1">
                         {(a.badges || []).map((b: string) => (
-                          <span key={b} className="text-[10px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium uppercase">{b}</span>
+                          <span key={b} className="text-[0.625rem] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium uppercase">{b}</span>
                         ))}
                       </div>
                       <h4 className="text-sm font-semibold text-foreground">{a.title}</h4>
@@ -377,7 +377,7 @@ const GuestPortal = () => {
                   <div key={m.id} className={`max-w-[80%] p-3 rounded-xl text-sm ${m.type === "guest" ? "ml-auto bg-accent/10 text-foreground" : "bg-muted/50 text-foreground"}`}>
                     <p className="text-xs text-muted-foreground mb-1">{m.title || "Host"}</p>
                     <p>{m.message}</p>
-                    <p className="text-[10px] text-muted-foreground mt-1">
+                    <p className="text-[0.625rem] text-muted-foreground mt-1">
                       {new Date(m.created_at).toLocaleString()}
                     </p>
                   </div>

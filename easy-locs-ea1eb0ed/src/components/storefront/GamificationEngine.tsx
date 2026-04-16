@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -153,7 +153,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
         </h3>
         <div className="flex gap-1">
           {["challenges", "badges", "leaderboard"].map(v => (
-            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[10px] h-6 px-2"
+            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
               onClick={() => setTab(v as any)}>
               {v === "challenges" ? "Challenges" : v === "badges" ? "Badges" : "Ranking"}
             </Button>
@@ -165,7 +165,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
       {tab === "challenges" && (
         <div className="space-y-3">
           {mode === "seller" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-4 space-y-3">
                 <h4 className="text-xs font-semibold text-muted-foreground">Create Challenge</h4>
                 <Input placeholder="Challenge title" value={challengeForm.title}
@@ -191,7 +191,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                   <Target className="h-3 w-3 mr-1" /> Create Challenge
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {challenges.map((c: any) => {
@@ -199,7 +199,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
             const pct = prog ? Math.min(100, (prog.current_value / c.target_value) * 100) : 0;
             const typeInfo = CHALLENGE_TYPES[c.challenge_type] || { label: c.challenge_type, icon: "🎯" };
             return (
-              <Card key={c.id}>
+              <AppCard key={c.id}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
@@ -207,11 +207,11 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                         <span>{typeInfo.icon}</span>
                         <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{c.title}</p>
                       </div>
-                      {c.description && <p className="text-[10px] text-muted-foreground mt-0.5">{c.description}</p>}
+                      {c.description && <p className="text-[0.625rem] text-muted-foreground mt-0.5">{c.description}</p>}
                       <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant="secondary" className="text-[10px]">{typeInfo.label}</Badge>
-                        <span className="text-[10px] text-muted-foreground">Target: {c.target_value}</span>
-                        <span className="text-[10px] text-primary font-medium flex items-center gap-0.5">
+                        <Badge variant="secondary" className="text-[0.625rem]">{typeInfo.label}</Badge>
+                        <span className="text-[0.625rem] text-muted-foreground">Target: {c.target_value}</span>
+                        <span className="text-[0.625rem] text-primary font-medium flex items-center gap-0.5">
                           <Zap className="h-2.5 w-2.5" /> {c.reward_points} pts
                         </span>
                       </div>
@@ -219,9 +219,9 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                       {/* Progress bar */}
                       {prog && (
                         <div className="mt-2">
-                          <div className="flex items-center justify-between text-[10px] mb-0.5">
+                          <div className="flex items-center justify-between text-[0.625rem] mb-0.5">
                             <span>{prog.current_value}/{c.target_value}</span>
-                            {prog.completed && <Badge className="text-[10px] bg-success/20 text-success">Completed!</Badge>}
+                            {prog.completed && <Badge className="text-[0.625rem] bg-success/20 text-success">Completed!</Badge>}
                           </div>
                           <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
@@ -231,18 +231,18 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                     </div>
 
                     {mode === "buyer" && !prog && (
-                      <Button size="sm" variant="outline" className="text-[10px] h-7 shrink-0"
+                      <Button size="sm" variant="outline" className="text-[0.625rem] h-7 shrink-0"
                         onClick={() => joinChallenge.mutate(c.id)} disabled={joinChallenge.isPending}>
                         Join
                       </Button>
                     )}
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
           {challenges.length === 0 && (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No challenges yet</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No challenges yet</CardContent></AppCard>
           )}
         </div>
       )}
@@ -251,7 +251,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
       {tab === "badges" && (
         <div className="space-y-3">
           {mode === "seller" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold text-muted-foreground">Create Badge</h4>
                 <Input placeholder="Badge name" value={badgeForm.name}
@@ -263,14 +263,14 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                   <Medal className="h-3 w-3 mr-1" /> Create Badge
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           <div className="grid grid-cols-3 gap-2">
             {badges.map((b: any) => {
               const earned = userBadgeIds.has(b.id);
               return (
-                <Card key={b.id} className={earned ? "border-primary/30" : "opacity-60"}>
+                <AppCard key={b.id} className={earned ? "border-primary/30" : "opacity-60"}>
                   <CardContent className="p-2.5 text-center">
                     <div className="w-10 h-10 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-1.5">
                       {b.icon_url ? (
@@ -279,35 +279,35 @@ export default function GamificationEngine({ shopId, mode }: Props) {
                         <Medal className={`h-5 w-5 ${earned ? "text-primary" : "text-muted-foreground"}`} />
                       )}
                     </div>
-                    <p className="text-[10px] font-semibold truncate">{b.name}</p>
-                    {earned && <Badge className="text-[10px] bg-success/20 text-success mt-1">Earned</Badge>}
+                    <p className="text-[0.625rem] font-semibold truncate">{b.name}</p>
+                    {earned && <Badge className="text-[0.625rem] bg-success/20 text-success mt-1">Earned</Badge>}
                   </CardContent>
-                </Card>
+                </AppCard>
               );
             })}
           </div>
           {badges.length === 0 && (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No badges created yet</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No badges created yet</CardContent></AppCard>
           )}
         </div>
       )}
 
       {/* LEADERBOARD */}
       {tab === "leaderboard" && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Crown className="h-3 w-3 text-yellow-500" /> Top Players
             </h4>
             {leaderboard.length === 0 ? (
-              <p className="text-[10px] text-muted-foreground text-center py-4">No rankings yet — start earning points!</p>
+              <p className="text-[0.625rem] text-muted-foreground text-center py-4">No rankings yet — start earning points!</p>
             ) : leaderboard.map((entry: any, i: number) => {
               const isMe = entry.user_id === user?.id;
               return (
                 <div key={entry.id} className={`flex items-center gap-2 p-1.5 rounded ${isMe ? "bg-primary/5" : ""}`}>
                   <span className="w-6 text-center text-sm">{RANK_ICONS[i] || `#${i + 1}`}</span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[11px] truncate ${isMe ? "font-bold text-primary" : ""}`}>
+                    <p className={`text-[0.6875rem] truncate ${isMe ? "font-bold text-primary" : ""}`}>
                       {isMe ? "You" : `Player ${entry.user_id?.slice(0, 6)}...`}
                     </p>
                   </div>
@@ -318,7 +318,7 @@ export default function GamificationEngine({ shopId, mode }: Props) {
               );
             })}
           </CardContent>
-        </Card>
+        </AppCard>
       )}
     </div>
   );

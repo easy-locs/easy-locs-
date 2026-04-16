@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useBnplPlans } from "@/hooks/useBnpl";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -69,7 +69,7 @@ export default function InstallmentsPage() {
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
           </div>
         ) : plans.length === 0 ? (
-          <Card>
+          <AppCard>
             <CardContent className="p-12 text-center">
               <CreditCard className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm font-medium mb-1">{t("bnpl.no_plans")}</p>
@@ -77,7 +77,7 @@ export default function InstallmentsPage() {
                 {t("bnpl.no_plans_desc")}
               </p>
             </CardContent>
-          </Card>
+          </AppCard>
         ) : (
           plans.map((plan, idx) => {
             const paidCount = plan.installments.filter(
@@ -92,18 +92,18 @@ export default function InstallmentsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.08 }}
               >
-                <Card>
+                <AppCard>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-semibold">
                           {plan.merchantName || `Order ${plan.orderId.slice(0, 8)}`}
                         </p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[0.625rem] text-muted-foreground">
                           {new Date(plan.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Badge className={`text-[10px] ${STATUS_COLORS[plan.status] || ""}`}>
+                      <Badge className={`text-[0.625rem] ${STATUS_COLORS[plan.status] || ""}`}>
                         {plan.status}
                       </Badge>
                     </div>
@@ -118,7 +118,7 @@ export default function InstallmentsPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between text-[10px] mb-1">
+                      <div className="flex items-center justify-between text-[0.625rem] mb-1">
                         <span className="text-muted-foreground">
                           {paidCount}/{plan.installmentCount} paid
                         </span>
@@ -166,7 +166,7 @@ export default function InstallmentsPage() {
                               <p className="text-xs font-medium">
                                 Installment {inst.number}
                               </p>
-                              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <p className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                                 <Calendar className="h-2.5 w-2.5" />
                                 {isPaid
                                   ? `Paid ${new Date(inst.paidAt!).toLocaleDateString()}`
@@ -181,7 +181,7 @@ export default function InstallmentsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  className="h-6 text-[10px] mt-1"
+                                  className="h-6 text-[0.625rem] mt-1"
                                   onClick={() => handlePay(plan.id, inst.id)}
                                 >
                                   Pay Now
@@ -193,7 +193,7 @@ export default function InstallmentsPage() {
                       })}
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               </motion.div>
             );
           })

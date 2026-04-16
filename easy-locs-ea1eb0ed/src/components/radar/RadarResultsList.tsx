@@ -97,21 +97,21 @@ export function RadarResultsList() {
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-bold text-foreground break-words leading-snug line-clamp-2">{item.title}</p>
                     {item.isSponsored && (
-                      <span className="shrink-0 text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">{t("radar.ad_label")}</span>
+                      <span className="shrink-0 text-[0.625rem] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">{t("radar.ad_label")}</span>
                     )}
                   </div>
                   {item.subtitle && (
-                    <p className="text-[11px] text-muted-foreground break-words leading-snug line-clamp-1 mt-0.5">{item.subtitle}</p>
+                    <p className="text-[0.6875rem] text-muted-foreground break-words leading-snug line-clamp-1 mt-0.5">{item.subtitle}</p>
                   )}
                   <div className="flex items-center gap-2 mt-auto pt-1 flex-wrap">
                     {item.district && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
                         <MapPin className="h-2.5 w-2.5" />
                         {item.district}
                       </span>
                     )}
                     {item.rating != null && item.rating > 0 && (
-                      <span className="flex items-center gap-0.5 text-[10px] font-semibold text-amber-500">
+                      <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold text-amber-500">
                         <Star className="h-3 w-3 fill-amber-500 text-amber-500" />
                         {item.rating.toFixed(1)}
                         {item.reviewsCount ? (
@@ -120,13 +120,13 @@ export function RadarResultsList() {
                       </span>
                     )}
                     {item.distanceKm != null && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[0.625rem] text-muted-foreground">
                         {item.distanceKm < 1
                           ? `${Math.round(item.distanceKm * 1000)}m`
                           : `${item.distanceKm.toFixed(1)} km`}
                       </span>
                     )}
-                    <span className="text-[10px] text-muted-foreground/60 capitalize">{item.category}</span>
+                    <span className="text-[0.625rem] text-muted-foreground/60 capitalize">{item.category}</span>
                   </div>
                 </div>
               </Link>

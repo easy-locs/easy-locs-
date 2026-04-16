@@ -89,7 +89,7 @@ export default function CategoryBanners() {
         >
           <div className="inline-flex items-center gap-1.5 mb-3 px-3 py-1 rounded-full border border-accent/20" style={{ background: "hsl(var(--accent) / 0.05)" }}>
             <Sparkles className="w-3 h-3 text-accent" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-accent">{t("landing.catban.badge") || "Explore"}</span>
+            <span className="text-[0.625rem] font-bold uppercase tracking-widest text-accent">{t("landing.catban.badge") || "Explore"}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-foreground">
             {t("landing.catban.title") || "Everything You Need."} <span className="text-accent">{t("landing.catban.title_hl") || "One App."}</span>
@@ -110,7 +110,7 @@ export default function CategoryBanners() {
                   <img src={featured.image} alt={featured.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="eager" />
                   <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(0 0% 0% / 0.6) 0%, hsl(0 0% 0% / 0.2) 50%, hsl(0 0% 0% / 0.5) 100%)" }} />
                   {featured.badge && (
-                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white backdrop-blur-md" style={{ background: `${featured.accent}80`, border: `1px solid ${featured.accent}40` }}>
+                    <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[0.625rem] font-bold text-white backdrop-blur-md" style={{ background: `${featured.accent}80`, border: `1px solid ${featured.accent}40` }}>
                       {featured.badge}
                     </span>
                   )}
@@ -123,7 +123,7 @@ export default function CategoryBanners() {
                           </div>
                           <div>
                             <h3 className="text-base sm:text-lg font-bold text-white">{featured.title}</h3>
-                            <p className="text-[10px] sm:text-xs text-white/60">{featured.sub}</p>
+                            <p className="text-[0.625rem] sm:text-xs text-white/60">{featured.sub}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function CategoryBanners() {
                   <img src={cat.image} alt={cat.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" loading="lazy" width={640} height={800} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                   {cat.badge && (
-                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white backdrop-blur-md" style={{ background: `${cat.accent}70`, border: `1px solid ${cat.accent}30` }}>
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[0.625rem] font-bold text-white backdrop-blur-md" style={{ background: `${cat.accent}70`, border: `1px solid ${cat.accent}30` }}>
                       {cat.badge}
                     </span>
                   )}
@@ -163,10 +163,10 @@ export default function CategoryBanners() {
                       </div>
                       <div className="min-w-0">
                         <h3 className="text-xs sm:text-sm font-bold text-white leading-tight line-clamp-2">{cat.title}</h3>
-                        <p className="text-[10px] sm:text-[10px] text-white/50 line-clamp-2 break-words leading-snug">{cat.count} {cat.countLabel}</p>
+                        <p className="text-[0.625rem] sm:text-[0.625rem] text-white/50 line-clamp-2 break-words leading-snug">{cat.count} {cat.countLabel}</p>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[10px] sm:text-[10px] font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-1.5 transition-all" style={{ background: `${cat.accent}80` }}>
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-[0.625rem] sm:text-[0.625rem] font-bold text-white backdrop-blur-md border border-white/10 group-hover:gap-1.5 transition-all" style={{ background: `${cat.accent}80` }}>
                       {cat.cta} <ArrowRight className="h-2.5 w-2.5" />
                     </span>
                   </div>

@@ -72,7 +72,7 @@ export default function CustomerReferralPage() {
         transition={{ delay: 0.1 }}
         className="mx-4 mb-4 rounded-2xl border border-border/15 bg-card/60 p-4"
       >
-        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-2">Your Referral Code</p>
+        <p className="text-[0.625rem] uppercase font-bold text-muted-foreground tracking-wider mb-2">Your Referral Code</p>
         <div className="flex items-center gap-2">
           <div className="flex-1 rounded-xl bg-muted/30 px-4 py-3 font-mono text-sm font-bold text-foreground tracking-wider">
             {referralCode}
@@ -115,7 +115,7 @@ export default function CustomerReferralPage() {
               <stat.icon className={`w-4 h-4 ${stat.color}`} />
             </div>
             <p className="text-lg font-bold text-foreground">{stat.value}</p>
-            <p className="text-[9px] text-muted-foreground font-semibold uppercase">{stat.label}</p>
+            <p className="text-[0.5625rem] text-muted-foreground font-semibold uppercase">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -130,7 +130,7 @@ export default function CustomerReferralPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-foreground">{s.title}</p>
-                <p className="text-[11px] text-muted-foreground">{s.description}</p>
+                <p className="text-[0.6875rem] text-muted-foreground">{s.description}</p>
               </div>
             </div>
           ))}

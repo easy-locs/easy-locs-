@@ -78,7 +78,7 @@ export default function MerchantKitchenDisplayPage() {
                   </div>
                 </div>
                 <span
-                  className="rounded-full px-3 py-1 text-[11px] font-bold"
+                  className="rounded-full px-3 py-1 text-[0.6875rem] font-bold"
                   style={{ background: meta.bg, color: meta.color }}
                 >
                   {meta.merchantLabel}

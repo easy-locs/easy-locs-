@@ -229,8 +229,8 @@ export default function WalletHubPage() {
                 <div className={`${CSS.appCard} p-4 flex items-center gap-3 border-destructive/15 bg-destructive/[0.04]`}>
                   <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
-                    <p className="text-[10px] text-muted-foreground">{walletError}</p>
+                    <p className="text-[0.8125rem] font-semibold text-foreground line-clamp-1 break-words">{tSafe(t, "wallet.loadError", "Unable to load wallet")}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{walletError}</p>
                   </div>
                   <button onClick={reloadWallet} className="app-page-header-btn shrink-0" aria-label="Reload wallet">
                     <RefreshCw />
@@ -258,10 +258,10 @@ export default function WalletHubPage() {
                     <p className="text-sm font-bold text-white">{accountName}</p>
                     <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/12">
                       <Globe className="w-3 h-3 text-accent/60" />
-                      <span className="text-[10px] font-bold text-accent/70">{mainCurrency}</span>
+                      <span className="text-[0.625rem] font-bold text-accent/70">{mainCurrency}</span>
                     </div>
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest mb-2 text-accent/50">{tSafe(t, `wallet.accountType_${accountType}`, accountTypeLabel)} · {t("wallet.totalBalance")}</p>
+                  <p className="text-[0.625rem] font-semibold uppercase tracking-widest mb-2 text-accent/50">{tSafe(t, `wallet.accountType_${accountType}`, accountTypeLabel)} · {t("wallet.totalBalance")}</p>
                   <div className="flex items-end gap-3 mb-1 overflow-hidden">
                     <p className="text-[1.5rem] sm:text-[2rem] md:text-[2.5rem] font-extrabold tracking-tight leading-none tabular-nums text-white break-all">
                       {showBalance ? <AnimatedCounter value={totalBalance} decimals={2} duration={1000} formatter={(v) => formatWalletAmount(v, mainCurrency)} /> : "••••••"}
@@ -272,7 +272,7 @@ export default function WalletHubPage() {
                     {txHistory.length > 0 && (
                       <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full ${deltaPositive ? "bg-emerald-500/15" : "bg-red-500/15"}`}>
                         <TrendingUp className={`w-2.5 h-2.5 ${deltaPositive ? "text-emerald-500" : "text-red-500 rotate-180"}`} />
-                        <span className={`text-[10px] font-bold ${deltaPositive ? "text-emerald-500" : "text-red-500"}`}>
+                        <span className={`text-[0.625rem] font-bold ${deltaPositive ? "text-emerald-500" : "text-red-500"}`}>
                           {deltaPositive ? "+" : ""}{formatWalletAmount(balanceDelta, mainCurrency)}
                         </span>
                       </div>
@@ -352,8 +352,8 @@ export default function WalletHubPage() {
                   <TrendingUp className="w-[18px] h-[18px] text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[13px] font-bold text-foreground/90">Forex · Taux de change</div>
-                  <div className="text-[11px] text-muted-foreground mt-px">EUR/USD · USD/AED · et 120+ devises</div>
+                  <div className="text-[0.8125rem] font-bold text-foreground/90">Forex · Taux de change</div>
+                  <div className="text-[0.6875rem] text-muted-foreground mt-px">EUR/USD · USD/AED · et 120+ devises</div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-accent/60 shrink-0" />
               </motion.button>
@@ -376,8 +376,8 @@ export default function WalletHubPage() {
                       <Brain className="w-4.5 h-4.5 text-accent" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[10px] font-bold uppercase tracking-wide mb-0.5 text-accent/70">{t("wallet.aiInsight")}</p>
-                      <p className="text-[11px] text-foreground/70 leading-relaxed">
+                      <p className="text-[0.625rem] font-bold uppercase tracking-wide mb-0.5 text-accent/70">{t("wallet.aiInsight")}</p>
+                      <p className="text-[0.6875rem] text-foreground/70 leading-relaxed">
                         {stats.outTotal > stats.inTotal
                           ? t("wallet.spentMoreTip")
                               .replace("{pct}", ((stats.outTotal - stats.inTotal) / (stats.inTotal || 1) * 100).toFixed(0))
@@ -423,7 +423,7 @@ export default function WalletHubPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-bold text-foreground">{accountLabel}</p>
-                            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                            <p className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                               <CheckCircle className="w-2.5 h-2.5 text-success" />
                               {t("wallet.active")} · {accCurrency}
                             </p>

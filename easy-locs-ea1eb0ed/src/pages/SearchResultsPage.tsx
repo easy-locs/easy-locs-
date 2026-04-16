@@ -119,7 +119,7 @@ export default function SearchResultsPage() {
                       <Icon className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
                       {TYPE_LABELS[type] || type}
                     </p>
-                    <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>
+                    <span className="text-[0.625rem] text-muted-foreground bg-muted rounded-full px-2 py-0.5">{items.length}</span>
                   </div>
                   <div className="space-y-2">
                     {items.map((row, i) => (
@@ -166,22 +166,22 @@ function ResultCard({ row, onClick }: { row: SearchResult; onClick: () => void }
       )}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground line-clamp-2 break-words">{row.title}</p>
-        <p className="text-[11px] text-muted-foreground truncate">{row.subtitle}</p>
+        <p className="text-[0.6875rem] text-muted-foreground truncate">{row.subtitle}</p>
         <div className="flex items-center gap-2 mt-0.5">
           {row.rating != null && (
-            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-[0.6875rem] text-muted-foreground">
               <Star className="w-3 h-3 fill-current" style={{ color: "hsl(168 72% 44%)" }} />
               {row.rating.toFixed(1)}
             </span>
           )}
           {row.distanceKm != null && (
-            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-[0.6875rem] text-muted-foreground">
               <MapPin className="w-3 h-3" />
               {row.distanceKm.toFixed(1)} km
             </span>
           )}
           {row.isOpen != null && (
-            <span className={`text-[10px] font-medium ${row.isOpen ? "text-emerald-500" : "text-muted-foreground"}`}>
+            <span className={`text-[0.625rem] font-medium ${row.isOpen ? "text-emerald-500" : "text-muted-foreground"}`}>
               {row.isOpen ? tc("common.open") : tc("common.closed")}
             </span>
           )}

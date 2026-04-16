@@ -47,12 +47,12 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
     return (
       <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
         <div className="flex items-center justify-between mb-2.5">
-          <h2 className="text-[13px] font-bold" style={{ color: navy }}>
+          <h2 className="text-[0.8125rem] font-bold" style={{ color: navy }}>
             {tSafe(t, "re.me.cockpit", "Property Management")}
           </h2>
           <button
             onClick={() => navigate("/me/properties")}
-            className="text-[11px] font-semibold flex items-center gap-1"
+            className="text-[0.6875rem] font-semibold flex items-center gap-1"
             style={{ color: gold }}
           >
             {tSafe(t, "common.see_all", "See all")} <ChevronRight size={12} />
@@ -69,7 +69,7 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
             <div key={i} className="rounded-xl p-2.5 text-center" style={{ background: "white", border: "1px solid #f0f0f0" }}>
               <div className="flex justify-center mb-1" style={{ color: kpi.color }}>{kpi.icon}</div>
               <div className="text-sm font-bold break-words" style={{ color: navy }}>{kpi.value}</div>
-              <div className="text-[10px]" style={{ color: "#999" }}>{kpi.label}</div>
+              <div className="text-[0.625rem]" style={{ color: "#999" }}>{kpi.label}</div>
             </div>
           ))}
         </div>
@@ -86,10 +86,10 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-xs font-semibold line-clamp-1 break-words" style={{ color: navy }}>{p.title}</div>
-              <div className="text-[10px]" style={{ color: "#999" }}>{p.address.city}, {p.address.country}</div>
+              <div className="text-[0.625rem]" style={{ color: "#999" }}>{p.address.city}, {p.address.country}</div>
             </div>
             <span
-              className="text-[10px] px-2 py-0.5 rounded-full font-medium"
+              className="text-[0.625rem] px-2 py-0.5 rounded-full font-medium"
               style={{
                 background: p.status === "published" ? "#dcfce7" : p.status === "rented" ? "#dbeafe" : "#f3f4f6",
                 color: p.status === "published" ? "#16a34a" : p.status === "rented" ? "#2563eb" : "#6b7280",
@@ -119,12 +119,12 @@ const PropertyDashboardWidget = memo(function PropertyDashboardWidget() {
   return (
     <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center justify-between mb-2.5">
-        <h2 className="text-[13px] font-bold" style={{ color: navy }}>
+        <h2 className="text-[0.8125rem] font-bold" style={{ color: navy }}>
           {tSafe(t, "re.marketplace", "Real Estate")}
         </h2>
         <button
           onClick={() => navigate("/real-estate")}
-          className="text-[11px] font-semibold flex items-center gap-1"
+          className="text-[0.6875rem] font-semibold flex items-center gap-1"
           style={{ color: gold }}
         >
           {tSafe(t, "property.explore_project", "Explore")} <ChevronRight size={12} />

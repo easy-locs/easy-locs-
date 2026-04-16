@@ -388,7 +388,7 @@ export default function AnnonceDetail() {
             </div>
             <div>
               <p className="text-sm font-semibold">{deliveryLabel.label}</p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-[0.6875rem] text-muted-foreground">
                 {listing.delivery_option === "hand" ? t("page.annonces.detail.delivery_hand") : listing.delivery_option === "ship" ? t("page.annonces.detail.delivery_ship") : t("page.annonces.detail.delivery_both")}
               </p>
             </div>
@@ -401,7 +401,7 @@ export default function AnnonceDetail() {
             <div className="grid grid-cols-2 gap-2">
               {attrEntries.map(([key, value]) => (
                 <div key={key} className="bg-muted/30 rounded-xl px-3.5 py-2.5 border border-border/20">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{key.replace(/_/g, " ")}</p>
+                  <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-medium">{key.replace(/_/g, " ")}</p>
                   <p className="text-sm font-semibold mt-0.5">{typeof value === "boolean" ? (value ? t("page.annonces.detail.yes") : t("page.annonces.detail.no")) : String(value)}</p>
                 </div>
               ))}
@@ -431,7 +431,7 @@ export default function AnnonceDetail() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold">{provider.display_name || t("page.annonces.detail.seller")}</p>
-                <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                <div className="flex items-center gap-2 text-[0.6875rem] text-muted-foreground mt-0.5">
                   {provider.is_verified && <span className="text-blue-500 flex items-center gap-0.5 font-medium"><CheckCircle className="h-3 w-3" /> Pro</span>}
                   {provider.trust_level && (() => {
                     const badge = getTrustBadge(provider.trust_level as TrustLevel);
@@ -450,7 +450,7 @@ export default function AnnonceDetail() {
             <CheckCircle className="h-5 w-5 text-emerald-600" />
             <div>
               <p className="text-sm font-bold text-emerald-600">{t("page.annonces.detail.item_sold")}</p>
-              <p className="text-[11px] text-emerald-600/70">{t("page.annonces.detail.listing_unavailable")}</p>
+              <p className="text-[0.6875rem] text-emerald-600/70">{t("page.annonces.detail.listing_unavailable")}</p>
             </div>
           </div>
         )}

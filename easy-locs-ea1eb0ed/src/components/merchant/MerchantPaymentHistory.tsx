@@ -115,7 +115,7 @@ export default function MerchantPaymentHistory({
                         month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
                       })}
                       {tx.metadata?.merchant_qr_mode && (
-                        <span className="ml-1.5 text-[10px] font-semibold uppercase text-muted-foreground/70">
+                        <span className="ml-1.5 text-[0.625rem] font-semibold uppercase text-muted-foreground/70">
                           • {tx.metadata.merchant_qr_mode}
                         </span>
                       )}

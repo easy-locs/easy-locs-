@@ -162,15 +162,15 @@ export default function DriverWalletPanel({ className }: Props) {
       <div className="rounded-xl p-4 text-center"
         style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.1), hsl(var(--success) / 0.06))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
         <Wallet className="h-5 w-5 mx-auto mb-1" style={{ color: "hsl(var(--hud-cyan))" }} />
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Solde disponible</p>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Solde disponible</p>
         <p className="text-3xl font-extrabold tabular-nums mt-1" style={{ color: "hsl(var(--hud-cyan))" }}>
           {balance.available.toFixed(2)} <span className="text-sm">{balance.currency}</span>
         </p>
         <div className="flex justify-center gap-4 mt-2">
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
             Total gagné: {balance.totalEarned.toFixed(2)} {balance.currency}
           </span>
-          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
             Retiré: {balance.totalWithdrawn.toFixed(2)} {balance.currency}
           </span>
         </div>
@@ -179,7 +179,7 @@ export default function DriverWalletPanel({ className }: Props) {
       {/* Withdraw form */}
       <div className="rounded-xl p-3 space-y-2"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <ArrowDownToLine className="h-3 w-3 inline mr-1" /> Transférer vers Wallet
         </p>
         <div className="flex gap-2">
@@ -187,12 +187,12 @@ export default function DriverWalletPanel({ className }: Props) {
             placeholder={`Max ${balance.available.toFixed(2)}`} min={0} max={balance.available} step={0.01}
             className="h-8 text-xs flex-1" style={{ background: "hsl(var(--hud-border) / 0.06)" }} />
           <Button size="sm" onClick={handleWithdraw} disabled={submitting || !withdrawAmount}
-            className="text-[10px] h-8 px-3" style={{ background: "hsl(var(--success))", color: "#fff" }}>
+            className="text-[0.625rem] h-8 px-3" style={{ background: "hsl(var(--success))", color: "#fff" }}>
             {submitting ? <Loader2 className="h-3 w-3 animate-spin" /> : "Retirer"}
           </Button>
         </div>
         {balance.available < 5 && (
-          <p className="text-[10px] flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
+          <p className="text-[0.625rem] flex items-center gap-1" style={{ color: "hsl(var(--warning))" }}>
             <AlertTriangle className="h-3 w-3" /> Minimum 5 {balance.currency} pour un retrait
           </p>
         )}
@@ -201,7 +201,7 @@ export default function DriverWalletPanel({ className }: Props) {
       {/* Auto-payout threshold */}
       <div className="rounded-xl p-3"
         style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           ⚡ Seuil de paiement auto
         </p>
         <div className="flex items-center gap-3">
@@ -210,7 +210,7 @@ export default function DriverWalletPanel({ className }: Props) {
             className="flex-1 accent-[hsl(var(--hud-cyan))]" />
           <span className="text-sm font-bold w-16 text-right" style={{ color: "hsl(var(--hud-cyan))" }}>{threshold} {balance.currency}</span>
         </div>
-        <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+        <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
           Transfert automatique vers wallet quand vos gains atteignent ce seuil
         </p>
       </div>
@@ -218,19 +218,19 @@ export default function DriverWalletPanel({ className }: Props) {
       {/* Recent withdrawals */}
       {withdrawals.length > 0 && (
         <div className="space-y-1">
-          <p className="text-[10px] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
+          <p className="text-[0.625rem] font-semibold px-1" style={{ color: "hsl(var(--hud-text-dim))" }}>
             <Clock className="h-3 w-3 inline mr-1" /> Historique retraits
           </p>
           {withdrawals.map(w => (
             <div key={w.id} className="flex items-center justify-between px-3 py-2 rounded-lg"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.06)" }}>
               <div>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {new Date(w.created_at).toLocaleDateString("fr")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--success))" }}>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--success))" }}>
                   {w.amount.toFixed(2)} {balance.currency}
                 </span>
                 {w.status === "completed" ? (

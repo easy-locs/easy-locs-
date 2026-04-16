@@ -183,7 +183,7 @@ export function ContactProfileSheet({
                       <FileText className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                       <Link2 className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                     </div>
-                    <span className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                    <span className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                       {t("contact.media_links_docs")}
                     </span>
                   </div>
@@ -201,7 +201,7 @@ export function ContactProfileSheet({
                       ? <BellOff className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                       : <Bell className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
                     }
-                    <span className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                    <span className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                       {muted ? t("contact.unmute_notifications") : t("contact.mute_notifications")}
                     </span>
                   </div>
@@ -236,10 +236,10 @@ export function ContactProfileSheet({
                         : <TimerOff className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                       }
                       <div className="text-left min-w-0">
-                        <span className="text-[13px] font-medium block truncate" style={{ color: "hsl(var(--foreground))" }}>
+                        <span className="text-[0.8125rem] font-medium block truncate" style={{ color: "hsl(var(--foreground))" }}>
                           {t("contact.disappearing_messages")}
                         </span>
-                        <span className="text-[11px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                        <span className="text-[0.6875rem]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                           {disappearTTL !== "off"
                             ? EphemeralPolicy.getTimerOptions().find(o => o.value === disappearTTL)?.label || disappearTTL
                             : t("contact.disappearing_off")
@@ -257,14 +257,14 @@ export function ContactProfileSheet({
                   <div className="py-2">
                     <div className="flex items-center gap-3 mb-2">
                       <Users className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
-                      <span className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                      <span className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                         {t("contact.groups_in_common", { count: sharedGroups.length })}
                       </span>
                     </div>
                     <div className="space-y-1.5 pl-7">
                       {sharedGroups.slice(0, 5).map(g => (
                         <div key={g.id} className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0"
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[0.625rem] font-bold shrink-0"
                             style={{ background: "hsl(var(--card))", color: "hsl(var(--muted-foreground))" }}>
                             {(g.name || "G").charAt(0).toUpperCase()}
                           </div>
@@ -347,10 +347,10 @@ export function ContactProfileSheet({
                 <div className="flex items-center gap-3 py-2">
                   <Lock className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                    <p className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                       {t("contact.encryption")}
                     </p>
-                    <p className="text-[11px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                    <p className="text-[0.6875rem] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                       {t("contact.encryption_desc")}
                     </p>
                   </div>
@@ -365,7 +365,7 @@ export function ContactProfileSheet({
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <QrCode className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
-                      <span className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                      <span className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                         {t("contact.share_qr")}
                       </span>
                     </div>
@@ -379,10 +379,10 @@ export function ContactProfileSheet({
                   <div className="flex items-center gap-3 py-2">
                     <Shield className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--primary))" }} />
                     <div className="min-w-0">
-                      <p className="text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                      <p className="text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                         {t("contact.verified")}
                       </p>
-                      <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+                      <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                         {t("contact.member_since")} {vm.memberSince}
                       </p>
                     </div>
@@ -441,7 +441,7 @@ export function ContactProfileSheet({
               <div className="px-4 pb-8 pt-2">
                 <button
                   onClick={() => { haptic("medium"); onBlock(); }}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-medium transition-colors active:scale-[0.98] min-h-[48px]"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[0.875rem] font-medium transition-colors active:scale-[0.98] min-h-[48px]"
                   style={{ color: "hsl(var(--destructive))", background: "hsl(var(--destructive) / 0.06)" }}
                 >
                   <Ban className="h-4 w-4" />
@@ -474,7 +474,7 @@ function ContactAction({ icon, label, onClick, danger }: { icon: React.ReactNode
     >
       <div className="flex items-center gap-3 min-w-0">
         {icon}
-        <span className="text-[13px] font-medium truncate" style={{ color: danger ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>
+        <span className="text-[0.8125rem] font-medium truncate" style={{ color: danger ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>
           {label}
         </span>
       </div>
@@ -493,7 +493,7 @@ function ActionButton({ icon, label, onClick }: { icon: React.ReactNode; label: 
       >
         {icon}
       </button>
-      <span className="text-[10px] font-medium truncate max-w-[56px] text-center" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+      <span className="text-[0.625rem] font-medium truncate max-w-[56px] text-center" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
         {label}
       </span>
     </div>
@@ -514,8 +514,8 @@ function InfoCard({ children }: { children: React.ReactNode }) {
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="py-2 border-b last:border-0" style={{ borderColor: "hsl(var(--border) / 0.06)" }}>
-      <p className="text-[10px] font-medium mb-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{label}</p>
-      <p className={`text-[13px] font-medium truncate ${mono ? "font-mono tracking-wide" : ""}`} style={{ color: "hsl(var(--foreground))" }}>{value}</p>
+      <p className="text-[0.625rem] font-medium mb-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{label}</p>
+      <p className={`text-[0.8125rem] font-medium truncate ${mono ? "font-mono tracking-wide" : ""}`} style={{ color: "hsl(var(--foreground))" }}>{value}</p>
     </div>
   );
 }

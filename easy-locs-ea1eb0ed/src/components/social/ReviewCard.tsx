@@ -49,27 +49,27 @@ export function ReviewCard({
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-bold text-foreground">{reviewerName}</span>
               {verified && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold">Verified</span>
+                <span className="text-[0.5625rem] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 font-bold">Verified</span>
               )}
             </div>
             <StarRating value={rating} size={12} readOnly />
           </div>
         </div>
-        <span className="text-[10px] text-muted-foreground">{formattedDate}</span>
+        <span className="text-[0.625rem] text-muted-foreground">{formattedDate}</span>
       </div>
 
       {comment && (
-        <p className="text-[13px] text-muted-foreground leading-relaxed">{comment}</p>
+        <p className="text-[0.8125rem] text-muted-foreground leading-relaxed">{comment}</p>
       )}
 
       {merchantReply && (
         <div className="ml-4 pl-3 border-l-2 border-primary/20 space-y-1">
-          <p className="text-[10px] font-bold text-primary flex items-center gap-1">
+          <p className="text-[0.625rem] font-bold text-primary flex items-center gap-1">
             <MessageSquare className="w-3 h-3" /> Business Reply
           </p>
-          <p className="text-[12px] text-muted-foreground">{merchantReply}</p>
+          <p className="text-[0.75rem] text-muted-foreground">{merchantReply}</p>
           {repliedAt && (
-            <p className="text-[9px] text-muted-foreground/60">
+            <p className="text-[0.5625rem] text-muted-foreground/60">
               {(() => { try { return new Date(repliedAt).toLocaleDateString(); } catch { return ""; } })()}
             </p>
           )}
@@ -80,7 +80,7 @@ export function ReviewCard({
         {onHelpful && (
           <button
             onClick={onHelpful}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors"
           >
             <ThumbsUp className="w-3 h-3" /> Helpful
           </button>
@@ -88,7 +88,7 @@ export function ReviewCard({
         {onFlag && (
           <button
             onClick={onFlag}
-            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+            className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-destructive transition-colors"
           >
             <Flag className="w-3 h-3" /> Report
           </button>

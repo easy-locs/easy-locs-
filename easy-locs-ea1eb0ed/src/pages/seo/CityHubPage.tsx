@@ -10,7 +10,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, SEO_SERVICE_CATEGORIES, SEO_ACTIVITY_TYPES, isIndexableCity } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, MapPin, Briefcase, Compass, Star, Building2, Sparkles, Shield, CheckCircle, Users, Moon, Eye, Search } from "lucide-react";
@@ -238,7 +238,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
                 { icon: Star, title: "Concierge", desc: "Premium services", to: `/city/${city.slug}/concierge` },
                 { icon: Building2, title: "Marketplace", desc: "Local providers", to: `/marketplace/${city.slug}` },
               ].map(item => (
-                <Card key={item.title} className="border-border hover:border-primary/50 transition-colors">
+                <AppCard key={item.title} className="border-border hover:border-primary/50 transition-colors">
                   <CardContent className="p-5">
                     <Link to={item.to} className="block">
                       <item.icon className="h-8 w-8 text-primary mb-3" />
@@ -246,7 +246,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
                       <p className="text-sm text-muted-foreground">{item.desc}</p>
                     </Link>
                   </CardContent>
-                </Card>
+                </AppCard>
               ))}
             </div>
           </div>
@@ -274,7 +274,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {liveServices.map((svc: any) => (
                 <Link key={svc.id} to={svc.booking_slug ? `/book/${svc.booking_slug}` : "/explore"} className="group block">
-                  <Card className="border-border hover:border-accent/30 hover:shadow-lg transition-all h-full">
+                  <AppCard className="border-border hover:border-accent/30 hover:shadow-lg transition-all h-full">
                     <CardContent className="p-4 flex flex-col gap-2">
                       {Array.isArray(svc.photo_urls) && svc.photo_urls[0] && (
                         <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted mb-1">
@@ -290,7 +290,7 @@ const CityHubPage = ({ subPage = "overview" }: { subPage?: CitySubPage }) => {
                         <span className="text-xs text-accent font-semibold flex items-center gap-1">Book <ArrowRight className="h-3 w-3" /></span>
                       </div>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 </Link>
               ))}
             </div>

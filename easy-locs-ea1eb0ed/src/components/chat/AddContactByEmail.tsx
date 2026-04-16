@@ -204,13 +204,13 @@ export function AddContactByEmail(props: {
                 {generatePublicId(result.id)}
               </p>
               {result.email && (
-                <p className="text-[11px] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                <p className="text-[0.6875rem] truncate mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                   {result.email}
                 </p>
               )}
             </div>
             {saved && (
-              <div className="flex items-center gap-1 text-[10px] shrink-0" style={{ color: "hsl(var(--hud-success))" }}>
+              <div className="flex items-center gap-1 text-[0.625rem] shrink-0" style={{ color: "hsl(var(--hud-success))" }}>
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 <span>Saved</span>
               </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useProperties, useRealEstateStats } from "@/hooks/useRealEstate";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Search, Building2, MapPin, BedDouble, Ruler, Users, KeyRound, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -25,13 +25,13 @@ export default function PropertiesPage() {
             { label: "Leases", value: stats.leasesCount, icon: KeyRound, color: "text-emerald-500" },
             { label: "Overdue", value: stats.overduePayments, icon: AlertTriangle, color: stats.overduePayments > 0 ? "text-destructive" : "text-muted-foreground" },
           ].map((s) => (
-            <Card key={s.label} className="border-border/50">
+            <AppCard key={s.label} className="border-border/50">
               <CardContent className="p-3 text-center">
                 <s.icon className={`w-4 h-4 mx-auto ${s.color}`} />
                 <p className="text-lg font-bold mt-1">{s.value}</p>
-                <p className="text-[10px] text-muted-foreground">{s.label}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{s.label}</p>
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}
@@ -71,7 +71,7 @@ export default function PropertiesPage() {
       <div className="grid gap-3">
         {properties?.map((p) => (
           <Link key={p.id} to={`/real-estate/property/${p.id}`}>
-            <Card className="hover:shadow-md transition-all hover:border-primary/20 cursor-pointer border-border/50">
+            <AppCard className="hover:shadow-md transition-all hover:border-primary/20 cursor-pointer border-border/50">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
@@ -91,7 +91,7 @@ export default function PropertiesPage() {
                           <Ruler className="w-3 h-3" /> {p.surface} m²
                         </span>
                       )}
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge variant="outline" className="text-[0.625rem] capitalize">
                         {p.property_type}
                       </Badge>
                     </div>
@@ -99,12 +99,12 @@ export default function PropertiesPage() {
                   {p.monthly_rent ? (
                     <div className="text-right shrink-0">
                       <span className="text-sm font-bold text-primary">{p.monthly_rent}€</span>
-                      <span className="text-[10px] text-muted-foreground block">/month</span>
+                      <span className="text-[0.625rem] text-muted-foreground block">/month</span>
                     </div>
                   ) : null}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </Link>
         ))}
       </div>

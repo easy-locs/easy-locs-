@@ -120,7 +120,7 @@ export function MapPlaceCard({
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-bold text-foreground truncate">{placeName}</h3>
           {locationSub && (
-            <p className="text-[11px] text-muted-foreground truncate">{locationSub}</p>
+            <p className="text-[0.6875rem] text-muted-foreground truncate">{locationSub}</p>
           )}
         </div>
         {onDismiss && (
@@ -162,10 +162,10 @@ export function MapPlaceCard({
         <div className="px-4 py-2 border-t border-border/10">
           <div className="flex items-center gap-1.5 mb-1.5">
             <Store className="w-3 h-3 text-muted-foreground" />
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+            <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">
               {nearby.totalCount} nearby
             </span>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[0.625rem] text-muted-foreground">
               within {nearby.radiusKm < 1 ? `${Math.round(nearby.radiusKm * 1000)}m` : `${nearby.radiusKm}km`}
             </span>
           </div>
@@ -173,7 +173,7 @@ export function MapPlaceCard({
             {categories.slice(0, 6).map(([vertical, count]) => (
               <span
                 key={vertical}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 text-[10px] font-medium text-foreground"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 text-[0.625rem] font-medium text-foreground"
               >
                 <span>{VERTICAL_ICONS[vertical] ?? "📍"}</span>
                 <span className="capitalize">{vertical}</span>
@@ -225,7 +225,7 @@ export function MapPlaceCard({
                 <button
                   onClick={() => setActiveFilter(null)}
                   className={cn(
-                    "px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 transition-colors",
+                    "px-2 py-0.5 rounded-full text-[0.625rem] font-semibold shrink-0 transition-colors",
                     !activeFilter ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   )}
                 >
@@ -236,7 +236,7 @@ export function MapPlaceCard({
                     key={vertical}
                     onClick={() => setActiveFilter(activeFilter === vertical ? null : vertical)}
                     className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 capitalize transition-colors",
+                      "px-2 py-0.5 rounded-full text-[0.625rem] font-semibold shrink-0 capitalize transition-colors",
                       activeFilter === vertical ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                     )}
                   >
@@ -270,7 +270,7 @@ export function MapPlaceCard({
                   )}
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-foreground truncate">{m.name}</p>
-                    <p className="text-[10px] text-muted-foreground truncate capitalize">
+                    <p className="text-[0.625rem] text-muted-foreground truncate capitalize">
                       {m.vertical} · {m.distanceKm < 1 ? `${Math.round(m.distanceKm * 1000)}m` : `${m.distanceKm.toFixed(1)}km`}
                       {m.rating ? ` · ⭐ ${m.rating}` : ""}
                     </p>

@@ -348,25 +348,25 @@ export default function RestaurantPage() {
             </span>
           )}
           {shop?.subcategory && (
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full capitalize bg-primary/10 text-primary">{shop.subcategory}</span>
+            <span className="text-[0.6875rem] font-semibold px-2 py-0.5 rounded-full capitalize bg-primary/10 text-primary">{shop.subcategory}</span>
           )}
           {(shop?.region || shop?.city) && (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><MapPin className="w-3 h-3" />{shop.region}{shop.region && shop.city ? `, ${shop.city}` : shop.city}</span>
+            <span className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground"><MapPin className="w-3 h-3" />{shop.region}{shop.region && shop.city ? `, ${shop.city}` : shop.city}</span>
           )}
           {shop?.delivery_time_min != null && (
-            <span className="flex items-center gap-1 text-[11px] text-muted-foreground"><Clock className="w-3 h-3" />{shop.delivery_time_min}–{shop.delivery_time_max} min</span>
+            <span className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground"><Clock className="w-3 h-3" />{shop.delivery_time_min}–{shop.delivery_time_max} min</span>
           )}
         </div>
         {(shop?.delivery_fee != null || shop?.minimum_order != null) && (
           <div className="flex items-center gap-3 pt-1">
             {shop.delivery_fee != null && (
-              <span className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg font-medium bg-muted">
+              <span className="flex items-center gap-1 text-[0.6875rem] px-2.5 py-1 rounded-lg font-medium bg-muted">
                 <Truck className="w-3 h-3 text-muted-foreground" />
                 {shop.delivery_fee === 0 ? "Free delivery" : `AED ${shop.delivery_fee} delivery`}
               </span>
             )}
             {shop.minimum_order != null && shop.minimum_order > 0 && (
-              <span className="text-[11px] px-2.5 py-1 rounded-lg font-medium bg-muted">
+              <span className="text-[0.6875rem] px-2.5 py-1 rounded-lg font-medium bg-muted">
                 Min. AED {shop.minimum_order}
               </span>
             )}
@@ -493,14 +493,14 @@ export default function RestaurantPage() {
                       <div className="flex-1 min-w-0 py-0.5 flex flex-col justify-between">
                         <div>
                           <h3 className="text-sm font-semibold text-foreground line-clamp-2 break-words">{item.name}</h3>
-                          {item.description && <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
+                          {item.description && <p className="text-[0.6875rem] text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed">{item.description}</p>}
                           {(item.allergens?.length > 0 || item.dietary_labels?.length > 0) && (
                             <div className="flex flex-wrap gap-1 mt-1">
                               {(item.dietary_labels ?? []).slice(0, 3).map((d: string) => (
-                                <span key={d} className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full capitalize" style={{ background: "hsl(142 72% 29% / 0.1)", color: "hsl(142 72% 29%)" }}>{d.replace(/_/g, " ")}</span>
+                                <span key={d} className="text-[0.5625rem] font-semibold px-1.5 py-0.5 rounded-full capitalize" style={{ background: "hsl(142 72% 29% / 0.1)", color: "hsl(142 72% 29%)" }}>{d.replace(/_/g, " ")}</span>
                               ))}
                               {(item.allergens ?? []).length > 0 && (
-                                <span className="inline-flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 72% 51% / 0.1)", color: "hsl(0 72% 51%)" }}>
+                                <span className="inline-flex items-center gap-0.5 text-[0.5625rem] font-semibold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(0 72% 51% / 0.1)", color: "hsl(0 72% 51%)" }}>
                                   <AlertTriangle className="w-2.5 h-2.5" /> {(item.allergens ?? []).length} allergen{(item.allergens ?? []).length > 1 ? "s" : ""}
                                 </span>
                               )}
@@ -511,10 +511,10 @@ export default function RestaurantPage() {
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-bold text-foreground">{formatMoneyByCountry(Number(item.price), shop?.country, shop?.currency)}</span>
                             {(item.calories_kcal ?? item.calories) > 0 && (
-                              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground"><Flame className="w-2.5 h-2.5" />{item.calories_kcal ?? item.calories} kcal</span>
+                              <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground"><Flame className="w-2.5 h-2.5" />{item.calories_kcal ?? item.calories} kcal</span>
                             )}
                             {item.spice_level > 0 && (
-                              <span className="text-[10px]">{"🌶️".repeat(Math.min(item.spice_level, 5))}</span>
+                              <span className="text-[0.625rem]">{"🌶️".repeat(Math.min(item.spice_level, 5))}</span>
                             )}
                           </div>
                           {qty === 0 ? (
@@ -581,7 +581,7 @@ export default function RestaurantPage() {
               </motion.div>
               <div className="text-left">
                 <span className="text-sm font-bold text-white">{itemCount} item{itemCount > 1 ? "s" : ""}</span>
-                <p className="text-[10px] text-white/50">Tap to checkout</p>
+                <p className="text-[0.625rem] text-white/50">Tap to checkout</p>
               </div>
             </div>
             <span className="text-sm font-bold tabular-nums" style={{ color: "hsl(var(--accent))" }}>{formatMoneyByCountry(total, shop?.country, shop?.currency)} →</span>

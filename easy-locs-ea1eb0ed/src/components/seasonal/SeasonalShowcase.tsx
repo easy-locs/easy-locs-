@@ -9,7 +9,7 @@ import {
   Loader2, Users, Moon, TrendingUp, BarChart3, Power,
   DollarSign, Percent, Calendar,
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -279,7 +279,7 @@ function StatMini({ icon, label, value, accent }: { icon: React.ReactNode; label
       <div className={`${accent} shrink-0`}>{icon}</div>
       <div>
         <p className={`text-lg font-bold ${accent}`}>{value}</p>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{label}</p>
+        <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider">{label}</p>
       </div>
     </div>
   );
@@ -312,7 +312,7 @@ function MiniCalendar({ bookings, t }: { bookings: BookingForListing[]; t: (k: s
         <button onClick={() => setMonth(new Date(y, m - 1))} className="p-0.5 rounded hover:bg-muted">
           <ChevronLeft className="h-3 w-3 text-muted-foreground" />
         </button>
-        <span className="text-[10px] font-medium text-muted-foreground capitalize">
+        <span className="text-[0.625rem] font-medium text-muted-foreground capitalize">
           {month.toLocaleDateString("fr-FR", { month: "short", year: "numeric" })}
         </span>
         <button onClick={() => setMonth(new Date(y, m + 1))} className="p-0.5 rounded hover:bg-muted">
@@ -321,10 +321,10 @@ function MiniCalendar({ bookings, t }: { bookings: BookingForListing[]; t: (k: s
       </div>
       <div className="grid grid-cols-7 gap-px">
         {dayNames.map((d, i) => (
-          <div key={i} className="text-[10px] text-center text-muted-foreground font-medium">{d}</div>
+          <div key={i} className="text-[0.625rem] text-center text-muted-foreground font-medium">{d}</div>
         ))}
         {days.map((day, i) => (
-          <div key={i} className={`text-[10px] text-center leading-[18px] rounded-sm ${
+          <div key={i} className={`text-[0.625rem] text-center leading-[18px] rounded-sm ${
             !day ? "" :
             isBooked(day) ? "bg-accent/20 text-accent font-semibold" :
             isToday(day) ? "bg-primary/10 text-primary font-bold" :
@@ -358,7 +358,7 @@ function ListingCard({
   const publicUrl = buildAppUrl(`/listing/${listing.slug}`);
 
   return (
-    <Card className={`overflow-hidden group hover:shadow-md transition-all ${!listing.active ? "opacity-75" : ""}`}>
+    <AppCard className={`overflow-hidden group hover:shadow-md transition-all ${!listing.active ? "opacity-75" : ""}`}>
       {/* Photo */}
       <div className="relative h-40 bg-muted overflow-hidden">
         {photo ? (
@@ -373,7 +373,7 @@ function ListingCard({
         <button
           onClick={(e) => { e.stopPropagation(); onToggleActive(); }}
           disabled={toggling}
-          className={`absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all backdrop-blur-sm ${
+          className={`absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full text-[0.625rem] font-semibold transition-all backdrop-blur-sm ${
             listing.active
               ? "bg-emerald-500/90 text-white hover:bg-emerald-600/90"
               : "bg-muted/90 text-muted-foreground hover:bg-muted"
@@ -397,7 +397,7 @@ function ListingCard({
 
         {/* Pending badge */}
         {analytics.pendingRequests > 0 && (
-          <div className="absolute bottom-2 right-2 bg-warning text-warning-foreground px-2 py-0.5 rounded-full text-[10px] font-bold animate-pulse">
+          <div className="absolute bottom-2 right-2 bg-warning text-warning-foreground px-2 py-0.5 rounded-full text-[0.625rem] font-bold animate-pulse">
             {analytics.pendingRequests} en attente
           </div>
         )}
@@ -434,15 +434,15 @@ function ListingCard({
         <div className="grid grid-cols-3 gap-2 bg-muted/30 rounded-lg p-2">
           <div className="text-center">
             <p className="text-xs font-bold text-foreground">{analytics.totalBookings}</p>
-            <p className="text-[10px] text-muted-foreground">Réservations</p>
+            <p className="text-[0.625rem] text-muted-foreground">Réservations</p>
           </div>
           <div className="text-center border-x border-border/50">
             <p className="text-xs font-bold text-foreground">{analytics.occupancyRate}%</p>
-            <p className="text-[10px] text-muted-foreground">Occupation</p>
+            <p className="text-[0.625rem] text-muted-foreground">Occupation</p>
           </div>
           <div className="text-center">
             <p className="text-xs font-bold text-foreground">{analytics.totalRevenue > 0 ? `${analytics.totalRevenue.toLocaleString()}€` : "—"}</p>
-            <p className="text-[10px] text-muted-foreground">Revenus</p>
+            <p className="text-[0.625rem] text-muted-foreground">Revenus</p>
           </div>
         </div>
 
@@ -454,17 +454,17 @@ function ListingCard({
         {/* Next booking */}
         {nextBooking ? (
           <div className="bg-accent/5 border border-accent/20 rounded-lg p-2">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">
+            <p className="text-[0.625rem] text-muted-foreground uppercase tracking-wider font-medium mb-0.5">
               {t("page.seasonal.next_booking") || "Prochaine réservation"}
             </p>
             <p className="text-xs font-medium text-foreground">{nextBooking.guest_name}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {nextBooking.check_in} → {nextBooking.check_out}
             </p>
           </div>
         ) : (
           <div className="bg-muted/30 rounded-lg p-2">
-            <p className="text-[10px] text-muted-foreground italic text-center">
+            <p className="text-[0.625rem] text-muted-foreground italic text-center">
               {t("page.seasonal.no_upcoming") || "Aucune réservation à venir"}
             </p>
           </div>
@@ -486,7 +486,7 @@ function ListingCard({
           </Button>
         </div>
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }
 

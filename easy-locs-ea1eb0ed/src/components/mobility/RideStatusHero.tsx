@@ -82,13 +82,13 @@ export function RideStatusHero({ status, eta, jobType }: Props) {
               {eta.etaPickupMinutes ?? eta.etaDestinationMinutes ?? "—"} min
             </span>
             {eta.etaRangeMin != null && eta.etaRangeMax != null && (
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.625rem] text-muted-foreground">
                 ({eta.etaRangeMin}–{eta.etaRangeMax})
               </span>
             )}
           </div>
           {eta.badge && (
-            <span className="text-[9px] text-amber-500 font-medium">{eta.badge}</span>
+            <span className="text-[0.5625rem] text-amber-500 font-medium">{eta.badge}</span>
           )}
         </div>
       )}

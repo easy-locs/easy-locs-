@@ -121,12 +121,12 @@ export default function ConversationList({ threads, loading, selectedThread, onS
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-[13px] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-bold" : "font-medium"}`}
+                      <p className={`text-[0.8125rem] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-bold" : "font-medium"}`}
                         style={{ color: "hsl(var(--foreground))" }}>
                         {identity.displayName}
                       </p>
                       {thread.lastMessageTime && (
-                        <span className="text-[10px] shrink-0 tabular-nums" style={{
+                        <span className="text-[0.625rem] shrink-0 tabular-nums" style={{
                           color: thread.unreadCount > 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.4)",
                         }}>
                           {formatOrbitTimestamp(thread.lastMessageTime)}
@@ -134,12 +134,12 @@ export default function ConversationList({ threads, loading, selectedThread, onS
                       )}
                     </div>
                     <div className="flex items-center justify-between gap-2 mt-0.5">
-                      <p className={`text-[11px] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-medium" : ""}`}
+                      <p className={`text-[0.6875rem] line-clamp-1 break-words ${thread.unreadCount > 0 ? "font-medium" : ""}`}
                         style={{ color: thread.unreadCount > 0 ? "hsl(var(--foreground) / 0.7)" : "hsl(var(--muted-foreground) / 0.45)" }}>
                         {formatConversationPreview(thread.lastMessage, thread.email)}
                       </p>
                       {thread.unreadCount > 0 && (
-                        <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1 text-[10px] font-bold shrink-0"
+                        <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full px-1 text-[0.625rem] font-bold shrink-0"
                           style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                           {thread.unreadCount > 99 ? "99+" : thread.unreadCount}
                         </span>

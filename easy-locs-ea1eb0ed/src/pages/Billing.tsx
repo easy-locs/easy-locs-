@@ -157,7 +157,7 @@ const Billing = () => {
           {/* FREE card */}
           <div className={`relative bg-card rounded-xl p-5 shadow-card border transition-all ${currentTier === "free" && !isSubscribed ? "border-success ring-2 ring-success/20" : "border-border"}`}>
             {currentTier === "free" && !isSubscribed && (
-              <Badge className="absolute -top-2.5 left-4 bg-success text-success-foreground text-[10px]">{t("page.billing.your_plan") || "Your plan"}</Badge>
+              <Badge className="absolute -top-2.5 left-4 bg-success text-success-foreground text-[0.625rem]">{t("page.billing.your_plan") || "Your plan"}</Badge>
             )}
             <div className="flex items-center gap-2 mb-1">
               {TIER_ICONS.free}
@@ -190,13 +190,13 @@ const Billing = () => {
             return (
               <div key={plan.key} className={`relative bg-card rounded-xl p-5 shadow-card border transition-all ${isCurrent ? "border-success ring-2 ring-success/20" : tierColor}`}>
                 {display.savings && (
-                  <span className="absolute -top-2.5 right-4 bg-gradient-gold text-accent-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                  <span className="absolute -top-2.5 right-4 bg-gradient-gold text-accent-foreground text-[0.625rem] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
                     <Sparkles className="h-2.5 w-2.5" />
                     {display.savings}
                   </span>
                 )}
                 {isCurrent && (
-                  <Badge className="absolute -top-2.5 left-4 bg-success text-success-foreground text-[10px]">{t("page.billing.your_plan") || "Your plan"}</Badge>
+                  <Badge className="absolute -top-2.5 left-4 bg-success text-success-foreground text-[0.625rem]">{t("page.billing.your_plan") || "Your plan"}</Badge>
                 )}
                 <div className="flex items-center gap-2 mb-1">
                   {TIER_ICONS[plan.tier]}

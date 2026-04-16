@@ -16,7 +16,7 @@ export default function YouPrivacyPage({ onBack }: Props) {
     <div className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]">
       <div className="min-w-0 flex-1">
         <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        {desc && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
+        {desc && <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -41,7 +41,7 @@ export default function YouPrivacyPage({ onBack }: Props) {
       </div>
 
       <div className="mt-4 mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.display_name_mode")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.display_name_mode")}</p>
         <div className="grid grid-cols-1 gap-1.5">
           {displayNameOptions.map(opt => (
             <button key={opt.value} onClick={() => { updatePrivacy({ displayNameMode: opt.value as any }); haptic("selection"); }}
@@ -55,7 +55,7 @@ export default function YouPrivacyPage({ onBack }: Props) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium" style={{ color: "hsl(var(--foreground))" }}>{t(opt.labelKey)}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t(opt.descKey)}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{t(opt.descKey)}</p>
               </div>
             </button>
           ))}
@@ -77,7 +77,7 @@ export default function YouPrivacyPage({ onBack }: Props) {
         <Row label={t("orbit.you.link_previews")} desc={t("orbit.you.link_previews_desc")}><Switch checked={privacy.linkPreviews} onCheckedChange={(v) => updatePrivacy({ linkPreviews: v })} /></Row>
       </div>
       <Separator className="my-4" />
-      <p className="text-[10px] text-center" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{t("orbit.you.changes_apply")}</p>
+      <p className="text-[0.625rem] text-center" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>{t("orbit.you.changes_apply")}</p>
     </div>
   );
 }

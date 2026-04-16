@@ -69,7 +69,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
             </div>
           )}
           {entity.isSponsored && (
-            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.9)", color: "white" }}>
+            <span className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[0.625rem] font-bold" style={{ background: "hsl(var(--accent) / 0.9)", color: "white" }}>
               Ad
             </span>
           )}
@@ -78,11 +78,11 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
           <p className="text-xs font-bold text-foreground line-clamp-1 break-words">{name}</p>
           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
             {entity.rating != null && entity.rating > 0 && (
-              <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
+              <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
                 <Star className="w-2.5 h-2.5 fill-current" />{entity.rating.toFixed(1)}
               </span>
             )}
-            {dist && <span className="text-[10px] text-muted-foreground">{dist}</span>}
+            {dist && <span className="text-[0.625rem] text-muted-foreground">{dist}</span>}
           </div>
         </div>
       </button>
@@ -103,7 +103,7 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
     >
       {rank != null && (
         <div className="w-5 flex items-center justify-center shrink-0">
-          <span className="text-[11px] font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>
+          <span className="text-[0.6875rem] font-extrabold tabular-nums" style={{ color: rank <= 3 ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))" }}>
             {rank}
           </span>
         </div>
@@ -121,23 +121,23 @@ function RadarResultCard({ entity, variant = "row", rank, selected, onSelect, on
         <div className="flex items-center gap-1.5">
           <p className="text-sm font-bold text-foreground line-clamp-2 leading-snug break-words min-w-0">{name}</p>
           {entity.isSponsored && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
+            <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[0.625rem] font-bold" style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}>
               Ad
             </span>
           )}
         </div>
         {cat && (
-          <p className="text-[11px] text-muted-foreground capitalize mt-0.5 line-clamp-1 break-words">{cat.replace(/_/g, " ")}</p>
+          <p className="text-[0.6875rem] text-muted-foreground capitalize mt-0.5 line-clamp-1 break-words">{cat.replace(/_/g, " ")}</p>
         )}
         <div className="flex items-center gap-2 mt-1">
           {entity.rating != null && entity.rating > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
+            <span className="flex items-center gap-0.5 text-[0.625rem] font-semibold" style={{ color: "hsl(168 72% 44%)" }}>
               <Star className="w-3 h-3 fill-current" />{entity.rating.toFixed(1)}
               {entity.reviewsCount ? <span className="text-muted-foreground font-normal">({entity.reviewsCount})</span> : null}
             </span>
           )}
           {dist && (
-            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+            <span className="flex items-center gap-0.5 text-[0.625rem] text-muted-foreground">
               <MapPin className="w-2.5 h-2.5" />{dist}
             </span>
           )}

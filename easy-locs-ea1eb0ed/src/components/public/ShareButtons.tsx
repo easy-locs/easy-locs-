@@ -20,10 +20,11 @@ interface ShareButtonsProps {
   title: string;
   version?: string | number;
   inline?: boolean;
+  compact?: boolean;
   referralCode?: string;
 }
 
-export default function ShareButtons({ type, slug, title, version, inline, referralCode: referralCodeProp }: ShareButtonsProps) {
+export default function ShareButtons({ type, slug, title, version, inline, compact, referralCode: referralCodeProp }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [showWaPreview, setShowWaPreview] = useState(false);
   const { user } = useAuth();
@@ -96,8 +97,9 @@ export default function ShareButtons({ type, slug, title, version, inline, refer
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2 text-xs">
-          <Share2 className="h-3.5 w-3.5" /> Share
+        <Button variant="outline" size={compact ? "icon" : "sm"} className={compact ? "h-8 w-8" : "gap-2 text-xs"}>
+          <Share2 className="h-3.5 w-3.5" />
+          {!compact && <span>Share</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="end">

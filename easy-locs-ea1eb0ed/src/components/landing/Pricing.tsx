@@ -148,7 +148,7 @@ const Pricing = () => {
             >
               <div className="text-accent">{s.icon}</div>
               <span className="text-xs font-bold text-foreground">{s.label}</span>
-              <span className="text-[10px] text-muted-foreground leading-tight">{s.sub}</span>
+              <span className="text-[0.625rem] text-muted-foreground leading-tight">{s.sub}</span>
             </motion.div>
           ))}
         </motion.div>
@@ -166,7 +166,7 @@ const Pricing = () => {
               >
                 {v === "monthly" ? (t("pricing.monthly") || "Monthly") : (t("pricing.annual") || "Annual")}
                 {v === "annual" && interval === "annual" && (
-                  <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-scale-in">
+                  <span className="absolute -top-2 -right-1 bg-success text-success-foreground text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-scale-in">
                     -17%
                   </span>
                 )}
@@ -204,7 +204,7 @@ const Pricing = () => {
               >
                 {/* Badge */}
                 {tier.badge && (
-                  <div className={`text-center py-1.5 text-[10px] font-bold uppercase tracking-wider ${
+                  <div className={`text-center py-1.5 text-[0.625rem] font-bold uppercase tracking-wider ${
                     isHighlight
                       ? "bg-primary text-primary-foreground"
                       : tier.name === "Company"
@@ -228,7 +228,7 @@ const Pricing = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-foreground text-lg leading-none">{tier.name}</h3>
-                      <p className="text-[11px] text-muted-foreground mt-0.5">{tier.audience}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground mt-0.5">{tier.audience}</p>
                     </div>
                   </div>
 
@@ -252,12 +252,12 @@ const Pricing = () => {
                       <span className="text-muted-foreground text-sm">/{isFree ? (t("pricing.forever") || "forever") : intLabel}</span>
                     </div>
                     {interval === "annual" && tier.monthly > 0 && (
-                      <p className="text-[11px] text-success font-semibold mt-1 flex items-center gap-1">
+                      <p className="text-[0.6875rem] text-success font-semibold mt-1 flex items-center gap-1">
                         <Sparkles className="h-3 w-3" /> {t("pricing.save") || "Save"} {Math.round((1 - tier.annual / (tier.monthly * 12)) * 100)}% {t("pricing.vs_monthly") || "vs monthly"}
                       </p>
                     )}
                     {isFree && (
-                      <p className="text-[11px] text-muted-foreground mt-1">{t("pricing.no_card") || "No credit card required"}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground mt-1">{t("pricing.no_card") || "No credit card required"}</p>
                     )}
                   </div>
 

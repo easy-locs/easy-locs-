@@ -83,7 +83,7 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -91,7 +91,7 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["courses", "certifications", "leaderboard"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "courses" ? "📚 Cours" : v === "certifications" ? "🏅 Certifications" : "🏆 Classement"}
           </button>
@@ -111,10 +111,10 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
                   <span className="text-lg">{c.badge}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.title}</p>
-                      {c.mandatory && <span className="text-[10px] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>Obligatoire</span>}
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.title}</p>
+                      {c.mandatory && <span className="text-[0.625rem] font-bold px-1 py-0.5 rounded" style={{ background: "hsl(var(--destructive) / 0.1)", color: "hsl(var(--destructive))" }}>Obligatoire</span>}
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📂 {c.category} • ⏱️ {c.duration}min • {c.completedModules}/{c.modules} modules • 🎯 {c.xpReward} XP
                     </p>
                   </div>
@@ -122,7 +122,7 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
                     {done ? (
                       <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(var(--success))" }} />
                     ) : (
-                      <p className="text-[10px] font-bold" style={{ color: `hsl(var(${lvl.color}))` }}>{pct}%</p>
+                      <p className="text-[0.625rem] font-bold" style={{ color: `hsl(var(${lvl.color}))` }}>{pct}%</p>
                     )}
                   </div>
                 </div>
@@ -148,15 +148,15 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
                   <span className="text-lg">{c.badge}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${statusColor}) / 0.1)`, color: `hsl(var(${statusColor}))` }}>{statusLabel}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       👤 {c.driverName} • 📅 Expire: {c.expiresAt.toLocaleDateString("fr")}
                     </p>
                   </div>
-                  <p className="text-[11px] font-bold shrink-0" style={{ color: c.score >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
+                  <p className="text-[0.6875rem] font-bold shrink-0" style={{ color: c.score >= 90 ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                     {c.score}/100
                   </p>
                 </div>
@@ -171,17 +171,17 @@ export default function DriverTrainingAcademy({ orgId, className }: { orgId: str
           {LEADERBOARD.map(l => (
             <div key={l.rank} className="rounded-xl p-3 flex items-center gap-3"
               style={{ background: l.rank <= 3 ? "hsl(var(--warning) / 0.03)" : "hsl(var(--muted) / 0.2)", border: `1px solid ${l.rank <= 3 ? "hsl(var(--warning) / 0.12)" : "hsl(var(--border) / 0.08)"}` }}>
-              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[11px]"
+              <div className="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[0.6875rem]"
                 style={{ background: l.rank === 1 ? "hsl(var(--warning) / 0.15)" : "hsl(var(--muted) / 0.5)", color: l.rank === 1 ? "hsl(var(--warning))" : "hsl(var(--muted-foreground))" }}>
                 {l.rank <= 3 ? ["🥇", "🥈", "🥉"][l.rank - 1] : `#${l.rank}`}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.name}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{l.name}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                   📚 {l.completedCourses} cours • 🎖️ {l.badges.join(" ")} • 📊 {l.level}
                 </p>
               </div>
-              <p className="text-[11px] font-bold shrink-0" style={{ color: "hsl(var(--warning))" }}>
+              <p className="text-[0.6875rem] font-bold shrink-0" style={{ color: "hsl(var(--warning))" }}>
                 {l.xp.toLocaleString()} XP
               </p>
             </div>

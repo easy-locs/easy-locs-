@@ -309,7 +309,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full" style={{ background: GOLD }} />
-                        <span className="text-[10px] font-bold uppercase tracking-[0.15em]" style={{ color: GOLD }}>
+                        <span className="text-[0.625rem] font-bold uppercase tracking-[0.15em]" style={{ color: GOLD }}>
                           {getContextLabel(request.contextType)}
                         </span>
                       </div>
@@ -343,7 +343,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           <p className="text-sm font-bold truncate" style={{ color: "hsl(0 0% 100%)" }}>
                             {request.recipientName || "Recipient"}
                           </p>
-                          <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
+                          <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.45)" }}>
                             {request.subtitle || request.title || "Easy-Locs Wallet"}
                           </p>
                         </div>
@@ -351,7 +351,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                           <p className="text-xl font-extrabold tabular-nums" style={{ color: "hsl(0 0% 100%)" }}>
                             {formatMoney(request.amount, request.currency || "AED")}
                           </p>
-                          <p className="text-[10px] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
+                          <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(0 0% 100% / 0.35)" }}>
                             {request.currency || "AED"}
                           </p>
                         </div>
@@ -360,7 +360,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
 
                     <div className="flex items-center gap-2 px-1 mb-4">
                       <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(152 60% 42%)" }} />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[0.625rem] text-muted-foreground">
                         Secured by Easy-Locs Wallet · Instant transfer
                       </span>
                     </div>
@@ -418,7 +418,7 @@ export function UnifiedPaymentProvider({ children }: { children: ReactNode }) {
                       {formatMoney(request.amount, request.currency || "AED")} to {request.recipientName || "recipient"}
                     </p>
                     {success.transactionId && (
-                      <p className="text-[10px] text-muted-foreground/60 font-mono mt-2">
+                      <p className="text-[0.625rem] text-muted-foreground/60 font-mono mt-2">
                         Ref: {success.transactionId.slice(0, 16)}…
                       </p>
                     )}

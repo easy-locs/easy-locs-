@@ -151,7 +151,7 @@ export default function WalletRequestPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
         >
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.requestFrom") || "Request from"}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.requestFrom") || "Request from"}</p>
 
           <AnimatePresence mode="wait">
             {resolvedTarget && selectedContact ? (
@@ -174,12 +174,12 @@ export default function WalletRequestPage() {
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{resolvedTarget.name}</p>
                     {selectedContact.phone && (
-                      <p className="text-[11px] text-muted-foreground truncate">{selectedContact.phone}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground truncate">{selectedContact.phone}</p>
                     )}
                   </div>
                   <button
                     onClick={clearRecipient}
-                    className="shrink-0 text-[11px] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
+                    className="shrink-0 text-[0.6875rem] font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform bg-muted/50 text-foreground"
                   >
                     {t("wallet.change") || "Change"}
                   </button>
@@ -214,7 +214,7 @@ export default function WalletRequestPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount") || "Amount"}</p>
+          <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-2">{t("wallet.amount") || "Amount"}</p>
           <div className="rounded-2xl bg-card border border-border/10 p-5 text-center">
             <div className="flex items-center justify-center gap-3">
               <span className="text-lg text-muted-foreground font-bold shrink-0">{currency}</span>
@@ -247,7 +247,7 @@ export default function WalletRequestPage() {
               <button
                 key={a}
                 onClick={() => setAmount(String(a))}
-                className="flex-1 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-95"
+                className="flex-1 py-2 rounded-xl text-[0.6875rem] font-bold transition-all active:scale-95"
                 style={{
                   background: Number(amount) === a ? "hsl(var(--primary))" : "hsl(var(--muted) / 0.5)",
                   color: Number(amount) === a ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
@@ -305,7 +305,7 @@ export default function WalletRequestPage() {
           </button>
         </motion.div>
 
-        <p className="text-[10px] text-muted-foreground/60 text-center leading-relaxed">
+        <p className="text-[0.625rem] text-muted-foreground/60 text-center leading-relaxed">
           {t("wallet.requestNote") || "The recipient will receive a notification and can approve the payment from their wallet."}
         </p>
       </div>

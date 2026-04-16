@@ -49,14 +49,14 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
           <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
             <MessageCircle className="w-3.5 h-3.5" style={{ color: "hsl(var(--primary))" }} />
           </div>
-          <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/60">
+          <h3 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/60">
             {t("dashboard.recent_messages")}
           </h3>
           <E2EEBadge compact />
         </div>
         <button
           onClick={handleSeeAll}
-          className="flex items-center gap-0.5 text-[10px] font-bold bg-transparent border-none cursor-pointer"
+          className="flex items-center gap-0.5 text-[0.625rem] font-bold bg-transparent border-none cursor-pointer"
           style={{ color: "hsl(var(--accent))" }}
         >
           {t("dashboard.see_all")} <ChevronRight className="w-3 h-3" />
@@ -77,7 +77,7 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
             className="flex items-center gap-3 px-4 py-3 active:bg-muted/20 transition-colors w-full text-left bg-transparent border-none cursor-pointer"
             style={idx < recent.length - 1 ? { borderBottom: "1px solid hsl(var(--border) / 0.05)" } : undefined}
           >
-            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
+            <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-[0.6875rem] font-bold"
               style={{
                 background: thread.avatarUrl ? undefined : "hsl(var(--primary) / 0.1)",
                 color: "hsl(var(--primary))",
@@ -89,11 +89,11 @@ function OrbitPreviewWidget({ onNavigate }: Props) {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-foreground line-clamp-1 break-words leading-tight">{thread.name}</p>
-              <p className="text-[10px] text-muted-foreground/60 line-clamp-1 break-words leading-tight mt-0.5">{thread.lastMessageContent}</p>
+              <p className="text-[0.625rem] text-muted-foreground/60 line-clamp-1 break-words leading-tight mt-0.5">{thread.lastMessageContent}</p>
             </div>
             {(thread.unreadCount ?? 0) > 0 && (
               <span
-                className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold px-1 shrink-0"
+                className="min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[0.625rem] font-bold px-1 shrink-0"
                 style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
               >
                 {thread.unreadCount}

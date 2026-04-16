@@ -47,7 +47,7 @@ export default function MerchantInventoryAlertsPage() {
               <div key={row.id} className="rounded-2xl border border-border/20 bg-card p-4">
                 <p className="text-sm font-bold text-foreground">{row.name}</p>
                 <p className="text-xs text-muted-foreground mt-1">Stock {Number(row.stock_quantity ?? 0)}</p>
-                <span className={`inline-block mt-2 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                <span className={`inline-block mt-2 rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold ${
                   Number(row.stock_quantity ?? 0) <= 0
                     ? "bg-destructive/10 text-destructive"
                     : "bg-amber-500/10 text-amber-500"

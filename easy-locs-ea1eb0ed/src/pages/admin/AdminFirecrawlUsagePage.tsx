@@ -159,7 +159,7 @@ export default function AdminFirecrawlUsagePage() {
                       <span className="text-xs font-medium text-foreground">{row.label}</span>
                       <span className="text-xs text-muted-foreground">{row.total} calls</span>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px]">
+                    <div className="flex items-center gap-3 text-[0.6875rem]">
                       <span className="text-emerald-400">{row.success} ok</span>
                       <span className={row.failure > 0 ? "text-red-400" : "text-muted-foreground"}>{row.failure} fail</span>
                       <span className="text-muted-foreground ml-auto">${(row.total * COST_PER_CALL).toFixed(2)}</span>
@@ -182,7 +182,7 @@ export default function AdminFirecrawlUsagePage() {
                       <span className="text-xs font-mono text-foreground truncate max-w-[180px]">{user.userId.slice(0, 8)}…</span>
                       <span className="text-xs text-muted-foreground">{user.total} calls</span>
                     </div>
-                    <div className="flex items-center gap-3 text-[11px]">
+                    <div className="flex items-center gap-3 text-[0.6875rem]">
                       <span className="text-emerald-400">{formatRate(user.success, user.total)}</span>
                       <span className="text-muted-foreground">{(user.totalTextLength / 1024).toFixed(0)} KB extracted</span>
                       <span className="text-muted-foreground ml-auto">${(user.total * COST_PER_CALL).toFixed(2)}</span>
@@ -201,7 +201,7 @@ export default function AdminFirecrawlUsagePage() {
 function SummaryCard({ title, value, accent }: { title: string; value: string; accent?: string }) {
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 text-center">
-      <p className="text-[11px] text-muted-foreground">{title}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{title}</p>
       <p className={`text-lg font-bold ${accent ?? "text-foreground"}`}>{value}</p>
     </div>
   );

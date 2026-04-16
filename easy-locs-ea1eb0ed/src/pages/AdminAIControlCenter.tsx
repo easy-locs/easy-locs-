@@ -1,7 +1,7 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useEffect, useState, useCallback } from "react";
 import { useVisibilityAwareInterval } from "@/hooks/useVisibilityAwareInterval";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -93,7 +93,7 @@ function severityBadge(severity: "info" | "warning" | "critical") {
     warning: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
     critical: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   };
-  return <Badge className={`text-[10px] ${styles[severity]}`}>{severity}</Badge>;
+  return <Badge className={`text-[0.625rem] ${styles[severity]}`}>{severity}</Badge>;
 }
 
 function timeAgo(ts: number): string {
@@ -161,44 +161,44 @@ export default function AdminAIControlCenter() {
 
       {/* System Health Overview */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <Card>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold tabular-nums" style={{ color: healthColor(systemHealth) }}>
               {systemHealth}
             </div>
             <div className="text-xs text-muted-foreground mt-1">System Health</div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(var(--primary))" }}>
               {orch?.orchestrator.totalEngines ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Total Engines</div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold tabular-nums" style={{ color: "hsl(150 70% 40%)" }}>
               {orch?.orchestrator.runningEngines ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Running</div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold tabular-nums">{orch?.totalTicks ?? 0}</div>
             <div className="text-xs text-muted-foreground mt-1">Total Ticks</div>
           </CardContent>
-        </Card>
-        <Card>
+        </AppCard>
+        <AppCard>
           <CardContent className="p-4 text-center">
             <div className="text-3xl font-extrabold tabular-nums" style={{ color: (orch?.totalErrors ?? 0) > 0 ? "hsl(0 70% 55%)" : "hsl(150 70% 40%)" }}>
               {orch?.totalErrors ?? 0}
             </div>
             <div className="text-xs text-muted-foreground mt-1">Total Errors</div>
           </CardContent>
-        </Card>
+        </AppCard>
       </div>
 
       <Tabs defaultValue="agents" className="space-y-4">
@@ -220,7 +220,7 @@ export default function AdminAIControlCenter() {
             const Icon = AGENT_ICONS[agent.role] ?? Activity;
             const color = AGENT_COLORS[agent.role] ?? "hsl(var(--foreground))";
             return (
-              <Card key={agent.role}>
+              <AppCard key={agent.role}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div
@@ -232,7 +232,7 @@ export default function AdminAIControlCenter() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">{agent.label}</span>
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-[0.625rem]">
                           {agent.runningCount}/{agent.engineCount} engines
                         </Badge>
                       </div>
@@ -252,11 +252,11 @@ export default function AdminAIControlCenter() {
                       <div className="text-lg font-bold" style={{ color: healthColor(agent.healthScore) }}>
                         {agent.healthScore}
                       </div>
-                      <div className="text-[10px] text-muted-foreground">health</div>
+                      <div className="text-[0.625rem] text-muted-foreground">health</div>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </TabsContent>
@@ -264,13 +264,13 @@ export default function AdminAIControlCenter() {
         {/* PIPELINES TAB */}
         <TabsContent value="pipelines" className="space-y-3">
           {(pipelineReport?.pipelines ?? []).map((pipeline) => (
-            <Card key={pipeline.id}>
+            <AppCard key={pipeline.id}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold text-sm flex items-center gap-2">
                       {pipeline.name}
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-[0.625rem]">
                         every {formatInterval(pipeline.intervalMs)}
                       </Badge>
                     </div>
@@ -293,7 +293,7 @@ export default function AdminAIControlCenter() {
                     {pipeline.lastRun?.findings && pipeline.lastRun.findings.length > 0 && (
                       <div className="mt-2 space-y-1">
                         {pipeline.lastRun.findings.slice(0, 5).map((f, i) => (
-                          <div key={i} className="text-[11px] text-muted-foreground flex items-start gap-1.5">
+                          <div key={i} className="text-[0.6875rem] text-muted-foreground flex items-start gap-1.5">
                             <AlertTriangle className="w-3 h-3 shrink-0 mt-0.5" style={{ color: "hsl(168 72% 44%)" }} />
                             {f}
                           </div>
@@ -316,7 +316,7 @@ export default function AdminAIControlCenter() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
           {(pipelineReport?.pipelines ?? []).length === 0 && (
             <div className="text-center py-12 text-muted-foreground text-sm">
@@ -327,7 +327,7 @@ export default function AdminAIControlCenter() {
 
         {/* INSIGHTS TAB */}
         <TabsContent value="insights">
-          <Card>
+          <AppCard>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Recent AI Insights</CardTitle>
             </CardHeader>
@@ -351,7 +351,7 @@ export default function AdminAIControlCenter() {
                               {severityBadge(insight.severity)}
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">{insight.detail}</p>
-                            <div className="text-[10px] text-muted-foreground/60 mt-1">
+                            <div className="text-[0.625rem] text-muted-foreground/60 mt-1">
                               {timeAgo(insight.timestamp)} · {insight.engineSource}
                             </div>
                           </div>
@@ -362,12 +362,12 @@ export default function AdminAIControlCenter() {
                 </div>
               </ScrollArea>
             </CardContent>
-          </Card>
+          </AppCard>
         </TabsContent>
       </Tabs>
 
       {/* Safety Rules Banner */}
-      <Card className="border-dashed">
+      <AppCard className="border-dashed">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <Heart className="w-5 h-5 shrink-0 mt-0.5" style={{ color: "hsl(var(--primary))" }} />
@@ -380,7 +380,7 @@ export default function AdminAIControlCenter() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </AppCard>
     </SubPageShell>
   );
 }

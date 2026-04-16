@@ -145,7 +145,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Alertes SLA</h3>
         </div>
         {stats.total > 0 && (
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+          <span className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full"
             style={{ background: "hsl(var(--destructive) / 0.15)", color: "hsl(var(--destructive))" }}>
             {stats.total} actives
           </span>
@@ -162,7 +162,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
           <div key={s.label} className="rounded-xl p-2.5 text-center"
             style={{ background: `hsl(var(${s.color}) / 0.06)`, border: `1px solid hsl(var(${s.color}) / 0.1)` }}>
             <p className="text-lg font-extrabold tabular-nums" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -183,18 +183,18 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ background: `hsl(var(${cfg.color}) / 0.15)`, color: `hsl(var(${cfg.color}))` }}>
                       {cfg.label}
                     </span>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{alert.rule}</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{alert.rule}</span>
                   </div>
-                  <p className="text-[10px] mt-1 font-medium" style={{ color: "hsl(var(--hud-text))" }}>{alert.message}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                  <p className="text-[0.625rem] mt-1 font-medium" style={{ color: "hsl(var(--hud-text))" }}>{alert.message}</p>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                     Job: {alert.jobId.slice(0, 8)}… • {alert.elapsedMinutes}min écoulées
                   </p>
                 </div>
-                <Button size="sm" className="h-7 px-2 text-[10px] shrink-0" onClick={() => resolveAlert(alert.id)}
+                <Button size="sm" className="h-7 px-2 text-[0.625rem] shrink-0" onClick={() => resolveAlert(alert.id)}
                   style={{ background: `hsl(var(${cfg.color}) / 0.12)`, color: `hsl(var(${cfg.color}))` }}>
                   <CheckCircle2 className="h-3 w-3 mr-0.5" /> Résoudre
                 </Button>
@@ -206,13 +206,13 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
         <div className="rounded-xl p-6 text-center" style={{ background: "hsl(var(--success) / 0.04)", border: "1px solid hsl(var(--success) / 0.1)" }}>
           <CheckCircle2 className="h-8 w-8 mx-auto mb-2" style={{ color: "hsl(var(--success))" }} />
           <p className="text-xs font-semibold" style={{ color: "hsl(var(--success))" }}>Aucune alerte SLA active</p>
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Toutes les missions respectent les délais</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Toutes les missions respectent les délais</p>
         </div>
       )}
 
       {/* SLA Rules */}
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>
           <Zap className="h-3 w-3 inline mr-1" /> Règles SLA configurées
         </p>
         <div className="space-y-1.5">
@@ -220,10 +220,10 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
             <div key={rule.id} className="flex items-center justify-between py-1.5 border-b"
               style={{ borderColor: "hsl(var(--hud-border) / 0.05)" }}>
               <div>
-                <p className="text-[10px] font-medium" style={{ color: rule.active ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <p className="text-[0.625rem] font-medium" style={{ color: rule.active ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {rule.name}
                 </p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   Max: {rule.maxMinutes}min • Escalade: {rule.escalateAfter}min
                 </p>
               </div>

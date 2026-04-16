@@ -56,7 +56,7 @@ export default function QrPickupPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-bold text-foreground line-clamp-1 break-words">{shop.name}</p>
                   {(shop.address || shop.city) && (
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <p className="text-[0.6875rem] text-muted-foreground flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" /> {shop.address || shop.city}
                     </p>
                   )}
@@ -82,12 +82,12 @@ export default function QrPickupPage() {
                       <p className="text-sm font-medium text-foreground">
                         {order.total} {order.currency || "AED"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">
+                      <p className="text-[0.625rem] text-muted-foreground">
                         {order.status === "ready" ? "Ready for pickup!" : "Being prepared…"}
                       </p>
                     </div>
                     <span className={cn(
-                      "text-[10px] font-bold px-2.5 py-1 rounded-full",
+                      "text-[0.625rem] font-bold px-2.5 py-1 rounded-full",
                       order.status === "ready" ? "bg-emerald-500/15 text-emerald-400" : "bg-amber-500/15 text-amber-400"
                     )}>
                       {order.status}

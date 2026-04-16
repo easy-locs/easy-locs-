@@ -66,7 +66,7 @@ const ServicePhotoManager = ({ photos, onChange, orgId, allowVideo = false }: Pr
         ))}
         <label className={`aspect-[4/3] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-accent transition-colors ${uploading ? "pointer-events-none opacity-50" : ""}`}>
           {uploading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> : <ImagePlus className="h-5 w-5 text-muted-foreground" />}
-          <span className="text-[10px] text-muted-foreground mt-1">{uploading ? "Uploading..." : allowVideo ? "Add media" : "Add photos"}</span>
+          <span className="text-[0.625rem] text-muted-foreground mt-1">{uploading ? "Uploading..." : allowVideo ? "Add media" : "Add photos"}</span>
           <input type="file" multiple accept={allowVideo ? MEDIA_ACCEPT : IMAGE_ONLY_ACCEPT} onChange={upload} className="hidden" />
         </label>
       </div>

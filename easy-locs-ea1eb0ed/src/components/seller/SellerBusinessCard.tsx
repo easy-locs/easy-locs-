@@ -96,7 +96,7 @@ export default function SellerBusinessCard({
             </p>
           )}
           {missingReqs.length > 0 && status !== "active" && (
-            <p className="text-[10px] text-destructive flex items-center gap-1 mt-1">
+            <p className="text-[0.625rem] text-destructive flex items-center gap-1 mt-1">
               <AlertCircle className="w-3 h-3 flex-shrink-0" />
               Missing: {missingReqs.map((r) => r.label).join(", ")}
             </p>

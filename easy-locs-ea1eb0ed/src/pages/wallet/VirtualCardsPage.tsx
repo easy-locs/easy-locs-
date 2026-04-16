@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useVirtualCards } from "@/hooks/useVirtualCards";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -135,7 +135,7 @@ export default function VirtualCardsPage() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
           >
-            <Card>
+            <AppCard>
               <CardContent className="p-4 space-y-3">
                 <h3 className="text-sm font-semibold">{t("virtual_card.create")}</h3>
                 <Input
@@ -175,7 +175,7 @@ export default function VirtualCardsPage() {
                   </Button>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           </motion.div>
         )}
 
@@ -184,7 +184,7 @@ export default function VirtualCardsPage() {
             <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
           </div>
         ) : cards.length === 0 ? (
-          <Card>
+          <AppCard>
             <CardContent className="p-12 text-center">
               <CreditCard className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
               <p className="text-sm font-medium mb-1">{t("virtual_card.no_cards")}</p>
@@ -195,7 +195,7 @@ export default function VirtualCardsPage() {
                 <Plus className="h-3 w-3 mr-1" /> Create Card
               </Button>
             </CardContent>
-          </Card>
+          </AppCard>
         ) : (
           cards.map((card, idx) => {
             const revealed = !!revealedCards[card.id];
@@ -208,7 +208,7 @@ export default function VirtualCardsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.08 }}
               >
-                <Card
+                <AppCard
                   className={
                     card.status === "frozen"
                       ? "border-blue-300/30 bg-blue-50/5"
@@ -227,7 +227,7 @@ export default function VirtualCardsPage() {
                         variant={
                           card.status === "active" ? "default" : "secondary"
                         }
-                        className="text-[10px]"
+                        className="text-[0.625rem]"
                       >
                         {card.status === "frozen" && (
                           <Snowflake className="h-2.5 w-2.5 mr-0.5" />
@@ -243,7 +243,7 @@ export default function VirtualCardsPage() {
                           "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
                       }}
                     >
-                      <p className="text-[10px] uppercase tracking-wider opacity-60 mb-3">
+                      <p className="text-[0.625rem] uppercase tracking-wider opacity-60 mb-3">
                         {card.network.toUpperCase()}
                       </p>
                       <p className="text-sm font-mono tracking-widest mb-3">
@@ -251,14 +251,14 @@ export default function VirtualCardsPage() {
                       </p>
                       <div className="flex justify-between items-end">
                         <div>
-                          <p className="text-[10px] opacity-60">EXPIRES</p>
+                          <p className="text-[0.625rem] opacity-60">EXPIRES</p>
                           <p className="text-xs font-mono">
                             {String(card.expiryMonth).padStart(2, "0")}/
                             {card.expiryYear}
                           </p>
                         </div>
                         <div>
-                          <p className="text-[10px] opacity-60">CVV</p>
+                          <p className="text-[0.625rem] opacity-60">CVV</p>
                           <p className="text-xs font-mono">
                             {revealed && revealData ? revealData.cvv : "•••"}
                           </p>
@@ -281,7 +281,7 @@ export default function VirtualCardsPage() {
 
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[0.625rem] text-muted-foreground">
                           Balance
                         </p>
                         <p className="text-xs font-bold">
@@ -289,7 +289,7 @@ export default function VirtualCardsPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[0.625rem] text-muted-foreground">
                           Limit
                         </p>
                         <p className="text-xs font-bold">
@@ -297,7 +297,7 @@ export default function VirtualCardsPage() {
                         </p>
                       </div>
                       <div>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[0.625rem] text-muted-foreground">
                           Spent
                         </p>
                         <p className="text-xs font-bold">
@@ -323,7 +323,7 @@ export default function VirtualCardsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-[10px] px-2"
+                          className="h-7 text-[0.625rem] px-2"
                           onClick={() => handleFund(card.id)}
                         >
                           <DollarSign className="h-3 w-3" /> Fund
@@ -336,7 +336,7 @@ export default function VirtualCardsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-[10px]"
+                          className="h-7 text-[0.625rem]"
                           onClick={() => freeze(card.id)}
                         >
                           <Snowflake className="h-3 w-3 mr-0.5" /> Freeze
@@ -345,7 +345,7 @@ export default function VirtualCardsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-[10px]"
+                          className="h-7 text-[0.625rem]"
                           onClick={() => unfreeze(card.id)}
                         >
                           <Sun className="h-3 w-3 mr-0.5" /> Unfreeze
@@ -368,7 +368,7 @@ export default function VirtualCardsPage() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-7 text-[10px] px-2"
+                          className="h-7 text-[0.625rem] px-2"
                           onClick={() => handleUpdateLimit(card.id)}
                         >
                           Set Limit
@@ -378,7 +378,7 @@ export default function VirtualCardsPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-7 text-[10px]"
+                        className="h-7 text-[0.625rem]"
                       >
                         <Smartphone className="h-3 w-3 mr-0.5" /> Apple Pay
                       </Button>
@@ -386,7 +386,7 @@ export default function VirtualCardsPage() {
                       <Button
                         size="sm"
                         variant="destructive"
-                        className="h-7 text-[10px]"
+                        className="h-7 text-[0.625rem]"
                         onClick={() => {
                           cancel(card.id);
                           toast.success("Card cancelled");
@@ -396,7 +396,7 @@ export default function VirtualCardsPage() {
                       </Button>
                     </div>
                   </CardContent>
-                </Card>
+                </AppCard>
               </motion.div>
             );
           })

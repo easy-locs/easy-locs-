@@ -77,7 +77,7 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
           <RotateCcw className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Retours & Logistique inverse</h3>
         </div>
-        <Button size="sm" className="text-[10px] h-6 px-2" onClick={() => setShowForm(!showForm)}
+        <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={() => setShowForm(!showForm)}
           style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
           <Plus className="w-2.5 h-2.5 mr-0.5" /> Nouveau retour
         </Button>
@@ -94,7 +94,7 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
           <div key={s.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -105,34 +105,34 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
           className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-cyan) / 0.1)" }}>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>N° Commande</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>N° Commande</Label>
               <Input value={form.orderId} onChange={e => setForm(p => ({ ...p, orderId: e.target.value }))}
-                placeholder="ORD-2024-XXXX" className="h-7 text-[10px]"
+                placeholder="ORD-2024-XXXX" className="h-7 text-[0.625rem]"
                 style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
             </div>
             <div>
-              <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Raison</Label>
+              <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Raison</Label>
               <select value={form.reason} onChange={e => setForm(p => ({ ...p, reason: e.target.value }))}
-                className="w-full h-7 text-[10px] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
+                className="w-full h-7 text-[0.625rem] rounded-md px-2" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
                 {RETURN_REASONS.map(r => <option key={r} value={r}>{r}</option>)}
               </select>
             </div>
           </div>
           <div>
-            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Articles (séparés par virgule)</Label>
+            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Articles (séparés par virgule)</Label>
             <Input value={form.items} onChange={e => setForm(p => ({ ...p, items: e.target.value }))}
-              placeholder="Article 1, Article 2" className="h-7 text-[10px]"
+              placeholder="Article 1, Article 2" className="h-7 text-[0.625rem]"
               style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
           </div>
           <div>
-            <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
+            <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Description</Label>
             <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-              rows={2} className="text-[10px]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
+              rows={2} className="text-[0.625rem]" style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text))", borderColor: "hsl(var(--hud-border) / 0.15)" }} />
           </div>
           <div className="flex gap-2">
-            <Button size="sm" className="flex-1 text-[10px] h-7" onClick={submitReturn}
+            <Button size="sm" className="flex-1 text-[0.625rem] h-7" onClick={submitReturn}
               style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>Soumettre</Button>
-            <Button size="sm" variant="outline" className="text-[10px] h-7" onClick={() => setShowForm(false)}
+            <Button size="sm" variant="outline" className="text-[0.625rem] h-7" onClick={() => setShowForm(false)}
               style={{ borderColor: "hsl(var(--hud-border) / 0.2)", color: "hsl(var(--hud-text-dim))" }}>Annuler</Button>
           </div>
         </motion.div>
@@ -149,12 +149,12 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
               className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: `1px solid ${statusCfg.color}20` }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ret.orderId}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{ret.reason}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ret.orderId}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{ret.reason}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold" style={{ color: statusCfg.color }}>{statusCfg.emoji} {statusCfg.label}</p>
-                  {ret.refundAmount > 0 && <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{ret.refundAmount.toFixed(2)}€</p>}
+                  <p className="text-[0.625rem] font-bold" style={{ color: statusCfg.color }}>{statusCfg.emoji} {statusCfg.label}</p>
+                  {ret.refundAmount > 0 && <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{ret.refundAmount.toFixed(2)}€</p>}
                 </div>
               </div>
 
@@ -162,7 +162,7 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
               {ret.items.length > 0 && (
                 <div className="flex flex-wrap gap-1">
                   {ret.items.map(item => (
-                    <span key={item} className="text-[10px] px-1.5 py-0.5 rounded-full"
+                    <span key={item} className="text-[0.625rem] px-1.5 py-0.5 rounded-full"
                       style={{ background: "hsl(var(--hud-bg))", color: "hsl(var(--hud-text-dim))" }}>{item}</span>
                   ))}
                 </div>
@@ -190,7 +190,7 @@ export default function ReturnsReverseLogistics({ orgId }: { orgId: string }) {
               {ret.returnLabel && (
                 <div className="flex items-center gap-1.5 pt-1" style={{ borderTop: "1px solid hsl(var(--hud-border) / 0.06)" }}>
                   <QrCode className="w-3 h-3" style={{ color: "hsl(var(--info))" }} />
-                  <span className="text-[10px] font-mono" style={{ color: "hsl(var(--info))" }}>{ret.returnLabel}</span>
+                  <span className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--info))" }}>{ret.returnLabel}</span>
                 </div>
               )}
             </motion.div>

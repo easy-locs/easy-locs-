@@ -117,14 +117,14 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
           <Bell className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Centre de notifications</h3>
           {unreadCount > 0 && (
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
               style={{ background: "hsl(var(--destructive))", color: "#fff" }}>
               {unreadCount}
             </span>
           )}
         </div>
         <div className="flex gap-1">
-          <Button size="sm" variant="ghost" className="h-7 px-2 text-[10px]" onClick={markAllRead}
+          <Button size="sm" variant="ghost" className="h-7 px-2 text-[0.625rem]" onClick={markAllRead}
             style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
             <Eye className="h-3 w-3 mr-1" /> Tout lire
           </Button>
@@ -141,14 +141,14 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden">
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Préférences</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Préférences</p>
               {[
                 { key: "pushEnabled", label: "Notifications push", icon: Bell },
                 { key: "emailEnabled", label: "Notifications email", icon: Bell },
                 { key: "soundEnabled", label: "Sons d'alerte", icon: Bell },
               ].map(pref => (
                 <label key={pref.key} className="flex items-center justify-between cursor-pointer">
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text))" }}>{pref.label}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text))" }}>{pref.label}</span>
                   <input type="checkbox" checked={prefs[pref.key as keyof typeof prefs]}
                     onChange={e => setPrefs(p => ({ ...p, [pref.key]: e.target.checked }))}
                     className="accent-[hsl(var(--hud-cyan))]" />
@@ -163,7 +163,7 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
       <div className="flex gap-1">
         {CATEGORIES.map(c => (
           <button key={c.id} onClick={() => setCategory(c.id)}
-            className="text-[10px] px-3 py-1 rounded-full font-medium transition-all"
+            className="text-[0.625rem] px-3 py-1 rounded-full font-medium transition-all"
             style={{
               background: category === c.id ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-border) / 0.06)",
               color: category === c.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.4)",
@@ -206,8 +206,8 @@ export default function DeliveryNotificationCenter({ orgId, className }: Props) 
                     <p className="text-xs font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>{n.title}</p>
                     {isNew && <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: "hsl(var(--hud-cyan))" }} />}
                   </div>
-                  <p className="text-[10px] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{n.body}</p>
-                  <span className="text-[10px] mt-1 block" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{timeAgo(n.created_at)}</span>
+                  <p className="text-[0.625rem] mt-0.5 line-clamp-2" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>{n.body}</p>
+                  <span className="text-[0.625rem] mt-1 block" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>{timeAgo(n.created_at)}</span>
                 </div>
                 <button onClick={e => { e.stopPropagation(); deleteNotif(n.id); }}
                   className="p-1 rounded-lg shrink-0 opacity-40 hover:opacity-80 transition-opacity">

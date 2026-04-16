@@ -112,13 +112,13 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
 
         <div className="absolute top-3 left-3 flex items-center gap-1.5">
           {isOffPlan && (
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider backdrop-blur-md"
+            <span className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold uppercase tracking-wider backdrop-blur-md"
               style={{ background: `${GOLD}`, color: NAVY }}>
               Off-Plan
             </span>
           )}
           {readyStatus && !isOffPlan && (
-            <span className="px-2.5 py-1 rounded-lg text-[10px] font-bold backdrop-blur-md"
+            <span className="px-2.5 py-1 rounded-lg text-[0.625rem] font-bold backdrop-blur-md"
               style={{ background: "hsl(142 60% 45% / 0.9)", color: "white" }}>
               {readyStatus}
             </span>
@@ -127,14 +127,14 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
 
         <div className="absolute top-3 right-3 flex items-center gap-1.5">
           {photoCount && photoCount > 1 && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
               <Camera className="h-3 w-3" />
               {photoCount}
             </span>
           )}
           {brokerName && (
-            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold backdrop-blur-md"
+            <span className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold backdrop-blur-md"
               style={{ background: "hsl(0 0% 0% / 0.5)", color: "white" }}>
               <Building2 className="h-3 w-3" />
               {brokerName}
@@ -147,7 +147,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
             {currency} {formattedPrice}
           </span>
           {pricePerSqft && (
-            <span className="block text-[11px] text-white/75 mt-0.5">
+            <span className="block text-[0.6875rem] text-white/75 mt-0.5">
               {currency} {pricePerSqft.toLocaleString()}/sqft
             </span>
           )}
@@ -169,7 +169,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
             { icon: Bath, label: `${bathrooms} Bath` },
             { icon: Maximize2, label: `${sizeSqft.toLocaleString()} sqft` },
           ].map((spec) => (
-            <span key={spec.label} className="flex items-center gap-1 text-[11px] text-muted-foreground px-2 py-1 rounded-lg"
+            <span key={spec.label} className="flex items-center gap-1 text-[0.6875rem] text-muted-foreground px-2 py-1 rounded-lg"
               style={{ background: "hsl(var(--muted) / 0.6)" }}>
               <spec.icon className="h-3 w-3" />
               {spec.label}
@@ -180,7 +180,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
         {amenities && amenities.length > 0 && (
           <div className="flex items-center gap-1 flex-wrap">
             {amenities.slice(0, 3).map((amenity) => (
-              <span key={amenity} className="text-[10px] text-muted-foreground px-2 py-0.5 rounded-md"
+              <span key={amenity} className="text-[0.625rem] text-muted-foreground px-2 py-0.5 rounded-md"
                 style={{ background: "hsl(var(--muted) / 0.6)" }}>
                 {amenity}
               </span>
@@ -192,7 +192,7 @@ const PropertyBuyCard = memo(function PropertyBuyCard({
           <Button
             type="button"
             size="sm"
-            className="h-9 px-4 rounded-xl text-[11px] font-bold gap-1.5"
+            className="h-9 px-4 rounded-xl text-[0.6875rem] font-bold gap-1.5"
             style={{ background: GOLD, color: NAVY }}
             onClick={handleContact}
             disabled={busy}

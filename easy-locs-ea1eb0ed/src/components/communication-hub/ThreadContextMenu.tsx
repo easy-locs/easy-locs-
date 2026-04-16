@@ -114,7 +114,7 @@ export default function ThreadContextMenu({
         {onStatusChange && (
           <>
             <div className="px-4 pt-3 pb-1">
-              <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+              <span className="text-[0.625rem] font-semibold uppercase tracking-wider" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
                 {t("orbit.status")}
               </span>
             </div>
@@ -132,7 +132,7 @@ export default function ThreadContextMenu({
                     {t(s.key) || s.value}
                   </span>
                   {thread.conversationStatus === s.value && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
+                    <span className="ml-auto text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(var(--primary) / 0.1)", color: "hsl(var(--primary))" }}>
                       {t("orbit.current")}
                     </span>
                   )}

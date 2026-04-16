@@ -110,7 +110,7 @@ export default function ScrollableFilterBar<T extends string = string>({
               key={opt.id}
               ref={el => { if (el) itemRefs.current.set(opt.id, el); }}
               onClick={() => handleSelect(opt.id)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all shrink-0"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[0.6875rem] font-medium whitespace-nowrap transition-all shrink-0"
               style={{
                 scrollSnapAlign: "center",
                 background: isActive ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface) / 0.5)",

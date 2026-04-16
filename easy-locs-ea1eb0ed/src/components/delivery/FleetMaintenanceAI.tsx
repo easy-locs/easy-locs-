@@ -177,7 +177,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -185,7 +185,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["health", "history", "predictions"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "health" ? "🔧 Véhicules" : v === "history" ? "📋 Historique" : "🤖 Prédictions"}
           </button>
@@ -207,8 +207,8 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
                   </p>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{v.name}</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{v.name}</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     🛣️ {v.mileage.toLocaleString()} km • 🔧 Prochain: {v.nextService.toLocaleDateString("fr")}
                   </p>
                 </div>
@@ -218,7 +218,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
                   {v.alerts.map((a, i) => {
                     const cfg = severityCfg(a.severity);
                     return (
-                      <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-lg text-[10px]"
+                      <div key={i} className="flex items-center gap-2 px-2 py-1 rounded-lg text-[0.625rem]"
                         style={{ background: `hsl(var(${cfg.color}) / 0.05)` }}>
                         <AlertTriangle className="h-3 w-3 shrink-0" style={{ color: `hsl(var(${cfg.color}))` }} />
                         <span style={{ color: "hsl(var(--foreground))" }}>{a.sensor}: {a.value}/{a.threshold}</span>
@@ -249,20 +249,20 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
                 <Wrench className="h-4 w-4 shrink-0 mt-0.5" style={{ color: r.type === "Correctif" ? "hsl(var(--destructive))" : "hsl(var(--info))" }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.vehicleName}</p>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{r.vehicleName}</p>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ background: r.type === "Correctif" ? "hsl(var(--destructive) / 0.1)" : "hsl(var(--info) / 0.1)", color: r.type === "Correctif" ? "hsl(var(--destructive))" : "hsl(var(--info))" }}>
                       {r.type}
                     </span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{r.description}</p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{r.description}</p>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                     🔩 {r.parts.join(", ")} • 🏪 {r.mechanic}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>{r.cost.toLocaleString()} F</p>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{r.date.toLocaleDateString("fr")}</p>
+                  <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>{r.cost.toLocaleString()} F</p>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{r.date.toLocaleDateString("fr")}</p>
                 </div>
               </div>
             </div>
@@ -280,15 +280,15 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
               style={{ background: p.failureProbability >= 60 ? "hsl(var(--destructive) / 0.03)" : "hsl(var(--muted) / 0.2)", border: `1px solid ${p.failureProbability >= 60 ? "hsl(var(--destructive) / 0.15)" : "hsl(var(--border) / 0.08)"}` }}>
               <div className="flex items-center gap-2 mb-1.5">
                 <Cpu className="h-3.5 w-3.5" style={{ color: p.failureProbability >= 60 ? "hsl(var(--destructive))" : "hsl(var(--warning))" }} />
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.vehicleName} — {p.component}</p>
-                <span className="ml-auto text-[10px] font-bold" style={{ color: p.failureProbability >= 60 ? "hsl(var(--destructive))" : p.failureProbability >= 40 ? "hsl(var(--warning))" : "hsl(var(--success))" }}>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.vehicleName} — {p.component}</p>
+                <span className="ml-auto text-[0.625rem] font-bold" style={{ color: p.failureProbability >= 60 ? "hsl(var(--destructive))" : p.failureProbability >= 40 ? "hsl(var(--warning))" : "hsl(var(--success))" }}>
                   {p.failureProbability}%
                 </span>
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 📅 Estimé: {p.estimatedDate.toLocaleDateString("fr")} • 💰 ~{p.estimatedCost.toLocaleString()} F
               </p>
-              <p className="text-[10px] mt-1 font-medium" style={{ color: p.failureProbability >= 60 ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>
+              <p className="text-[0.625rem] mt-1 font-medium" style={{ color: p.failureProbability >= 60 ? "hsl(var(--destructive))" : "hsl(var(--foreground))" }}>
                 💡 {p.recommendation}
               </p>
               <div className="h-1.5 rounded-full mt-2 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -297,7 +297,7 @@ export default function FleetMaintenanceAI({ orgId, className }: { orgId: string
               </div>
             </div>
           ))}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast.success("Scan prédictif relancé sur toute la flotte"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--primary))" }}>
             <RefreshCw className="h-3 w-3 mr-1" /> Relancer l'analyse IA

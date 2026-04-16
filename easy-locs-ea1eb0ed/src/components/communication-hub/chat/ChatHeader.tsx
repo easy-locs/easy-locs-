@@ -173,7 +173,7 @@ export default function ChatHeader({
               />
             </div>
             {searchResults.length > 0 && (
-              <span className="text-[11px] tabular-nums shrink-0 px-1" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+              <span className="text-[0.6875rem] tabular-nums shrink-0 px-1" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
                 {activeResultIdx + 1}/{searchResults.length}
               </span>
             )}
@@ -208,10 +208,10 @@ export default function ChatHeader({
             </button>
 
             <div className="min-w-0 flex-1 overflow-hidden" onClick={handleIdentityTap} style={{ cursor: "pointer" }}>
-              <p className="text-[13px] font-semibold leading-tight line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
+              <p className="text-[0.8125rem] font-semibold leading-tight line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>
                 {displayName}
               </p>
-              <p className="text-[10.5px] leading-tight mt-0.5" style={{
+              <p className="text-[0.65625rem] leading-tight mt-0.5" style={{
                 color: isOnline ? "hsl(var(--primary))" : "hsl(var(--muted-foreground) / 0.5)",
               }}>
                 {subtitle}

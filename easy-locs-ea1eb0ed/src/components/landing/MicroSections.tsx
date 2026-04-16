@@ -30,7 +30,7 @@ export function OpenNowStrip() {
             </span>
             <span className="text-xs font-bold text-green-500 uppercase tracking-wider">{t("landing.micro.open_now") || "Open Now"}</span>
           </div>
-          <span className="text-[10px] text-muted-foreground">{t("landing.micro.delivering") || "Delivering to your area"}</span>
+          <span className="text-[0.625rem] text-muted-foreground">{t("landing.micro.delivering") || "Delivering to your area"}</span>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {TOP_CUISINES.map((c) => (
@@ -42,7 +42,7 @@ export function OpenNowStrip() {
               <span className="text-lg">{c.emoji}</span>
               <div>
                 <p className="text-xs font-bold text-foreground">{t(c.labelKey)}</p>
-                <p className="text-[10px] text-muted-foreground">{t(c.countKey)}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{t(c.countKey)}</p>
               </div>
             </Link>
           ))}
@@ -65,11 +65,11 @@ export function NearYouStrip() {
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4 text-accent" />
             <span className="text-sm font-bold text-foreground">{t("landing.micro.near_you") || "Near You"}</span>
-            <span className="px-1.5 py-0.5 rounded-md bg-accent/10 text-[10px] font-bold text-accent">
+            <span className="px-1.5 py-0.5 rounded-md bg-accent/10 text-[0.625rem] font-bold text-accent">
               {nearby.length}
             </span>
           </div>
-          <Link to="/radar" className="text-[10px] font-semibold text-accent flex items-center gap-0.5">
+          <Link to="/radar" className="text-[0.625rem] font-semibold text-accent flex items-center gap-0.5">
             {t("landing.micro.view_map") || "View map"} <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
@@ -89,7 +89,7 @@ export function NearYouStrip() {
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-bold text-foreground line-clamp-2 leading-snug break-words">{shop.name}</p>
-                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[10px] text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[0.625rem] text-muted-foreground">
                   {shop.rating > 0 && (
                     <span className="flex items-center gap-0.5 text-amber-500 font-semibold">
                       <Star className="h-2.5 w-2.5 fill-amber-500" />
@@ -132,7 +132,7 @@ export function QuickStatsBar() {
               <s.icon className="h-4 w-4 text-accent" />
               <div>
                 <span className="text-sm font-extrabold text-foreground">{s.value}</span>
-                <span className="text-[10px] text-muted-foreground ml-1">{t(s.labelKey)}</span>
+                <span className="text-[0.625rem] text-muted-foreground ml-1">{t(s.labelKey)}</span>
               </div>
             </motion.div>
           ))}

@@ -125,7 +125,7 @@ const ContactRow = memo(function ContactRow({
             </button>
           </div>
           {contact.contact_user_id && (
-            <p className="text-[11px] truncate mt-0.5 font-mono" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+            <p className="text-[0.6875rem] truncate mt-0.5 font-mono" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
               EL-{contact.contact_user_id.replace(/-/g, "").substring(0, 8).toUpperCase()}
             </p>
           )}
@@ -166,7 +166,7 @@ function HeaderAction({ icon: Icon, label, onClick }: { icon: React.ElementType;
       <div className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: "hsl(var(--primary) / 0.1)" }}>
         <Icon className="h-4 w-4" style={{ color: "hsl(var(--primary))" }} />
       </div>
-      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{label}</span>
+      <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{label}</span>
     </button>
   );
 }
@@ -630,7 +630,7 @@ export default function CommContactsSection() {
           grouped.map(([letter, list]) => (
             <div key={letter}>
               <div className="px-4 py-1 sticky top-0 backdrop-blur-sm z-[1]" style={{ background: "hsl(var(--background) / 0.95)" }}>
-                <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary) / 0.7)" }}>{letter}</span>
+                <span className="text-[0.6875rem] font-bold uppercase tracking-wider" style={{ color: "hsl(var(--primary) / 0.7)" }}>{letter}</span>
               </div>
               {list.map(c => (
                 <ContactRow
@@ -686,7 +686,7 @@ export default function CommContactsSection() {
                 style={{ background: "hsl(var(--card))", color: "hsl(var(--foreground))" }}
                 onKeyDown={e => { if (e.key === "Enter" && newName.trim()) handleAdd(); }}
               />
-              <p className="text-[10px] mt-1 px-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
+              <p className="text-[0.625rem] mt-1 px-1" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }}>
                 {t("orbit.contacts.el_id_hint")}
               </p>
             </div>
@@ -811,7 +811,7 @@ export default function CommContactsSection() {
                     <MessageCircle className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.send_message")}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.in_app")}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.in_app")}</p>
                     </div>
                   </button>
                 )}
@@ -825,7 +825,7 @@ export default function CommContactsSection() {
                     <PhoneCall className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm line-clamp-1 break-words" style={{ color: "hsl(var(--foreground))" }}>{t("orbit.contacts.call_inapp")}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.free_call")}</p>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.contacts.free_call")}</p>
                     </div>
                   </button>
                 )}

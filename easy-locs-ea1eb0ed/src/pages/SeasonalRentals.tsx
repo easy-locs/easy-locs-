@@ -452,7 +452,7 @@ const SeasonalRentals = () => {
                     {copiedExport ? t("page.seasonal.copied") : t("page.seasonal.copy")}
                   </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic">{t("page.seasonal.export_hint")}</p>
+                <p className="text-[0.625rem] text-muted-foreground italic">{t("page.seasonal.export_hint")}</p>
               </div>
             </div>
           </div>
@@ -668,7 +668,7 @@ const SeasonalRentals = () => {
                     {visible.map((b, idx) => (
                       <div
                         key={b.id}
-                        className={`text-[10px] px-1 py-px rounded truncate cursor-pointer hover:opacity-80 group/booking ${laneColors[idx % laneColors.length]}`}
+                        className={`text-[0.625rem] px-1 py-px rounded truncate cursor-pointer hover:opacity-80 group/booking ${laneColors[idx % laneColors.length]}`}
                         title={`${b.guest_name} (${b.check_in} → ${b.check_out}) — ${t("page.seasonal.click_to_edit") !== "page.seasonal.click_to_edit" ? t("page.seasonal.click_to_edit") : "Cliquer pour modifier"}`}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -691,7 +691,7 @@ const SeasonalRentals = () => {
                       </div>
                     ))}
                     {overflow > 0 && (
-                      <div className="text-[10px] text-muted-foreground font-medium px-1" title={dayBookings.slice(MAX_VISIBLE).map(b => b.guest_name).join(", ")}>
+                      <div className="text-[0.625rem] text-muted-foreground font-medium px-1" title={dayBookings.slice(MAX_VISIBLE).map(b => b.guest_name).join(", ")}>
                         +{overflow} {overflow > 1 ? t("page.seasonal.other_plural") : t("page.seasonal.other_singular")}
                       </div>
                     )}

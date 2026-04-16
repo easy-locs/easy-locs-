@@ -39,7 +39,7 @@ const PendingActionsSection = memo(({ actions }: Props) => {
     <div style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center gap-1.5 px-1 mb-2">
         <AlertCircle className="w-3 h-3" style={{ color: GOLD }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
+        <span className="text-[0.625rem] font-bold uppercase tracking-widest" style={{ color: NAVY }}>
           {tSafe(t, "home.pending_actions", "Action Required")}
         </span>
       </div>
@@ -77,7 +77,7 @@ const PendingActionsSection = memo(({ actions }: Props) => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-bold text-foreground truncate">{action.title}</p>
-                    <p className="text-[10px] text-muted-foreground truncate mt-0.5">{action.subtitle}</p>
+                    <p className="text-[0.625rem] text-muted-foreground truncate mt-0.5">{action.subtitle}</p>
                   </div>
                   <ArrowRight className="w-3.5 h-3.5 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.3)" }} />
                 </Link>

@@ -104,7 +104,7 @@ export function ContactPickerSheet({
           <h3 className="text-base font-bold text-foreground">
             {t("wallet.selectContact") || "Select Contact"}
           </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-[0.6875rem] text-muted-foreground mt-0.5">
             {t("wallet.contactPickerSubtitle") || "Choose from your contacts"}
           </p>
           <div className="relative mt-3">
@@ -142,11 +142,11 @@ export function ContactPickerSheet({
                         style={{ color: "hsl(var(--accent))" }}
                       />
                     </div>
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <span className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wider">
                       {t("wallet.onEasyLocs") || "On Easy Locs"}
                     </span>
                     <span
-                      className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                       style={{
                         background: "hsl(var(--accent) / 0.12)",
                         color: "hsl(var(--accent))",
@@ -193,13 +193,13 @@ export function ContactPickerSheet({
                           {c.display_name || "Contact"}
                         </p>
                         {c.phone && (
-                          <p className="text-[10px] text-muted-foreground truncate">
+                          <p className="text-[0.625rem] text-muted-foreground truncate">
                             {c.phone}
                           </p>
                         )}
                       </div>
                       <span
-                        className="text-[9px] font-bold px-2 py-1 rounded-full shrink-0"
+                        className="text-[0.5625rem] font-bold px-2 py-1 rounded-full shrink-0"
                         style={{
                           background: "hsl(142 71% 45% / 0.1)",
                           color: "hsl(142 71% 45%)",
@@ -219,10 +219,10 @@ export function ContactPickerSheet({
                     <div className="w-5 h-5 rounded-full flex items-center justify-center bg-muted/50">
                       <Phone className="w-3 h-3 text-muted-foreground" aria-hidden="true" />
                     </div>
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">
+                    <span className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wider">
                       {t("wallet.phoneContacts") || "Phone Contacts"}
                     </span>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full bg-muted/50 text-muted-foreground">
                       {phoneOnlyContacts.length}
                     </span>
                   </div>
@@ -252,12 +252,12 @@ export function ContactPickerSheet({
                           {c.display_name || "Contact"}
                         </p>
                         {c.phone && (
-                          <p className="text-[10px] text-muted-foreground truncate">
+                          <p className="text-[0.625rem] text-muted-foreground truncate">
                             {c.phone}
                           </p>
                         )}
                       </div>
-                      <span className="text-[9px] font-bold px-2 py-1 rounded-full shrink-0 bg-muted/50 text-muted-foreground">
+                      <span className="text-[0.5625rem] font-bold px-2 py-1 rounded-full shrink-0 bg-muted/50 text-muted-foreground">
                         {t("wallet.invite") || "Invite"}
                       </span>
                       <ChevronRight className="w-4 h-4 text-muted-foreground/40 shrink-0" aria-hidden="true" />
@@ -284,7 +284,7 @@ export function ContactPickerSheet({
                     <p className="text-sm font-semibold text-foreground">
                       {t("wallet.createPaymentLink") || "Create Payment Link"}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[0.625rem] text-muted-foreground">
                       {t("wallet.paymentLinkDesc") || "Share a link anyone can use to pay you"}
                     </p>
                   </div>
@@ -302,7 +302,7 @@ export function ContactPickerSheet({
                     <p className="text-sm font-medium text-muted-foreground">
                       {t("wallet.noContacts") || "No contacts found"}
                     </p>
-                    <p className="text-[11px] text-muted-foreground/60 text-center max-w-[240px]">
+                    <p className="text-[0.6875rem] text-muted-foreground/60 text-center max-w-[240px]">
                       {t("wallet.syncContactsHint") || "Sync your phone contacts to find people on Easy Locs"}
                     </p>
                   </div>
@@ -430,7 +430,7 @@ export function InviteContactSheet({
                       style={{ WebkitAppearance: "none", MozAppearance: "textfield" } as React.CSSProperties}
                     />
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {t("wallet.pendingUntilSignup") || "Payment held until they sign up"}
                   </p>
                 </div>

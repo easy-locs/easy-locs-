@@ -23,7 +23,7 @@ const MapPreview = ({ lat, lng, className = "", zoom = 15 }: MapPreviewProps) =>
         loading="lazy"
         style={{ minHeight: 180 }}
       />
-      <div className="absolute bottom-2 right-2 bg-card/90 backdrop-blur-sm text-[10px] text-muted-foreground px-2 py-1 rounded-md flex items-center gap-1">
+      <div className="absolute bottom-2 right-2 bg-card/90 backdrop-blur-sm text-[0.625rem] text-muted-foreground px-2 py-1 rounded-md flex items-center gap-1">
         <MapPin className="h-3 w-3" />
         {lat.toFixed(5)}, {lng.toFixed(5)}
       </div>

@@ -51,7 +51,7 @@ function PaymentCard({ envelope, isMe }: Props) {
               <DirectionIcon className="h-4 w-4" style={{ color: config.color }} />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.6875rem] font-medium" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {isRequest ? "Payment request" : "Payment received"}
               </p>
               <p className="text-base font-bold tabular-nums" style={{ color: "hsl(var(--foreground))" }}>
@@ -61,7 +61,7 @@ function PaymentCard({ envelope, isMe }: Props) {
           </div>
 
           {payment?.recipientName && (
-            <p className="text-[11px] truncate" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
+            <p className="text-[0.6875rem] truncate" style={{ color: "hsl(var(--muted-foreground) / 0.7)" }}>
               {isRequest ? "From" : "To"}: {payment.recipientName}
             </p>
           )}
@@ -71,7 +71,7 @@ function PaymentCard({ envelope, isMe }: Props) {
             style={{ background: config.bg }}
           >
             <StatusIcon className="h-3 w-3" style={{ color: config.color }} />
-            <span className="text-[10px] font-semibold" style={{ color: config.color }}>
+            <span className="text-[0.625rem] font-semibold" style={{ color: config.color }}>
               {config.label}
             </span>
           </div>

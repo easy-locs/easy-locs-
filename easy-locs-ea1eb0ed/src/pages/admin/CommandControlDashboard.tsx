@@ -154,7 +154,7 @@ function AgentsTab() {
                 <span className="text-sm font-semibold text-foreground">{sa.agent_name}</span>
                 <StatusBadge status={sa.status} />
               </div>
-              <div className="flex gap-3 text-[10px] text-muted-foreground mb-2">
+              <div className="flex gap-3 text-[0.625rem] text-muted-foreground mb-2">
                 <span>Restarts: {sa.restart_count}</span>
                 <span>Last beat: {formatRelativeTime(sa.last_beat_at)}</span>
               </div>
@@ -163,7 +163,7 @@ function AgentsTab() {
                   <button
                     onClick={() => quarantineMut.mutate(sa.agent_name)}
                     disabled={quarantineMut.isPending}
-                    className="px-2 py-1 text-[10px] rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-medium"
+                    className="px-2 py-1 text-[0.625rem] rounded-lg bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-medium"
                   >
                     Quarantine
                   </button>
@@ -172,7 +172,7 @@ function AgentsTab() {
                   <button
                     onClick={() => releaseMut.mutate(sa.agent_name)}
                     disabled={releaseMut.isPending}
-                    className="px-2 py-1 text-[10px] rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium"
+                    className="px-2 py-1 text-[0.625rem] rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium"
                   >
                     Release
                   </button>
@@ -191,7 +191,7 @@ function AgentsTab() {
             <StatusBadge status={agent.status as string} />
           </div>
           <p className="text-xs text-muted-foreground mb-1">{agent.action_type as string}: {agent.description as string}</p>
-          <div className="flex gap-3 text-[10px] text-muted-foreground">
+          <div className="flex gap-3 text-[0.625rem] text-muted-foreground">
             {agent.pr_number && <span>PR #{agent.pr_number as number}</span>}
             {agent.branch_name && <span>{agent.branch_name as string}</span>}
             <span>{formatRelativeTime(agent.started_at as string)}</span>
@@ -227,17 +227,17 @@ function ApprovalsTab() {
           <p className="text-xs text-foreground mb-1">{pr.pr_title as string}</p>
           <div className="flex items-center gap-2 mb-2">
             <RiskBadge risk={pr.risk_assessment as string} />
-            {pr.agent_name && <span className="text-[10px] text-muted-foreground">by {pr.agent_name as string}</span>}
+            {pr.agent_name && <span className="text-[0.625rem] text-muted-foreground">by {pr.agent_name as string}</span>}
           </div>
           {pr.diff_summary && (
-            <pre className="text-[10px] bg-muted/50 p-2 rounded-lg overflow-x-auto max-h-32 text-muted-foreground">
+            <pre className="text-[0.625rem] bg-muted/50 p-2 rounded-lg overflow-x-auto max-h-32 text-muted-foreground">
               {(pr.diff_summary as string).slice(0, 500)}
             </pre>
           )}
           {pr.reviewer_feedback && (
-            <p className="text-[10px] text-muted-foreground mt-2 italic">Feedback: {pr.reviewer_feedback as string}</p>
+            <p className="text-[0.625rem] text-muted-foreground mt-2 italic">Feedback: {pr.reviewer_feedback as string}</p>
           )}
-          <p className="text-[10px] text-muted-foreground mt-1">{formatRelativeTime(pr.created_at as string)}</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-1">{formatRelativeTime(pr.created_at as string)}</p>
         </div>
       ))}
     </div>
@@ -269,7 +269,7 @@ function MonitoringTab() {
             <button
               key={level ?? "all"}
               onClick={() => setLevelFilter(level)}
-              className={`px-2 py-1 rounded text-[10px] font-medium ${
+              className={`px-2 py-1 rounded text-[0.625rem] font-medium ${
                 levelFilter === level ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               }`}
             >
@@ -283,14 +283,14 @@ function MonitoringTab() {
         <div key={f.id as string} className="rounded-2xl border border-border/20 bg-card p-4">
           <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted">L{f.level as number}</span>
+              <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-muted">L{f.level as number}</span>
               <SeverityBadge severity={f.severity as string} />
             </div>
             <StatusBadge status={f.status as string} />
           </div>
           <p className="text-sm font-semibold text-foreground mt-1">{f.title as string}</p>
           <p className="text-xs text-muted-foreground mt-1">{f.description as string}</p>
-          <div className="flex gap-3 text-[10px] text-muted-foreground mt-2">
+          <div className="flex gap-3 text-[0.625rem] text-muted-foreground mt-2">
             <span>{f.category as string}</span>
             {f.source_engine && <span>{f.source_engine as string}</span>}
             <span>{formatRelativeTime(f.created_at as string)}</span>
@@ -335,7 +335,7 @@ function HealthTab() {
               Response: <span className="font-semibold tabular-nums">{snap.response_time_ms as number}ms</span>
             </p>
           )}
-          <p className="text-[10px] text-muted-foreground mt-1">{formatRelativeTime(snap.checked_at as string)}</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-1">{formatRelativeTime(snap.checked_at as string)}</p>
         </div>
       ))}
     </div>
@@ -379,7 +379,7 @@ function CostsTab() {
             <span className="text-sm font-semibold text-foreground">{agent}</span>
             <span className="text-sm font-bold tabular-nums text-foreground">${data.cost.toFixed(2)}</span>
           </div>
-          <div className="flex gap-4 text-[10px] text-muted-foreground">
+          <div className="flex gap-4 text-[0.625rem] text-muted-foreground">
             <span>{data.tokens.toLocaleString()} tokens</span>
             <span>{data.calls} API calls</span>
           </div>
@@ -420,13 +420,13 @@ function AuditTab() {
       {logs?.map((log: Record<string, unknown>) => (
         <div key={log.id as string} className="rounded-2xl border border-border/20 bg-card p-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+            <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
               {log.event_type as string}
             </span>
-            <span className="text-[10px] text-muted-foreground">{formatRelativeTime(log.created_at as string)}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{formatRelativeTime(log.created_at as string)}</span>
           </div>
           <p className="text-xs text-foreground">{log.action as string}</p>
-          <div className="flex gap-2 mt-1 text-[10px] text-muted-foreground">
+          <div className="flex gap-2 mt-1 text-[0.625rem] text-muted-foreground">
             <span>{log.actor_type as string}{log.actor_name ? `: ${log.actor_name}` : ""}</span>
             {log.target_type && <span>{log.target_type as string}:{log.target_id as string}</span>}
             {log.rollback_tag && <span className="text-amber-500">tag:{log.rollback_tag as string}</span>}
@@ -481,15 +481,15 @@ function ServerBrainOverview() {
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center">
-          <p className="text-[10px] text-muted-foreground">Score</p>
+          <p className="text-[0.625rem] text-muted-foreground">Score</p>
           <p className={`text-lg font-bold tabular-nums ${scoreColor}`}>{globalScore}</p>
         </div>
         <div className="text-center">
-          <p className="text-[10px] text-muted-foreground">Verdict</p>
+          <p className="text-[0.625rem] text-muted-foreground">Verdict</p>
           <p className={`text-xs font-bold ${verdictColor}`}>{verdict}</p>
         </div>
         <div className="text-center">
-          <p className="text-[10px] text-muted-foreground">Agents</p>
+          <p className="text-[0.625rem] text-muted-foreground">Agents</p>
           <p className="text-lg font-bold tabular-nums text-foreground">{aliveAgents}</p>
         </div>
       </div>
@@ -497,19 +497,19 @@ function ServerBrainOverview() {
         <div className="grid grid-cols-2 gap-1">
           {Object.entries(engineStatuses).map(([engine, status]) => (
             <div key={engine} className="flex items-center justify-between px-2 py-1 rounded-lg bg-muted/50">
-              <span className="text-[10px] text-muted-foreground truncate">{engine.replace(/-/g, " ")}</span>
+              <span className="text-[0.625rem] text-muted-foreground truncate">{engine.replace(/-/g, " ")}</span>
               <HealthBadge status={status === "healthy" ? "healthy" : status === "degraded" ? "degraded" : "down"} />
             </div>
           ))}
         </div>
       )}
       {brainStatus.open_circuit_breakers > 0 && (
-        <p className="text-[10px] text-red-500 font-medium">
+        <p className="text-[0.625rem] text-red-500 font-medium">
           {brainStatus.open_circuit_breakers} circuit breaker(s) open
         </p>
       )}
       {decision?.created_at && (
-        <p className="text-[10px] text-muted-foreground">
+        <p className="text-[0.625rem] text-muted-foreground">
           Last decision: {formatRelativeTime(decision.created_at)}
         </p>
       )}
@@ -578,11 +578,11 @@ function EngineHealthScores() {
       <div className="grid grid-cols-3 gap-2">
         {scores.map((s) => (
           <div key={s.engine} className="rounded-xl border border-border/20 bg-card p-2 text-center">
-            <p className="text-[10px] text-muted-foreground truncate">{s.engine.replace(/_/g, " ")}</p>
+            <p className="text-[0.625rem] text-muted-foreground truncate">{s.engine.replace(/_/g, " ")}</p>
             <p className={`text-sm font-bold tabular-nums ${s.score >= 80 ? "text-green-500" : s.score >= 60 ? "text-amber-500" : "text-red-500"}`}>
               {s.score}
             </p>
-            <p className="text-[9px] text-muted-foreground">
+            <p className="text-[0.5625rem] text-muted-foreground">
               {s.trend === "declining" ? "↓" : s.trend === "improving" ? "↑" : "→"}
             </p>
           </div>
@@ -642,7 +642,7 @@ function PlatformHealthIndicators() {
             </div>
             <div className="flex items-center gap-2">
               {indicator.responseTime && (
-                <span className="text-[10px] text-muted-foreground tabular-nums">{indicator.responseTime}ms</span>
+                <span className="text-[0.625rem] text-muted-foreground tabular-nums">{indicator.responseTime}ms</span>
               )}
               <HealthBadge status={indicator.status} />
             </div>
@@ -673,7 +673,7 @@ function RecentActivityFeed() {
           <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${actorColor(log.actor_type as string)}`} />
           <div className="min-w-0">
             <p className="text-xs text-foreground truncate">{log.action as string}</p>
-            <p className="text-[10px] text-muted-foreground">{formatRelativeTime(log.created_at as string)}</p>
+            <p className="text-[0.625rem] text-muted-foreground">{formatRelativeTime(log.created_at as string)}</p>
           </div>
         </div>
       ))}
@@ -699,7 +699,7 @@ function MetricCard({ label, value, color }: { label: string; value: number; col
   };
   return (
     <div className="rounded-2xl border border-border/20 bg-card p-4 text-center">
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-[0.6875rem] text-muted-foreground">{label}</p>
       <p className={`text-xl font-bold tabular-nums ${colorMap[color] || "text-foreground"}`}>{value}</p>
     </div>
   );
@@ -721,7 +721,7 @@ function StatusBadge({ status }: { status: string }) {
     dismissed: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
   };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>
       {status}
     </span>
   );
@@ -735,7 +735,7 @@ function RiskBadge({ risk }: { risk: string }) {
     critical: "bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300",
   };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[risk] || "bg-muted text-muted-foreground"}`}>
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[risk] || "bg-muted text-muted-foreground"}`}>
       {risk} risk
     </span>
   );
@@ -750,7 +750,7 @@ function SeverityBadge({ severity }: { severity: string }) {
     info: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
   };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[severity] || "bg-muted text-muted-foreground"}`}>
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[severity] || "bg-muted text-muted-foreground"}`}>
       {severity}
     </span>
   );
@@ -764,7 +764,7 @@ function HealthBadge({ status }: { status: string }) {
     unknown: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
   };
   return (
-    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>
+    <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>
       {status}
     </span>
   );

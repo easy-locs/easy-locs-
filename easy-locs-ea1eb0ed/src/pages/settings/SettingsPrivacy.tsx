@@ -409,7 +409,7 @@ export default function SettingsPrivacy() {
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   className="w-full rounded-xl border px-3 py-2.5 text-sm"
-                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "16px" }}
+                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "1rem" }}
                   autoComplete="current-password"
                 />
               ) : (
@@ -421,7 +421,7 @@ export default function SettingsPrivacy() {
                   value={deletePin}
                   onChange={(e) => setDeletePin(e.target.value.replace(/\D/g, "").slice(0, 6))}
                   className="w-full rounded-xl border px-3 py-2.5 text-sm text-center tracking-[0.5em]"
-                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "20px" }}
+                  style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--background))", fontSize: "1.25rem" }}
                 />
               )}
               <div className="flex gap-2">

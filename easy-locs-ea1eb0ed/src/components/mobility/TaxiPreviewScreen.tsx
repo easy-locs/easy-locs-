@@ -152,15 +152,15 @@ export function TaxiPreviewScreen() {
                     <div className="flex items-center gap-2">
                       <span className={cn("text-sm font-bold", selected ? "" : "text-foreground")}
                         style={selected ? { color: "hsl(var(--accent))" } : undefined}>{opt.title}</span>
-                      <span className="text-[10px] text-muted-foreground">{opt.subtitle}</span>
+                      <span className="text-[0.625rem] text-muted-foreground">{opt.subtitle}</span>
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">{opt.desc}</p>
                     {p?.ready && (
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                           <Clock className="w-2.5 h-2.5" /> {p.waitMinutes}min pickup
                         </span>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                        <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                           <Navigation className="w-2.5 h-2.5" /> {p.distanceKm?.toFixed(1)}km
                         </span>
                       </div>
@@ -173,11 +173,11 @@ export function TaxiPreviewScreen() {
                           style={selected ? { color: "hsl(var(--accent))" } : undefined}>
                           {p.estimatedFare}
                         </span>
-                        <span className="text-[10px] text-muted-foreground ml-0.5">AED</span>
+                        <span className="text-[0.625rem] text-muted-foreground ml-0.5">AED</span>
                         {p.surgeMultiplier > 1 && (
                           <div className="flex items-center justify-end gap-0.5 mt-0.5">
                             <Zap className="w-2.5 h-2.5" style={{ color: "hsl(var(--accent))" }} />
-                            <span className="text-[10px] font-bold" style={{ color: "hsl(var(--accent))" }}>
+                            <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--accent))" }}>
                               x{p.surgeMultiplier.toFixed(1)}
                             </span>
                           </div>
@@ -237,25 +237,25 @@ export function TaxiPreviewScreen() {
               <div key={label} className="flex flex-col items-center rounded-xl py-2.5 px-2" style={{ background: "hsl(226 24% 14% / 0.04)" }}>
                 <Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: "hsl(var(--accent))" }} />
                 <span className="text-xs font-bold text-foreground">{value}</span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">{label}</span>
+                <span className="text-[0.625rem] text-muted-foreground mt-0.5">{label}</span>
               </div>
             ))}
           </div>
 
           {preview.badge && (
-            <div className="mt-2 px-3 py-1.5 rounded-lg text-[10px] font-bold text-center"
+            <div className="mt-2 px-3 py-1.5 rounded-lg text-[0.625rem] font-bold text-center"
               style={{ background: "hsl(var(--accent) / 0.08)", color: "hsl(var(--accent))" }}>
               {preview.badge}
             </div>
           )}
 
-          <div className="flex items-center justify-between text-[10px] mt-3 px-1">
+          <div className="flex items-center justify-between text-[0.625rem] mt-3 px-1">
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <Signal className="w-3 h-3 shrink-0" />
               <span>{preview.nearbyDrivers ?? 0} drivers nearby</span>
             </div>
             <span className={cn(
-              "px-2 py-0.5 rounded-full font-bold capitalize text-[10px]",
+              "px-2 py-0.5 rounded-full font-bold capitalize text-[0.625rem]",
               preview.trafficLevel === "low" ? "text-emerald-500" :
               preview.trafficLevel === "moderate" ? "text-amber-500" :
               preview.trafficLevel === "heavy" ? "text-orange-500" :
@@ -305,7 +305,7 @@ export function TaxiPreviewScreen() {
         </div>
         <div className="min-w-0">
           <p className="text-xs font-bold text-foreground">Verified & tracked</p>
-          <p className="text-[10px] text-muted-foreground leading-snug">Verified driver · Live tracking · Route monitoring</p>
+          <p className="text-[0.625rem] text-muted-foreground leading-snug">Verified driver · Live tracking · Route monitoring</p>
         </div>
       </div>
 

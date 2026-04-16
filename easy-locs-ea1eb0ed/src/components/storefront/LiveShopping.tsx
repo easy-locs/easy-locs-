@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,7 +134,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
         </h3>
         <div className="flex gap-1">
           {["live", "ugc", ...(mode === "seller" ? ["influencers"] : [])].map(v => (
-            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[10px] h-6 px-2"
+            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
               onClick={() => setTab(v as any)}>{v === "live" ? "Live" : v === "ugc" ? "Posts" : "Creators"}</Button>
           ))}
         </div>
@@ -144,7 +144,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
       {tab === "live" && (
         <div className="space-y-3">
           {mode === "seller" && (
-            <Card>
+            <AppCard>
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold text-muted-foreground">Schedule Live Session</h4>
                 <Input placeholder="Title" value={liveForm.title}
@@ -156,13 +156,13 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   <Radio className="h-3 w-3 mr-1" /> Schedule Live
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {sessions.length === 0 ? (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No live sessions yet</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No live sessions yet</CardContent></AppCard>
           ) : sessions.map((s: any) => (
-            <Card key={s.id}>
+            <AppCard key={s.id}>
               <CardContent className="p-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
@@ -171,12 +171,12 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                       <p className="text-xs font-semibold line-clamp-2 break-words leading-snug">{s.title}</p>
                     </div>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge className={`text-[10px] ${LIVE_STATUS_COLORS[s.status] || ""}`}>{s.status}</Badge>
-                      <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
+                      <Badge className={`text-[0.625rem] ${LIVE_STATUS_COLORS[s.status] || ""}`}>{s.status}</Badge>
+                      <span className="text-[0.625rem] text-muted-foreground flex items-center gap-0.5">
                         <Eye className="h-2.5 w-2.5" /> {s.viewer_count || 0}
                       </span>
                       {s.scheduled_at && (
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[0.625rem] text-muted-foreground">
                           {new Date(s.scheduled_at).toLocaleString()}
                         </span>
                       )}
@@ -185,13 +185,13 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   {mode === "seller" && s.status !== "ended" && (
                     <div className="flex gap-1">
                       {s.status === "scheduled" && (
-                        <Button size="sm" variant="destructive" className="text-[10px] h-6 px-2"
+                        <Button size="sm" variant="destructive" className="text-[0.625rem] h-6 px-2"
                           onClick={() => updateLiveStatus.mutate({ id: s.id, status: "live" })}>
                           Go Live
                         </Button>
                       )}
                       {s.status === "live" && (
-                        <Button size="sm" variant="outline" className="text-[10px] h-6 px-2"
+                        <Button size="sm" variant="outline" className="text-[0.625rem] h-6 px-2"
                           onClick={() => updateLiveStatus.mutate({ id: s.id, status: "ended" })}>
                           End
                         </Button>
@@ -200,7 +200,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   )}
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}
@@ -209,7 +209,7 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
       {tab === "ugc" && (
         <div className="space-y-3">
           {mode === "buyer" && user && (
-            <Card>
+            <AppCard>
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold text-muted-foreground">Share your experience</h4>
                 <div className="flex gap-2">
@@ -229,13 +229,13 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   <Camera className="h-3 w-3 mr-1" /> Post
                 </Button>
               </CardContent>
-            </Card>
+            </AppCard>
           )}
 
           {posts.length === 0 ? (
-            <Card><CardContent className="p-6 text-center text-xs text-muted-foreground">No posts yet — be the first!</CardContent></Card>
+            <AppCard><CardContent className="p-6 text-center text-xs text-muted-foreground">No posts yet — be the first!</CardContent></AppCard>
           ) : posts.map((p: any) => (
-            <Card key={p.id}>
+            <AppCard key={p.id}>
               <CardContent className="p-3">
                 <div className="flex items-start gap-2">
                   <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -243,25 +243,25 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Badge variant="secondary" className="text-[10px] capitalize">{p.post_type}</Badge>
-                      <span className="text-[10px] text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
-                      {p.is_featured && <Badge className="text-[10px] bg-yellow-500/20 text-yellow-600">Featured</Badge>}
+                      <Badge variant="secondary" className="text-[0.625rem] capitalize">{p.post_type}</Badge>
+                      <span className="text-[0.625rem] text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</span>
+                      {p.is_featured && <Badge className="text-[0.625rem] bg-yellow-500/20 text-yellow-600">Featured</Badge>}
                     </div>
-                    <p className="text-[11px] text-foreground">{p.content || p.caption}</p>
+                    <p className="text-[0.6875rem] text-foreground">{p.content || p.caption}</p>
                     {p.photo_url && <img loading="lazy" src={p.photo_url} alt="" className="mt-2 rounded-lg w-full max-h-40 object-cover" />}
                     <div className="flex items-center gap-3 mt-2">
-                      <button className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive"
+                      <button className="flex items-center gap-1 text-[0.625rem] text-muted-foreground hover:text-destructive"
                         onClick={() => user && likeMutation.mutate(p.id)}>
                         <Heart className="h-3 w-3" /> {p.likes_count || 0}
                       </button>
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                         <MessageCircle className="h-3 w-3" /> {p.comments_count || 0}
                       </span>
                     </div>
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}
@@ -269,27 +269,27 @@ export default function LiveShopping({ shopId, mode, catalogItems = [] }: Props)
       {/* INFLUENCER COLLABS (seller only) */}
       {tab === "influencers" && mode === "seller" && (
         <div className="space-y-3">
-          <Card>
+          <AppCard>
             <CardContent className="p-4 space-y-2">
               <h4 className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
                 <UserCheck className="h-3 w-3" /> Influencer Collaborations
               </h4>
               {collabs.length === 0 ? (
-                <p className="text-[10px] text-muted-foreground text-center py-4">No collaborations yet. Invite creators to promote your products.</p>
+                <p className="text-[0.625rem] text-muted-foreground text-center py-4">No collaborations yet. Invite creators to promote your products.</p>
               ) : collabs.map((c: any) => (
                 <div key={c.id} className="flex items-center justify-between p-2 rounded-lg bg-muted/30">
                   <div>
-                    <p className="text-[11px] font-medium">{c.influencer_id?.slice(0, 8)}...</p>
-                    <p className="text-[10px] text-muted-foreground">{c.commission_percent}% commission • {c.promo_code || "No code"}</p>
+                    <p className="text-[0.6875rem] font-medium">{c.influencer_id?.slice(0, 8)}...</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{c.commission_percent}% commission • {c.promo_code || "No code"}</p>
                   </div>
                   <div className="text-right">
-                    <Badge variant="secondary" className="text-[10px] capitalize">{c.status}</Badge>
-                    <p className="text-[10px] text-primary font-medium mt-0.5">€{c.total_sales?.toFixed(0) || 0} sales</p>
+                    <Badge variant="secondary" className="text-[0.625rem] capitalize">{c.status}</Badge>
+                    <p className="text-[0.625rem] text-primary font-medium mt-0.5">€{c.total_sales?.toFixed(0) || 0} sales</p>
                   </div>
                 </div>
               ))}
             </CardContent>
-          </Card>
+          </AppCard>
         </div>
       )}
     </div>

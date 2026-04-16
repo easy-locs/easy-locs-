@@ -109,11 +109,11 @@ export default function DiscoverPage() {
                   <div className="flex items-center justify-between mb-2.5">
                     <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                       <span>{v.emoji}</span> {v.label}
-                      <span className="text-[10px] font-normal text-muted-foreground">({items.length})</span>
+                      <span className="text-[0.625rem] font-normal text-muted-foreground">({items.length})</span>
                     </h2>
                     <button
                       onClick={() => navigate(ui.canonicalRoute)}
-                      className="text-[11px] font-semibold flex items-center gap-0.5"
+                      className="text-[0.6875rem] font-semibold flex items-center gap-0.5"
                       style={{ color: `hsl(${ui.accentHsl})` }}
                     >
                       See all <ChevronRight className="h-3 w-3" />
@@ -143,7 +143,7 @@ export default function DiscoverPage() {
             })
           ) : (
             <>
-              <h2 className="text-[11px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <h2 className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {filtered.length} results
               </h2>
               <div className="space-y-2">

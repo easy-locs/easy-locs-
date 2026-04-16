@@ -1,22 +1,22 @@
 import { useState } from "react";
 import { usePropertyDetailStore } from "@/stores/propertyDetailStore";
-import { X, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, ZoomIn, View } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
-
-const GOLD = "hsl(var(--accent))";
 
 type MediaItem = { url: string; type: "image" | "video" };
 
 interface Props {
   images?: string[];
   variant?: "card" | "hero";
+  virtualTourUrl?: string;
 }
 
-export function PropertyGallery({ images, variant = "card" }: Props) {
+export function PropertyGallery({ images, variant = "card", virtualTourUrl }: Props) {
   const listing = usePropertyDetailStore((s) => s.selectedListing);
   const [fullscreen, setFullscreen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showTour, setShowTour] = useState(false);
 
   const media: MediaItem[] = images
     ? images.map(url => ({ url, type: "image" as const }))
@@ -72,13 +72,26 @@ export function PropertyGallery({ images, variant = "card" }: Props) {
               </button>
             </>
           )}
-          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+          <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[0.625rem] px-2 py-0.5 rounded-full font-medium">
             {activeIndex + 1}/{media.length}
           </div>
           <button onClick={() => setFullscreen(true)} className="absolute bottom-2 left-2 bg-black/40 text-white p-1.5 rounded-full">
             <ZoomIn className="h-3.5 w-3.5" />
           </button>
+          {virtualTourUrl && (
+            <button
+              onClick={() => setShowTour(true)}
+              className="absolute top-2 right-2 flex items-center gap-1.5 bg-black/60 text-white text-[0.625rem] font-semibold px-2.5 py-1.5 rounded-full backdrop-blur-sm"
+            >
+              <View className="h-3.5 w-3.5" />
+              Virtual Tour
+            </button>
+          )}
         </div>
+
+        {virtualTourUrl && showTour && (
+          <VirtualTourEmbed url={virtualTourUrl} onClose={() => setShowTour(false)} />
+        )}
 
         {media.length > 1 && (
           <div className="flex gap-1.5 mx-4 mt-2 overflow-x-auto scrollbar-none">
@@ -98,7 +111,7 @@ export function PropertyGallery({ images, variant = "card" }: Props) {
             {media.length > 6 && (
               <button
                 onClick={() => setFullscreen(true)}
-                className="shrink-0 w-14 h-10 rounded-lg bg-muted/30 flex items-center justify-center text-[10px] font-bold text-muted-foreground"
+                className="shrink-0 w-14 h-10 rounded-lg bg-muted/30 flex items-center justify-center text-[0.625rem] font-bold text-muted-foreground"
               >
                 +{media.length - 6}
               </button>
@@ -126,7 +139,7 @@ export function PropertyGallery({ images, variant = "card" }: Props) {
         style={{ border: "1px solid hsl(var(--border) / 0.12)", background: "hsl(var(--card))" }}>
         <div className="p-3 flex items-center justify-between">
           <h3 className="text-sm font-bold text-foreground">Gallery</h3>
-          <span className="text-[11px] text-muted-foreground">{media.length} item{media.length !== 1 ? "s" : ""}</span>
+          <span className="text-[0.6875rem] text-muted-foreground">{media.length} item{media.length !== 1 ? "s" : ""}</span>
         </div>
 
         {media.length === 1 ? (
@@ -258,6 +271,41 @@ function FullscreenOverlay({
           )}
         </motion.div>
       )}
+    </AnimatePresence>
+  );
+}
+
+function VirtualTourEmbed({ url, onClose }: { url: string; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-fullscreen bg-black/95 flex flex-col"
+      >
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2 text-white">
+            <View className="h-4 w-4" />
+            <span className="text-sm font-semibold">Virtual Tour</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+          >
+            <X className="h-5 w-5 text-white" />
+          </button>
+        </div>
+        <div className="flex-1 px-2 pb-2">
+          <iframe
+            src={url}
+            title="Virtual Tour"
+            className="w-full h-full rounded-xl border-0"
+            allow="accelerometer; gyroscope; fullscreen; xr-spatial-tracking"
+            allowFullScreen
+          />
+        </div>
+      </motion.div>
     </AnimatePresence>
   );
 }

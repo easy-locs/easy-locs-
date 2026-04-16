@@ -1051,7 +1051,7 @@ export default function QuranTab() {
         {favorites.map(fav => (
           <div key={`${fav.surahNumber}-${fav.ayahNumber}`} className="rounded-2xl p-4" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
             <div className="flex items-center justify-between mb-2">
-              <button onClick={() => loadSurah(fav.surahNumber)} className="text-[10px] font-bold" style={{ color: GOLD }}>
+              <button onClick={() => loadSurah(fav.surahNumber)} className="text-[0.625rem] font-bold" style={{ color: GOLD }}>
                 {fav.surahName} — {t("islamic.quran.verse")} {fav.ayahNumber}
               </button>
               <button onClick={() => toggleFavorite(fav.surahNumber, fav.ayahNumber, fav.arabic, fav.translation)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: `${GOLD}22` }}>
@@ -1090,7 +1090,7 @@ export default function QuranTab() {
             <Layers size={16} style={{ color: GOLD }} />
             <div className="flex-1">
               <p className="text-sm font-semibold">{bm.name}</p>
-              <p className="text-[10px] text-muted-foreground">{new Date(bm.savedAt).toLocaleDateString(locale)}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{new Date(bm.savedAt).toLocaleDateString(locale)}</p>
             </div>
           </button>
         ))}
@@ -1122,8 +1122,8 @@ export default function QuranTab() {
 
         <div className="rounded-xl px-3 py-3 space-y-2" style={{ background: `${GOLD}08`, border: `1px solid ${GOLD}22` }}>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold" style={{ color: GOLD }}>Espace utilisé</span>
-            <span className="text-[11px] font-bold" style={{ color: limitExceeded ? "hsl(0 80% 50%)" : limitWarning ? "hsl(40 90% 50%)" : GOLD }}>
+            <span className="text-[0.6875rem] font-semibold" style={{ color: GOLD }}>Espace utilisé</span>
+            <span className="text-[0.6875rem] font-bold" style={{ color: limitExceeded ? "hsl(0 80% 50%)" : limitWarning ? "hsl(40 90% 50%)" : GOLD }}>
               {totalCacheSizeMB.toFixed(1)} / {storageLimitMB} MB
             </span>
           </div>
@@ -1137,7 +1137,7 @@ export default function QuranTab() {
             />
           </div>
           {storageQuota && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               Stockage navigateur : {formatStorageSize(storageQuota.usageBytes)} / {formatStorageSize(storageQuota.quotaBytes)} ({storageQuota.percentUsed.toFixed(1)}%)
             </p>
           )}
@@ -1150,7 +1150,7 @@ export default function QuranTab() {
               <span className="text-xs font-medium" style={{ color: "hsl(0 80% 50%)" }}>
                 Limite de stockage atteinte
               </span>
-              <p className="text-[10px]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
                 Supprimez des sourates ou augmentez la limite pour continuer à télécharger.
               </p>
             </div>
@@ -1164,7 +1164,7 @@ export default function QuranTab() {
               <span className="text-xs font-medium" style={{ color: "hsl(40 90% 50%)" }}>
                 Stockage presque plein — {limitWarningPercent.toFixed(0)}% de la limite
               </span>
-              <p className="text-[10px]" style={{ color: "hsl(40 90% 50% / 0.7)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(40 90% 50% / 0.7)" }}>
                 {totalCacheSizeMB.toFixed(1)} MB sur {storageLimitMB} MB utilisés. Augmentez la limite ou supprimez des sourates.
               </p>
             </div>
@@ -1178,7 +1178,7 @@ export default function QuranTab() {
               <span className="text-xs font-medium" style={{ color: "hsl(0 80% 50%)" }}>
                 Stockage navigateur presque plein — {storageQuota.percentUsed.toFixed(0)}% utilisé
               </span>
-              <p className="text-[10px]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(0 80% 50% / 0.7)" }}>
                 {formatStorageSize(storageQuota.usageBytes)} / {formatStorageSize(storageQuota.quotaBytes)}. Supprimez des sourates pour libérer de l'espace.
               </p>
             </div>
@@ -1201,8 +1201,8 @@ export default function QuranTab() {
             style={{ accentColor: GOLD }}
           />
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground">{MIN_STORAGE_LIMIT_MB} MB</span>
-            <span className="text-[10px] text-muted-foreground">{MAX_STORAGE_LIMIT_MB} MB</span>
+            <span className="text-[0.625rem] text-muted-foreground">{MIN_STORAGE_LIMIT_MB} MB</span>
+            <span className="text-[0.625rem] text-muted-foreground">{MAX_STORAGE_LIMIT_MB} MB</span>
           </div>
         </div>
 
@@ -1212,7 +1212,7 @@ export default function QuranTab() {
               <p className="text-xs font-semibold" style={{ color: GOLD }}>
                 Téléchargement en cours...
               </p>
-              <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
+              <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[0.625rem] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
                 <XCircle size={12} /> Annuler
               </button>
             </div>
@@ -1226,22 +1226,22 @@ export default function QuranTab() {
               />
             </div>
             <div className="flex items-center justify-between">
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[0.625rem] text-muted-foreground">
                 {bulkDownloadProgress.completed} / {bulkDownloadProgress.total} sourate{bulkDownloadProgress.total !== 1 ? "s" : ""}
                 {bulkDownloadProgress.failed > 0 && ` (${bulkDownloadProgress.failed} échouée${bulkDownloadProgress.failed !== 1 ? "s" : ""})`}
               </p>
-              <p className="text-[10px] font-semibold" style={{ color: GOLD }}>
+              <p className="text-[0.625rem] font-semibold" style={{ color: GOLD }}>
                 {Math.round((bulkDownloadProgress.completed / bulkDownloadProgress.total) * 100)}%
               </p>
             </div>
             {downloadingSurah !== null && (
-              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+              <p className="text-[0.625rem] text-muted-foreground flex items-center gap-1">
                 <Loader2 size={10} className="animate-spin" style={{ color: GOLD }} />
                 {QURAN_SURAHS.find(s => s.number === downloadingSurah)?.nameFr ?? `Sourate ${downloadingSurah}`}
               </p>
             )}
             {bulkDownloadProgress.failedSurahs.length > 0 && (
-              <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+              <p className="text-[0.625rem] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
                 Échouées : {formatFailedSurahs(bulkDownloadProgress.failedSurahs)}
               </p>
             )}
@@ -1287,7 +1287,7 @@ export default function QuranTab() {
 
         {bulkSelectMode && (
           <div className="space-y-1.5">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+            <p className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground">
               Sélectionnez les sourates à télécharger
             </p>
             {QURAN_SURAHS.filter(s => !cachedSurahStatus.pinned.has(s.number)).map(s => {
@@ -1304,12 +1304,12 @@ export default function QuranTab() {
                   ) : (
                     <Square size={18} className="text-muted-foreground" />
                   )}
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-[10px] font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>
+                  <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-[0.625rem] font-bold" style={{ background: `${GOLD}18`, color: GOLD }}>
                     {s.number}
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="text-sm font-semibold">{s.nameFr}</span>
-                    <span className="text-[11px] text-muted-foreground ml-2" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
+                    <span className="text-[0.6875rem] text-muted-foreground ml-2" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
                   </div>
                 </button>
               );
@@ -1327,9 +1327,9 @@ export default function QuranTab() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm font-semibold">{surahInfo?.nameFr ?? `Sourate ${entry.surahNumber}`}</span>
-                  <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{surahInfo?.nameAr}</span>
+                  <span className="text-[0.6875rem] text-muted-foreground" style={{ fontFamily: "serif" }}>{surahInfo?.nameAr}</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {entry.ayahCount} versets · {formatStorageSize(entry.estimatedSizeBytes)}{entry.pinned ? " · Téléchargé" : " · Cache auto"} · {new Date(entry.cachedAt).toLocaleDateString("fr-FR")}
                 </p>
               </div>
@@ -1412,9 +1412,9 @@ export default function QuranTab() {
 
         <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Volume2 size={10} /> {t("islamic.quran.audio_player")}</p>
+            <p className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1"><Volume2 size={10} /> {t("islamic.quran.audio_player")}</p>
             {audioPlaying && (
-              <button onClick={stopAudio} className="text-[10px] font-semibold text-destructive flex items-center gap-1">
+              <button onClick={stopAudio} className="text-[0.625rem] font-semibold text-destructive flex items-center gap-1">
                 <VolumeX size={10} /> {t("islamic.quran.stop_audio")}
               </button>
             )}
@@ -1422,26 +1422,26 @@ export default function QuranTab() {
           <select value={audioStore.reciterId} onChange={e => {
             const r = RECITERS.find(rc => rc.id === e.target.value);
             audioStore.setReciter(e.target.value, r?.name ?? "");
-          }} className="w-full text-[11px] rounded-lg border border-border bg-background px-2 py-1.5">
+          }} className="w-full text-[0.6875rem] rounded-lg border border-border bg-background px-2 py-1.5">
             {RECITERS.map(r => (
               <option key={r.id} value={r.id}>{r.name} — {r.nameAr}</option>
             ))}
           </select>
 
           <select value={audioStore.audioMode} onChange={e => audioStore.setAudioMode(e.target.value as AudioMode)}
-            className="w-full text-[11px] rounded-lg border border-border bg-background px-2 py-1.5">
+            className="w-full text-[0.6875rem] rounded-lg border border-border bg-background px-2 py-1.5">
             {AUDIO_MODES.map(m => (
               <option key={m.id} value={m.id}>{m.label}</option>
             ))}
           </select>
 
           <div className="flex items-center gap-2">
-            <label className="flex items-center gap-1.5 text-[10px]">
+            <label className="flex items-center gap-1.5 text-[0.625rem]">
               <input type="checkbox" checked={audioStore.continuousPlay} onChange={e => audioStore.setContinuousPlay(e.target.checked)}
                 className="rounded" />
               <span>Lecture continue</span>
             </label>
-            <label className="flex items-center gap-1.5 text-[10px]">
+            <label className="flex items-center gap-1.5 text-[0.625rem]">
               <input type="checkbox" checked={audioStore.transliterationEnabled}
                 onChange={e => { audioStore.setTransliteration(e.target.checked); if (selectedSurah) loadSurah(selectedSurah, currentPage); }}
                 className="rounded" />
@@ -1450,7 +1450,7 @@ export default function QuranTab() {
           </div>
 
           {audioStore.currentAyah !== null && (
-            <p className="text-[10px] text-center" style={{ color: GOLD }}>
+            <p className="text-[0.625rem] text-center" style={{ color: GOLD }}>
               {audioLoading ? t("islamic.loading") : `${t("islamic.quran.playing_verse")} ${audioAyah}`}
             </p>
           )}
@@ -1503,7 +1503,7 @@ export default function QuranTab() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>{a.number}</span>
+                      <span className="w-7 h-7 rounded-full flex items-center justify-center text-[0.625rem] font-bold" style={{ background: `${GOLD}22`, color: GOLD }}>{a.number}</span>
                       <div className="flex gap-1">
                         <button onClick={() => playAyahAudio(selectedSurah, a.number)} className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isPlayingThis ? `${GOLD}33` : "transparent" }}>
                           {audioStore.isLoading && audioStore.currentAyah === a.number
@@ -1528,13 +1528,13 @@ export default function QuranTab() {
                     </div>
                     <p className={`text-right ${fontConfig.arabicClass} leading-loose mb-3`} style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", direction: "rtl" }}>{a.arabic}</p>
                     {a.transliteration && audioStore.transliterationEnabled && (
-                      <p className="text-[11px] italic text-muted-foreground leading-relaxed mb-2">{a.transliteration}</p>
+                      <p className="text-[0.6875rem] italic text-muted-foreground leading-relaxed mb-2">{a.transliteration}</p>
                     )}
                     <p className={`${fontConfig.transClass} text-muted-foreground leading-relaxed`}>{a.translation}</p>
 
                     {isTafsirOpen && (
                       <div className="mt-3 pt-3 border-t" style={{ borderColor: `${GOLD}22` }}>
-                        <p className="text-[10px] font-bold uppercase tracking-wide mb-1" style={{ color: GOLD }}>Tafsir / Explication</p>
+                        <p className="text-[0.625rem] font-bold uppercase tracking-wide mb-1" style={{ color: GOLD }}>Tafsir / Explication</p>
                         {tafsirLoading ? (
                           <Loader2 size={14} className="animate-spin" style={{ color: GOLD }} />
                         ) : (
@@ -1592,11 +1592,11 @@ export default function QuranTab() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Loader2 size={12} className="animate-spin" style={{ color: GOLD }} />
-              <span className="text-[11px] font-semibold" style={{ color: GOLD }}>
+              <span className="text-[0.6875rem] font-semibold" style={{ color: GOLD }}>
                 Téléchargement favoris/marque-pages
               </span>
             </div>
-            <span className="text-[10px] text-muted-foreground">
+            <span className="text-[0.625rem] text-muted-foreground">
               {bulkProgress.completed + bulkProgress.failed}/{bulkProgress.total}
             </span>
           </div>
@@ -1610,20 +1610,20 @@ export default function QuranTab() {
             />
           </div>
           {bulkProgress.current && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {QURAN_SURAHS.find(s => s.number === bulkProgress.current)?.nameFr ?? `Sourate ${bulkProgress.current}`}...
             </p>
           )}
           {bulkProgress.failedSurahs.length > 0 && (
             <div className="space-y-0.5">
-              <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+              <p className="text-[0.625rem] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
                 Échouées : {formatFailedSurahs(bulkProgress.failedSurahs)}
               </p>
               {(() => {
                 const maxAttempt = Math.max(0, ...bulkProgress.failedSurahs.map(s => retryAttemptsRef.current.get(s) ?? 0));
                 const delayMs = computeBackoffDelay(maxAttempt);
                 return (
-                  <p className="text-[9px] text-muted-foreground">
+                  <p className="text-[0.5625rem] text-muted-foreground">
                     ⏱ Délai avant réessai : {delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`}
                   </p>
                 );
@@ -1649,7 +1649,7 @@ export default function QuranTab() {
             ) : (
               <WifiOff size={14} style={{ color: "hsl(0 80% 50%)" }} />
             )}
-            <span className="text-[11px] font-medium flex-1" style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}>
+            <span className="text-[0.6875rem] font-medium flex-1" style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}>
               {bulkProgress.completed > 0
                 ? `${bulkProgress.completed} sourate${bulkProgress.completed !== 1 ? "s" : ""} téléchargée${bulkProgress.completed !== 1 ? "s" : ""} pour hors-ligne`
                 : "Échec du téléchargement"}
@@ -1657,7 +1657,7 @@ export default function QuranTab() {
             </span>
             <button
               onClick={() => { setBulkProgress(null); retryAttemptsRef.current = new Map(); }}
-              className="text-[10px] font-bold"
+              className="text-[0.625rem] font-bold"
               style={{ color: bulkProgress.completed > 0 ? "hsl(142 71% 45%)" : "hsl(0 80% 50%)" }}
             >
               ✕
@@ -1667,7 +1667,7 @@ export default function QuranTab() {
             <div className="flex items-center gap-2">
               <button
                 onClick={retryFailedBulkDownload}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.6875rem] font-semibold transition-colors"
                 style={{ background: `${GOLD}22`, color: GOLD, border: `1px solid ${GOLD}44` }}
               >
                 <RefreshCw size={12} />
@@ -1677,13 +1677,13 @@ export default function QuranTab() {
                 const maxAttempt = Math.max(0, ...bulkProgress.failedSurahs.map(s => retryAttemptsRef.current.get(s) ?? 0));
                 const delayMs = computeBackoffDelay(maxAttempt);
                 return (
-                  <span className="text-[9px] text-muted-foreground" title="Le délai augmente progressivement pour protéger le serveur">
+                  <span className="text-[0.5625rem] text-muted-foreground" title="Le délai augmente progressivement pour protéger le serveur">
                     ⏱ {delayMs < 1000 ? `${delayMs}ms` : `${(delayMs / 1000).toFixed(1)}s`} de délai
                     {maxAttempt >= 2 && " (↑ progressif)"}
                   </span>
                 );
               })()}
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.625rem] text-muted-foreground">
                 {formatFailedSurahs(bulkProgress.failedSurahs)}
               </span>
             </div>
@@ -1702,14 +1702,14 @@ export default function QuranTab() {
             boxShadow: `0 8px 32px ${GOLD}18`,
           }}
         >
-          <p className="text-[10px] uppercase tracking-widest mb-2 text-center flex items-center justify-center gap-1" style={{ color: `${GOLD}99` }}>
+          <p className="text-[0.625rem] uppercase tracking-widest mb-2 text-center flex items-center justify-center gap-1" style={{ color: `${GOLD}99` }}>
             <Sparkles size={10} /> {t("islamic.quran.verse_of_day")} — {verseOfDay.theme}
           </p>
           <p className="text-base text-right leading-loose mb-3" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: "#fff", direction: "rtl" }}>
             {verseOfDay.arabic}
           </p>
           <p className="text-xs text-muted-foreground leading-relaxed mb-2">{verseOfDay.translation}</p>
-          <p className="text-[10px] text-center" style={{ color: `${GOLD}99` }}>— {verseOfDay.ref}</p>
+          <p className="text-[0.625rem] text-center" style={{ color: `${GOLD}99` }}>— {verseOfDay.ref}</p>
         </motion.div>
       )}
       {vodLoading && (
@@ -1717,7 +1717,7 @@ export default function QuranTab() {
       )}
 
       <div>
-        <label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.quran.translation_lang")}</label>
+        <label className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1 block">{t("islamic.quran.translation_lang")}</label>
         <select value={language} onChange={e => handleLanguageChange(e.target.value)} className="w-full text-xs rounded-lg border border-border bg-card px-2 py-2">
           {QURAN_LANGUAGES.map(l => (
             <option key={l.code} value={l.code}>{l.native}</option>
@@ -1727,11 +1727,11 @@ export default function QuranTab() {
 
       {recentlyRead.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Récemment lu</p>
+          <p className="text-[0.625rem] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">Récemment lu</p>
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {recentlyRead.map(r => (
               <button key={r.surah} onClick={() => loadSurah(r.surah)}
-                className="shrink-0 px-3 py-1.5 rounded-xl text-[10px] font-semibold"
+                className="shrink-0 px-3 py-1.5 rounded-xl text-[0.625rem] font-semibold"
                 style={{ background: `${GOLD}18`, color: GOLD, border: `1px solid ${GOLD}33` }}>
                 {r.name}
               </button>
@@ -1758,7 +1758,7 @@ export default function QuranTab() {
         <button onClick={() => setShowFavorites(true)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Heart size={18} style={{ color: GOLD }} fill={favorites.length > 0 ? GOLD : "none"} />
           {favorites.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: GOLD, color: NAVY }}>{favorites.length > 99 ? "99+" : favorites.length}</span>
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[0.5rem] font-bold" style={{ background: GOLD, color: NAVY }}>{favorites.length > 99 ? "99+" : favorites.length}</span>
           )}
         </button>
         <button onClick={() => setShowBookmarks(true)} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
@@ -1767,7 +1767,7 @@ export default function QuranTab() {
         <button onClick={openOfflineManager} className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 relative" style={{ background: `${GOLD}18`, border: `1px solid ${GOLD}33` }}>
           <Download size={18} style={{ color: GOLD }} />
           {cachedSurahStatus.cached.size > 0 && (
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold" style={{ background: GOLD, color: NAVY }}>{cachedSurahStatus.cached.size > 99 ? "99+" : cachedSurahStatus.cached.size}</span>
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[0.5rem] font-bold" style={{ background: GOLD, color: NAVY }}>{cachedSurahStatus.cached.size > 99 ? "99+" : cachedSurahStatus.cached.size}</span>
           )}
         </button>
       </div>
@@ -1791,15 +1791,30 @@ export default function QuranTab() {
               Aucune correspondance pour « {search} ». Essayez avec d'autres termes.
             </p>
           )}
+          <div className="mt-2 w-full">
+            <p className="text-[0.625rem] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Suggestions</p>
+            <div className="flex flex-wrap gap-1.5 justify-center">
+              {["Rahman", "Miséricorde", "Paradis", "Patience", "Prière", "Lumière"].map(term => (
+                <button
+                  key={term}
+                  onClick={() => { setSearch(term); }}
+                  className="px-2.5 py-1 rounded-full text-xs font-medium"
+                  style={{ background: "hsl(var(--accent) / 0.12)", color: "hsl(var(--accent))" }}
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
       {searchResults.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.quran.results")} ({searchResults.length})</h3>
+          <h3 className="text-[0.6875rem] font-bold uppercase tracking-wide text-muted-foreground">{t("islamic.quran.results")} ({searchResults.length})</h3>
           {searchResults.map((r, i) => (
             <button key={i} onClick={() => loadSurah(r.surah)} className="w-full text-left rounded-2xl p-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-              <p className="text-[10px] font-bold" style={{ color: GOLD }}>{t("islamic.quran.surah")} {r.surah}, {t("islamic.quran.verse")} {r.ayah}</p>
+              <p className="text-[0.625rem] font-bold" style={{ color: GOLD }}>{t("islamic.quran.surah")} {r.surah}, {t("islamic.quran.verse")} {r.ayah}</p>
               <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{r.text}</p>
             </button>
           ))}
@@ -1809,11 +1824,11 @@ export default function QuranTab() {
       {bulkDownloadProgress !== null && (
         <div className="rounded-2xl p-3 space-y-2" style={{ background: "hsl(var(--card))", border: `1px solid ${GOLD}44` }}>
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-semibold flex items-center gap-1" style={{ color: GOLD }}>
+            <p className="text-[0.625rem] font-semibold flex items-center gap-1" style={{ color: GOLD }}>
               <Loader2 size={10} className="animate-spin" />
               Téléchargement {bulkDownloadProgress.completed}/{bulkDownloadProgress.total}
             </p>
-            <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
+            <button onClick={cancelBulkDownload} className="flex items-center gap-1 text-[0.625rem] font-semibold" style={{ color: "hsl(0 80% 50%)" }}>
               <XCircle size={10} /> Annuler
             </button>
           </div>
@@ -1824,7 +1839,7 @@ export default function QuranTab() {
             />
           </div>
           {bulkDownloadProgress.failedSurahs.length > 0 && (
-            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+            <p className="text-[0.625rem] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
               Échouées : {formatFailedSurahs(bulkDownloadProgress.failedSurahs)}
             </p>
           )}
@@ -1852,9 +1867,9 @@ export default function QuranTab() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline gap-2">
                     <span className="text-sm font-semibold">Juz {j.number}</span>
-                    <span className="text-[11px]" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: `${GOLD}99` }}>{j.nameAr}</span>
+                    <span className="text-[0.6875rem]" style={{ fontFamily: "'Amiri', 'Traditional Arabic', serif", color: `${GOLD}99` }}>{j.nameAr}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {startSurah?.nameFr} {j.startAyah} → {endSurah?.nameFr} {j.endAyah}
                   </p>
                 </div>
@@ -1871,9 +1886,9 @@ export default function QuranTab() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
                   <span className="text-sm font-semibold">{s.nameFr}</span>
-                  <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
+                  <span className="text-[0.6875rem] text-muted-foreground" style={{ fontFamily: "serif" }}>{s.nameAr}</span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">{s.versesCount} {t("islamic.quran.verses")} · {s.revelationType}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{s.versesCount} {t("islamic.quran.verses")} · {s.revelationType}</p>
               </div>
             </button>
           ))}

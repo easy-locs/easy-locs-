@@ -39,7 +39,7 @@ export default function RadarPanel({ type = "taxi", compact = false, className =
             {loading ? "Scanning…" : `${radar?.availableCount || 0} ${type === "taxi" ? "taxis" : "couriers"}`}
           </span>
           {radar?.etaMinutes !== null && radar?.etaMinutes !== undefined && (
-            <span className="text-[10px]" style={{ color: "hsl(var(--hud-cyan))" }}>
+            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-cyan))" }}>
               ⚡ {formatETA(radar.etaMinutes)} fastest
             </span>
           )}
@@ -75,7 +75,7 @@ export default function RadarPanel({ type = "taxi", compact = false, className =
             <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>
               Live Radar
             </h3>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {type === "taxi" ? "Drivers" : "Couriers"} around you
             </p>
           </div>
@@ -88,7 +88,7 @@ export default function RadarPanel({ type = "taxi", compact = false, className =
           ) : (
             <WifiOff className="h-3 w-3" style={{ color: "hsl(var(--hud-warning))" }} />
           )}
-          <span className="text-[10px] font-semibold" style={{
+          <span className="text-[0.625rem] font-semibold" style={{
             color: connected ? "hsl(var(--hud-success))" : "hsl(var(--hud-warning))",
           }}>
             {connected ? "Live" : "Polling"}
@@ -140,7 +140,7 @@ function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string
     }}>
       {icon}
       <span className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>{value}</span>
-      <span className="text-[10px] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
+      <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
     </div>
   );
 }

@@ -159,9 +159,9 @@ const DashboardPreview = () => {
                   <div className="flex items-center justify-between mb-2.5">
                     <div className="flex items-center gap-1.5">
                       <s.icon className="h-4 w-4" style={{ color: `hsl(var(--${s.color}))` }} />
-                      <span className="text-[10px] sm:text-xs font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{s.label}</span>
+                      <span className="text-[0.625rem] sm:text-xs font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{s.label}</span>
                     </div>
-                    <span className="text-[10px] font-bold flex items-center gap-0.5" style={{ color: "hsl(var(--success))" }}>
+                    <span className="text-[0.625rem] font-bold flex items-center gap-0.5" style={{ color: "hsl(var(--success))" }}>
                       <ArrowUpRight className="h-3 w-3" />
                       {s.change}
                     </span>
@@ -198,7 +198,7 @@ const DashboardPreview = () => {
                     />
                   ))}
                 </div>
-                <div className="flex justify-between mt-2 text-[10px] font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>
+                <div className="flex justify-between mt-2 text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>
                   <span>Jan</span><span>Jun</span><span>Dec</span>
                 </div>
               </div>
@@ -228,7 +228,7 @@ const DashboardPreview = () => {
                       <div className="w-2 h-2 rounded-full mt-1.5 shrink-0" style={{ background: `hsl(var(--${a.dot}))` }} />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs leading-snug line-clamp-2" style={{ color: "hsl(var(--primary-foreground) / 0.75)" }}>{a.text}</p>
-                        <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>{a.time}</p>
+                        <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--primary-foreground) / 0.3)" }}>{a.time}</p>
                       </div>
                     </motion.div>
                   ))}
@@ -242,7 +242,7 @@ const DashboardPreview = () => {
                 <Sparkles className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
                 <span className="text-sm font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>Service Categories</span>
                 <span
-                  className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                  className="ml-auto text-[0.625rem] font-semibold px-2 py-0.5 rounded-full"
                   style={{
                     color: "hsl(var(--accent))",
                     background: "hsl(var(--accent) / 0.1)",
@@ -268,11 +268,11 @@ const DashboardPreview = () => {
                     }}
                   >
                     <div className="text-3xl text-center mb-2">{cat.emoji}</div>
-                    <p className="text-[11px] font-bold text-center line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>{cat.label}</p>
-                    <p className="text-[10px] text-center mt-0.5" style={{ color: `hsl(var(--${cat.color}))` }}>{cat.price}</p>
+                    <p className="text-[0.6875rem] font-bold text-center line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.85)" }}>{cat.label}</p>
+                    <p className="text-[0.625rem] text-center mt-0.5" style={{ color: `hsl(var(--${cat.color}))` }}>{cat.price}</p>
                     <div className="flex items-center justify-center gap-1 mt-1.5">
                       <Star className="h-2.5 w-2.5" style={{ color: "hsl(var(--accent))" }} />
-                      <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>{cat.bookings} booked</span>
+                      <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>{cat.bookings} booked</span>
                     </div>
                   </motion.div>
                 ))}
@@ -309,13 +309,13 @@ const DashboardPreview = () => {
                       }}
                     >
                       <span className="text-xl">{pm.icon}</span>
-                      <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{pm.label}</span>
+                      <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.6)" }}>{pm.label}</span>
                     </motion.div>
                   ))}
                 </div>
                 <div className="flex items-center gap-2 mt-3 px-1">
                   <CheckCircle2 className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
-                  <span className="text-[10px] min-w-0 line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>0% client fees — Only 5% platform commission</span>
+                  <span className="text-[0.625rem] min-w-0 line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>0% client fees — Only 5% platform commission</span>
                 </div>
               </div>
 
@@ -340,11 +340,11 @@ const DashboardPreview = () => {
                   }}
                 >
                   <Globe className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--accent) / 0.5)" }} />
-                  <span className="text-[10px] font-mono flex-1 truncate" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
+                  <span className="text-[0.625rem] font-mono flex-1 truncate" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>
                     easy-locs.com/book/rent-car-marrakech
                   </span>
                   <div
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0"
+                    className="text-[0.625rem] font-bold px-2 py-0.5 rounded-md shrink-0"
                     style={{ background: "hsl(var(--accent) / 0.1)", color: "hsl(var(--accent))" }}
                   >
                     Copy
@@ -368,14 +368,14 @@ const DashboardPreview = () => {
                       }}
                     >
                       {sp.icon ? <sp.icon className="h-4 w-4" style={{ color: sp.color }} /> : <WhatsAppIcon size={16} style={{ color: sp.color }} />}
-                      <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{sp.label}</span>
+                      <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{sp.label}</span>
                     </motion.div>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-2 mt-3 px-1">
                   <ShieldCheck className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--accent))" }} />
-                  <span className="text-[10px] min-w-0 line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>Product photo in link preview — Stable links</span>
+                  <span className="text-[0.625rem] min-w-0 line-clamp-1" style={{ color: "hsl(var(--primary-foreground) / 0.4)" }}>Product photo in link preview — Stable links</span>
                 </div>
               </div>
             </div>
@@ -404,7 +404,7 @@ const DashboardPreview = () => {
                   }}
                 >
                   <m.icon className="h-4 w-4" style={{ color: `hsl(var(--${m.color}))` }} />
-                  <span className="text-[10px] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{m.label}</span>
+                  <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--primary-foreground) / 0.5)" }}>{m.label}</span>
                 </motion.div>
               ))}
             </div>

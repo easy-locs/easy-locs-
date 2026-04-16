@@ -257,7 +257,7 @@ export default function AdminEnginesDashboardPage() {
         </button>
         <div className="flex-1">
           <h1 className="text-lg font-bold text-foreground">{tc("admin.engine_cockpit")}</h1>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[0.6875rem] text-muted-foreground">
             {tc("admin.engines_subtitle", { count: rawStatus.totalJobs, score: healthScores.global })} · {rawStatus.running ? `🟢 ${tc("admin.live")}` : `🔴 ${tc("admin.off")}`}
           </p>
         </div>
@@ -276,7 +276,7 @@ export default function AdminEnginesDashboardPage() {
           >
             <div className={`w-2 h-2 rounded-full mx-auto mb-1 ${STATUS_CONFIG[s].dot}`} />
             <p className="text-lg font-bold text-foreground">{totals[s]}</p>
-            <p className="text-[10px] text-muted-foreground">{STATUS_CONFIG[s].label}</p>
+            <p className="text-[0.625rem] text-muted-foreground">{STATUS_CONFIG[s].label}</p>
           </button>
         ))}
       </div>
@@ -286,7 +286,7 @@ export default function AdminEnginesDashboardPage() {
         {(["critical", "priority", "standard", "optimizable"] as EngineTier[]).map(tier => (
           <div key={tier} className={`rounded-xl px-2.5 py-1.5 text-center ${TIER_BADGE[tier].bg}`}>
             <p className={`text-sm font-bold ${TIER_BADGE[tier].text}`}>{tierCounts[tier]}</p>
-            <p className="text-[10px] text-muted-foreground capitalize">{tc(`admin.tier_${tier}`)}</p>
+            <p className="text-[0.625rem] text-muted-foreground capitalize">{tc(`admin.tier_${tier}`)}</p>
           </div>
         ))}
       </div>
@@ -296,19 +296,19 @@ export default function AdminEnginesDashboardPage() {
         <div className="flex gap-1.5">
           <button
             onClick={() => { setViewMode("business"); setBizFilter(null); }}
-            className={`rounded-full px-3 py-1 text-[11px] font-bold ${viewMode === "business" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${viewMode === "business" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
           >
             📊 {tc("admin.view_business")}
           </button>
           <button
             onClick={() => { setViewMode("category"); setBizFilter(null); }}
-            className={`rounded-full px-3 py-1 text-[11px] font-bold ${viewMode === "category" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ${viewMode === "category" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
           >
             🗂 {tc("admin.view_technical")}
           </button>
           <button
             onClick={() => setShowCollisions(!showCollisions)}
-            className={`rounded-full px-3 py-1 text-[11px] font-bold ml-auto ${showCollisions ? "bg-orange-500/20 text-orange-400" : "bg-muted text-muted-foreground"}`}
+            className={`rounded-full px-3 py-1 text-[0.6875rem] font-bold ml-auto ${showCollisions ? "bg-orange-500/20 text-orange-400" : "bg-muted text-muted-foreground"}`}
           >
             ⚡ {tc("admin.collisions")} ({collisions.length})
           </button>
@@ -318,7 +318,7 @@ export default function AdminEnginesDashboardPage() {
           <div className="flex flex-wrap gap-1">
             <button
               onClick={() => setBizFilter(null)}
-              className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${!bizFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              className={`rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold ${!bizFilter ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
             >
               {tc("admin.all")}
             </button>
@@ -329,7 +329,7 @@ export default function AdminEnginesDashboardPage() {
                 <button
                   key={fn}
                   onClick={() => setBizFilter(bizFilter === fn ? null : fn)}
-                  className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold ${bizFilter === fn ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+                  className={`rounded-full px-2.5 py-0.5 text-[0.625rem] font-bold ${bizFilter === fn ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
                 >
                   {BIZ_FN_META[fn].icon} {BIZ_FN_META[fn].label} ({count})
                 </button>
@@ -353,7 +353,7 @@ export default function AdminEnginesDashboardPage() {
           <div key={key} className="rounded-2xl border border-border bg-card overflow-hidden">
             <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30">
               <span className="text-sm font-bold text-foreground">{meta.icon} {meta.label}</span>
-              <div className="flex items-center gap-2 text-[10px] font-medium">
+              <div className="flex items-center gap-2 text-[0.625rem] font-medium">
                 {okCount > 0 && <span className="text-emerald-500">{okCount}✓</span>}
                 {idleCount > 0 && <span className="text-sky-400">{idleCount}○</span>}
                 {errCount > 0 && <span className="text-red-500">{errCount}✗</span>}
@@ -368,11 +368,11 @@ export default function AdminEnginesDashboardPage() {
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full shrink-0 ${STATUS_CONFIG[job.runtimeStatus].dot}`} />
                       <p className="text-xs font-semibold text-foreground truncate flex-1">{job.name}</p>
-                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${tierBadge.bg} ${tierBadge.text}`}>
+                      <span className={`rounded-full px-1.5 py-0.5 text-[0.625rem] font-bold ${tierBadge.bg} ${tierBadge.text}`}>
                         {tc(`admin.tier_${job.tier}`).toUpperCase()}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground pl-4">
+                    <div className="flex items-center gap-2 text-[0.625rem] text-muted-foreground pl-4">
                       <span>⏱ {job.intervalLabel}</span>
                       <span>×{job.runCount}</span>
                       {job.vertical !== "all" && (
@@ -384,7 +384,7 @@ export default function AdminEnginesDashboardPage() {
                       </span>
                     </div>
                     {job.description && (
-                      <p className="text-[10px] text-muted-foreground/60 pl-4 truncate">{job.description}</p>
+                      <p className="text-[0.625rem] text-muted-foreground/60 pl-4 truncate">{job.description}</p>
                     )}
                   </div>
                 );
@@ -402,7 +402,7 @@ export default function AdminEnginesDashboardPage() {
           </div>
           <div className="p-3 space-y-3">
             <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.visibility_pipeline")}</p>
+              <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.visibility_pipeline")}</p>
               <div className="grid grid-cols-3 gap-1">
                 {([
                   { label: tc("admin.total"), value: dbStats.total, color: "text-foreground" },
@@ -412,14 +412,14 @@ export default function AdminEnginesDashboardPage() {
                   { label: tc("admin.soon"), value: dbStats.comingSoon, color: "text-sky-400" },
                 ]).map(r => (
                   <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
-                    <span className="text-[10px] text-muted-foreground">{r.label}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{r.label}</span>
                     <span className={`text-sm font-bold ${r.color}`}>{r.value}</span>
                   </div>
                 ))}
               </div>
             </div>
             <div>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.verticals")}</p>
+              <p className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider mb-1">{tc("admin.verticals")}</p>
               <div className="grid grid-cols-2 gap-1">
                 {([
                   { label: tc("admin.food"), value: dbStats.food },
@@ -428,7 +428,7 @@ export default function AdminEnginesDashboardPage() {
                   { label: tc("admin.grocery"), value: dbStats.grocery },
                 ]).map(r => (
                   <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
-                    <span className="text-[10px] text-muted-foreground">{r.label}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{r.label}</span>
                     <span className="text-sm font-bold text-foreground">{r.value}</span>
                   </div>
                 ))}
@@ -453,7 +453,7 @@ export default function AdminEnginesDashboardPage() {
             { label: tc("admin.global"), value: healthScores.global, icon: "🎯" },
           ]).map(s => (
             <div key={s.label} className="rounded-xl bg-muted/40 px-2.5 py-2 text-center">
-              <p className="text-[10px] text-muted-foreground">{s.icon} {s.label}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{s.icon} {s.label}</p>
               <p className={`text-lg font-bold ${s.value >= 80 ? "text-emerald-500" : s.value >= 50 ? "text-amber-500" : "text-red-500"}`}>{s.value}</p>
             </div>
           ))}
@@ -475,10 +475,10 @@ export default function AdminEnginesDashboardPage() {
               return (
                 <div key={i} className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold ${levelColor}`}>{c.level.replace("_", " ").toUpperCase()}</span>
-                    <span className="text-[11px] font-mono font-bold text-foreground">{c.table}.{c.field}</span>
+                    <span className={`text-[0.625rem] font-bold ${levelColor}`}>{c.level.replace("_", " ").toUpperCase()}</span>
+                    <span className="text-[0.6875rem] font-mono font-bold text-foreground">{c.table}.{c.field}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{c.engines.join(" · ")} — {c.reason}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{c.engines.join(" · ")} — {c.reason}</p>
                 </div>
               );
             })}
@@ -490,24 +490,24 @@ export default function AdminEnginesDashboardPage() {
       <div className="rounded-2xl border border-border bg-card overflow-hidden">
         <button onClick={() => setShowDecisions(!showDecisions)} className="w-full px-4 py-2 border-b border-border bg-muted/30 flex items-center justify-between">
           <span className="text-sm font-bold text-foreground">📋 {tc("admin.decision_journal")} ({decisions.length})</span>
-          <span className="text-[10px] text-muted-foreground" aria-hidden="true">{showDecisions ? "▼" : "▶"}</span>
+          <span className="text-[0.625rem] text-muted-foreground" aria-hidden="true">{showDecisions ? "▼" : "▶"}</span>
           <span className="sr-only">{showDecisions ? tc("admin.collapse") : tc("admin.expand")}</span>
         </button>
         {showDecisions && (
           <div className="divide-y divide-border/10 max-h-60 overflow-y-auto">
             {decisions.length === 0 ? (
-              <p className="px-4 py-3 text-[11px] text-muted-foreground">{tc("admin.no_decisions")}</p>
+              <p className="px-4 py-3 text-[0.6875rem] text-muted-foreground">{tc("admin.no_decisions")}</p>
             ) : decisions.map((d: any) => {
               const sevColor = d.severity === "critical" ? "text-red-500" : d.severity === "warning" ? "text-amber-500" : "text-muted-foreground";
               return (
                 <div key={d.id} className="px-4 py-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold ${sevColor}`}>{d.severity?.toUpperCase()}</span>
-                    <span className="text-[10px] font-bold text-foreground">{d.action_type}</span>
-                    {d.auto_applied && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 rounded px-1">AUTO</span>}
+                    <span className={`text-[0.625rem] font-bold ${sevColor}`}>{d.severity?.toUpperCase()}</span>
+                    <span className="text-[0.625rem] font-bold text-foreground">{d.action_type}</span>
+                    {d.auto_applied && <span className="text-[0.625rem] bg-emerald-500/20 text-emerald-400 rounded px-1">AUTO</span>}
                   </div>
-                  <p className="text-[10px] text-muted-foreground truncate">{d.description}</p>
-                  <p className="text-[10px] text-muted-foreground/60">{d.decision} · {new Date(d.created_at).toLocaleString()}</p>
+                  <p className="text-[0.625rem] text-muted-foreground truncate">{d.description}</p>
+                  <p className="text-[0.625rem] text-muted-foreground/60">{d.decision} · {new Date(d.created_at).toLocaleString()}</p>
                 </div>
               );
             })}
@@ -524,7 +524,7 @@ export default function AdminEnginesDashboardPage() {
           { label: tc("admin.health_score_label"), value: `${healthScores.global}/100` },
         ]).map(r => (
           <div key={r.label} className="flex justify-between items-center rounded-lg bg-muted/40 px-2.5 py-1">
-            <span className="text-[10px] text-muted-foreground">{r.label}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{r.label}</span>
             <span className="text-sm font-bold text-foreground">{r.value}</span>
           </div>
         ))}

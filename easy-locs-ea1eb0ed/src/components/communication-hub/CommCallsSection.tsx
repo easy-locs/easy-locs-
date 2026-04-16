@@ -612,13 +612,13 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
 
       {scheduledCalls.length > 0 && (
         <div className="px-4 pb-2 shrink-0">
-          <p className="text-[11px] font-semibold mb-1.5" style={{ color: "hsl(var(--primary))" }}>Scheduled</p>
+          <p className="text-[0.6875rem] font-semibold mb-1.5" style={{ color: "hsl(var(--primary))" }}>Scheduled</p>
           <div className="space-y-1">
             {scheduledCalls.map(sc => (
               <div key={sc.id} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs" style={{ background: "hsl(var(--primary) / 0.06)", border: "1px solid hsl(var(--primary) / 0.1)" }}>
                 {sc.type === "video" ? <Video className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--primary))" }} /> : <Phone className="h-3.5 w-3.5 shrink-0" style={{ color: "hsl(var(--hud-success))" }} />}
                 <span className="flex-1 truncate font-medium" style={{ color: "hsl(var(--foreground))" }}>{sc.contactName}</span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{format(sc.date, "MMM d")} · {sc.time}</span>
                 <button onClick={() => { void orbitService.updateScheduledCallStatus(sc.id, "cancelled"); setScheduledCalls(prev => prev.filter(s => s.id !== sc.id)); }} className="shrink-0 active:scale-90 transition-transform">
                   <X className="h-3 w-3" style={{ color: "hsl(var(--muted-foreground) / 0.4)" }} />
                 </button>
@@ -823,7 +823,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                           <img src={contact.avatarUrl} className="w-full h-full rounded-full object-cover" alt="" loading="lazy" />
                         ) : contact.name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="flex-1 text-[13px] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
+                      <span className="flex-1 text-[0.8125rem] font-medium truncate" style={{ color: "hsl(var(--foreground))" }}>
                         {contact.name}
                       </span>
                       <div className="shrink-0">
@@ -850,7 +850,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Contact</label>
+              <label className="text-[0.6875rem] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Contact</label>
               {scheduleContact ? (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: "hsl(var(--card))" }}>
                   <div
@@ -879,13 +879,13 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
                       <button
                         key={c.id}
                         onClick={() => setScheduleContact({ id: c.id, name: c.name, userId: c.userId, orbitId: c.orbitId })}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] transition-colors"
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-[0.8125rem] transition-colors"
                         style={{ color: "hsl(var(--foreground))" }}
                         onMouseEnter={e => (e.currentTarget.style.background = "hsl(var(--card))")}
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                       >
                         <div
-                          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0"
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[0.625rem] font-bold shrink-0"
                           style={{ background: `hsl(${(c.name.charCodeAt(0) * 37) % 360} 50% 45%)` }}
                         >
                           {c.name.charAt(0).toUpperCase()}
@@ -899,7 +899,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             </div>
 
             <div>
-              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Call Type</label>
+              <label className="text-[0.6875rem] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Call Type</label>
               <div className="flex gap-2">
                 <button
                   onClick={() => setScheduleType("audio")}
@@ -927,7 +927,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             </div>
 
             <div>
-              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Date</label>
+              <label className="text-[0.6875rem] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Date</label>
               <div className="rounded-lg overflow-hidden" style={{ background: "hsl(var(--card))" }}>
                 <Calendar
                   mode="single"
@@ -940,7 +940,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
             </div>
 
             <div>
-              <label className="text-[11px] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Time</label>
+              <label className="text-[0.6875rem] font-medium mb-1.5 block" style={{ color: "hsl(var(--muted-foreground))" }}>Time</label>
               <input
                 type="time"
                 value={scheduleTime}
@@ -961,7 +961,7 @@ export default function CommCallsSection({ onOpenThread }: { onOpenThread?: (pee
 
             {scheduledCalls.length > 0 && (
               <div className="pt-2 border-t" style={{ borderColor: "hsl(var(--border) / 0.1)" }}>
-                <p className="text-[11px] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.calls.upcoming")}</p>
+                <p className="text-[0.6875rem] font-medium mb-2" style={{ color: "hsl(var(--muted-foreground))" }}>{t("orbit.calls.upcoming")}</p>
                 <div className="space-y-1.5">
                   {scheduledCalls.map(sc => (
                     <div key={sc.id} className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs" style={{ background: "hsl(var(--card) / 0.5)" }}>

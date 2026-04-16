@@ -9,7 +9,7 @@ import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { updateStorefrontOrderStatus } from "@/lib/orders/orderEngine";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { ChefHat, Clock, CheckCircle, Package, Truck, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -138,7 +138,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                 <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {config.label}
                 </span>
-                <Badge variant="outline" className="text-[10px] ml-auto">
+                <Badge variant="outline" className="text-[0.625rem] ml-auto">
                   {grouped[status].length}
                 </Badge>
               </div>
@@ -152,13 +152,13 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
               {grouped[status].map((order: any) => {
                 const items = order.storefront_order_items ?? [];
                 return (
-                  <Card key={order.id} className="overflow-hidden">
+                  <AppCard key={order.id} className="overflow-hidden">
                     <CardContent className="p-3 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-foreground">
                           #{order.id.slice(0, 8).toUpperCase()}
                         </span>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <div className="flex items-center gap-1 text-[0.625rem] text-muted-foreground">
                           <Clock className="h-3 w-3" />
                           {elapsed(order.created_at)}
                         </div>
@@ -167,20 +167,20 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                       {/* Items */}
                       <div className="space-y-0.5">
                         {items.map((item: any) => (
-                          <p key={item.id} className="text-[11px] text-foreground">
+                          <p key={item.id} className="text-[0.6875rem] text-foreground">
                             {item.quantity}× {item.title}
                           </p>
                         ))}
                       </div>
 
                       {order.notes && !order.notes.startsWith("idem:") && (
-                        <p className="text-[10px] italic text-muted-foreground">
+                        <p className="text-[0.625rem] italic text-muted-foreground">
                           "{order.notes}"
                         </p>
                       )}
 
                       <div className="flex items-center justify-between text-xs">
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-[0.625rem]">
                           {order.payment_status === "secured" ? "💰 Paid" : "⏳ Unpaid"}
                         </Badge>
                         <span className="font-bold text-foreground">
@@ -193,7 +193,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                         {config.next && (
                           <Button
                             size="sm"
-                            className="flex-1 h-8 text-[11px]"
+                            className="flex-1 h-8 text-[0.6875rem]"
                             onClick={() => handleAdvance(order)}
                           >
                             {config.nextLabel}
@@ -203,7 +203,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                           <Button
                             size="sm"
                             variant="destructive"
-                            className="h-8 text-[11px]"
+                            className="h-8 text-[0.6875rem]"
                             onClick={() => handleReject(order)}
                           >
                             <XCircle className="h-3 w-3" />
@@ -211,7 +211,7 @@ export default function MerchantKitchenQueue({ shopId }: KitchenQueueProps) {
                         )}
                       </div>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 );
               })}
             </div>

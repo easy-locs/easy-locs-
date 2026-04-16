@@ -88,7 +88,7 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -96,7 +96,7 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["policies", "claims", "insurers"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "policies" ? "🛡️ Polices" : v === "claims" ? "📋 Réclamations" : "🏢 Assureurs"}
           </button>
@@ -112,20 +112,20 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
                 <Shield className="h-4 w-4 shrink-0" style={{ color: p.status === "active" ? "hsl(var(--success))" : "hsl(var(--warning))" }} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{p.name}</p>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ background: p.status === "active" ? "hsl(var(--success) / 0.1)" : "hsl(var(--warning) / 0.1)", color: p.status === "active" ? "hsl(var(--success))" : "hsl(var(--warning))" }}>
                       {p.status === "active" ? "Actif" : p.status === "pending" ? "En attente" : "Expiré"}
                     </span>
                   </div>
-                  <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                     🏢 {p.provider} • 💰 Max {fmt(p.maxAmount)} F • 🔄 {p.autoRenew ? "Auto-renouvellement" : "Manuel"}
                   </p>
-                  <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                  <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                     📋 {p.coveredItems.join(", ")}
                   </p>
                 </div>
-                <p className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(p.premium)} F/m</p>
+                <p className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{fmt(p.premium)} F/m</p>
               </div>
             </div>
           ))}
@@ -143,21 +143,21 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.type}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.type}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{c.description}</p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{c.description}</p>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       📎 {c.evidence.length} pièce(s) • 🔖 {c.jobId}
                     </p>
                   </div>
-                  <p className="text-[10px] font-bold shrink-0" style={{ color: `hsl(var(${cfg.color}))` }}>{c.amount.toLocaleString()} F</p>
+                  <p className="text-[0.625rem] font-bold shrink-0" style={{ color: `hsl(var(${cfg.color}))` }}>{c.amount.toLocaleString()} F</p>
                 </div>
               </div>
             );
           })}
-          <Button size="sm" className="w-full text-[10px] h-8" variant="outline"
+          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
             onClick={() => { haptic("medium"); toast("Formulaire de réclamation ouvert"); }}
             style={{ borderColor: "hsl(var(--border) / 0.2)", color: "hsl(var(--warning))" }}>
             <Upload className="h-3 w-3 mr-1" /> Déposer une réclamation
@@ -170,10 +170,10 @@ export default function InsuranceClaims({ orgId, className }: { orgId: string; c
           {INSURERS.map(i => (
             <div key={i.name} className="rounded-xl p-3" style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{i.name}</p>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--warning))" }}>⭐ {i.rating}</span>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{i.name}</p>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--warning))" }}>⭐ {i.rating}</span>
               </div>
-              <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                 ⏱️ ~{i.claimSpeed}j traitement • ✅ {i.approvalRate}% approbation • 📋 {i.activePolicies} police(s)
               </p>
               <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>

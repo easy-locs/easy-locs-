@@ -62,7 +62,7 @@ export default function CustomerAddressSelectorPage() {
               <p className="text-sm font-bold text-foreground">{addr.label ?? "Address"}</p>
               <p className="text-xs text-muted-foreground">{addr.place?.formatted_address}</p>
               {addr.apartment && (
-                <p className="text-[11px] text-muted-foreground/70">Apt {addr.apartment}{addr.floor ? `, Floor ${addr.floor}` : ""}</p>
+                <p className="text-[0.6875rem] text-muted-foreground/70">Apt {addr.apartment}{addr.floor ? `, Floor ${addr.floor}` : ""}</p>
               )}
             </button>
           ))}

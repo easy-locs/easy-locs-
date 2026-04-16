@@ -47,8 +47,8 @@ function ResultItem({ result, selected, onSelect, t }: {
 
       {/* Info */}
       <div className="min-w-0 flex-1">
-        <div className="text-[14px] font-semibold text-white/95 line-clamp-1">{result.displayName}</div>
-        <div className="mt-0.5 flex items-center gap-2 text-[11px] text-white/40">
+        <div className="text-[0.875rem] font-semibold text-white/95 line-clamp-1">{result.displayName}</div>
+        <div className="mt-0.5 flex items-center gap-2 text-[0.6875rem] text-white/40">
           <span className="capitalize">{(result.category || "").replace(/_/g, " ")}</span>
           {distLabel && (
             <>
@@ -115,7 +115,7 @@ function SheetContent() {
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-[16px] font-bold text-white/95 line-clamp-1">{selected.displayName}</h3>
+            <h3 className="text-[1rem] font-bold text-white/95 line-clamp-1">{selected.displayName}</h3>
             <div className="mt-0.5 flex items-center gap-2 text-xs text-white/40">
               <span className="capitalize">{(selected.category || "").replace(/_/g, " ")}</span>
               {distLabel && (
@@ -138,7 +138,7 @@ function SheetContent() {
         )}
 
         <div className="flex gap-2">
-          <button className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[13px] font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
+          <button className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-[0.8125rem] font-semibold text-primary-foreground active:scale-[0.97] transition-transform">
             <Navigation className="h-4 w-4" />
             Itinéraire
           </button>
@@ -164,8 +164,8 @@ function SheetContent() {
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h3 className="text-[14px] font-semibold text-white/80">{intentLabel}</h3>
-        <span className="text-[11px] text-white/30">{results.length} {t("common.results").toLowerCase()}</span>
+        <h3 className="text-[0.875rem] font-semibold text-white/80">{intentLabel}</h3>
+        <span className="text-[0.6875rem] text-white/30">{results.length} {t("common.results").toLowerCase()}</span>
       </div>
       <div className="space-y-0.5 max-h-[50vh] overflow-y-auto scrollbar-none">
         {results.map(r => (

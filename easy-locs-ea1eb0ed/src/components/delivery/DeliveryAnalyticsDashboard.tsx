@@ -23,10 +23,10 @@ function KpiCard({ icon: Icon, label, value, sub, color }: {
     >
       <div className="flex items-center gap-2 mb-1.5">
         <Icon className="w-4 h-4" style={{ color }} />
-        <span className="text-[10px] text-muted-foreground font-medium">{label}</span>
+        <span className="text-[0.625rem] text-muted-foreground font-medium">{label}</span>
       </div>
       <p className="text-lg font-bold text-foreground">{value}</p>
-      {sub && <p className="text-[10px] text-muted-foreground mt-0.5">{sub}</p>}
+      {sub && <p className="text-[0.625rem] text-muted-foreground mt-0.5">{sub}</p>}
     </motion.div>
   );
 }
@@ -36,7 +36,7 @@ function MiniBar({ data, maxVal }: { data: { label: string; value: number; color
     <div className="space-y-1.5">
       {data.map(d => (
         <div key={d.label} className="flex items-center gap-2">
-          <span className="text-[10px] text-muted-foreground w-20 truncate">{d.label}</span>
+          <span className="text-[0.625rem] text-muted-foreground w-20 truncate">{d.label}</span>
           <div className="flex-1 h-3 rounded-full bg-muted/30 overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
@@ -46,7 +46,7 @@ function MiniBar({ data, maxVal }: { data: { label: string; value: number; color
               style={{ backgroundColor: d.color }}
             />
           </div>
-          <span className="text-[10px] font-semibold text-foreground w-8 text-right">{d.value}</span>
+          <span className="text-[0.625rem] font-semibold text-foreground w-8 text-right">{d.value}</span>
         </div>
       ))}
     </div>
@@ -77,7 +77,7 @@ function DailyChart({ data }: { data: { date: string; count: number; completed: 
             </motion.div>
           </div>
           {i % 2 === 0 && (
-            <span className="text-[10px] text-muted-foreground">{d.date.slice(8)}</span>
+            <span className="text-[0.625rem] text-muted-foreground">{d.date.slice(8)}</span>
           )}
         </div>
       ))}
@@ -136,7 +136,7 @@ export default function DeliveryAnalyticsDashboard({ orgId }: { orgId?: string }
               ].map(e => (
                 <div key={e.label}>
                   <p className={`text-sm font-bold ${e.color}`}>{e.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{e.label}</p>
+                  <p className="text-[0.625rem] text-muted-foreground">{e.label}</p>
                 </div>
               ))}
             </div>
@@ -162,11 +162,11 @@ export default function DeliveryAnalyticsDashboard({ orgId }: { orgId?: string }
               <div className="flex items-center gap-2 ml-auto">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-sm bg-primary/60" />
-                  <span className="text-[10px] text-muted-foreground">Total</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Total</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 rounded-sm bg-primary" />
-                  <span className="text-[10px] text-muted-foreground">Terminé</span>
+                  <span className="text-[0.625rem] text-muted-foreground">Terminé</span>
                 </div>
               </div>
             </div>
@@ -183,10 +183,10 @@ export default function DeliveryAnalyticsDashboard({ orgId }: { orgId?: string }
               <div className="space-y-2">
                 {data.topDrivers.map((d, i) => (
                   <div key={d.driver_id} className="flex items-center gap-2">
-                    <Badge variant="outline" className="w-5 h-5 p-0 flex items-center justify-center text-[10px]">
+                    <Badge variant="outline" className="w-5 h-5 p-0 flex items-center justify-center text-[0.625rem]">
                       {i + 1}
                     </Badge>
-                    <span className="text-[10px] text-muted-foreground flex-1 truncate font-mono">
+                    <span className="text-[0.625rem] text-muted-foreground flex-1 truncate font-mono">
                       {d.driver_id.slice(0, 8)}…
                     </span>
                     <span className="text-xs font-semibold text-foreground">{d.completed} ✓</span>

@@ -617,7 +617,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
           background: "hsl(var(--accent))", color: "#fff",
-          padding: "6px 16px", fontSize: "13px", textAlign: "center",
+          padding: "6px 16px", fontSize: "0.8125rem", textAlign: "center",
         }}>
           Restoring your session…
         </div>
@@ -626,7 +626,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         <div style={{
           position: "fixed", top: 0, left: 0, right: 0, zIndex: 9999,
           background: "hsl(0 65% 50%)", color: "#fff",
-          padding: "8px 16px", fontSize: "13px", textAlign: "center",
+          padding: "8px 16px", fontSize: "0.8125rem", textAlign: "center",
           display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
         }}>
           <span>Your session has expired. Please sign in again.</span>
@@ -635,7 +635,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             style={{
               background: "#fff", color: "hsl(0 65% 50%)",
               border: "none", borderRadius: "4px", padding: "4px 12px",
-              cursor: "pointer", fontWeight: 600, fontSize: "12px",
+              cursor: "pointer", fontWeight: 600, fontSize: "0.75rem",
             }}
           >
             Sign In

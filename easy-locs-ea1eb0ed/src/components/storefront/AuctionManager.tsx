@@ -7,7 +7,7 @@ import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ function Countdown({ endsAt }: { endsAt: string }) {
   }, [endsAt]);
 
   return (
-    <span className={`text-[11px] font-mono font-bold ${urgent ? "text-destructive animate-pulse" : "text-muted-foreground"}`}>
+    <span className={`text-[0.6875rem] font-mono font-bold ${urgent ? "text-destructive animate-pulse" : "text-muted-foreground"}`}>
       <Clock className="h-3 w-3 inline mr-0.5" />{remaining}
     </span>
   );
@@ -137,7 +137,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
           <Gavel className="h-4 w-4 text-primary" /> Auctions
         </h3>
         {mode === "seller" && (
-          <Button size="sm" className="h-7 text-[10px] gap-1" onClick={() => setShowCreate(!showCreate)}>
+          <Button size="sm" className="h-7 text-[0.625rem] gap-1" onClick={() => setShowCreate(!showCreate)}>
             <Plus className="h-3 w-3" /> New Auction
           </Button>
         )}
@@ -145,10 +145,10 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
 
       {/* Create form (seller) */}
       {showCreate && mode === "seller" && (
-        <Card>
+        <AppCard>
           <CardContent className="p-3 space-y-2">
             <div>
-              <Label className="text-[10px]">Product</Label>
+              <Label className="text-[0.625rem]">Product</Label>
               <select
                 value={newAuction.item_id}
                 onChange={e => {
@@ -161,29 +161,29 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                 {catalogItems.map(i => <option key={i.id} value={i.id}>{i.title}</option>)}
               </select>
             </div>
-            <div><Label className="text-[10px]">Title</Label><Input value={newAuction.title} onChange={e => setNewAuction(p => ({ ...p, title: e.target.value }))} className="h-7 text-xs mt-1" /></div>
+            <div><Label className="text-[0.625rem]">Title</Label><Input value={newAuction.title} onChange={e => setNewAuction(p => ({ ...p, title: e.target.value }))} className="h-7 text-xs mt-1" /></div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label className="text-[10px]">Starting Price</Label><Input value={newAuction.starting_price} onChange={e => setNewAuction(p => ({ ...p, starting_price: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
-              <div><Label className="text-[10px]">Reserve Price</Label><Input value={newAuction.reserve_price} onChange={e => setNewAuction(p => ({ ...p, reserve_price: e.target.value }))} className="h-7 text-xs mt-1" type="number" placeholder="Optional" /></div>
+              <div><Label className="text-[0.625rem]">Starting Price</Label><Input value={newAuction.starting_price} onChange={e => setNewAuction(p => ({ ...p, starting_price: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
+              <div><Label className="text-[0.625rem]">Reserve Price</Label><Input value={newAuction.reserve_price} onChange={e => setNewAuction(p => ({ ...p, reserve_price: e.target.value }))} className="h-7 text-xs mt-1" type="number" placeholder="Optional" /></div>
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <div><Label className="text-[10px]">Duration (hours)</Label><Input value={newAuction.duration_hours} onChange={e => setNewAuction(p => ({ ...p, duration_hours: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
-              <div><Label className="text-[10px]">Auto-extend (min)</Label><Input value={newAuction.auto_extend_minutes} onChange={e => setNewAuction(p => ({ ...p, auto_extend_minutes: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
+              <div><Label className="text-[0.625rem]">Duration (hours)</Label><Input value={newAuction.duration_hours} onChange={e => setNewAuction(p => ({ ...p, duration_hours: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
+              <div><Label className="text-[0.625rem]">Auto-extend (min)</Label><Input value={newAuction.auto_extend_minutes} onChange={e => setNewAuction(p => ({ ...p, auto_extend_minutes: e.target.value }))} className="h-7 text-xs mt-1" type="number" /></div>
             </div>
             <Button size="sm" className="w-full h-8 text-xs" onClick={createAuction} disabled={creating}>
               {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : "Create Auction"}
             </Button>
           </CardContent>
-        </Card>
+        </AppCard>
       )}
 
       {/* Auctions list */}
       {isLoading ? (
         <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
       ) : auctions.length === 0 ? (
-        <Card><CardContent className="py-8 text-center text-xs text-muted-foreground">
+        <AppCard><CardContent className="py-8 text-center text-xs text-muted-foreground">
           {mode === "seller" ? "No auctions yet. Create one!" : "No active auctions"}
-        </CardContent></Card>
+        </CardContent></AppCard>
       ) : (
         <div className="space-y-2">
           {auctions.map((auction: any) => {
@@ -192,7 +192,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
             const minBid = (auction.current_bid || auction.starting_price) + 1;
 
             return (
-              <Card key={auction.id} className={isWinning ? "border-primary/30 bg-primary/5" : ""}>
+              <AppCard key={auction.id} className={isWinning ? "border-primary/30 bg-primary/5" : ""}>
                 <CardContent className="p-3">
                   <div className="flex gap-3">
                     {auction.photo_url && (
@@ -201,20 +201,20 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="text-xs font-semibold text-foreground line-clamp-2 break-words leading-snug">{auction.title}</h4>
-                        <Badge variant={isActive ? "default" : "secondary"} className="text-[10px] shrink-0">
+                        <Badge variant={isActive ? "default" : "secondary"} className="text-[0.625rem] shrink-0">
                           {isActive ? "LIVE" : auction.status}
                         </Badge>
                       </div>
 
                       <div className="flex items-center gap-3 mt-1.5">
                         <div>
-                          <p className="text-[10px] text-muted-foreground">Current Bid</p>
+                          <p className="text-[0.625rem] text-muted-foreground">Current Bid</p>
                           <p className="text-sm font-bold text-primary">
                             {auction.current_bid ? fmt(auction.current_bid, auction.currency) : fmt(auction.starting_price, auction.currency)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-muted-foreground">Bids</p>
+                          <p className="text-[0.625rem] text-muted-foreground">Bids</p>
                           <p className="text-xs font-semibold flex items-center gap-0.5">
                             <Users className="h-2.5 w-2.5" /> {auction.bid_count}
                           </p>
@@ -225,7 +225,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                       </div>
 
                       {isWinning && (
-                        <p className="text-[10px] text-primary font-semibold mt-1">✅ You're winning!</p>
+                        <p className="text-[0.625rem] text-primary font-semibold mt-1">✅ You're winning!</p>
                       )}
 
                       {/* Bid input (buyer, active auction) */}
@@ -239,7 +239,7 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                             placeholder={`Min: ${fmt(minBid, auction.currency)}`}
                             className="h-7 text-xs flex-1"
                           />
-                          <Button size="sm" className="h-7 text-[10px] gap-1 shrink-0" onClick={() => placeBid(auction.id)} disabled={bidding === auction.id}>
+                          <Button size="sm" className="h-7 text-[0.625rem] gap-1 shrink-0" onClick={() => placeBid(auction.id)} disabled={bidding === auction.id}>
                             {bidding === auction.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Gavel className="h-3 w-3" />}
                             Bid
                           </Button>
@@ -247,14 +247,14 @@ export default function AuctionManager({ shopId, mode, catalogItems = [] }: Prop
                       )}
 
                       {auction.reserve_price && auction.current_bid && auction.current_bid < auction.reserve_price && (
-                        <p className="text-[10px] text-warning flex items-center gap-0.5 mt-1">
+                        <p className="text-[0.625rem] text-warning flex items-center gap-0.5 mt-1">
                           <AlertTriangle className="h-2.5 w-2.5" /> Reserve not met
                         </p>
                       )}
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
         </div>

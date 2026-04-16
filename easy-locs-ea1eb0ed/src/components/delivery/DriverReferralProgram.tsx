@@ -76,14 +76,14 @@ export default function DriverReferralProgram() {
       {/* Referral code card */}
       <div className="rounded-xl p-4 text-center space-y-3" style={{ background: "linear-gradient(135deg, hsl(var(--hud-cyan) / 0.08), hsl(var(--primary) / 0.05))", border: "1px solid hsl(var(--hud-cyan) / 0.15)" }}>
         <Gift className="w-6 h-6 mx-auto" style={{ color: "hsl(var(--hud-cyan))" }} />
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Votre code de parrainage</p>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Votre code de parrainage</p>
         <div className="flex items-center justify-center gap-2">
           <span className="text-lg font-mono font-bold tracking-wider" style={{ color: "hsl(var(--hud-cyan))" }}>{referralCode}</span>
           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={copyCode}>
             <Copy className="w-3.5 h-3.5" style={{ color: "hsl(var(--hud-text-dim))" }} />
           </Button>
         </div>
-        <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+        <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
           Chaque filleul qui complète 10 livraisons vous rapporte <strong style={{ color: "hsl(var(--hud-cyan))" }}>15 LOCS</strong>
         </p>
         <Button size="sm" className="text-xs h-8 px-4" onClick={shareCode}
@@ -103,7 +103,7 @@ export default function DriverReferralProgram() {
           <div key={s.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
           </div>
         ))}
       </div>
@@ -112,7 +112,7 @@ export default function DriverReferralProgram() {
       <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-text))" }}>{currentTier.badge}</span>
-          {nextTier && <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Prochain: {nextTier.badge}</span>}
+          {nextTier && <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Prochain: {nextTier.badge}</span>}
         </div>
         {nextTier && (
           <>
@@ -122,7 +122,7 @@ export default function DriverReferralProgram() {
                 background: "hsl(var(--hud-cyan))",
               }} />
             </div>
-            <p className="text-[10px] text-center" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <p className="text-[0.625rem] text-center" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {stats.completed}/{nextTier.referrals} parrainages — Bonus: {nextTier.bonus} LOCS
             </p>
           </>
@@ -137,18 +137,18 @@ export default function DriverReferralProgram() {
               background: stats.completed >= t.referrals ? "hsl(var(--success) / 0.08)" : "hsl(var(--hud-surface))",
               border: `1px solid ${stats.completed >= t.referrals ? "hsl(var(--success) / 0.15)" : "hsl(var(--hud-border) / 0.08)"}`,
             }}>
-            <p className="text-[10px]">{t.badge.split(" ")[0]}</p>
-            <p className="text-[10px] font-bold" style={{ color: stats.completed >= t.referrals ? "hsl(var(--success))" : "hsl(var(--hud-text-dim))" }}>
+            <p className="text-[0.625rem]">{t.badge.split(" ")[0]}</p>
+            <p className="text-[0.625rem] font-bold" style={{ color: stats.completed >= t.referrals ? "hsl(var(--success))" : "hsl(var(--hud-text-dim))" }}>
               {t.referrals} ref.
             </p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{t.bonus} LOCS</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{t.bonus} LOCS</p>
           </div>
         ))}
       </div>
 
       {/* Referrals list */}
       <div className="space-y-1.5">
-        <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mes filleuls</p>
+        <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mes filleuls</p>
         {referrals.map((ref, i) => {
           const cfg = statusCfg[ref.status];
           const progress = (ref.completedDeliveries / ref.requiredDeliveries) * 100;
@@ -160,15 +160,15 @@ export default function DriverReferralProgram() {
                 <div className="flex items-center gap-2">
                   <span className="text-xs">{cfg.emoji}</span>
                   <div>
-                    <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ref.refereeName}</p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{ref.refereeName}</p>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                       Rejoint le {new Date(ref.joinedAt).toLocaleDateString("fr")}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
-                  {ref.status === "completed" && <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>+{ref.reward} LOCS</p>}
+                  <p className="text-[0.625rem] font-bold" style={{ color: cfg.color }}>{cfg.label}</p>
+                  {ref.status === "completed" && <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>+{ref.reward} LOCS</p>}
                 </div>
               </div>
               {ref.status !== "expired" && (
@@ -176,7 +176,7 @@ export default function DriverReferralProgram() {
                   <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                     <div className="h-full rounded-full" style={{ width: `${progress}%`, background: cfg.color }} />
                   </div>
-                  <span className="text-[10px] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                  <span className="text-[0.625rem] shrink-0" style={{ color: "hsl(var(--hud-text-dim))" }}>
                     {ref.completedDeliveries}/{ref.requiredDeliveries}
                   </span>
                 </div>

@@ -5,7 +5,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShieldAlert, AlertTriangle, CheckCircle2, Eye, Loader2 } from "lucide-react";
@@ -61,24 +61,24 @@ export default function RiskFlagsDashboard({ shopId }: Props) {
         <h4 className="text-sm font-semibold flex items-center gap-2">
           <ShieldAlert className="h-4 w-4 text-destructive" /> Risk Alerts
         </h4>
-        <Badge variant={openFlags.length > 0 ? "destructive" : "secondary"} className="text-[10px]">
+        <Badge variant={openFlags.length > 0 ? "destructive" : "secondary"} className="text-[0.625rem]">
           {openFlags.length} open
         </Badge>
       </div>
 
       {openFlags.length === 0 && resolvedFlags.length === 0 ? (
-        <Card>
+        <AppCard>
           <CardContent className="py-6 text-center">
             <CheckCircle2 className="h-8 w-8 mx-auto text-success/40 mb-2" />
             <p className="text-xs text-muted-foreground">No risk alerts — all clear!</p>
           </CardContent>
-        </Card>
+        </AppCard>
       ) : (
         <>
           {openFlags.map((flag: any) => {
             const style = SEVERITY_STYLES[flag.severity] || SEVERITY_STYLES.medium;
             return (
-              <Card key={flag.id} className={`${style.bg} border-current/10`}>
+              <AppCard key={flag.id} className={`${style.bg} border-current/10`}>
                 <CardContent className="p-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -86,26 +86,26 @@ export default function RiskFlagsDashboard({ shopId }: Props) {
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
                           <p className="text-xs font-semibold text-foreground capitalize">{flag.flag_type.replace(/_/g, " ")}</p>
-                          <Badge variant="outline" className={`text-[10px] ${style.color} border-current/20`}>{flag.severity}</Badge>
+                          <Badge variant="outline" className={`text-[0.625rem] ${style.color} border-current/20`}>{flag.severity}</Badge>
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{flag.reason}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">
+                        <p className="text-[0.625rem] text-muted-foreground mt-0.5 line-clamp-2">{flag.reason}</p>
+                        <p className="text-[0.625rem] text-muted-foreground mt-1">
                           {new Date(flag.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" className="h-7 text-[10px] shrink-0" onClick={() => resolveFlag(flag.id)}>
+                    <Button size="sm" variant="outline" className="h-7 text-[0.625rem] shrink-0" onClick={() => resolveFlag(flag.id)}>
                       <Eye className="h-3 w-3 mr-1" /> Clear
                     </Button>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             );
           })}
 
           {resolvedFlags.length > 0 && (
             <details className="group">
-              <summary className="text-[10px] text-muted-foreground cursor-pointer hover:text-foreground">
+              <summary className="text-[0.625rem] text-muted-foreground cursor-pointer hover:text-foreground">
                 {resolvedFlags.length} resolved alerts
               </summary>
               <div className="space-y-1.5 mt-2">
@@ -113,9 +113,9 @@ export default function RiskFlagsDashboard({ shopId }: Props) {
                   <div key={flag.id} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-muted/20">
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-3 w-3 text-success" />
-                      <span className="text-[10px] text-muted-foreground capitalize">{flag.flag_type.replace(/_/g, " ")}</span>
+                      <span className="text-[0.625rem] text-muted-foreground capitalize">{flag.flag_type.replace(/_/g, " ")}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{new Date(flag.resolved_at || flag.created_at).toLocaleDateString()}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">{new Date(flag.resolved_at || flag.created_at).toLocaleDateString()}</span>
                   </div>
                 ))}
               </div>

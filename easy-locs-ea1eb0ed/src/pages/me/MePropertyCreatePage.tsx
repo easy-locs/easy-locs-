@@ -146,7 +146,7 @@ export default function MePropertyCreatePage() {
         {currentStep === "basics" && (
           <div className="space-y-4">
             <FormField label={t("re.field.title", "Property Title")}>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t("re.field.title_placeholder", "e.g., Modern 2BR Apartment")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder={t("re.field.title_placeholder", "e.g., Modern 2BR Apartment")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
             <FormField label={t("re.field.listing_type", "Listing Type")}>
               <div className="flex gap-2 flex-wrap">
@@ -176,7 +176,7 @@ export default function MePropertyCreatePage() {
               </div>
             </FormField>
             <FormField label={`${t("re.field.price", "Price")} (${countryRules.currency})`}>
-              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
           </div>
         )}
@@ -184,7 +184,7 @@ export default function MePropertyCreatePage() {
         {currentStep === "location" && (
           <div className="space-y-4">
             <FormField label={t("re.field.country", "Country")}>
-              <select value={country} onChange={e => setCountry(e.target.value)} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }}>
+              <select value={country} onChange={e => setCountry(e.target.value)} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }}>
                 {getSupportedCountries().map(c => (
                   <option key={c} value={c}>{getCountryRules(c).countryName}</option>
                 ))}
@@ -192,13 +192,13 @@ export default function MePropertyCreatePage() {
               </select>
             </FormField>
             <FormField label={t("re.field.city", "City")}>
-              <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder={t("re.field.city_placeholder", "e.g., Dubai")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder={t("re.field.city_placeholder", "e.g., Dubai")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
             <FormField label={t("re.field.district", "District / Area")}>
-              <input type="text" value={district} onChange={e => setDistrict(e.target.value)} placeholder={countryRules.localLabels?.district ?? "District"} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="text" value={district} onChange={e => setDistrict(e.target.value)} placeholder={countryRules.localLabels?.district ?? "District"} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
             <FormField label={t("re.field.address", "Address")}>
-              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder={t("re.field.address_placeholder", "Full address")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="text" value={address} onChange={e => setAddress(e.target.value)} placeholder={t("re.field.address_placeholder", "Full address")} className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
           </div>
         )}
@@ -207,14 +207,14 @@ export default function MePropertyCreatePage() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <FormField label={t("re.field.bedrooms", "Bedrooms")}>
-                <input type="number" value={bedrooms} onChange={e => setBedrooms(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+                <input type="number" value={bedrooms} onChange={e => setBedrooms(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
               </FormField>
               <FormField label={t("re.field.bathrooms", "Bathrooms")}>
-                <input type="number" value={bathrooms} onChange={e => setBathrooms(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+                <input type="number" value={bathrooms} onChange={e => setBathrooms(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
               </FormField>
             </div>
             <FormField label={`${t("re.field.area", "Area")} (${countryRules.areaUnit})`}>
-              <input type="number" value={area} onChange={e => setArea(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <input type="number" value={area} onChange={e => setArea(e.target.value)} placeholder="0" className="w-full p-3 rounded-xl border text-sm outline-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
             <FormField label={t("re.field.furnishing", "Furnishing")}>
               <div className="flex gap-2">
@@ -226,7 +226,7 @@ export default function MePropertyCreatePage() {
               </div>
             </FormField>
             <FormField label={t("re.field.description", "Description")}>
-              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder={t("re.field.desc_placeholder", "Describe your property...")} className="w-full p-3 rounded-xl border text-sm outline-none resize-none" style={{ borderColor: "#e0e0e0", fontSize: "16px" }} />
+              <textarea value={description} onChange={e => setDescription(e.target.value)} rows={4} placeholder={t("re.field.desc_placeholder", "Describe your property...")} className="w-full p-3 rounded-xl border text-sm outline-none resize-none" style={{ borderColor: "#e0e0e0", fontSize: "1rem" }} />
             </FormField>
           </div>
         )}

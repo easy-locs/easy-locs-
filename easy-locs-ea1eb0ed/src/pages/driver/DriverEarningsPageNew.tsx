@@ -76,10 +76,10 @@ export default function DriverEarningsPageNew() {
                   <p className="text-sm font-bold text-foreground">
                     +{formatMoneyByCountry(Number(row.amount ?? 0), null, row.currency)}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">
+                  <p className="text-[0.6875rem] text-muted-foreground">
                     {row.note || "Driver payout"}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[0.625rem] text-muted-foreground">
                     {row.created_at ? new Date(row.created_at).toLocaleString() : ""}
                   </p>
                 </div>

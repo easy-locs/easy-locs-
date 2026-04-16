@@ -49,7 +49,7 @@ export function AdhanMiniPlayer() {
               {info.prayerName ? `Adhan — ${info.prayerName}` : "Adhan en cours"}
             </p>
             {info.muezzinName && (
-              <p className="text-[11px] truncate" style={{ color: `${GOLD}88` }}>
+              <p className="text-[0.6875rem] truncate" style={{ color: `${GOLD}88` }}>
                 {info.muezzinName}
               </p>
             )}

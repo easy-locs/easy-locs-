@@ -1,5 +1,5 @@
 import { useFollowers, useFollowingList } from "@/hooks/useSocialGraph";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Loader2, Users, UserCheck } from "lucide-react";
 import FollowButton from "./FollowButton";
 import type { UserSocialProfile } from "@/services/social-graph.service";
@@ -43,18 +43,18 @@ export default function FollowersList({ userId, currentUserId }: FollowersListPr
           <Loader2 className="h-4 w-4 animate-spin mx-auto text-muted-foreground" />
         </div>
       ) : data.length === 0 ? (
-        <Card>
+        <AppCard>
           <CardContent className="p-6 text-center">
             <Users className="h-6 w-6 mx-auto text-muted-foreground mb-2" />
             <p className="text-xs text-muted-foreground">
               {tab === "followers" ? t("social.no_followers") : t("social.no_following")}
             </p>
           </CardContent>
-        </Card>
+        </AppCard>
       ) : (
         <div className="space-y-2">
           {data.map((profile: UserSocialProfile) => (
-            <Card key={profile.userId}>
+            <AppCard key={profile.userId}>
               <CardContent className="p-3 flex items-center gap-3">
                 <div className="relative w-10 h-10 rounded-full bg-muted flex items-center justify-center shrink-0 overflow-hidden">
                   {profile.avatarUrl ? (
@@ -80,7 +80,7 @@ export default function FollowersList({ userId, currentUserId }: FollowersListPr
                   </p>
                   {profile.isMutual && (
                     <div className="flex items-center gap-1 mt-0.5">
-                      <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                      <span className="text-[0.625rem] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
                         {t("social.mutual")}
                       </span>
                     </div>
@@ -90,7 +90,7 @@ export default function FollowersList({ userId, currentUserId }: FollowersListPr
                   <FollowButton targetUserId={profile.userId} size="sm" />
                 )}
               </CardContent>
-            </Card>
+            </AppCard>
           ))}
         </div>
       )}

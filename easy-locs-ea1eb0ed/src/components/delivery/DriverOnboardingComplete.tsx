@@ -111,7 +111,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
       <span className="text-xs font-medium flex-1 text-left" style={{ color: uploaded ? "hsl(var(--success))" : "hsl(var(--hud-text))" }}>
         {label}
       </span>
-      {uploaded && <span className="text-[10px]" style={{ color: "hsl(var(--success) / 0.6)" }}>✓ Envoyé</span>}
+      {uploaded && <span className="text-[0.625rem]" style={{ color: "hsl(var(--success) / 0.6)" }}>✓ Envoyé</span>}
     </button>
   );
 
@@ -133,7 +133,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
                   }}>
                   <Icon className="h-3 w-3" style={{ color: done ? "hsl(var(--success))" : active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }} />
                 </div>
-                <span className="text-[10px] mt-1 font-medium" style={{ color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <span className="text-[0.625rem] mt-1 font-medium" style={{ color: active ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {s.label}
                 </span>
               </div>
@@ -156,19 +156,19 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>👤 Informations personnelles</h3>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom complet *</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom complet *</Label>
                   <Input value={data.fullName} onChange={e => setData(p => ({ ...p, fullName: e.target.value }))}
                     placeholder="Jean Dupont" className="h-9 text-xs mt-1"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Téléphone *</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Téléphone *</Label>
                   <Input value={data.phone} onChange={e => setData(p => ({ ...p, phone: e.target.value }))}
                     placeholder="+33 6 12 34 56 78" className="h-9 text-xs mt-1"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Email *</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Email *</Label>
                   <Input value={data.email} onChange={e => setData(p => ({ ...p, email: e.target.value }))}
                     type="email" placeholder="jean@email.com" className="h-9 text-xs mt-1"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -180,7 +180,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
           {step === 1 && (
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>📄 Documents obligatoires</h3>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Envoyez vos documents pour vérification. Formats acceptés : JPG, PNG, PDF.
               </p>
               <div className="space-y-2">
@@ -196,11 +196,11 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Véhicule</h3>
               <div className="space-y-2">
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Type de véhicule</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Type de véhicule</Label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mt-1">
                     {(["bicycle", "scooter", "car", "van"] as const).map(v => (
                       <button key={v} onClick={() => setData(p => ({ ...p, vehicleType: v }))}
-                        className="py-2 rounded-lg text-[10px] font-medium transition-all"
+                        className="py-2 rounded-lg text-[0.625rem] font-medium transition-all"
                         style={{
                           background: data.vehicleType === v ? "hsl(var(--hud-cyan) / 0.15)" : "hsl(var(--hud-bg))",
                           border: `1px solid ${data.vehicleType === v ? "hsl(var(--hud-cyan) / 0.3)" : "hsl(var(--hud-border) / 0.1)"}`,
@@ -212,7 +212,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
                   </div>
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Plaque d'immatriculation</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Plaque d'immatriculation</Label>
                   <Input value={data.licensePlate} onChange={e => setData(p => ({ ...p, licensePlate: e.target.value }))}
                     placeholder="AB-123-CD" className="h-9 text-xs mt-1"
                     style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -225,7 +225,7 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
           {step === 3 && (
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>🎓 Formation obligatoire</h3>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                 Complétez tous les modules pour activer votre compte.
               </p>
               <div className="space-y-2">
@@ -237,15 +237,15 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
                     }}>
                     <div className="flex-1">
                       <p className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{mod.title}</p>
-                      <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{mod.description}</p>
-                      <span className="text-[10px] flex items-center gap-1 mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                      <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{mod.description}</p>
+                      <span className="text-[0.625rem] flex items-center gap-1 mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         <Clock className="h-2.5 w-2.5" /> {mod.duration}
                       </span>
                     </div>
                     {data.trainingCompleted[i] ? (
                       <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: "hsl(var(--success))" }} />
                     ) : (
-                      <Button size="sm" className="text-[10px] h-7 px-3" onClick={() => completeTraining(i)}
+                      <Button size="sm" className="text-[0.625rem] h-7 px-3" onClick={() => completeTraining(i)}
                         style={{ background: "hsl(var(--hud-cyan) / 0.15)", color: "hsl(var(--hud-cyan))" }}>
                         Commencer
                       </Button>
@@ -262,14 +262,14 @@ export default function DriverOnboardingComplete({ onComplete, className }: Prop
               <div className="rounded-xl p-4 text-center" style={{ background: "hsl(var(--success) / 0.04)", border: "1px solid hsl(var(--success) / 0.1)" }}>
                 <CheckCircle2 className="h-10 w-10 mx-auto mb-2" style={{ color: "hsl(var(--success))" }} />
                 <p className="text-xs font-semibold" style={{ color: "hsl(var(--hud-text))" }}>Prêt pour activation !</p>
-                <p className="text-[10px] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                <p className="text-[0.625rem] mt-1" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                   Vos documents seront vérifiés sous 24-48h. Vous recevrez une notification dès l'activation.
                 </p>
               </div>
               <label className="flex items-start gap-2 mt-3 cursor-pointer">
                 <input type="checkbox" checked={data.termsAccepted} onChange={e => setData(p => ({ ...p, termsAccepted: e.target.checked }))}
                   className="mt-0.5 accent-[hsl(var(--hud-cyan))]" />
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                   J'accepte les conditions générales d'utilisation et la politique de confidentialité.
                 </span>
               </label>

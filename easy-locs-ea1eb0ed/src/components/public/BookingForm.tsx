@@ -260,7 +260,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
             >+</button>
           </div>
           {form.guests_count >= maxGuests && (
-            <p className="text-[10px] text-amber-500 mt-1">{t("page.listing.max_guests_reached") || `Maximum ${maxGuests} guests`}</p>
+            <p className="text-[0.625rem] text-amber-500 mt-1">{t("page.listing.max_guests_reached") || `Maximum ${maxGuests} guests`}</p>
           )}
         </fieldset>
 
@@ -317,7 +317,7 @@ const BookingForm = ({ listing, property, cleaningFee }: Props) => {
         </button>
 
         {nights > 0 && totalPrice > 0 && (
-          <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
+          <p className="text-[0.625rem] text-muted-foreground text-center leading-relaxed">
             {t("page.listing.approval_note")}
           </p>
         )}

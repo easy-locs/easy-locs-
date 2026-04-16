@@ -87,7 +87,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
           <BarChart3 className="w-4 h-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Analytics avancées</h3>
         </div>
-        <Button size="sm" className="text-[10px] h-6 px-2" onClick={exportCSV}
+        <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={exportCSV}
           style={{ background: "hsl(var(--info) / 0.1)", color: "hsl(var(--info))" }}>
           <Download className="w-2.5 h-2.5 mr-0.5" /> CSV
         </Button>
@@ -97,7 +97,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
       <div className="flex gap-1">
         {(["7d", "30d", "90d"] as TimeRange[]).map(r => (
           <button key={r} onClick={() => setRange(r)}
-            className="px-3 py-1 rounded-full text-[10px] font-semibold transition-all"
+            className="px-3 py-1 rounded-full text-[0.625rem] font-semibold transition-all"
             style={{
               background: range === r ? "hsl(var(--hud-cyan) / 0.12)" : "hsl(var(--hud-surface))",
               color: range === r ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -117,7 +117,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
           { id: "drivers" as AnalyticsTab, label: "Chauffeurs", icon: Zap },
         ]).map(t => (
           <button key={t.id} onClick={() => { setTab(t.id); haptic("selection"); }}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold transition-all"
+            className="flex items-center gap-1 px-2 py-1 rounded-lg text-[0.625rem] font-semibold transition-all"
             style={{
               background: tab === t.id ? "hsl(var(--hud-cyan) / 0.1)" : "transparent",
               color: tab === t.id ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -140,14 +140,14 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
               <div key={k.label} className="rounded-xl p-3 text-center"
                 style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
                 <p className="text-lg font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{k.label}</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{k.label}</p>
               </div>
             ))}
           </div>
 
           {/* Mini bar chart */}
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Livraisons / jour</p>
+            <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Livraisons / jour</p>
             <div className="flex items-end gap-[2px] h-16">
               {trends.slice(-30).map((t, i) => (
                 <div key={i} className="flex-1 rounded-t-sm transition-all"
@@ -173,18 +173,18 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
               <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full" style={{ background: `hsl(var(--hud-cyan) / ${zone.intensity})` }} />
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.name}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{zone.name}</p>
                 </div>
-                <span className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{zone.deliveries}</span>
+                <span className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{zone.deliveries}</span>
               </div>
               {/* Intensity bar */}
               <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--hud-bg))" }}>
                 <div className="h-full rounded-full transition-all" style={{ width: `${zone.intensity * 100}%`, background: "hsl(var(--hud-cyan))" }} />
               </div>
               <div className="flex justify-between mt-1.5">
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>⏱ {zone.avgTime} min</span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>💰 {zone.avgFee.toFixed(1)}€</span>
-                <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>✅ {zone.successRate}%</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>⏱ {zone.avgTime} min</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>💰 {zone.avgFee.toFixed(1)}€</span>
+                <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>✅ {zone.successRate}%</span>
               </div>
             </motion.div>
           ))}
@@ -195,7 +195,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
       {tab === "trends" && (
         <div className="space-y-2">
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Revenu quotidien (€)</p>
+            <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Revenu quotidien (€)</p>
             <div className="flex items-end gap-[2px] h-20">
               {trends.slice(-30).map((t, i) => {
                 const maxRev = Math.max(...trends.map(x => x.revenue), 1);
@@ -210,7 +210,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
             </div>
           </div>
           <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-            <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Temps moyen (min)</p>
+            <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text-dim))" }}>Temps moyen (min)</p>
             <div className="flex items-end gap-[2px] h-16">
               {trends.slice(-30).map((t, i) => {
                 const maxTime = Math.max(...trends.map(x => x.avgTime), 1);
@@ -235,7 +235,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5"
               style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                 style={{
                   background: i < 3 ? "hsl(var(--warning) / 0.15)" : "hsl(var(--hud-bg))",
                   color: i < 3 ? "hsl(var(--warning))" : "hsl(var(--hud-text-dim))",
@@ -243,16 +243,16 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{d.name}</p>
+                <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{d.name}</p>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>⭐ {d.avgRating}</span>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{d.deliveries} liv.</span>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--success))" }}>{d.successRate}%</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>⭐ {d.avgRating}</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{d.deliveries} liv.</span>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--success))" }}>{d.successRate}%</span>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{d.revenue}€</p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>⏱ {d.avgTime} min</p>
+                <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{d.revenue}€</p>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>⏱ {d.avgTime} min</p>
               </div>
             </motion.div>
           ))}

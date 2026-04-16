@@ -55,7 +55,7 @@ const AppLogo = ({
       </div>
       {variant === "footer" && (
         <span
-          className="text-[10px] tracking-[0.2em] uppercase font-medium hidden sm:block"
+          className="text-[0.625rem] tracking-[0.2em] uppercase font-medium hidden sm:block"
           style={{ color: "hsl(var(--accent) / 0.6)" }}
         >
           {t("brand.tagline") || "Connect \u2022 Locate \u2022 Grow"}

@@ -45,7 +45,7 @@ export default function ReviewList({ merchantId }: { merchantId: string }) {
                   </p>
                   {row.title && <p className="text-sm font-bold text-foreground">{row.title}</p>}
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.625rem] text-muted-foreground">
                   {row.created_at ? new Date(row.created_at).toLocaleDateString() : ""}
                 </p>
               </div>
@@ -58,7 +58,7 @@ export default function ReviewList({ merchantId }: { merchantId: string }) {
 
               {row.merchant_reply && (
                 <div className="rounded-xl bg-muted/30 p-3 space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground">Merchant reply</p>
+                  <p className="text-[0.625rem] font-bold text-muted-foreground">Merchant reply</p>
                   <p className="text-xs text-foreground">{row.merchant_reply}</p>
                 </div>
               )}

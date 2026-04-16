@@ -80,28 +80,28 @@ export default function WalletPropertyHub() {
           <div className="rounded-xl p-3 bg-white/[0.08]">
             <div className="flex items-center gap-1 mb-1">
               <TrendingUp size={12} style={{ color: "#22c55e" }} />
-              <span className="text-[10px] text-white/50">{t("re.wallet.received", "Received")}</span>
+              <span className="text-[0.625rem] text-white/50">{t("re.wallet.received", "Received")}</span>
             </div>
             <p className="text-lg font-bold text-white">{totalReceived.toLocaleString()}</p>
           </div>
           <div className="rounded-xl p-3 bg-white/[0.08]">
             <div className="flex items-center gap-1 mb-1">
               <Clock size={12} style={{ color: gold }} />
-              <span className="text-[10px] text-white/50">{t("re.wallet.pending", "Pending")}</span>
+              <span className="text-[0.625rem] text-white/50">{t("re.wallet.pending", "Pending")}</span>
             </div>
             <p className="text-lg font-bold" style={{ color: gold }}>{totalPending.toLocaleString()}</p>
           </div>
           <div className="rounded-xl p-3 bg-white/[0.08]">
             <div className="flex items-center gap-1 mb-1">
               <AlertTriangle size={12} style={{ color: "#ef4444" }} />
-              <span className="text-[10px] text-white/50">{t("re.wallet.overdue", "Overdue")}</span>
+              <span className="text-[0.625rem] text-white/50">{t("re.wallet.overdue", "Overdue")}</span>
             </div>
             <p className="text-lg font-bold" style={{ color: totalOverdue > 0 ? "#ef4444" : "#fff" }}>{totalOverdue.toLocaleString()}</p>
           </div>
           <div className="rounded-xl p-3 bg-white/[0.08]">
             <div className="flex items-center gap-1 mb-1">
               <TrendingDown size={12} style={{ color: "#f59e0b" }} />
-              <span className="text-[10px] text-white/50">{t("re.wallet.expenses", "Expenses")}</span>
+              <span className="text-[0.625rem] text-white/50">{t("re.wallet.expenses", "Expenses")}</span>
             </div>
             <p className="text-lg font-bold text-white">{totalExpenses.toLocaleString()}</p>
           </div>
@@ -189,7 +189,7 @@ function PaymentRow({ payment }: { payment: PropertyPayment }) {
         <p className="text-sm font-bold" style={{ color: navy }}>
           {payment.amount.toLocaleString()} {payment.currency}
         </p>
-        <p className="text-[10px] font-medium capitalize" style={{ color: statusColors[payment.status] ?? "#999" }}>
+        <p className="text-[0.625rem] font-medium capitalize" style={{ color: statusColors[payment.status] ?? "#999" }}>
           {t(`re.payment_status.${payment.status}`, payment.status)}
         </p>
       </div>

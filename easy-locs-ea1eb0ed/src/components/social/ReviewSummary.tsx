@@ -18,7 +18,7 @@ export function ReviewSummary({ averageRating, totalReviews, distribution }: Rev
             {totalReviews > 0 ? averageRating.toFixed(1) : "—"}
           </p>
           <StarRating value={Math.round(averageRating)} size={14} readOnly />
-          <p className="text-[10px] text-muted-foreground mt-1">{totalReviews} review{totalReviews !== 1 ? "s" : ""}</p>
+          <p className="text-[0.625rem] text-muted-foreground mt-1">{totalReviews} review{totalReviews !== 1 ? "s" : ""}</p>
         </div>
 
         {totalReviews > 0 && (
@@ -28,7 +28,7 @@ export function ReviewSummary({ averageRating, totalReviews, distribution }: Rev
               const pct = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
               return (
                 <div key={star} className="flex items-center gap-2">
-                  <span className="text-[10px] text-muted-foreground w-3 text-right">{star}</span>
+                  <span className="text-[0.625rem] text-muted-foreground w-3 text-right">{star}</span>
                   <Star className="w-2.5 h-2.5 text-amber-500" fill="hsl(var(--accent))" />
                   <div className="flex-1 h-1.5 rounded-full bg-muted/30 overflow-hidden">
                     <div
@@ -36,7 +36,7 @@ export function ReviewSummary({ averageRating, totalReviews, distribution }: Rev
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <span className="text-[9px] text-muted-foreground w-4">{count}</span>
+                  <span className="text-[0.5625rem] text-muted-foreground w-4">{count}</span>
                 </div>
               );
             })}

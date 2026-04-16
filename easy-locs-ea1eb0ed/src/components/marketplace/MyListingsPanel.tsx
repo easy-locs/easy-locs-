@@ -82,7 +82,7 @@ function StatusBadge({ status }: { status: ListingStatus }) {
   };
   const s = map[status] || map.draft;
   return (
-    <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${s.bg}`}>
+    <span className={`inline-flex items-center gap-1.5 text-[0.625rem] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${s.bg}`}>
       <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
       {s.label}
     </span>
@@ -105,12 +105,12 @@ function ExpiryInfo({ listing }: { listing: Listing }) {
   const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
   if (diff < 0) {
-    return <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Expired {Math.abs(days)}d ago</span>;
+    return <span className="text-[0.625rem] text-amber-600 dark:text-amber-400 font-medium">Expired {Math.abs(days)}d ago</span>;
   }
   if (days <= 5) {
-    return <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">Expires in {days}d</span>;
+    return <span className="text-[0.625rem] text-amber-600 dark:text-amber-400 font-medium">Expires in {days}d</span>;
   }
-  return <span className="text-[10px] text-muted-foreground">{days}d remaining</span>;
+  return <span className="text-[0.625rem] text-muted-foreground">{days}d remaining</span>;
 }
 
 /* ─── Main ─── */
@@ -349,7 +349,7 @@ export default function MyListingsPanel() {
                 <t.icon className="h-3.5 w-3.5" />
                 {t.label}
                 {count > 0 && (
-                  <span className="ml-1 min-w-[1.25rem] h-5 rounded-full bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center px-1.5">
+                  <span className="ml-1 min-w-[1.25rem] h-5 rounded-full bg-primary/10 text-primary text-[0.625rem] font-bold flex items-center justify-center px-1.5">
                     {count}
                   </span>
                 )}

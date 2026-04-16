@@ -106,7 +106,7 @@ export default function LiveCommerceToggle({ providerId, isLive, liveSince, onSt
             {live && since && (
               <div className="flex items-center gap-1 mt-0.5">
                 <Clock className="w-2.5 h-2.5 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[0.625rem] text-muted-foreground">
                   En direct depuis {elapsed}
                 </span>
               </div>
@@ -123,7 +123,7 @@ export default function LiveCommerceToggle({ providerId, isLive, liveSince, onSt
       </div>
 
       {/* Info */}
-      <p className="text-[11px] text-muted-foreground leading-relaxed">
+      <p className="text-[0.6875rem] text-muted-foreground leading-relaxed">
         {live
           ? "Votre vitrine est marquée comme active. Les clients voient un indicateur « LIVE » et vous êtes prioritaire dans les résultats."
           : "Activez le mode direct pour signaler votre disponibilité immédiate et gagner en visibilité."}
@@ -138,7 +138,7 @@ export default function LiveCommerceToggle({ providerId, isLive, liveSince, onSt
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ duration: 1, repeat: Infinity }}
           />
-          <span className="text-[10px] font-medium" style={{ color: "hsl(0 84% 60%)" }}>
+          <span className="text-[0.625rem] font-medium" style={{ color: "hsl(0 84% 60%)" }}>
             Diffusion active
           </span>
         </div>

@@ -122,7 +122,7 @@ export function MultiPhotoSelect({ open, onClose, onSend }: MultiPhotoSelectProp
                     />
                   )}
                   {/* Order badge */}
-                  <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold"
+                  <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full flex items-center justify-center text-[0.625rem] font-bold"
                     style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}>
                     {item.order + 1}
                   </div>
@@ -136,7 +136,7 @@ export function MultiPhotoSelect({ open, onClose, onSend }: MultiPhotoSelectProp
                   </button>
                   {/* Video indicator */}
                   {item.media.kind === "video" && (
-                    <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold"
+                    <div className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[0.625rem] font-bold"
                       style={{ background: "hsl(var(--background) / 0.8)", color: "hsl(var(--foreground))" }}>
                       VIDEO
                     </div>

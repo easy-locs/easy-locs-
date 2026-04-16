@@ -79,7 +79,7 @@ export default function SellerLogisticsPanel() {
           <div key={label} className="rounded-xl px-2 py-2.5 text-center"
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -105,7 +105,7 @@ export default function SellerLogisticsPanel() {
       <div className="flex gap-1 p-1 rounded-xl overflow-x-auto" style={{ background: "hsl(var(--hud-surface))" }}>
         {allTabKeys.map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className="shrink-0 py-1.5 px-2 rounded-lg text-[10px] font-semibold transition-all"
+            className="shrink-0 py-1.5 px-2 rounded-lg text-[0.625rem] font-semibold transition-all"
             style={{
               background: filter === f ? "hsl(var(--hud-cyan) / 0.12)" : "transparent",
               color: filter === f ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -144,50 +144,50 @@ export default function SellerLogisticsPanel() {
                         {job.package_description || "Colis"}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
-                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                        <span className="text-[0.625rem] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                           {job.created_at ? new Date(job.created_at).toLocaleDateString("fr") : ""}
                         </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
                       {job.status === "pending" && (
-                        <Button size="sm" className="text-[10px] h-7 px-2"
+                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
                           onClick={() => setSearchingJobId(searchingJobId === job.id ? null : job.id)}
                           style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
                           <Users className="h-3 w-3 mr-0.5" /> Assigner
                         </Button>
                       )}
                       {["assigned", "accepted", "in_progress"].includes(job.status) && (
-                        <Button size="sm" className="text-[10px] h-7 px-2"
+                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
                           onClick={() => setTrackingJobId(trackingJobId === job.id ? null : job.id)}
                           style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
                           <MapPin className="h-3 w-3 mr-0.5" /> GPS
                         </Button>
                       )}
                       {["assigned", "accepted", "in_progress"].includes(job.status) && job.driver_id && (
-                        <Button size="sm" className="text-[10px] h-7 px-2"
+                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
                           onClick={() => setChatJobId(chatJobId === job.id ? null : job.id)}
                           style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
                           <MessageCircle className="h-3 w-3 mr-0.5" /> Chat
                         </Button>
                       )}
                       {["pending", "assigned"].includes(job.status) && (
-                        <Button size="sm" variant="ghost" className="text-[10px] h-7 px-1.5"
+                        <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 px-1.5"
                           onClick={() => handleCancel(job.id)}
                           style={{ color: "hsl(var(--destructive) / 0.6)" }}>
                           <XCircle className="h-3 w-3" />
                         </Button>
                       )}
                       {["completed", "cancelled"].includes(job.status) && (
-                        <Button size="sm" variant="ghost" className="text-[10px] h-7 px-2"
+                        <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 px-2"
                           onClick={() => setDisputeJobId(disputeJobId === job.id ? null : job.id)}
                           style={{ color: "hsl(var(--destructive) / 0.6)" }}>
                           <AlertTriangle className="h-3 w-3 mr-0.5" /> Litige
                         </Button>
                       )}
                       {job.delivery_fee != null && (
-                        <span className="text-[10px] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
+                        <span className="text-[0.625rem] font-bold ml-1" style={{ color: "hsl(var(--hud-cyan))" }}>
                           {job.delivery_fee.toFixed(2)}€
                         </span>
                       )}

@@ -8,7 +8,7 @@ import { db } from "@/services/db";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -105,10 +105,10 @@ export default function GiftCardManager({ shopId, mode }: Props) {
     }
   };
 
-  if (isLoading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
+  if (isLoading) return <AppCard><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></AppCard>;
 
   return (
-    <Card>
+    <AppCard>
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-bold flex items-center gap-2">
@@ -117,7 +117,7 @@ export default function GiftCardManager({ shopId, mode }: Props) {
           </h3>
           <div className="flex gap-2">
             {!creating && (
-              <Button size="sm" variant="outline" className="h-7 text-[10px]" onClick={() => setCreating(true)}>
+              <Button size="sm" variant="outline" className="h-7 text-[0.625rem]" onClick={() => setCreating(true)}>
                 <Plus className="h-3 w-3 mr-1" /> Create
               </Button>
             )}
@@ -144,11 +144,11 @@ export default function GiftCardManager({ shopId, mode }: Props) {
           <div className="space-y-3 p-3 rounded-xl border border-border bg-muted/20">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-[10px]">Amount</Label>
+                <Label className="text-[0.625rem]">Amount</Label>
                 <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} className="h-8 text-xs mt-1" min="1" />
               </div>
               <div>
-                <Label className="text-[10px]">Type</Label>
+                <Label className="text-[0.625rem]">Type</Label>
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger className="h-8 text-xs mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -160,11 +160,11 @@ export default function GiftCardManager({ shopId, mode }: Props) {
               </div>
             </div>
             <div>
-              <Label className="text-[10px]">Recipient Email (optional)</Label>
+              <Label className="text-[0.625rem]">Recipient Email (optional)</Label>
               <Input value={recipientEmail} onChange={e => setRecipientEmail(e.target.value)} className="h-8 text-xs mt-1" placeholder="friend@email.com" />
             </div>
             <div>
-              <Label className="text-[10px]">Message (optional)</Label>
+              <Label className="text-[0.625rem]">Message (optional)</Label>
               <Input value={message} onChange={e => setMessage(e.target.value)} className="h-8 text-xs mt-1" placeholder="Happy birthday!" />
             </div>
             <div className="flex gap-2">
@@ -193,12 +193,12 @@ export default function GiftCardManager({ shopId, mode }: Props) {
                     </button>
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <Badge className={`text-[10px] ${STATUS_COLORS[card.status] || ""}`}>{card.status}</Badge>
-                    <span className="text-[10px] text-muted-foreground">
+                    <Badge className={`text-[0.625rem] ${STATUS_COLORS[card.status] || ""}`}>{card.status}</Badge>
+                    <span className="text-[0.625rem] text-muted-foreground">
                       {card.remaining_amount}/{card.initial_amount} {card.currency}
                     </span>
                     {card.expires_at && (
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-[0.625rem] text-muted-foreground">
                         Exp: {new Date(card.expires_at).toLocaleDateString()}
                       </span>
                     )}
@@ -214,6 +214,6 @@ export default function GiftCardManager({ shopId, mode }: Props) {
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 }

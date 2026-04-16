@@ -30,8 +30,8 @@ export default function YouSmartSettingCard({
         <Icon className="h-[17px] w-[17px]" style={{ color: iconColor }} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold leading-tight" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        <p className="text-[11px] mt-0.5 leading-snug truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
+        <p className="text-[0.8125rem] font-semibold leading-tight" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
+        <p className="text-[0.6875rem] mt-0.5 leading-snug truncate" style={{ color: "hsl(var(--muted-foreground))" }}>
           {summary}
         </p>
       </div>

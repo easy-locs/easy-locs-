@@ -50,13 +50,13 @@ export default function CreateJobForm({ onSubmit, onCancel }: Props) {
 
       <div className="space-y-2.5">
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de retrait *</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de retrait *</Label>
           <Input value={form.pickup_address} onChange={e => set("pickup_address", e.target.value)}
             placeholder="123 Rue du Commerce, Paris"
             className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
         </div>
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de livraison *</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Adresse de livraison *</Label>
           <Input value={form.dropoff_address} onChange={e => set("dropoff_address", e.target.value)}
             placeholder="45 Avenue de la Liberté, Lyon"
             className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
@@ -64,27 +64,27 @@ export default function CreateJobForm({ onSubmit, onCancel }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description colis</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Description colis</Label>
             <Input value={form.package_description} onChange={e => set("package_description", e.target.value)}
               placeholder="Carton 30x20"
               className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           </div>
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Poids (kg)</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Poids (kg)</Label>
             <Input type="number" value={form.weight_kg} onChange={e => set("weight_kg", +e.target.value)}
               className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           </div>
         </div>
 
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Taille du colis</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Taille du colis</Label>
           <div className="mt-1">
             <PackageSizePicker value={form.package_size || "medium"} onChange={v => set("package_size", v)} />
           </div>
         </div>
 
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mode tarifaire</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Mode tarifaire</Label>
           <div className="grid grid-cols-2 gap-2 mt-1">
             <button type="button" onClick={() => set("pricing_mode", "fixed")}
               className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 text-xs font-semibold transition-all min-h-[40px]"
@@ -109,7 +109,7 @@ export default function CreateJobForm({ onSubmit, onCancel }: Props) {
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Priorité</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Priorité</Label>
             <select value={form.priority} onChange={e => set("priority", e.target.value)}
               className="w-full h-9 text-xs mt-1 rounded-md px-2"
               style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))", border: "1px solid" }}>
@@ -119,14 +119,14 @@ export default function CreateJobForm({ onSubmit, onCancel }: Props) {
             </select>
           </div>
           <div>
-            <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais livraison (€)</Label>
+            <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais livraison (€)</Label>
             <Input type="number" step="0.5" value={form.delivery_fee} onChange={e => set("delivery_fee", +e.target.value)}
               className="h-9 text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
           </div>
         </div>
 
         <div>
-          <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes</Label>
+          <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Notes</Label>
           <Textarea value={form.notes} onChange={e => set("notes", e.target.value)}
             placeholder="Instructions spéciales…" rows={2}
             className="text-xs mt-1" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />

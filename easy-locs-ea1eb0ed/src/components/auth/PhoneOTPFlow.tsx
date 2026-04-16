@@ -296,7 +296,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                   phoneError ? "border-destructive focus:ring-destructive/40" : "border-border"
                 }`}
                 style={{
-                  fontSize: "16px",
+                  fontSize: "1rem",
                   ["--tw-ring-color" as string]: phoneError ? undefined : goldColor,
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleSendOTP()}
@@ -416,7 +416,7 @@ export default function PhoneOTPFlow({ onVerified, onCancel, title, subtitle }: 
                   onKeyDown={(e) => handleOtpKeyDown(i, e)}
                   className="w-11 h-13 text-center text-xl font-bold border border-border rounded-xl bg-background focus:outline-none focus:ring-2 transition-all"
                   style={{
-                    fontSize: "20px",
+                    fontSize: "1.25rem",
                     ["--tw-ring-color" as string]: goldColor,
                     borderColor: digit ? goldColor : undefined,
                   }}

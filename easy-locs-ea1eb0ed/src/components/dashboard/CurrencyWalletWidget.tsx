@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { AppText } from "@/components/ui/AppText";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -44,7 +44,7 @@ const CurrencyWalletWidget = ({ orders, preferredCurrency, onPreferredCurrencyCh
   }, [orders]);
 
   return (
-    <Card>
+    <AppCard>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -70,7 +70,7 @@ const CurrencyWalletWidget = ({ orders, preferredCurrency, onPreferredCurrencyCh
           <p className="text-xs text-muted-foreground mb-1">Total Revenue ({preferredCurrency})</p>
           <p className="text-2xl font-bold text-accent">{fmtPrice(model.totalConverted, preferredCurrency)}</p>
           {model.wallets.length > 1 && (
-            <p className="text-[10px] text-muted-foreground mt-1 flex items-center justify-center gap-1">
+            <p className="text-[0.625rem] text-muted-foreground mt-1 flex items-center justify-center gap-1">
               <ArrowRightLeft className="h-3 w-3" /> Converted from {model.wallets.length} currencies
             </p>
           )}
@@ -93,7 +93,7 @@ const CurrencyWalletWidget = ({ orders, preferredCurrency, onPreferredCurrencyCh
                   <div className="text-right">
                     <AppText as="p" size="sm" lines={1} className="font-semibold">{fmtPrice(w.amount, w.currency)}</AppText>
                     {w.currency !== preferredCurrency && (
-                      <p className="text-[10px] text-muted-foreground">≈ {fmtPrice(convertedAmount, preferredCurrency)}</p>
+                      <p className="text-[0.625rem] text-muted-foreground">≈ {fmtPrice(convertedAmount, preferredCurrency)}</p>
                     )}
                   </div>
                 </div>
@@ -102,7 +102,7 @@ const CurrencyWalletWidget = ({ orders, preferredCurrency, onPreferredCurrencyCh
           </div>
         )}
       </CardContent>
-    </Card>
+    </AppCard>
   );
 };
 

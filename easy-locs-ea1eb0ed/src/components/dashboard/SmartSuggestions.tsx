@@ -39,7 +39,7 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
     <div className="space-y-2" style={{ marginBottom: "var(--section-gap)" }}>
       <div className="flex items-center gap-1.5 px-1">
         <Sparkles className="w-3 h-3" style={{ color: "hsl(var(--accent))" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+        <span className="text-[0.625rem] font-bold uppercase tracking-widest text-muted-foreground">
           {tSafe(t, "home.smart_suggestions", "For You")}
         </span>
       </div>
@@ -71,7 +71,7 @@ const SmartSuggestions = memo(({ suggestions, onDismiss }: Props) => {
                   <p className="text-xs font-bold text-foreground line-clamp-2 break-words">
                     {tSafe(t, s.titleKey, s.titleKey)}
                   </p>
-                  <p className="text-[10px] text-muted-foreground line-clamp-2 break-words">
+                  <p className="text-[0.625rem] text-muted-foreground line-clamp-2 break-words">
                     {tSafe(t, s.descKey, s.descKey)}
                   </p>
                 </div>

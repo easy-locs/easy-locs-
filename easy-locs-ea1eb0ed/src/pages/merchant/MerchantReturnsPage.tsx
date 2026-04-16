@@ -3,7 +3,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,11 +87,11 @@ export default function MerchantReturnsPage() {
         ) : (
           <div className="space-y-3">
             {returns.map((ret: any) => (
-              <Card key={ret.id}>
+              <AppCard key={ret.id}>
                 <CardContent className="p-3 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-mono text-muted-foreground">#{ret.id.slice(0, 8)}</p>
-                    <Badge className={`text-[10px] ${STATUS_COLORS[ret.status] || ""}`}>{ret.status}</Badge>
+                    <Badge className={`text-[0.625rem] ${STATUS_COLORS[ret.status] || ""}`}>{ret.status}</Badge>
                   </div>
                   <p className="text-sm font-medium">{REASON_LABELS[ret.reason] || ret.reason}</p>
                   {ret.reason_details && <p className="text-xs text-muted-foreground">{ret.reason_details}</p>}
@@ -114,7 +114,7 @@ export default function MerchantReturnsPage() {
                     </div>
                   )}
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         )}

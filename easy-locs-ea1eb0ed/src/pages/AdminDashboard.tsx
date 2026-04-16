@@ -220,11 +220,11 @@ const AdminDashboard = () => {
                   <div className="flex items-end gap-2 h-32">
                     {stats.signupsByMonth.map(s => (
                       <div key={s.month} className="flex-1 flex flex-col items-center gap-1">
-                        <span className="text-[10px] font-medium text-foreground">{s.count}</span>
+                        <span className="text-[0.625rem] font-medium text-foreground">{s.count}</span>
                         <div className="w-full bg-accent/20 rounded-t" style={{ height: `${(s.count / maxSignups) * 100}%`, minHeight: 4 }}>
                           <div className="w-full h-full bg-accent rounded-t" />
                         </div>
-                        <span className="text-[10px] text-muted-foreground">{s.month.slice(5)}</span>
+                        <span className="text-[0.625rem] text-muted-foreground">{s.month.slice(5)}</span>
                       </div>
                     ))}
                   </div>
@@ -333,11 +333,11 @@ const AdminDashboard = () => {
                     <div className="flex items-end gap-2 h-40">
                       {stats.revenueByMonth.map(r => (
                         <div key={r.month} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-[10px] font-medium text-foreground">{r.amount > 0 ? `${(r.amount / 1000).toFixed(1)}k` : "0"}</span>
+                          <span className="text-[0.625rem] font-medium text-foreground">{r.amount > 0 ? `${(r.amount / 1000).toFixed(1)}k` : "0"}</span>
                           <div className="w-full rounded-t" style={{ height: `${(r.amount / maxRevenue) * 100}%`, minHeight: 4 }}>
                             <div className="w-full h-full bg-green-500 rounded-t" />
                           </div>
-                          <span className="text-[10px] text-muted-foreground">{r.month.slice(5)}</span>
+                          <span className="text-[0.625rem] text-muted-foreground">{r.month.slice(5)}</span>
                         </div>
                       ))}
                     </div>

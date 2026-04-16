@@ -106,7 +106,7 @@ export default function MeMaintenancePage() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm font-medium line-clamp-1 break-words" style={{ color: navy }}>{ticket.category}</span>
                       <span
-                        className="text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase"
+                        className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full uppercase"
                         style={{ background: `${PRIORITY_COLORS[ticket.priority]}15`, color: PRIORITY_COLORS[ticket.priority] }}
                       >
                         {ticket.priority}
@@ -114,17 +114,17 @@ export default function MeMaintenancePage() {
                     </div>
                     <p className="text-xs line-clamp-2" style={{ color: "#666" }}>{ticket.description}</p>
                     <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[10px] capitalize" style={{ color: "#999" }}>
+                      <span className="text-[0.625rem] capitalize" style={{ color: "#999" }}>
                         {t(`re.ticket.${ticket.status}`, ticket.status.replace(/_/g, " "))}
                       </span>
-                      <span className="text-[10px]" style={{ color: "#ccc" }}>·</span>
-                      <span className="text-[10px]" style={{ color: "#999" }}>
+                      <span className="text-[0.625rem]" style={{ color: "#ccc" }}>·</span>
+                      <span className="text-[0.625rem]" style={{ color: "#999" }}>
                         {new Date(ticket.openedAt).toLocaleDateString()}
                       </span>
                       {ticket.finalCost !== undefined && (
                         <>
-                          <span className="text-[10px]" style={{ color: "#ccc" }}>·</span>
-                          <span className="text-[10px] font-medium" style={{ color: gold }}>
+                          <span className="text-[0.625rem]" style={{ color: "#ccc" }}>·</span>
+                          <span className="text-[0.625rem] font-medium" style={{ color: gold }}>
                             {ticket.finalCost.toLocaleString()} {ticket.currency}
                           </span>
                         </>

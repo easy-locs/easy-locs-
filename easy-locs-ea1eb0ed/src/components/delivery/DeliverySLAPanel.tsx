@@ -151,13 +151,13 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <Icon className="h-4 w-4 mx-auto mb-1" style={{ color: `hsl(var(${color}))` }} />
             <p className="text-sm font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* SLA Config Toggle */}
-      <Button size="sm" variant="outline" className="w-full text-[10px] h-8"
+      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-8"
         onClick={() => setShowConfig(!showConfig)}
         style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text-dim))" }}>
         ⚙️ {showConfig ? "Masquer" : "Configurer"} les SLA
@@ -174,7 +174,7 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
             { label: "Pénalité par min. retard (€)", key: "penaltyPerMinuteLate" as const, value: sla.penaltyPerMinuteLate },
           ].map(({ label, key, value }) => (
             <div key={key} className="flex items-center justify-between">
-              <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
+              <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
               <input type="number" value={value}
                 onChange={e => setSla(prev => ({ ...prev, [key]: +e.target.value }))}
                 className="w-16 h-7 text-xs text-center rounded-md"
@@ -207,10 +207,10 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
               }}>
               <div className="text-base">{v.status !== "completed" ? "🔴" : "🟡"}</div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                <p className="text-[0.625rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                   {typeLabels[v.type]} — +{v.minutesLate} min
                 </p>
-                <p className="text-[10px] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                <p className="text-[0.625rem] truncate" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                   {v.dropoffAddress}
                 </p>
               </div>
@@ -218,7 +218,7 @@ export default function DeliverySLAPanel({ orgId }: { orgId: string }) {
                 <p className="text-xs font-bold" style={{ color: `hsl(var(${typeColors[v.type]}))` }}>
                   -{v.penalty.toFixed(2)}€
                 </p>
-                <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {v.status === "completed" ? "Terminé" : "En cours"}
                 </p>
               </div>

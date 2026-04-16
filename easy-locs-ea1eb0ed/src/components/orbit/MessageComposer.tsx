@@ -125,8 +125,8 @@ export default function MessageComposer({
       {replyTo && (
         <div className="px-3 py-2 flex items-center gap-2 shrink-0 border-t border-border bg-accent/5 border-l-[3px] border-l-accent">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-accent">{orbitLabels.composer.reply}</p>
-            <p className="text-[11px] text-muted-foreground line-clamp-1">
+            <p className="text-[0.625rem] font-semibold text-accent">{orbitLabels.composer.reply}</p>
+            <p className="text-[0.6875rem] text-muted-foreground line-clamp-1">
               {replyTo.content.length > 80 ? replyTo.content.slice(0, 80) + "…" : replyTo.content}
             </p>
           </div>
@@ -161,7 +161,7 @@ export default function MessageComposer({
             <div className="flex-1 flex items-center gap-2 min-w-0">
               <div className="h-2.5 w-2.5 rounded-full animate-pulse bg-destructive" />
               <span className="text-sm font-mono tabular-nums text-foreground">{formatVoiceDuration(voiceDuration)}</span>
-              <span className="text-[11px] text-muted-foreground truncate">{orbitLabels.composer.slideToCancel}</span>
+              <span className="text-[0.6875rem] text-muted-foreground truncate">{orbitLabels.composer.slideToCancel}</span>
             </div>
             <button
               onClick={async () => { haptic("medium"); await onStopVoice?.(); }}

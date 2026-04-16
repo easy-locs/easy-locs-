@@ -92,7 +92,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
           style={{ color: "hsl(var(--hud-text-dim))" }}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <p className="text-[11px] font-bold capitalize" style={{ color: "hsl(var(--hud-text))" }}>{dateStr}</p>
+        <p className="text-[0.6875rem] font-bold capitalize" style={{ color: "hsl(var(--hud-text))" }}>{dateStr}</p>
         <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => navigate(1)}
           style={{ color: "hsl(var(--hud-text-dim))" }}>
           <ChevronRight className="h-4 w-4" />
@@ -106,7 +106,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
           { id: "month" as const, label: "Mois" },
         ]).map(v => (
           <button key={v.id} onClick={() => setView(v.id)}
-            className="flex-1 py-1.5 px-2 rounded-md text-[10px] font-semibold transition-all"
+            className="flex-1 py-1.5 px-2 rounded-md text-[0.625rem] font-semibold transition-all"
             style={{
               background: view === v.id ? "hsl(var(--info) / 0.12)" : "transparent",
               color: view === v.id ? "hsl(var(--info))" : "hsl(var(--hud-text-dim) / 0.5)",
@@ -122,7 +122,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
             const hourJobs = jobs.filter((j: any) => getJobHour(j) === h);
             return (
               <div key={h} className="flex gap-2 min-h-[44px]">
-                <span className="text-[10px] font-mono w-10 shrink-0 pt-1 text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                <span className="text-[0.625rem] font-mono w-10 shrink-0 pt-1 text-right" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                   {String(h).padStart(2, "0")}:00
                 </span>
                 <div className="flex-1 border-t pt-1 space-y-1" style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
@@ -135,17 +135,17 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
                         className="rounded-lg px-2.5 py-1.5 cursor-pointer"
                         style={{ background: sCfg.bg, borderLeft: `3px solid ${sCfg.color}` }}>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px]">{pCfg.label}</span>
-                          <p className="text-[10px] font-semibold flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{job.title || job.description || "Mission"}</p>
-                          <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{job.scheduled_time || job.time || "—"} • {job.duration || 30}min</span>
+                          <span className="text-[0.625rem]">{pCfg.label}</span>
+                          <p className="text-[0.625rem] font-semibold flex-1 truncate" style={{ color: "hsl(var(--hud-text))" }}>{job.title || job.description || "Mission"}</p>
+                          <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{job.scheduled_time || job.time || "—"} • {job.duration || 30}min</span>
                         </div>
                         {selectedJob === job.id && (
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} className="mt-1.5 space-y-1">
-                            <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                            <div className="flex items-center gap-1.5 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                               <MapPin className="h-2.5 w-2.5" /> {job.pickup || job.pickup_address || "—"} → {job.dropoff || job.dropoff_address || "—"}
                             </div>
                             {(job.driver || job.driver_name) && (
-                              <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                              <div className="flex items-center gap-1.5 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                                 <Truck className="h-2.5 w-2.5" /> {job.driver || job.driver_name}
                               </div>
                             )}
@@ -165,7 +165,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         <div className="space-y-1">
           <div className="grid grid-cols-7 gap-1 mb-1">
             {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map(d => (
-              <p key={d} className="text-[10px] text-center font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d}</p>
+              <p key={d} className="text-[0.625rem] text-center font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d}</p>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-1">
@@ -182,7 +182,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
                     background: isToday ? "hsl(var(--info) / 0.08)" : "hsl(var(--hud-surface))",
                     border: `1px solid ${isToday ? "hsl(var(--info) / 0.2)" : "hsl(var(--hud-border) / 0.06)"}`,
                   }}>
-                  <p className="text-[10px] font-bold" style={{ color: isToday ? "hsl(var(--info))" : "hsl(var(--hud-text))" }}>
+                  <p className="text-[0.625rem] font-bold" style={{ color: isToday ? "hsl(var(--info))" : "hsl(var(--hud-text))" }}>
                     {d.getDate()}
                   </p>
                   {jobCount > 0 && (
@@ -195,7 +195,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
                     </div>
                   )}
                   {jobCount > 0 && (
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{jobCount} jobs</p>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{jobCount} jobs</p>
                   )}
                 </div>
               );
@@ -208,7 +208,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
         <div>
           <div className="grid grid-cols-7 gap-0.5 mb-1">
             {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <p key={i} className="text-[10px] text-center font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d}</p>
+              <p key={i} className="text-[0.625rem] text-center font-semibold" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{d}</p>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-0.5">
@@ -220,7 +220,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
                     background: day ? (isToday ? "hsl(var(--info) / 0.12)" : "hsl(var(--hud-surface))") : "transparent",
                   }}>
                   {day && (
-                    <p className="text-[10px] font-semibold" style={{ color: isToday ? "hsl(var(--info))" : "hsl(var(--hud-text) / 0.7)" }}>{day}</p>
+                    <p className="text-[0.625rem] font-semibold" style={{ color: isToday ? "hsl(var(--info))" : "hsl(var(--hud-text) / 0.7)" }}>{day}</p>
                   )}
                 </div>
               );
@@ -230,7 +230,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
       )}
 
       <div className="rounded-xl p-3" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
-        <p className="text-[10px] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📊 Résumé du jour</p>
+        <p className="text-[0.625rem] font-semibold mb-2" style={{ color: "hsl(var(--hud-text))" }}>📊 Résumé du jour</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {[
             { label: "Total", value: jobs.length, color: "--hud-cyan" },
@@ -240,7 +240,7 @@ export default function DeliverySchedulingCalendar({ orgId }: { orgId: string })
           ].map(s => (
             <div key={s.label} className="text-center">
               <p className="text-sm font-bold" style={{ color: `hsl(var(${s.color}))` }}>{s.value}</p>
-              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
+              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{s.label}</p>
             </div>
           ))}
         </div>

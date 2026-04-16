@@ -56,8 +56,8 @@ export default function FlightDetailPage() {
           >
             <AlertTriangle className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
             <div className="flex-1">
-              <p className="text-[11px] font-bold text-foreground">Price updated</p>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[0.6875rem] font-bold text-foreground">Price updated</p>
+              <p className="text-[0.625rem] text-muted-foreground">
                 Was {offer.currency} {priceCheck.oldPrice.toFixed(0)} → now {offer.currency} {priceCheck.newPrice.toFixed(0)}
               </p>
             </div>
@@ -68,23 +68,23 @@ export default function FlightDetailPage() {
           <div className="flex items-center justify-between mb-3">
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">{firstSeg.origin}</p>
-              <p className="text-[10px] text-muted-foreground">{firstSeg.originCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{firstSeg.originCity}</p>
               <p className="text-xs font-bold text-foreground mt-1 tabular-nums">{formatTime(firstSeg.departureTime)}</p>
             </div>
             <div className="flex-1 flex flex-col items-center gap-0.5 px-3">
-              <p className="text-[10px] text-muted-foreground tabular-nums">{formatDuration(offer.totalDuration)}</p>
+              <p className="text-[0.625rem] text-muted-foreground tabular-nums">{formatDuration(offer.totalDuration)}</p>
               <div className="w-full flex items-center gap-1">
                 <div className="flex-1 h-px" style={{ background: `${GOLD}40` }} />
                 <Plane className="h-3 w-3 rotate-90" style={{ color: GOLD }} />
                 <div className="flex-1 h-px" style={{ background: `${GOLD}40` }} />
               </div>
-              <p className="text-[10px] font-semibold" style={{ color: offer.stops === 0 ? "hsl(142 71% 45%)" : GOLD }}>
+              <p className="text-[0.625rem] font-semibold" style={{ color: offer.stops === 0 ? "hsl(142 71% 45%)" : GOLD }}>
                 {offer.stops === 0 ? "Direct" : `${offer.stops} stop${offer.stops > 1 ? "s" : ""}`}
               </p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold text-foreground">{lastSeg.destination}</p>
-              <p className="text-[10px] text-muted-foreground">{lastSeg.destinationCity}</p>
+              <p className="text-[0.625rem] text-muted-foreground">{lastSeg.destinationCity}</p>
               <p className="text-xs font-bold text-foreground mt-1 tabular-nums">{formatTime(lastSeg.arrivalTime)}</p>
             </div>
           </div>
@@ -94,7 +94,7 @@ export default function FlightDetailPage() {
               <Plane className="h-3 w-3" style={{ color: NAVY }} />
             </div>
             <span className="text-xs font-semibold text-foreground">{firstSeg.airline}</span>
-            <span className="text-[10px] text-muted-foreground">· {firstSeg.flightNumber}</span>
+            <span className="text-[0.625rem] text-muted-foreground">· {firstSeg.flightNumber}</span>
           </div>
         </div>
 
@@ -105,8 +105,8 @@ export default function FlightDetailPage() {
               {offer.segments.map((seg, i) => (
                 <div key={seg.segmentId} className="p-3 rounded-xl border border-border/15 bg-card/50">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-muted-foreground">Segment {i + 1}</span>
-                    <span className="text-[10px] text-muted-foreground">· {seg.flightNumber}</span>
+                    <span className="text-[0.625rem] font-bold text-muted-foreground">Segment {i + 1}</span>
+                    <span className="text-[0.625rem] text-muted-foreground">· {seg.flightNumber}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     <span className="font-bold tabular-nums">{formatTime(seg.departureTime)}</span>
@@ -158,10 +158,10 @@ export default function FlightDetailPage() {
                   <Luggage className="h-3.5 w-3.5" style={{ color: NAVY }} />
                   <div className="flex-1">
                     <span className="text-xs font-semibold text-foreground">{b.type}</span>
-                    <span className="text-[10px] text-muted-foreground ml-1.5">{b.detail}</span>
+                    <span className="text-[0.625rem] text-muted-foreground ml-1.5">{b.detail}</span>
                   </div>
                   {b.included && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(142 71% 45% / 0.1)", color: "hsl(142 71% 45%)" }}>
+                    <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full" style={{ background: "hsl(142 71% 45% / 0.1)", color: "hsl(142 71% 45%)" }}>
                       Included
                     </span>
                   )}
@@ -179,7 +179,7 @@ export default function FlightDetailPage() {
                 {offer.refundable ? "Flexible ticket" : "Changeable ticket"}
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-[0.625rem] text-muted-foreground">
               {offer.refundable && "Refundable. "}
               {offer.changeable && `Change fee: ${offer.changeFeePct ?? 0}%.`}
             </p>
@@ -212,7 +212,7 @@ export default function FlightDetailPage() {
         <div className="flex items-center justify-between p-3 rounded-2xl bg-card border border-border/20 shadow-lg backdrop-blur-sm">
           <div>
             <p className="text-lg font-extrabold tabular-nums" style={{ color: NAVY }}>{offer.currency} {offer.totalPrice.toFixed(0)}</p>
-            <p className="text-[10px] text-muted-foreground">per passenger</p>
+            <p className="text-[0.625rem] text-muted-foreground">per passenger</p>
           </div>
           <Button
             onClick={proceedToPassengers}

@@ -267,7 +267,7 @@ export default function UnifiedSearchBar({
           className={cn(
             "search-premium-field w-full min-w-0 bg-card border border-border/30 text-foreground outline-none transition-all",
             isHero
-              ? "h-14 rounded-2xl pl-11 pr-10 text-[15px] font-medium shadow-lg focus:ring-2 focus:ring-primary/30 sm:text-base"
+              ? "h-14 rounded-2xl pl-11 pr-10 text-[0.9375rem] font-medium shadow-lg focus:ring-2 focus:ring-primary/30 sm:text-base"
               : "h-12 rounded-2xl pl-10 pr-9 text-sm font-medium shadow-sm focus:ring-2 focus:ring-primary/20"
           )}
         />
@@ -331,7 +331,7 @@ function SuggestionsList({
     <div className="space-y-3">
       {grouped.recent.length > 0 && (
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">{t("search.recent")}</p>
+          <p className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">{t("search.recent")}</p>
           <div className="flex flex-wrap gap-1.5">
             {grouped.recent.map((s, i) => (
               <button
@@ -349,7 +349,7 @@ function SuggestionsList({
 
       {grouped.popular.length > 0 && (
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+          <p className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
             <Flame className="w-3 h-3 inline mr-1" style={{ color: "hsl(var(--accent))" }} />{t("search.popular") || "Popular"}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -363,7 +363,7 @@ function SuggestionsList({
                 <span>{s.icon}</span>
                 {s.text}
                 {s.count != null && s.count > 1 && (
-                  <span className="text-[10px] opacity-60">{s.count}</span>
+                  <span className="text-[0.625rem] opacity-60">{s.count}</span>
                 )}
               </button>
             ))}
@@ -373,7 +373,7 @@ function SuggestionsList({
 
       {grouped.contextual.length > 0 && (
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+          <p className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
             <Sparkles className="w-3 h-3 inline mr-1" />{t("search.suggested_now")}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -393,7 +393,7 @@ function SuggestionsList({
 
       {grouped.trending.length > 0 && (
         <div>
-          <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
+          <p className="text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wide mb-1.5">
             <TrendingUp className="w-3 h-3 inline mr-1" />{t("search.trending")}
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -437,7 +437,7 @@ function AutocompleteSection({
 
   return (
     <div className="border-b border-border/10 last:border-0">
-      <p className="px-4 pt-3 pb-1 text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
+      <p className="px-4 pt-3 pb-1 text-[0.6875rem] font-bold text-muted-foreground uppercase tracking-wide">
         {icons[group.type] ?? "🔍"} {group.label}
       </p>
       {group.items.map((item) => {
@@ -462,7 +462,7 @@ function AutocompleteSection({
             <div className="flex-1 min-w-0 py-0.5">
               <p className="text-sm font-medium text-foreground break-words leading-snug [text-wrap:balance]">{item.title}</p>
               {item.subtitle && (
-                <p className="mt-0.5 text-[11px] text-muted-foreground break-words leading-snug">{item.subtitle}</p>
+                <p className="mt-0.5 text-[0.6875rem] text-muted-foreground break-words leading-snug">{item.subtitle}</p>
               )}
             </div>
             {item.price != null && (
@@ -471,7 +471,7 @@ function AutocompleteSection({
               </span>
             )}
             {item.rating != null && (
-              <span className="pt-0.5 text-[11px] text-muted-foreground shrink-0">
+              <span className="pt-0.5 text-[0.6875rem] text-muted-foreground shrink-0">
                 ⭐ {item.rating.toFixed(1)}
               </span>
             )}

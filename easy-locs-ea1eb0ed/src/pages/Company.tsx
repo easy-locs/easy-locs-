@@ -384,7 +384,7 @@ const Company = () => {
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-foreground text-sm">{doc.label}</span>
                             {i === 0 && (
-                              <span className="text-[10px] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{t("page.company.doc_primary")}</span>
+                              <span className="text-[0.625rem] font-medium bg-accent/10 text-accent px-2 py-0.5 rounded-full">{t("page.company.doc_primary")}</span>
                             )}
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>

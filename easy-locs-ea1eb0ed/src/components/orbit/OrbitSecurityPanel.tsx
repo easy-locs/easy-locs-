@@ -171,7 +171,7 @@ export default function OrbitSecurityPanel({ peerId, peerName, open, onOpenChang
                 <span className="text-xs font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>
                   {t("orbit.security.safety_number")}
                 </span>
-                <Badge variant="outline" className="text-[10px]" style={{
+                <Badge variant="outline" className="text-[0.625rem]" style={{
                   borderColor: "hsl(var(--primary) / 0.2)",
                   color: "hsl(var(--primary))",
                 }}>
@@ -194,7 +194,7 @@ export default function OrbitSecurityPanel({ peerId, peerName, open, onOpenChang
                       <p className="font-mono text-xs leading-relaxed tracking-wider" style={{ color: "hsl(var(--foreground))" }}>
                         {safetyNumber}
                       </p>
-                      <p className="text-[10px] mt-2" style={{ color: "hsl(var(--muted-foreground))" }}>
+                      <p className="text-[0.625rem] mt-2" style={{ color: "hsl(var(--muted-foreground))" }}>
                         {t("orbit.security.compare_number", { name: peerName })}
                       </p>
                     </div>
@@ -215,7 +215,7 @@ export default function OrbitSecurityPanel({ peerId, peerName, open, onOpenChang
               <p className="text-xs font-medium" style={{ color: "hsl(var(--hud-warning))" }}>
                 {t("orbit.security.identity_changed")}
               </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {t("orbit.security.identity_changed_desc", { name: peerName })}
               </p>
             </div>

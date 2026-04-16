@@ -71,7 +71,7 @@ function OfferCountdownBar({ offeredAt, expiresAt, onExpire }: { offeredAt: stri
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between text-[10px]">
+      <div className="flex items-center justify-between text-[0.625rem]">
         <span className="font-bold" style={{ color: progress < 0.3 ? "hsl(0 84% 60%)" : "hsl(var(--accent))" }}>
           Accept in {remainingSec}s
         </span>
@@ -97,9 +97,9 @@ function StatCard({ value, label, accent, icon, suffix }: { value: string | numb
       <div className={cn("flex items-center gap-1.5", accent)}>
         {icon}
         <p className="text-lg font-bold">{value}</p>
-        {suffix && <span className="text-[10px] text-muted-foreground ml-0.5">{suffix}</span>}
+        {suffix && <span className="text-[0.625rem] text-muted-foreground ml-0.5">{suffix}</span>}
       </div>
-      <p className="text-[10px] text-muted-foreground mt-0.5">{label}</p>
+      <p className="text-[0.625rem] text-muted-foreground mt-0.5">{label}</p>
     </div>
   );
 }
@@ -313,11 +313,11 @@ export default function RiderLivePage() {
           <Bike className="w-5 h-5 shrink-0" style={{ color: "hsl(var(--accent))" }} />
           <h1 className="text-lg font-bold text-white tracking-tight">{tc("ride.driver_hub")}</h1>
           {station.label && (
-            <span className="text-[10px] text-white/60 truncate">· {station.label}</span>
+            <span className="text-[0.625rem] text-white/60 truncate">· {station.label}</span>
           )}
           {activeMissions.length > 0 && (
             <span
-              className="ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+              className="ml-1 text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
               style={{ background: "hsl(var(--accent) / 0.2)", color: "hsl(var(--accent))" }}
             >
               {activeMissions.length}
@@ -376,7 +376,7 @@ export default function RiderLivePage() {
           </div>
           <div className="flex-1 text-left min-w-0">
             <p className="text-sm font-bold text-white">{activeMissions.length} active mission{activeMissions.length > 1 ? "s" : ""}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--accent) / 0.8)" }}>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--accent) / 0.8)" }}>
               {activeJob?.status?.replace(/_/g, " ")}
             </p>
           </div>
@@ -403,14 +403,14 @@ export default function RiderLivePage() {
                 <Target className="w-3 h-3" />
                 <span className="text-sm font-bold">{acceptanceRate}%</span>
               </div>
-              <p className="text-[10px] text-muted-foreground">Acceptance</p>
+              <p className="text-[0.625rem] text-muted-foreground">Acceptance</p>
             </div>
             <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-orange-500 mb-0.5">
                 <X className="w-3 h-3" />
                 <span className="text-sm font-bold">{cancellationRate}%</span>
               </div>
-              <p className="text-[10px] text-muted-foreground">Cancellation</p>
+              <p className="text-[0.625rem] text-muted-foreground">Cancellation</p>
             </div>
             <div className="rounded-xl border border-border/20 bg-card p-3 text-center">
               <div className="flex items-center justify-center gap-1 text-cyan-500 mb-0.5">
@@ -421,15 +421,15 @@ export default function RiderLivePage() {
                     : `${onlineHoursToday.toFixed(1)}h`}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground">Online today</p>
+              <p className="text-[0.625rem] text-muted-foreground">Online today</p>
             </div>
           </motion.div>
 
           {station.zoneKey && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-border/20 bg-card/60 p-3">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Zone Intelligence</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{station.zoneKey}</span>
+                <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">Zone Intelligence</span>
+                <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">{station.zoneKey}</span>
               </div>
               <div className="flex items-center gap-3 mt-2">
                 <div className="flex items-center gap-1">
@@ -447,7 +447,7 @@ export default function RiderLivePage() {
                 {station.surge > 1.05 && (
                   <div className="flex items-center gap-1 ml-auto px-2 py-0.5 rounded-full bg-destructive/10">
                     <Zap className="w-3 h-3 text-destructive" />
-                    <span className="text-[10px] font-bold text-destructive">+{Math.round((station.surge - 1) * 100)}%</span>
+                    <span className="text-[0.625rem] font-bold text-destructive">+{Math.round((station.surge - 1) * 100)}%</span>
                   </div>
                 )}
               </div>
@@ -459,12 +459,12 @@ export default function RiderLivePage() {
               className="rounded-xl border border-border/20 bg-card/60 p-3">
               <div className="flex items-center gap-2 mb-1.5">
                 <BarChart3 className="w-3.5 h-3.5" style={{ color: "hsl(var(--accent))" }} />
-                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Demand zones</span>
-                <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
+                <span className="text-[0.625rem] font-bold text-muted-foreground uppercase tracking-wider">Demand zones</span>
+                <span className="ml-auto text-[0.5625rem] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: "hsl(var(--accent) / 0.15)", color: "hsl(var(--accent))" }}>
                   MAP OVERLAY
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-[0.625rem] text-muted-foreground">
                 {station.surge > 1.2
                   ? "🔥 High demand zones visible on map — earn more!"
                   : "Demand zones are highlighted on the map above. Stay alert for rides."}
@@ -519,7 +519,7 @@ export default function RiderLivePage() {
                           {offer.job.customer_rating != null && (
                             <div className="flex items-center gap-1">
                               <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                              <span className="text-[10px] text-muted-foreground">{Number(offer.job.customer_rating).toFixed(1)}</span>
+                              <span className="text-[0.625rem] text-muted-foreground">{Number(offer.job.customer_rating).toFixed(1)}</span>
                             </div>
                           )}
                         </div>
@@ -593,7 +593,7 @@ export default function RiderLivePage() {
                   <div className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-bold text-foreground capitalize">{m.job_type.replace(/_/g, " ")}</span>
-                      <Badge variant="secondary" className="text-[10px] font-semibold">{m.status.replace(/_/g, " ")}</Badge>
+                      <Badge variant="secondary" className="text-[0.625rem] font-semibold">{m.status.replace(/_/g, " ")}</Badge>
                     </div>
                     <div className="space-y-1">
                       <p className="text-xs text-muted-foreground flex items-center gap-1.5">
@@ -661,13 +661,13 @@ export default function RiderLivePage() {
                 <div key={m.id} className="bg-card border border-border/20 rounded-xl p-3 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-semibold text-foreground capitalize">{m.job_type.replace(/_/g, " ")}</p>
-                    <p className="text-[10px] text-muted-foreground">{m.completed_at ? new Date(m.completed_at).toLocaleDateString() : "—"}</p>
+                    <p className="text-[0.625rem] text-muted-foreground">{m.completed_at ? new Date(m.completed_at).toLocaleDateString() : "—"}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {m.current_price != null && (
                       <span className="text-xs font-bold text-foreground">{m.current_price} {m.currency}</span>
                     )}
-                    <Badge variant={m.status === "completed" ? "default" : "secondary"} className="text-[10px]">{m.status}</Badge>
+                    <Badge variant={m.status === "completed" ? "default" : "secondary"} className="text-[0.625rem]">{m.status}</Badge>
                   </div>
                 </div>
               ))}

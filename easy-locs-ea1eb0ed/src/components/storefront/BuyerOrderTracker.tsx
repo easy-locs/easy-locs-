@@ -7,7 +7,7 @@ import { db } from "@/services/db";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Clock, CheckCircle, Package, Truck, XCircle, ShoppingBag, ArrowLeft, Hash, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -98,12 +98,12 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
 
   if (orders.length === 0) {
     return (
-      <Card>
+      <AppCard>
         <CardContent className="py-12 text-center">
           <ShoppingBag className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-muted-foreground text-sm">No orders found</p>
         </CardContent>
-      </Card>
+      </AppCard>
     );
   }
 
@@ -117,7 +117,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
 
         return (
           <Link key={order.id} to={`/order/${order.id}`} className="block">
-          <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+          <AppCard className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-4 space-y-4">
               {/* Shop header */}
               <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                   )}
                   <div>
                     <p className="text-sm font-semibold">{shop?.name || "Shop"}</p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[0.625rem] text-muted-foreground">
                       {new Date(order.created_at).toLocaleDateString(undefined, {
                         day: "numeric", month: "short", year: "numeric",
                       })}
@@ -139,15 +139,15 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                   </div>
                 </div>
                 {isCancelled ? (
-                  <Badge variant="destructive" className="text-[10px]">
+                  <Badge variant="destructive" className="text-[0.625rem]">
                     <XCircle className="h-3 w-3 mr-1" /> Cancelled
                   </Badge>
                 ) : order.status === "completed" ? (
-                  <Badge className="text-[10px] bg-primary/10 text-primary">
+                  <Badge className="text-[0.625rem] bg-primary/10 text-primary">
                     <CheckCircle className="h-3 w-3 mr-1" /> Completed
                   </Badge>
                 ) : (
-                  <Badge variant="secondary" className="text-[10px]">
+                  <Badge variant="secondary" className="text-[0.625rem]">
                     In progress
                   </Badge>
                 )}
@@ -176,7 +176,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                             <StepIcon className="h-3.5 w-3.5" />
                           </div>
                           <span className={cn(
-                            "text-[10px] mt-1 text-center",
+                            "text-[0.625rem] mt-1 text-center",
                             isCurrent ? "font-semibold text-primary" : "text-muted-foreground"
                           )}>
                             {step.label}
@@ -213,10 +213,10 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 <div className="flex items-center gap-2 bg-primary/5 rounded-lg px-3 py-2">
                   <Truck className="h-3.5 w-3.5 text-primary" />
                   <div className="flex-1">
-                    <p className="text-[10px] text-muted-foreground">Delivery Job</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Delivery Job</p>
                     <p className="text-xs font-mono font-medium">{order.delivery_job_id.slice(0, 8).toUpperCase()}</p>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-[0.625rem]">
                     {order.delivery_source || "trigger"}
                   </Badge>
                 </div>
@@ -225,7 +225,7 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2">
                   <Hash className="h-3.5 w-3.5 text-muted-foreground" />
                   <div>
-                    <p className="text-[10px] text-muted-foreground">Payment Reference</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Payment Reference</p>
                     <p className="text-xs font-mono font-medium">{order.wallet_reference_code}</p>
                   </div>
                 </div>
@@ -236,13 +236,13 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 <div className="flex items-center gap-2 bg-muted/30 rounded-lg px-3 py-2">
                   <Hash className="h-3.5 w-3.5 text-muted-foreground" />
                   <div>
-                    <p className="text-[10px] text-muted-foreground">Tracking Number</p>
+                    <p className="text-[0.625rem] text-muted-foreground">Tracking Number</p>
                     <p className="text-xs font-mono font-medium">{order.tracking_number}</p>
                   </div>
                 </div>
               )}
               {order.shipping_address && (
-                <p className="text-[10px] text-muted-foreground">📍 Ship to: {order.shipping_address}</p>
+                <p className="text-[0.625rem] text-muted-foreground">📍 Ship to: {order.shipping_address}</p>
               )}
 
               {/* Total */}
@@ -258,21 +258,21 @@ export default function BuyerOrderTracker({ orderId, buyerEmail }: BuyerOrderTra
                 {shop?.slug && (
                   <Link
                     to={`/s/${shop.slug}`}
-                    className="text-[11px] text-primary hover:underline flex items-center gap-1"
+                    className="text-[0.6875rem] text-primary hover:underline flex items-center gap-1"
                   >
                     <ArrowLeft className="h-3 w-3" /> Visit shop
                   </Link>
                 )}
                 {shop?.slug && order.status !== "completed" && order.status !== "cancelled" && (
                   <Link to={`/s/${shop.slug}`}>
-                    <Button size="sm" variant="outline" className="h-7 text-[10px] gap-1">
+                    <Button size="sm" variant="outline" className="h-7 text-[0.625rem] gap-1">
                       <MessageCircle className="h-3 w-3" /> Contact Seller
                     </Button>
                   </Link>
                 )}
               </div>
             </CardContent>
-          </Card>
+          </AppCard>
           </Link>
         );
       })}

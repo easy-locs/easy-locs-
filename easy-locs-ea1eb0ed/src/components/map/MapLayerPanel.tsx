@@ -47,7 +47,7 @@ export function MapLayerPanel({ className }: { className?: string }) {
             key={id}
             onClick={fn}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1 rounded-xl py-1.5 text-[10px] font-bold tracking-wide uppercase transition-all duration-200",
+              "flex-1 flex items-center justify-center gap-1 rounded-xl py-1.5 text-[0.625rem] font-bold tracking-wide uppercase transition-all duration-200",
               activePreset === id
                 ? "bg-white/10 text-white shadow-inner"
                 : "text-white/40 hover:text-white/70 hover:bg-white/[0.04]",
@@ -66,7 +66,7 @@ export function MapLayerPanel({ className }: { className?: string }) {
             key={key}
             onClick={() => toggle(key)}
             className={cn(
-              "flex items-center gap-1 rounded-lg px-1.5 py-1 text-[10px] font-medium transition-all duration-200",
+              "flex items-center gap-1 rounded-lg px-1.5 py-1 text-[0.625rem] font-medium transition-all duration-200",
               layers[key]
                 ? "bg-white/10 text-white/90"
                 : "text-white/25 hover:text-white/50 hover:bg-white/[0.03]",

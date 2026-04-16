@@ -126,10 +126,10 @@ function StatusSummary({ alertPrefs, browserPermission, urgentOnly, digestFreq, 
         {items.map(({ label, status, icon: Icon }) => (
           <div key={label} className="flex flex-col items-center gap-1.5 p-2.5 rounded-lg bg-muted/20 border border-border/30">
             <Icon className={`h-4 w-4 ${status === "on" ? "text-success" : status === "blocked" ? "text-destructive" : "text-muted-foreground/50"}`} />
-            <span className="text-[10px] font-medium text-foreground">{label}</span>
+            <span className="text-[0.625rem] font-medium text-foreground">{label}</span>
             <Badge
               variant="outline"
-              className={`text-[10px] h-4 font-semibold ${
+              className={`text-[0.625rem] h-4 font-semibold ${
                 status === "on"
                   ? "bg-success/10 text-success border-success/30"
                   : status === "blocked"

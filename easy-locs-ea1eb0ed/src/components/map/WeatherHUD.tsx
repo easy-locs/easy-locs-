@@ -26,7 +26,7 @@ export default memo(function WeatherHUD({ icon, label, shortLabel, loading, isRa
         )}
       >
         <span className="text-base leading-none">{loading ? "⏳" : icon}</span>
-        <span className="text-[13px] font-semibold text-white/90 tracking-tight">{shortLabel}</span>
+        <span className="text-[0.8125rem] font-semibold text-white/90 tracking-tight">{shortLabel}</span>
       </div>
 
       {/* Live badge */}
@@ -35,7 +35,7 @@ export default memo(function WeatherHUD({ icon, label, shortLabel, loading, isRa
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
           <span className="relative inline-flex h-[6px] w-[6px] rounded-full bg-emerald-500" />
         </span>
-        <span className="text-[10px] font-bold tracking-widest text-white/50">LIVE</span>
+        <span className="text-[0.625rem] font-bold tracking-widest text-white/50">LIVE</span>
       </div>
     </div>
   );

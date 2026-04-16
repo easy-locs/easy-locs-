@@ -112,7 +112,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                 }}>
                 {i < step ? "✓" : s.emoji}
               </div>
-              <span className="text-[10px] mt-1" style={{ color: i <= step ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <span className="text-[0.625rem] mt-1" style={{ color: i <= step ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.3)" }}>
                 {s.label}
               </span>
             </div>
@@ -139,13 +139,13 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                 { label: "Ville *", value: profile.city, key: "city" },
               ].map(({ label, value, key }) => (
                 <div key={key}>
-                  <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
+                  <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
                   <Input value={value} onChange={e => setProfile(p => ({ ...p, [key]: e.target.value }))}
                     className="h-9 text-xs mt-1" style={inputStyle} />
                 </div>
               ))}
               <div>
-                <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Pays</Label>
+                <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Pays</Label>
                 <select value={profile.country} onChange={e => setProfile(p => ({ ...p, country: e.target.value }))}
                   className="w-full h-9 text-xs mt-1 rounded-md px-2"
                   style={{ ...inputStyle, border: "1px solid hsl(var(--hud-border) / 0.15)" }}>
@@ -164,7 +164,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
             <>
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>🚗 Informations véhicule</h3>
               <div>
-                <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Type de véhicule *</Label>
+                <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Type de véhicule *</Label>
                 <div className="grid grid-cols-3 gap-1.5 mt-1">
                   {[
                     { value: "bike", label: "🚲 Vélo", desc: "Urbain" },
@@ -178,7 +178,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                         border: vehicle.vehicleType === v.value ? "1px solid hsl(var(--hud-cyan) / 0.3)" : "1px solid hsl(var(--hud-border) / 0.08)",
                       }}>
                       <span className="text-lg">{v.label.split(" ")[0]}</span>
-                      <p className="text-[10px] mt-0.5" style={{ color: vehicle.vehicleType === v.value ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}>
+                      <p className="text-[0.625rem] mt-0.5" style={{ color: vehicle.vehicleType === v.value ? "hsl(var(--hud-cyan))" : "hsl(var(--hud-text-dim) / 0.5)" }}>
                         {v.label.split(" ")[1]}
                       </p>
                     </button>
@@ -191,7 +191,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                 { label: "Année", value: vehicle.vehicleYear, key: "vehicleYear" },
               ].map(({ label, value, key }) => (
                 <div key={key}>
-                  <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
+                  <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</Label>
                   <Input value={value} onChange={e => setVehicle(p => ({ ...p, [key]: e.target.value }))}
                     className="h-9 text-xs mt-1" style={inputStyle} />
                 </div>
@@ -204,7 +204,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
               <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>📍 Zone de couverture</h3>
               <div>
                 <div className="flex items-center justify-between mb-2.5">
-                  <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max.</Label>
+                  <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Distance max.</Label>
                   <span className="text-xs font-bold" style={{ color: "hsl(var(--hud-cyan))" }}>{zone.maxDistanceKm} km</span>
                 </div>
                 <input type="range" min={1} max={50} value={zone.maxDistanceKm}
@@ -213,7 +213,7 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                   style={{ background: "hsl(var(--hud-border) / 0.15)" }} />
               </div>
               <div>
-                <Label className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Quartiers préférés</Label>
+                <Label className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Quartiers préférés</Label>
                 <div className="flex gap-1.5 mt-1">
                   <Input value={areaInput} onChange={e => setAreaInput(e.target.value)}
                     placeholder="Ex: Centre-ville, Gare…"
@@ -224,14 +224,14 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                         setAreaInput("");
                       }
                     }} />
-                  <Button size="sm" className="h-8 text-[10px] px-3"
+                  <Button size="sm" className="h-8 text-[0.625rem] px-3"
                     onClick={() => { if (areaInput.trim()) { setZone(p => ({ ...p, preferredAreas: [...p.preferredAreas, areaInput.trim()] })); setAreaInput(""); } }}
                     style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>+</Button>
                 </div>
                 {zone.preferredAreas.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {zone.preferredAreas.map((a, i) => (
-                      <span key={i} className="text-[10px] px-2 py-0.5 rounded-full cursor-pointer"
+                      <span key={i} className="text-[0.625rem] px-2 py-0.5 rounded-full cursor-pointer"
                         onClick={() => setZone(p => ({ ...p, preferredAreas: p.preferredAreas.filter((_, j) => j !== i) }))}
                         style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
                         {a} ✕
@@ -258,15 +258,15 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                   }}>
                   <span className="text-lg">{doc.emoji}</span>
                   <div className="flex-1">
-                    <p className="text-[11px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
+                    <p className="text-[0.6875rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>
                       {doc.label} {doc.required && <span style={{ color: "hsl(var(--destructive))" }}>*</span>}
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>
                       {docUploaded[doc.type] ? "✅ Téléversé" : "Non fourni"}
                     </p>
                   </div>
                   <Button size="sm" variant={docUploaded[doc.type] ? "outline" : "default"}
-                    className="text-[10px] h-7 px-3"
+                    className="text-[0.625rem] h-7 px-3"
                     onClick={() => handleDocUpload(doc.type)}
                     style={docUploaded[doc.type]
                       ? { borderColor: "hsl(var(--success) / 0.2)", color: "hsl(var(--success))" }
@@ -292,8 +292,8 @@ export default function DriverOnboardingWizard({ onComplete }: { onComplete?: ()
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between py-1.5 border-b"
                     style={{ borderColor: "hsl(var(--hud-border) / 0.06)" }}>
-                    <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
-                    <span className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{value}</span>
+                    <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>{label}</span>
+                    <span className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text))" }}>{value}</span>
                   </div>
                 ))}
               </div>

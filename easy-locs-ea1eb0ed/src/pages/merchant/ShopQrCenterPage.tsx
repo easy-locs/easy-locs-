@@ -120,7 +120,7 @@ export default function ShopQrCenterPage() {
                   <span className="text-sm font-bold text-foreground">{qr.amount} {qr.currency}</span>
                   <button
                     onClick={() => handleCopyText(encodeMerchantQr(qr), `${qr.amount} ${qr.currency} QR`)}
-                    className="text-[10px] text-primary font-medium flex items-center gap-1"
+                    className="text-[0.625rem] text-primary font-medium flex items-center gap-1"
                   >
                     <Copy className="w-3 h-3" /> Copy
                   </button>
@@ -141,7 +141,7 @@ export default function ShopQrCenterPage() {
                   className="flex flex-col items-center gap-1.5 p-2 rounded-xl bg-muted/50 border border-border/10"
                 >
                   <QRCodeSVG value={encodeMerchantQr(qr)} size={60} level="M" />
-                  <span className="text-[10px] font-bold text-foreground">{qr.tableCode}</span>
+                  <span className="text-[0.625rem] font-bold text-foreground">{qr.tableCode}</span>
                 </div>
               ))}
             </div>
@@ -154,9 +154,9 @@ export default function ShopQrCenterPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-bold text-foreground">{section.title}</p>
-                <p className="text-[10px] text-muted-foreground">{section.description}</p>
+                <p className="text-[0.625rem] text-muted-foreground">{section.description}</p>
               </div>
-              <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full uppercase", section.color)}>
+              <span className={cn("text-[0.625rem] font-bold px-2 py-0.5 rounded-full uppercase", section.color)}>
                 {section.type === "url" ? "Link" : "QR"}
               </span>
             </div>
@@ -190,7 +190,7 @@ export default function ShopQrCenterPage() {
 
             <div className="flex flex-wrap gap-1.5">
               {section.useCases.map((uc) => (
-                <span key={uc} className="text-[10px] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                <span key={uc} className="text-[0.625rem] font-medium text-muted-foreground bg-muted rounded-full px-2 py-0.5">
                   {uc}
                 </span>
               ))}

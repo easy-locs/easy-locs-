@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import SEOHead from "@/components/SEOHead";
@@ -142,7 +142,7 @@ const PublicServiceBooking = () => {
         ogImage={ogImage}
       />
       <SubPageShell noContentPad className="flex items-center justify-center px-4">
-        <Card className="max-w-md mx-auto w-full">
+        <AppCard className="max-w-md mx-auto w-full">
           <CardContent className="pt-8 pb-8 space-y-5">
             <div className="text-center space-y-3">
               <CheckCircle2 className="h-16 w-16 text-accent mx-auto" />
@@ -173,7 +173,7 @@ const PublicServiceBooking = () => {
             </p>
             <MarketplaceDisclaimer compact />
           </CardContent>
-        </Card>
+        </AppCard>
       </SubPageShell>
     </>
   );
@@ -553,7 +553,7 @@ const PublicServiceBooking = () => {
                   {service.requires_id_document && (
                     <div>
                       <label className="text-xs text-muted-foreground font-medium">🪪 {t("mp.id_document_required") || "ID Document"} *</label>
-                      <p className="text-[11px] text-muted-foreground mb-2">{t("mp.id_document_desc") || "This service requires a copy of your identity document."}</p>
+                      <p className="text-[0.6875rem] text-muted-foreground mb-2">{t("mp.id_document_desc") || "This service requires a copy of your identity document."}</p>
                       <Input
                         type="file"
                         accept="image/*,.pdf"
@@ -665,7 +665,7 @@ const PublicServiceBooking = () => {
 
             {/* Sidebar - Order Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-8">
+              <AppCard className="sticky top-8">
                 <CardContent className="pt-6 space-y-4">
                   <h3 className="font-semibold text-foreground">{t("mp.booking_summary") || "Booking Summary"}</h3>
                   <Separator />
@@ -729,7 +729,7 @@ const PublicServiceBooking = () => {
                     <span className="text-2xl font-bold text-accent">{fmtPrice(totalPrice, service.currency)}</span>
                   </div>
                 </CardContent>
-              </Card>
+              </AppCard>
             </div>
           </div>
         </div>

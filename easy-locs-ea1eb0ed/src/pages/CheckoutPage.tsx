@@ -496,7 +496,7 @@ export default function CheckoutPage() {
           </div>
 
           <div className="rounded-2xl p-4 bg-card border border-border/20">
-            <p className="text-[11px] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-3 text-muted-foreground">
               Enter card details
             </p>
             <Suspense
@@ -545,13 +545,13 @@ export default function CheckoutPage() {
       <div className="flex-1 overflow-y-auto px-4 pb-[var(--page-bottom-pad)] space-y-4">
         {/* Restaurant */}
         <div className="rounded-2xl p-4 bg-card border border-border/20">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Restaurant</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-muted-foreground">Restaurant</p>
           <p className="text-sm font-bold mt-0.5 text-foreground">{cart.restaurantName}</p>
         </div>
 
         {/* Delivery mode */}
         <section>
-          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Delivery mode</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Delivery mode</p>
           <div className="flex gap-2">
             {(["delivery", "pickup"] as DeliveryMode[]).map((m) => (
               <button
@@ -586,7 +586,7 @@ export default function CheckoutPage() {
                 style={{ color: selectedLocation ? "hsl(var(--primary))" : "hsl(var(--destructive))" }}
               />
               <div className="flex-1 text-left">
-                <p className="text-[11px] text-muted-foreground font-medium">Deliver to</p>
+                <p className="text-[0.6875rem] text-muted-foreground font-medium">Deliver to</p>
                 {selectedLocation ? (
                   <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{selectedLocation.label}</p>
                 ) : (
@@ -600,7 +600,7 @@ export default function CheckoutPage() {
 
         {/* Items */}
         <section>
-          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Items ({itemCount})</p>
           <div className="rounded-2xl overflow-hidden bg-card border border-border/20">
             {cart.items.map((item, idx) => (
               <div
@@ -613,15 +613,15 @@ export default function CheckoutPage() {
                   <p className="text-sm font-semibold text-foreground line-clamp-1 break-words">{item.name}</p>
                   {/* Food modifiers in checkout */}
                   {item.modifiers && item.modifiers.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                    <p className="text-[0.6875rem] text-muted-foreground mt-0.5 line-clamp-2">
                       {item.modifiers.map((m: CartModifier) => m.optionName).join(", ")}
                     </p>
                   )}
                   {item.notes && (
-                    <p className="text-[10px] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
+                    <p className="text-[0.625rem] text-muted-foreground italic mt-0.5 line-clamp-1">Note: {item.notes}</p>
                   )}
                   {item.allergens && item.allergens.length > 0 && (
-                    <p className="text-[10px] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
+                    <p className="text-[0.625rem] mt-0.5 font-medium" style={{ color: "hsl(0 72% 51%)" }}>
                       ⚠️ Contains: {item.allergens.join(", ")}
                     </p>
                   )}
@@ -669,7 +669,7 @@ export default function CheckoutPage() {
 
         {/* Notes */}
         <section>
-          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Notes</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Notes</p>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -681,7 +681,7 @@ export default function CheckoutPage() {
         {/* BNPL & Insurance options */}
         {user?.id && total > 0 && (
           <section className="space-y-3">
-            <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Financing & Protection</p>
+            <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Financing & Protection</p>
             <Suspense fallback={null}>
               <BnplOption
                 userId={user.id}
@@ -706,7 +706,7 @@ export default function CheckoutPage() {
 
         {/* Payment method */}
         <section>
-          <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Payment</p>
+          <p className="text-[0.6875rem] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Payment</p>
           <div className="space-y-2">
             {paymentMethods.map((pm) => (
               <button
@@ -725,11 +725,11 @@ export default function CheckoutPage() {
                 <div className="flex-1 text-left">
                   <span className="text-sm font-semibold text-foreground">{pm.label}</span>
                   {pm.detail && (
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{pm.detail}</p>
+                    <p className="text-[0.625rem] text-muted-foreground mt-0.5">{pm.detail}</p>
                   )}
                 </div>
                 {pm.key === "wallet" && walletInsufficient && (
-                  <span className="text-[10px] font-semibold text-destructive">Insufficient</span>
+                  <span className="text-[0.625rem] font-semibold text-destructive">Insufficient</span>
                 )}
               </button>
             ))}

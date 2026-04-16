@@ -83,7 +83,7 @@ export default function SeasonalCalendarGrid({
                 {visible.map((b, idx) => (
                   <div
                     key={b.id}
-                    className={`text-[10px] px-1 py-px rounded truncate cursor-pointer hover:opacity-80 group/booking ${LANE_COLORS[idx % LANE_COLORS.length]}`}
+                    className={`text-[0.625rem] px-1 py-px rounded truncate cursor-pointer hover:opacity-80 group/booking ${LANE_COLORS[idx % LANE_COLORS.length]}`}
                     title={`${b.guest_name} (${b.check_in} → ${b.check_out})`}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -106,7 +106,7 @@ export default function SeasonalCalendarGrid({
                 ))}
                 {overflow > 0 && (
                   <div
-                    className="text-[10px] text-muted-foreground font-medium px-1"
+                    className="text-[0.625rem] text-muted-foreground font-medium px-1"
                     title={dayBookings.slice(MAX_VISIBLE).map(b => b.guest_name).join(", ")}
                   >
                     +{overflow}

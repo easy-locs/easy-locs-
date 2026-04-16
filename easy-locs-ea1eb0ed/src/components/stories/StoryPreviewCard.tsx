@@ -19,8 +19,8 @@ const TYPE_BADGE_COLORS: Record<string, string> = {
 };
 
 const SIZE_CONFIG = {
-  small: { width: "w-[130px]", aspect: "aspect-[3/4]", titleClass: "text-xs", metaClass: "text-[10px]", priceClass: "text-xs" },
-  medium: { width: "w-[148px]", aspect: "aspect-[3/4]", titleClass: "text-[13px]", metaClass: "text-[11px]", priceClass: "text-[13px]" },
+  small: { width: "w-[130px]", aspect: "aspect-[3/4]", titleClass: "text-xs", metaClass: "text-[0.625rem]", priceClass: "text-xs" },
+  medium: { width: "w-[148px]", aspect: "aspect-[3/4]", titleClass: "text-[0.8125rem]", metaClass: "text-[0.6875rem]", priceClass: "text-[0.8125rem]" },
   large: { width: "w-[170px]", aspect: "aspect-[3/4]", titleClass: "text-sm", metaClass: "text-xs", priceClass: "text-sm" },
 };
 
@@ -52,7 +52,7 @@ export default function StoryPreviewCard({ story, onClick, size = "medium" }: St
 
       <div className="absolute top-2.5 left-2.5">
         <span
-          className={`px-2 py-[3px] rounded-lg text-[10px] font-bold text-white uppercase tracking-wider backdrop-blur-sm ${story.storyType === "deal" ? "animate-pulse" : ""}`}
+          className={`px-2 py-[3px] rounded-lg text-[0.625rem] font-bold text-white uppercase tracking-wider backdrop-blur-sm ${story.storyType === "deal" ? "animate-pulse" : ""}`}
           style={{ background: badgeColor, boxShadow: `0 2px 8px ${badgeColor.replace(")", " / 0.35)")}` }}
         >
           {story.storyType === "merchant" ? story.vertical : t(`story.type.${story.storyType}`) || story.storyType}

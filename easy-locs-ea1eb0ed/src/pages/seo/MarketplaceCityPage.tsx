@@ -8,7 +8,7 @@ import SEOPageShell from "@/components/seo/SEOPageShell";
 import FAQSection from "@/components/seo/FAQSection";
 import InternalLinksGrid from "@/components/seo/InternalLinksGrid";
 import { getCityBySlug, getServiceCategoryBySlug, SEO_SERVICE_CATEGORIES, getPhase1Cities, isIndexableCity } from "@/lib/seo/seo-data";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MapPin, Briefcase, Star, Shield, Zap } from "lucide-react";
 import { useUiEngine } from "@/hooks/useUiEngine";
@@ -91,13 +91,13 @@ export const MarketplaceHubPage = () => {
               { icon: Zap, title: "Instant Booking", desc: "Book services online with real-time availability and instant confirmation." },
               { icon: Star, title: "Transparent Pricing", desc: "Compare prices across providers. No hidden fees." },
             ].map(item => (
-              <Card key={item.title} className="border-border text-center">
+              <AppCard key={item.title} className="border-border text-center">
                 <CardContent className="p-6">
                   <item.icon className="h-10 w-10 text-primary mx-auto mb-4" />
                   <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
                   <p className="text-sm text-muted-foreground">{item.desc}</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             ))}
           </div>
         </div>

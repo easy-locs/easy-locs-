@@ -41,7 +41,7 @@ export function RideFareCard({ pickupLabel, dropoffLabel, fare, currency = "AED"
         </div>
       )}
       {paymentStatus && (
-        <div className="text-[10px] text-muted-foreground text-right">
+        <div className="text-[0.625rem] text-muted-foreground text-right">
           {tc(`ride.payment_${paymentStatus}`) || paymentStatus}
         </div>
       )}

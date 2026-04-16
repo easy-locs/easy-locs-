@@ -57,8 +57,8 @@ export default function DriverMissionsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-foreground">Order #{mission.id.slice(0, 8)}</p>
-                <p className="text-[11px] text-muted-foreground">{new Date(mission.created_at).toLocaleString()}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">Dubai · ETA placeholder</p>
+                <p className="text-[0.6875rem] text-muted-foreground">{new Date(mission.created_at).toLocaleString()}</p>
+                <p className="text-[0.6875rem] text-muted-foreground mt-0.5">Dubai · ETA placeholder</p>
               </div>
               <OrderStatusChip status={mission.status} variant="merchant" />
             </div>

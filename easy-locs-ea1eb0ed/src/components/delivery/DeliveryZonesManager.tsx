@@ -94,12 +94,12 @@ export default function DeliveryZonesManager({ orgId, className }: Props) {
         <div className="flex items-center gap-2">
           <Globe className="h-4 w-4" style={{ color: "hsl(var(--hud-cyan))" }} />
           <h3 className="text-sm font-bold" style={{ color: "hsl(var(--hud-text))" }}>Zones de livraison</h3>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
+          <span className="text-[0.625rem] px-1.5 py-0.5 rounded-full font-medium"
             style={{ background: "hsl(var(--hud-cyan) / 0.1)", color: "hsl(var(--hud-cyan))" }}>
             {zones.filter(z => z.active).length} actives
           </span>
         </div>
-        <Button size="sm" className="h-7 text-[10px] px-2" onClick={() => setShowCreate(!showCreate)}
+        <Button size="sm" className="h-7 text-[0.625rem] px-2" onClick={() => setShowCreate(!showCreate)}
           style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>
           <Plus className="h-3 w-3 mr-1" /> Zone
         </Button>
@@ -123,7 +123,7 @@ export default function DeliveryZonesManager({ orgId, className }: Props) {
         </div>
         <div className="absolute bottom-2 left-2 flex gap-2">
           {zones.filter(z => z.active).map(z => (
-            <span key={z.id} className="text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded-full"
+            <span key={z.id} className="text-[0.625rem] flex items-center gap-1 px-1.5 py-0.5 rounded-full"
               style={{ background: `${z.color}20`, color: z.color }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: z.color }} />
               {z.name}
@@ -138,33 +138,33 @@ export default function DeliveryZonesManager({ orgId, className }: Props) {
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden">
             <div className="rounded-xl p-3 space-y-2" style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.1)" }}>
-              <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nouvelle zone</p>
+              <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--hud-text-dim))" }}>Nouvelle zone</p>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom *</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Nom *</Label>
                   <Input value={newZone.name} onChange={e => setNewZone(p => ({ ...p, name: e.target.value }))}
                     className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Rayon (km)</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Rayon (km)</Label>
                   <Input type="number" value={newZone.radiusKm} onChange={e => setNewZone(p => ({ ...p, radiusKm: +e.target.value }))}
                     className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais de base (€)</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>Frais de base (€)</Label>
                   <Input type="number" step="0.5" value={newZone.baseFee} onChange={e => setNewZone(p => ({ ...p, baseFee: +e.target.value }))}
                     className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
                 <div>
-                  <Label className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>€/km</Label>
+                  <Label className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>€/km</Label>
                   <Input type="number" step="0.1" value={newZone.perKmFee} onChange={e => setNewZone(p => ({ ...p, perKmFee: +e.target.value }))}
                     className="h-8 text-xs" style={{ background: "hsl(var(--hud-bg))", borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text))" }} />
                 </div>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" className="flex-1 text-[10px] h-8" onClick={createZone}
+                <Button size="sm" className="flex-1 text-[0.625rem] h-8" onClick={createZone}
                   style={{ background: "hsl(var(--hud-cyan))", color: "hsl(var(--hud-bg))" }}>Créer</Button>
-                <Button size="sm" variant="outline" className="text-[10px] h-8" onClick={() => setShowCreate(false)}
+                <Button size="sm" variant="outline" className="text-[0.625rem] h-8" onClick={() => setShowCreate(false)}
                   style={{ borderColor: "hsl(var(--hud-border) / 0.15)", color: "hsl(var(--hud-text-dim))" }}>Annuler</Button>
               </div>
             </div>
@@ -184,21 +184,21 @@ export default function DeliveryZonesManager({ orgId, className }: Props) {
                   <p className="text-xs font-semibold" style={{ color: z.active ? "hsl(var(--hud-text))" : "hsl(var(--hud-text-dim) / 0.4)" }}>
                     {z.name}
                   </p>
-                  {!z.active && <span className="text-[10px] px-1 py-0.5 rounded" style={{ background: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text-dim) / 0.3)" }}>Inactive</span>}
+                  {!z.active && <span className="text-[0.625rem] px-1 py-0.5 rounded" style={{ background: "hsl(var(--hud-border) / 0.1)", color: "hsl(var(--hud-text-dim) / 0.3)" }}>Inactive</span>}
                 </div>
                 <div className="flex items-center gap-3 mt-0.5">
-                  <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
+                  <span className="text-[0.625rem] flex items-center gap-0.5" style={{ color: "hsl(var(--hud-text-dim) / 0.5)" }}>
                     <Ruler className="h-2.5 w-2.5" /> {z.radiusKm} km
                   </span>
-                  <span className="text-[10px] flex items-center gap-0.5" style={{ color: "hsl(var(--success))" }}>
+                  <span className="text-[0.625rem] flex items-center gap-0.5" style={{ color: "hsl(var(--success))" }}>
                     <DollarSign className="h-2.5 w-2.5" /> {z.baseFee}€ + {z.perKmFee}€/km
                   </span>
-                  <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                  <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                     Max {z.maxWeight}kg
                   </span>
                 </div>
                 {z.restrictedHours && (
-                  <span className="text-[10px] mt-0.5 block" style={{ color: "hsl(var(--warning))" }}>
+                  <span className="text-[0.625rem] mt-0.5 block" style={{ color: "hsl(var(--warning))" }}>
                     ⚠️ Restriction: {z.restrictedHours}
                   </span>
                 )}
@@ -218,7 +218,7 @@ export default function DeliveryZonesManager({ orgId, className }: Props) {
 
             {/* Fee estimator */}
             <div className="px-3 pb-3">
-              <div className="flex items-center gap-2 text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+              <div className="flex items-center gap-2 text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                 Estimation : 
                 {[3, 5, 10].map(km => (
                   <span key={km} className="px-1.5 py-0.5 rounded" style={{ background: "hsl(var(--hud-bg))" }}>

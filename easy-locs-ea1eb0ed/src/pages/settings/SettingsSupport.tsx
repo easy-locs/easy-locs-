@@ -31,7 +31,7 @@ export default function SettingsSupport() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground">{opt.label}</p>
-              <p className="text-[11px] text-muted-foreground">{opt.desc}</p>
+              <p className="text-[0.6875rem] text-muted-foreground">{opt.desc}</p>
             </div>
           </button>
         ))}

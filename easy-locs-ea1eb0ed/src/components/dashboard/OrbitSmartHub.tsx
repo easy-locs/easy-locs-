@@ -151,7 +151,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
             return (
               <motion.span
                 key={`label-${action.fallback}`}
-                className="absolute text-[10px] font-semibold tracking-wide pointer-events-none whitespace-nowrap"
+                className="absolute text-[0.625rem] font-semibold tracking-wide pointer-events-none whitespace-nowrap"
                 style={{
                   top: ly, left: lx,
                   transform: "translate(-50%, -50%)",
@@ -193,7 +193,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
                 {totalProperties}
               </span>
             </div>
-            <span className="text-[10px] uppercase tracking-wider leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
+            <span className="text-[0.625rem] uppercase tracking-wider leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
               {t("common.properties") || "Properties"}
             </span>
             <div className="flex items-center justify-center gap-1 mt-1.5">
@@ -201,7 +201,7 @@ export default function OrbitSmartHub({ totalProperties, totalCountries, propert
               <span className="text-sm font-bold tabular-nums leading-none" style={{ color: "hsl(var(--hud-text))" }}>
                 {totalCountries}
               </span>
-              <span className="text-[10px] leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
+              <span className="text-[0.625rem] leading-none" style={{ color: "hsl(var(--hud-text-dim))" }}>
                 {t("page.dashboard.countries_short") || "countries"}
               </span>
             </div>

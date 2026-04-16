@@ -100,7 +100,7 @@ export default function PaymentMethodSelector({
                 )}>
                   {label}
                 </p>
-                <p className="text-[10px] text-muted-foreground line-clamp-1 break-words">{description}</p>
+                <p className="text-[0.625rem] text-muted-foreground line-clamp-1 break-words">{description}</p>
               </div>
               {selected && (
                 <Check className="h-3 w-3 text-accent shrink-0 absolute top-1.5 right-1.5" />

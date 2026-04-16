@@ -143,7 +143,7 @@ const CountryWorkspace = () => {
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <stat.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-[10px] text-muted-foreground font-medium truncate">{stat.label}</span>
+                <span className="text-[0.625rem] text-muted-foreground font-medium truncate">{stat.label}</span>
               </div>
               <div className="text-xl font-bold text-foreground tabular-nums mt-auto">
                 {loading ? "…" : stat.value}
@@ -165,7 +165,7 @@ const CountryWorkspace = () => {
                 <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                   {section.title}
                 </h2>
-                <p className="text-[11px] text-muted-foreground/60 mt-0.5">{section.description}</p>
+                <p className="text-[0.6875rem] text-muted-foreground/60 mt-0.5">{section.description}</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {section.items.map((item) => (

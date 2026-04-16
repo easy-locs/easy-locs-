@@ -30,7 +30,7 @@ export default function YouNotificationsPage({ onBack }: Props) {
     <div className="flex items-center justify-between gap-3 py-2.5 min-h-[44px]">
       <div className="min-w-0 flex-1">
         <p className="text-sm" style={{ color: "hsl(var(--foreground))" }}>{label}</p>
-        {desc && <p className="text-[11px] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
+        {desc && <p className="text-[0.6875rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>{desc}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -47,17 +47,17 @@ export default function YouNotificationsPage({ onBack }: Props) {
       </div>
 
       <div className="space-y-1 mt-4">
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.message_notif")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.message_notif")}</p>
         <Row label={t("orbit.you.show_notif")} desc={t("orbit.you.show_notif_desc")}><Switch checked={alertPrefs.typeAlerts.messages} onCheckedChange={() => toggleTypeAlert("messages")} /></Row>
         <Row label={t("orbit.you.sound")} desc={t("orbit.you.sound_desc")}><Switch checked={alertPrefs.sound} onCheckedChange={() => toggleAlertPref("sound")} /></Row>
         <Row label={t("orbit.you.vibration")} desc={t("orbit.you.vibration_notif_desc")}><Switch checked={alertPrefs.vibration} onCheckedChange={() => toggleAlertPref("vibration")} /></Row>
 
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.group_notif")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.group_notif")}</p>
         <Row label={t("orbit.you.show_notif")} desc={t("orbit.you.show_group_notif_desc")}><Switch checked={alertPrefs.typeAlerts.bookings} onCheckedChange={() => toggleTypeAlert("bookings")} /></Row>
 
         <Separator className="my-3" />
-        <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.call_notif")}</p>
+        <p className="text-[0.625rem] font-bold uppercase tracking-wider mb-2" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>{t("orbit.you.call_notif")}</p>
         <Row label={t("orbit.you.ring_for_calls")} desc={t("orbit.you.ring_for_calls_desc")}><Switch checked={alertPrefs.browserNotifications} onCheckedChange={() => toggleAlertPref("browserNotifications")} /></Row>
 
         <Separator className="my-3" />

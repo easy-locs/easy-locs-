@@ -83,7 +83,7 @@ function WalletCardInner({ compact = false, showQr = true, className = "" }: Wal
               className="flex flex-col items-center gap-1 p-2 rounded-xl bg-background/40 hover:bg-background/70 transition-colors active:scale-95"
             >
               <action.icon className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-              <span className="text-[10px] font-medium text-foreground/70">{action.label}</span>
+              <span className="text-[0.625rem] font-medium text-foreground/70">{action.label}</span>
             </Link>
           ))}
         </div>

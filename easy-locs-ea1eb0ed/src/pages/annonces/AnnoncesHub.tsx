@@ -248,7 +248,7 @@ export default function AnnoncesHub() {
               >
                 <div className="flex items-center justify-between px-4 pt-3 pb-1">
                   <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {t("page.annonces.hub.recent_searches")}</span>
-                  <button onClick={() => { clearRecentSearches(); setRecentSearches([]); }} className="text-[10px] text-primary">{t("page.annonces.hub.clear")}</button>
+                  <button onClick={() => { clearRecentSearches(); setRecentSearches([]); }} className="text-[0.625rem] text-primary">{t("page.annonces.hub.clear")}</button>
                 </div>
                 {recentSearches.map(s => (
                   <button key={s} onClick={() => handleRecentSearchClick(s)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors flex items-center gap-2">
@@ -303,7 +303,7 @@ export default function AnnoncesHub() {
                 className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl bg-gradient-to-br ${CATEGORY_GRADIENTS[cat.key] || "from-gray-500/10 to-gray-600/5"} hover:shadow-md transition-all border border-border/20`}
               >
                 <span className="text-2xl">{cat.emoji}</span>
-                <span className="text-[10px] font-semibold text-foreground/80 leading-tight text-center">{cat.label}</span>
+                <span className="text-[0.625rem] font-semibold text-foreground/80 leading-tight text-center">{cat.label}</span>
               </motion.button>
             ))}
           </div>

@@ -119,7 +119,7 @@ export default function ViewOnceMedia({ messageId, attachmentUrl, isMe, viewOnce
             <img loading="lazy" src={attachmentUrl} alt="" className="w-full h-auto max-h-[80vh] object-contain" />
             <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(0,0,0,0.6)" }}>
               <Eye className="h-3 w-3 text-white" />
-              <span className="text-[11px] text-white font-medium">{t("orbit.view_once.closes_permanently") || "View once — closes permanently"}</span>
+              <span className="text-[0.6875rem] text-white font-medium">{t("orbit.view_once.closes_permanently") || "View once — closes permanently"}</span>
             </div>
           </div>
         </DialogContent>

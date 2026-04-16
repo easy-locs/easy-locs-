@@ -90,7 +90,7 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
           <div key={k.label} className="rounded-xl px-2 py-2 text-center"
             style={{ background: "hsl(var(--muted) / 0.3)", border: "1px solid hsl(var(--border) / 0.1)" }}>
             <p className="text-sm font-bold" style={{ color: `hsl(var(${k.color}))` }}>{k.value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>{k.label}</p>
           </div>
         ))}
       </div>
@@ -98,7 +98,7 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
       <div className="flex gap-1 p-1 rounded-xl" style={{ background: "hsl(var(--muted) / 0.3)" }}>
         {(["ledger", "contracts", "tokens"] as const).map(v => (
           <button key={v} onClick={() => { setView(v); haptic("selection"); }}
-            className="flex-1 py-1.5 rounded-lg text-[10px] font-semibold"
+            className="flex-1 py-1.5 rounded-lg text-[0.625rem] font-semibold"
             style={{ background: view === v ? "hsl(var(--primary) / 0.1)" : "transparent", color: view === v ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
             {v === "ledger" ? "📜 Registre" : v === "contracts" ? "📋 Contrats" : "🪙 Tokens"}
           </button>
@@ -116,15 +116,15 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{cfg.label}</p>
-                      <span className="text-[10px] font-mono px-1 py-0.5 rounded" style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--muted-foreground))" }}>
+                      <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{cfg.label}</p>
+                      <span className="text-[0.625rem] font-mono px-1 py-0.5 rounded" style={{ background: "hsl(var(--muted) / 0.5)", color: "hsl(var(--muted-foreground))" }}>
                         {r.txHash}
                       </span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       🔖 {r.jobId} • ⛽ {r.gasUsed} gas • #{r.blockNumber}
                     </p>
-                    <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {Object.entries(r.data).map(([k, v]) => `${k}: ${v}`).join(" • ")}
                     </p>
                   </div>
@@ -146,15 +146,15 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <Lock className="h-3.5 w-3.5" style={{ color: "hsl(var(--success))" }} />
-                  <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
+                  <p className="text-[0.625rem] font-semibold" style={{ color: "hsl(var(--foreground))" }}>{c.name}</p>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                   style={{ background: "hsl(var(--success) / 0.1)", color: "hsl(var(--success))" }}>v{c.version}</span>
               </div>
-              <p className="text-[10px] font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
                 {c.address} • 🌐 {c.network}
               </p>
-              <p className="text-[10px] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+              <p className="text-[0.625rem] mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
                 ⚡ {c.totalExecutions.toLocaleString()} exécutions
               </p>
               <div className="h-1.5 rounded-full mt-1.5 overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
@@ -177,18 +177,18 @@ export default function BlockchainTraceability({ orgId, className }: { orgId: st
                   <span className="text-base">{cfg.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[10px] font-semibold font-mono" style={{ color: "hsl(var(--foreground))" }}>{t.tokenId}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                      <p className="text-[0.625rem] font-semibold font-mono" style={{ color: "hsl(var(--foreground))" }}>{t.tokenId}</p>
+                      <span className="text-[0.625rem] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: `hsl(var(${cfg.color}) / 0.1)`, color: `hsl(var(${cfg.color}))` }}>{cfg.label}</span>
                     </div>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       {t.origin} → {t.destination} • 📍 {t.checkpoints} checkpoints
                     </p>
-                    <p className="text-[10px]" style={{ color: "hsl(var(--muted-foreground))" }}>
+                    <p className="text-[0.625rem]" style={{ color: "hsl(var(--muted-foreground))" }}>
                       👤 {t.owner} • 🔖 {t.jobId}
                     </p>
                   </div>
-                  <p className="text-[10px] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{t.value.toLocaleString()} F</p>
+                  <p className="text-[0.625rem] font-bold shrink-0" style={{ color: "hsl(var(--primary))" }}>{t.value.toLocaleString()} F</p>
                 </div>
               </div>
             );

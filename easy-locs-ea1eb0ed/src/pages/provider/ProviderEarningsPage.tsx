@@ -3,7 +3,7 @@ import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilePageHeader } from "@/components/ui/mobile-page-header";
-import { Card, CardContent } from "@/components/ui/card";
+import { AppCard, CardContent } from "@/components/ui/AppCard";
 import { DollarSign, TrendingUp, Calendar, Loader2 } from "lucide-react";
 
 export default function ProviderEarningsPage() {
@@ -44,42 +44,42 @@ export default function ProviderEarningsPage() {
         ) : (
           <>
             <div className="grid grid-cols-3 gap-3">
-              <Card>
+              <AppCard>
                 <CardContent className="p-3 text-center">
-                  <p className="text-[10px] text-muted-foreground">Today</p>
+                  <p className="text-[0.625rem] text-muted-foreground">Today</p>
                   <p className="text-xl font-bold text-green-600">{earnings?.todayRevenue || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">AED</p>
+                  <p className="text-[0.625rem] text-muted-foreground">AED</p>
                 </CardContent>
-              </Card>
-              <Card>
+              </AppCard>
+              <AppCard>
                 <CardContent className="p-3 text-center">
-                  <p className="text-[10px] text-muted-foreground">This Week</p>
+                  <p className="text-[0.625rem] text-muted-foreground">This Week</p>
                   <p className="text-xl font-bold text-blue-600">{earnings?.weekRevenue || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">AED</p>
+                  <p className="text-[0.625rem] text-muted-foreground">AED</p>
                 </CardContent>
-              </Card>
-              <Card>
+              </AppCard>
+              <AppCard>
                 <CardContent className="p-3 text-center">
-                  <p className="text-[10px] text-muted-foreground">This Month</p>
+                  <p className="text-[0.625rem] text-muted-foreground">This Month</p>
                   <p className="text-xl font-bold text-purple-600">{earnings?.monthRevenue || 0}</p>
-                  <p className="text-[10px] text-muted-foreground">AED</p>
+                  <p className="text-[0.625rem] text-muted-foreground">AED</p>
                 </CardContent>
-              </Card>
+              </AppCard>
             </div>
 
             <div>
               <h3 className="text-sm font-bold mb-2">Recent Completed</h3>
               <div className="space-y-1.5">
                 {(earnings?.history || []).map((h: any, i: number) => (
-                  <Card key={i}>
+                  <AppCard key={i}>
                     <CardContent className="p-2.5 flex items-center justify-between">
                       <div>
                         <p className="text-xs font-medium">{h.service_catalog?.title || "Service"}</p>
-                        <p className="text-[10px] text-muted-foreground">{new Date(h.booked_date).toLocaleDateString()}</p>
+                        <p className="text-[0.625rem] text-muted-foreground">{new Date(h.booked_date).toLocaleDateString()}</p>
                       </div>
                       <span className="text-sm font-bold text-green-600">+{h.total_price} AED</span>
                     </CardContent>
-                  </Card>
+                  </AppCard>
                 ))}
                 {(earnings?.history || []).length === 0 && (
                   <p className="text-xs text-muted-foreground text-center py-8">No completed bookings yet</p>

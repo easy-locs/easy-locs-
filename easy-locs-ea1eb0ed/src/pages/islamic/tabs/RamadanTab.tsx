@@ -200,19 +200,19 @@ export default function RamadanTab({ country }: { country: string }) {
                 boxShadow: `0 8px 32px ${GOLD}18`,
               }}
             >
-              <p className="text-center text-[11px] uppercase tracking-widest mb-3" style={{ color: `${GOLD}99` }}>
+              <p className="text-center text-[0.6875rem] uppercase tracking-widest mb-3" style={{ color: `${GOLD}99` }}>
                 {t("islamic.day")} {currentDayIndex + 1} / {ramadanDays.length}
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="text-center">
                   <Moon size={24} className="mx-auto mb-1" style={{ color: GOLD }} />
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Suhoor</p>
+                  <p className="text-[0.625rem] uppercase tracking-wide text-muted-foreground">Suhoor</p>
                   <p className="text-2xl font-extrabold tabular-nums" style={{ color: "#fff" }}>{todayData.suhoor}</p>
                 </div>
                 <div className="text-center">
                   <Sun size={24} className="mx-auto mb-1" style={{ color: GOLD }} />
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Iftar</p>
+                  <p className="text-[0.625rem] uppercase tracking-wide text-muted-foreground">Iftar</p>
                   <p className="text-2xl font-extrabold tabular-nums" style={{ color: "#fff" }}>{todayData.iftar}</p>
                 </div>
               </div>
@@ -226,7 +226,7 @@ export default function RamadanTab({ country }: { country: string }) {
                   style={{ background: GOLD }}
                 />
               </div>
-              <p className="text-center text-[10px] mt-1" style={{ color: `${GOLD}99` }}>
+              <p className="text-center text-[0.625rem] mt-1" style={{ color: `${GOLD}99` }}>
                 {Math.round(progress)}% {t("islamic.ramadan_completed")} · {fastedCount} {t("islamic.days_fasted")}
               </p>
             </motion.div>
@@ -243,7 +243,7 @@ export default function RamadanTab({ country }: { country: string }) {
           )}
 
           <div className="rounded-2xl p-4 space-y-3" style={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))" }}>
-            <h3 className="text-[12px] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
+            <h3 className="text-[0.75rem] font-bold uppercase tracking-wide" style={{ color: `${GOLD}bb` }}>
               Khatma Tracker
             </h3>
             <div className="flex items-center gap-3">
@@ -251,7 +251,7 @@ export default function RamadanTab({ country }: { country: string }) {
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div className="h-full rounded-full transition-all" style={{ width: `${(khatmaJuz / 30) * 100}%`, background: GOLD }} />
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">{khatmaJuz}/30 {t("islamic.juz_read")}</p>
+                <p className="text-[0.625rem] text-muted-foreground mt-1">{khatmaJuz}/30 {t("islamic.juz_read")}</p>
               </div>
               <button
                 onClick={incrementKhatma}
@@ -266,11 +266,11 @@ export default function RamadanTab({ country }: { country: string }) {
 
           {ramadanDays.length > 0 && (
             <div>
-              <h3 className="text-[13px] font-bold uppercase tracking-wide mb-2" style={{ color: `${GOLD}bb` }}>
+              <h3 className="text-[0.8125rem] font-bold uppercase tracking-wide mb-2" style={{ color: `${GOLD}bb` }}>
                 {t("islamic.full_ramadan_calendar")}
               </h3>
               <div className="overflow-x-auto -mx-4 px-4">
-                <table className="w-full text-[10px] border-collapse min-w-[500px]">
+                <table className="w-full text-[0.625rem] border-collapse min-w-[500px]">
                   <thead>
                     <tr style={{ background: `${GOLD}12` }}>
                       {[t("islamic.day"), t("islamic.date"), "Suhoor", "Iftar", t("islamic.fasting")].map(h => (

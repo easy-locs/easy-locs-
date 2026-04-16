@@ -65,15 +65,15 @@ function BubbleLinkPreviewInner({ url, isMe }: Props) {
       <div className="px-3 py-2.5 space-y-0.5">
         <div className="flex items-center gap-1.5">
           <Globe className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }} />
-          <span className="text-[10px] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
+          <span className="text-[0.625rem] font-medium" style={{ color: "hsl(var(--muted-foreground) / 0.5)" }}>
             {meta.domain}
           </span>
         </div>
-        <p className="text-[12.5px] font-semibold leading-snug" style={{ color: "hsl(var(--foreground))" }}>
+        <p className="text-[0.78125rem] font-semibold leading-snug" style={{ color: "hsl(var(--foreground))" }}>
           {meta.title}
         </p>
         {meta.description && (
-          <p className="text-[11px] leading-snug line-clamp-2" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
+          <p className="text-[0.6875rem] leading-snug line-clamp-2" style={{ color: "hsl(var(--muted-foreground) / 0.6)" }}>
             {meta.description}
           </p>
         )}

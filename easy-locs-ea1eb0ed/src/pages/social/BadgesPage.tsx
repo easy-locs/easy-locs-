@@ -83,7 +83,7 @@ export default function BadgesPage() {
         const defs = BADGE_DEFINITIONS.filter((b) => b.category === cat);
         return (
           <div key={cat} className="px-4 mb-5">
-            <h2 className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-3">
+            <h2 className="text-[0.6875rem] font-extrabold uppercase tracking-widest text-muted-foreground/50 mb-3">
               {CATEGORY_LABELS[cat] ?? cat}
             </h2>
             <div className="grid grid-cols-3 gap-2">
@@ -103,10 +103,10 @@ export default function BadgesPage() {
                     }`}
                   >
                     <div className="text-2xl mb-1">{unlocked ? badge.emoji : "🔒"}</div>
-                    <p className="text-[10px] font-bold text-foreground leading-tight">{badge.name}</p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">{badge.description}</p>
+                    <p className="text-[0.625rem] font-bold text-foreground leading-tight">{badge.name}</p>
+                    <p className="text-[0.5625rem] text-muted-foreground mt-0.5 leading-tight">{badge.description}</p>
                     {unlocked && userBadge && (
-                      <p className="text-[8px] text-amber-500 mt-1">
+                      <p className="text-[0.5rem] text-amber-500 mt-1">
                         {(() => { try { return new Date(userBadge.unlocked_at).toLocaleDateString(); } catch { return ""; } })()}
                       </p>
                     )}

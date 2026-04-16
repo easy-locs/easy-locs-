@@ -141,7 +141,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
             style={{ background: "hsl(var(--hud-surface))", border: "1px solid hsl(var(--hud-border) / 0.08)" }}>
             <Icon className="h-3.5 w-3.5 mx-auto mb-1" style={{ color: `hsl(var(${color}))` }} />
             <p className="text-sm font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -156,7 +156,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
           <div key={label} className="rounded-lg px-2 py-1.5 text-center"
             style={{ background: `hsl(var(${color}) / 0.05)`, border: `1px solid hsl(var(${color}) / 0.1)` }}>
             <p className="text-xs font-bold" style={{ color: `hsl(var(${color}))` }}>{value}</p>
-            <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+            <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
           </div>
         ))}
       </div>
@@ -179,7 +179,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
       ) : drivers.length === 0 ? (
         <div className="text-center py-8">
           <Users className="h-6 w-6 mx-auto mb-2" style={{ color: "hsl(var(--hud-text-dim) / 0.15)" }} />
-          <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun chauffeur dans la flotte</p>
+          <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>Aucun chauffeur dans la flotte</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -198,16 +198,16 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
                 <div className="flex items-center gap-3 px-3 py-2.5">
                   <span className="text-sm">{cfg.emoji}</span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
+                    <p className="text-[0.6875rem] font-semibold truncate" style={{ color: "hsl(var(--hud-text))" }}>
                       {driver.full_name || driver.user_id.slice(0, 8)}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
-                      <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                      <span className="text-[0.625rem] font-medium" style={{ color: cfg.color }}>{cfg.label}</span>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                         {driver.vehicle_type}
                       </span>
                       {driver.status !== "offline" && (
-                        <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
+                        <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.3)" }}>
                           <Clock className="h-2 w-2 inline mr-0.5" />{getOnlineDuration(driver.online_since)}
                         </span>
                       )}
@@ -215,7 +215,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {driver.avg_rating != null && (
-                      <span className="text-[10px]" style={{ color: "hsl(var(--warning))" }}>
+                      <span className="text-[0.625rem]" style={{ color: "hsl(var(--warning))" }}>
                         ⭐ {driver.avg_rating.toFixed(1)}
                       </span>
                     )}
@@ -238,8 +238,8 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
                           ].map(({ label, value }) => (
                             <div key={label} className="text-center py-1 rounded-lg"
                               style={{ background: "hsl(var(--hud-bg))" }}>
-                              <p className="text-[10px] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{value}</p>
-                              <p className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
+                              <p className="text-[0.625rem] font-bold" style={{ color: "hsl(var(--hud-text))" }}>{value}</p>
+                              <p className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim) / 0.4)" }}>{label}</p>
                             </div>
                           ))}
                         </div>
@@ -247,7 +247,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
                           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
                             style={{ background: "hsl(var(--hud-bg))" }}>
                             <MapPin className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--success))" }} />
-                            <span className="text-[10px]" style={{ color: "hsl(var(--hud-text-dim))" }}>
+                            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-text-dim))" }}>
                               {driver.lat.toFixed(4)}, {driver.lng.toFixed(4)}
                             </span>
                           </div>
@@ -256,7 +256,7 @@ export default function FleetManagementDashboard({ orgId }: { orgId: string }) {
                           <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg"
                             style={{ background: "hsl(var(--hud-cyan) / 0.05)" }}>
                             <Truck className="h-3 w-3 shrink-0" style={{ color: "hsl(var(--hud-cyan))" }} />
-                            <span className="text-[10px]" style={{ color: "hsl(var(--hud-cyan))" }}>
+                            <span className="text-[0.625rem]" style={{ color: "hsl(var(--hud-cyan))" }}>
                               Mission: {driver.current_job_id.slice(0, 8)}…
                             </span>
                           </div>

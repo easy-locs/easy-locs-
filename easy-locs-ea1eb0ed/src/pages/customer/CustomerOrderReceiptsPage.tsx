@@ -43,17 +43,17 @@ export default function CustomerOrderReceiptsPage() {
           <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(210 80% 52% / 0.06)", border: "1px solid hsl(210 80% 52% / 0.1)" }}>
             <FileText className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(210 80% 52%)" }} />
             <p className="text-lg font-bold text-foreground">{rows.length}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase">Orders</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Orders</p>
           </div>
           <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(152 60% 42% / 0.06)", border: "1px solid hsl(152 60% 42% / 0.1)" }}>
             <CheckCircle2 className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(152 60% 42%)" }} />
             <p className="text-lg font-bold text-foreground">{paidCount}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase">Paid</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Paid</p>
           </div>
           <div className="rounded-2xl p-3 text-center" style={{ background: "hsl(var(--warning) / 0.06)", border: "1px solid hsl(var(--warning) / 0.1)" }}>
             <Receipt className="w-4 h-4 mx-auto mb-1" style={{ color: "hsl(var(--warning))" }} />
             <p className="text-lg font-extrabold text-foreground tabular-nums">{totalSpent.toFixed(0)}</p>
-            <p className="text-[10px] text-muted-foreground font-semibold uppercase">Total</p>
+            <p className="text-[0.625rem] text-muted-foreground font-semibold uppercase">Total</p>
           </div>
         </motion.div>
       )}
@@ -99,7 +99,7 @@ export default function CustomerOrderReceiptsPage() {
                     <div className="flex items-center justify-between gap-2">
                       <p className="text-sm font-bold text-foreground">Receipt #{String(row.id).slice(0, 8)}</p>
                       <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
+                        className="text-[0.625rem] font-bold px-2 py-0.5 rounded-full shrink-0"
                         style={{ background: `${meta.color}15`, color: meta.color }}
                       >
                         {meta.label}
@@ -111,10 +111,10 @@ export default function CustomerOrderReceiptsPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-[11px] text-muted-foreground">{dateStr} {timeStr}</span>
+                      <span className="text-[0.6875rem] text-muted-foreground">{dateStr} {timeStr}</span>
                       <button
                         onClick={(e) => { e.stopPropagation(); navigate(`/tracking/${row.id}`); }}
-                        className="text-[11px] font-bold px-3 py-1 rounded-lg active:scale-95 transition-transform"
+                        className="text-[0.6875rem] font-bold px-3 py-1 rounded-lg active:scale-95 transition-transform"
                         style={{ background: "hsl(var(--primary) / 0.08)", color: "hsl(var(--primary))" }}
                       >
                         View Details

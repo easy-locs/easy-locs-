@@ -97,7 +97,7 @@ export default function DriverActiveMissionsPage() {
             {row.created_at && (
               <div className="flex items-center gap-1 mt-2 pt-2 border-t border-border/10">
                 <Clock className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] text-muted-foreground">{new Date(row.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
+                <span className="text-[0.625rem] text-muted-foreground">{new Date(row.created_at).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
                 {row.current_price != null && (
                   <span className="ml-auto text-xs font-bold text-foreground">{row.current_price} {row.currency || "AED"}</span>
                 )}
