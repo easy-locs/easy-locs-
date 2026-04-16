@@ -1,4 +1,5 @@
 import type { RideVehicleType, RideEstimate, PriceBreakdown } from "./ports";
+import { computeSurge, type SurgeInputs, type SurgeDecision } from "./surge";
 
 interface PricingTier {
   baseFare: number;
@@ -96,6 +97,31 @@ export function calculateFinalFare(
 
 export function calculateCommission(grossAmount: number): number {
   return Math.round(grossAmount * COMMISSION_RATE * 100) / 100;
+}
+
+/**
+ * Compute an estimate with a dynamic surge decision derived from live
+ * demand/supply signals. Returns the estimate plus the full audit record so
+ * callers can persist the decision and show transparent breakdowns to riders.
+ */
+export function calculateEstimateWithSurge(
+  pickupLat: number,
+  pickupLng: number,
+  dropoffLat: number,
+  dropoffLng: number,
+  vehicleType: RideVehicleType,
+  surgeInputs: SurgeInputs,
+): { estimate: RideEstimate; surge: SurgeDecision } {
+  const surge = computeSurge(surgeInputs);
+  const estimate = calculateEstimate(
+    pickupLat,
+    pickupLng,
+    dropoffLat,
+    dropoffLng,
+    vehicleType,
+    surge.multiplier,
+  );
+  return { estimate, surge };
 }
 
 export { PRICING_GRID, COMMISSION_RATE };
