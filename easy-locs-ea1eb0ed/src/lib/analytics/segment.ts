@@ -1,10 +1,18 @@
-import { AnalyticsBrowser } from "@segment/analytics-next";
 import { isCategoryAllowed } from "@/lib/consent/cookie-consent";
 
-let analytics: AnalyticsBrowser | null = null;
-let initialized = false;
+interface SegmentAnalytics {
+  identify(userId: string, traits?: Record<string, unknown>): Promise<unknown>;
+  track(event: string, properties?: Record<string, unknown>): Promise<unknown>;
+  page(category?: string, name?: string, properties?: Record<string, unknown>): Promise<unknown>;
+  group(groupId: string, traits?: Record<string, unknown>): Promise<unknown>;
+  reset(): Promise<unknown>;
+}
 
-export function initSegment(): AnalyticsBrowser | null {
+let analytics: SegmentAnalytics | null = null;
+let initialized = false;
+let initPromise: Promise<SegmentAnalytics | null> | null = null;
+
+export function initSegment(): SegmentAnalytics | null {
   if (initialized) return analytics;
   if (!isCategoryAllowed("analytics")) return null;
 
@@ -13,14 +21,27 @@ export function initSegment(): AnalyticsBrowser | null {
 
   initialized = true;
 
-  analytics = AnalyticsBrowser.load(
-    { writeKey },
-    {
-      integrations: {
-        "Segment.io": { apiHost: "api.segment.io/v1" },
-      },
-    },
-  );
+  if (!initPromise) {
+    const pkg = "@segment/analytics-next";
+    initPromise = import(/* @vite-ignore */ pkg)
+      .then(({ AnalyticsBrowser }: { AnalyticsBrowser: { load: (...args: unknown[]) => SegmentAnalytics } }) => {
+        analytics = AnalyticsBrowser.load(
+          { writeKey },
+          {
+            integrations: {
+              "Segment.io": { apiHost: "api.segment.io/v1" },
+            },
+          },
+        );
+        return analytics;
+      })
+      .catch(() => {
+        initialized = false;
+        initPromise = null;
+        analytics = null;
+        return null;
+      });
+  }
 
   return analytics;
 }
@@ -62,7 +83,7 @@ export function segmentReset(): void {
   analytics.reset().catch(() => {});
 }
 
-export function getSegmentInstance(): AnalyticsBrowser | null {
+export function getSegmentInstance(): SegmentAnalytics | null {
   return analytics;
 }
 
