@@ -25,13 +25,7 @@ function subscribeOnline(cb: () => void) {
 function getOnlineSnapshot() { return navigator.onLine; }
 function useOnlineStatus() { return useSyncExternalStore(subscribeOnline, getOnlineSnapshot, () => true); }
 
-function formatStorageSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `~${(bytes / 1024).toFixed(1)} KB`;
-  return `~${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-const STORAGE_QUOTA_WARNING_PERCENT = 80;
+import { formatStorageSize, isStorageQuotaWarning } from "@/lib/islamic/storage-utils";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(226 22% 14%)";
@@ -1049,7 +1043,7 @@ export default function QuranTab() {
 
   if (showOfflineManager) {
     const totalEstimatedBytes = offlineEntries.reduce((sum, e) => sum + e.estimatedSizeBytes, 0);
-    const quotaWarning = storageQuota && storageQuota.percentUsed >= STORAGE_QUOTA_WARNING_PERCENT;
+    const quotaWarning = storageQuota && isStorageQuotaWarning(storageQuota.percentUsed);
     const limitWarningPercent = storageLimitMB > 0 ? (totalCacheSizeMB / storageLimitMB) * 100 : 0;
     const limitWarning = limitWarningPercent >= 80;
     const limitExceeded = limitWarningPercent >= 100;
