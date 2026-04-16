@@ -60,12 +60,8 @@ export async function loadDictionaryPipeline(locale: string): Promise<I18nComman
       .catch(() => null);
 
     if (!dict || Object.keys(dict).length === 0) {
-      const i18nData = await import("@/lib/i18n-data").then((m) => m.default || m).catch(() => null);
-      if (i18nData && i18nData[locale]) {
-        dict = i18nData[locale];
-      } else {
-        dict = {};
-      }
+      const { loadLocaleTranslations } = await import("@/lib/i18n-data");
+      dict = await loadLocaleTranslations(locale as import("@/lib/i18n").Locale).catch(() => ({}));
     }
 
     useI18nStore.getState().setDictionary(locale, dict);

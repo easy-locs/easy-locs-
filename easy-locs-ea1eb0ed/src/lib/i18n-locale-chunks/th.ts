@@ -1,0 +1,10 @@
+export const translations_th: Record<string, string> = {
+    "nav.dashboard": "แดชบอร์ด", "nav.properties": "อสังหาริมทรัพย์", "nav.tenants": "ผู้เช่า",
+    "nav.documents": "เอกสาร", "nav.payments": "การชำระเงิน", "nav.settings": "การตั้งค่า",
+    "common.save": "บันทึก", "common.cancel": "ยกเลิก", "common.delete": "ลบ",
+    "common.edit": "แก้ไข", "common.add": "เพิ่ม", "common.search": "ค้นหา",
+    "common.back": "กลับ", "common.loading": "กำลังโหลด...", "common.no_data": "ไม่มีข้อมูล",
+    "common.error": "ข้อผิดพลาด", "common.retry": "ลองอีกครั้ง",
+    "error.network": "ปัญหาการเชื่อมต่อ กรุณาลองใหม่",
+    "error.unknown": "เกิดข้อผิดพลาด กรุณาลองใหม่",
+};

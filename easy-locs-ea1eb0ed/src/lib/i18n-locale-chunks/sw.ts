@@ -1,0 +1,10 @@
+export const translations_sw: Record<string, string> = {
+    "nav.dashboard": "Dashibodi", "nav.properties": "Mali", "nav.tenants": "Wapangaji",
+    "nav.documents": "Nyaraka", "nav.payments": "Malipo", "nav.settings": "Mipangilio",
+    "common.save": "Hifadhi", "common.cancel": "Ghairi", "common.delete": "Futa",
+    "common.edit": "Hariri", "common.add": "Ongeza", "common.search": "Tafuta",
+    "common.back": "Rudi", "common.loading": "Inapakia...", "common.no_data": "Hakuna data",
+    "common.error": "Hitilafu", "common.retry": "Jaribu tena",
+    "error.network": "Tatizo la muunganisho. Tafadhali jaribu tena.",
+    "error.unknown": "Hitilafu imetokea. Tafadhali jaribu tena.",
+};
