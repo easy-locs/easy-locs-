@@ -21,12 +21,14 @@ interface BundleSnapshot {
   generatedAt: string;
   totalBytes: number;
   mainChunkBytes: number;
+  cssBytes: number;
+  assetBytes: number;
   pillarChunks: Record<string, number>;
   allChunks: Record<string, number>;
 }
 
 function stripHash(file: string): string {
-  return file.replace(/-[A-Za-z0-9_-]{6,}\.js$/, ".js");
+  return file.replace(/-[A-Za-z0-9_-]{6,}(\.[A-Za-z0-9]+)$/, "$1");
 }
 
 function snapshotDist(): BundleSnapshot {
@@ -37,25 +39,38 @@ function snapshotDist(): BundleSnapshot {
     process.exit(1);
   }
 
-  const files = fs.readdirSync(DIST_DIR).filter((f) => f.endsWith(".js"));
+  const files = fs.readdirSync(DIST_DIR);
   const allChunks: Record<string, number> = {};
   const pillarChunks: Record<string, number> = {};
   let totalBytes = 0;
   let mainChunkBytes = 0;
+  let cssBytes = 0;
+  let assetBytes = 0;
 
   for (const file of files) {
-    const size = fs.statSync(path.join(DIST_DIR, file)).size;
-    const stable = stripHash(file);
-    allChunks[stable] = (allChunks[stable] ?? 0) + size;
-    totalBytes += size;
+    const full = path.join(DIST_DIR, file);
+    const stat = fs.statSync(full);
+    if (!stat.isFile()) continue;
+    const size = stat.size;
+    const ext = path.extname(file).toLowerCase();
 
-    if (/^index(-|\.)/.test(file)) {
-      mainChunkBytes += size;
-    }
-    for (const p of PILLAR_PATTERNS) {
-      if (file.includes(p)) {
-        pillarChunks[p] = (pillarChunks[p] ?? 0) + size;
+    if (ext === ".js") {
+      const stable = stripHash(file);
+      allChunks[stable] = (allChunks[stable] ?? 0) + size;
+      totalBytes += size;
+
+      if (/^index(-|\.)/.test(file)) {
+        mainChunkBytes += size;
       }
+      for (const p of PILLAR_PATTERNS) {
+        if (file.includes(p)) {
+          pillarChunks[p] = (pillarChunks[p] ?? 0) + size;
+        }
+      }
+    } else if (ext === ".css") {
+      cssBytes += size;
+    } else {
+      assetBytes += size;
     }
   }
 
@@ -63,6 +78,8 @@ function snapshotDist(): BundleSnapshot {
     generatedAt: new Date().toISOString(),
     totalBytes,
     mainChunkBytes,
+    cssBytes,
+    assetBytes,
     pillarChunks,
     allChunks,
   };
@@ -109,17 +126,19 @@ if (mode === "update") {
   fs.writeFileSync(BASELINE_FILE, `${JSON.stringify(current, null, 2)}\n`);
   console.log(`[bundle-size-gate] Baseline written to ${BASELINE_FILE}`);
   console.log(
-    `  Total: ${fmtKB(current.totalBytes)} | main: ${fmtKB(current.mainChunkBytes)}`,
+    `  Total JS: ${fmtKB(current.totalBytes)} | main: ${fmtKB(current.mainChunkBytes)} | CSS: ${fmtKB(current.cssBytes)} | assets: ${fmtKB(current.assetBytes)}`,
   );
   process.exit(0);
 }
 
 console.log("== Bundle Size Gate ==");
 console.log(
-  `Threshold: +${(REGRESSION_THRESHOLD * 100).toFixed(1)}% on total JS vs baseline (${BASELINE_REF})`,
+  `Threshold: +${(REGRESSION_THRESHOLD * 100).toFixed(1)}% on total JS, CSS, and static assets vs baseline (${BASELINE_REF})`,
 );
 console.log(`Current total JS: ${fmtKB(current.totalBytes)}`);
 console.log(`Current main chunk: ${fmtKB(current.mainChunkBytes)}`);
+console.log(`Current CSS: ${fmtKB(current.cssBytes)}`);
+console.log(`Current static assets: ${fmtKB(current.assetBytes)}`);
 for (const p of PILLAR_PATTERNS) {
   const cur = current.pillarChunks[p];
   if (cur) console.log(`  ${p}: ${fmtKB(cur)}`);
@@ -130,15 +149,18 @@ const baseline = loadBaseline();
 const summary: string[] = [
   "## Bundle Size Gate",
   "",
-  `**Threshold:** +${(REGRESSION_THRESHOLD * 100).toFixed(1)}% on total JS`,
+  `**Threshold:** +${(REGRESSION_THRESHOLD * 100).toFixed(1)}% on total JS, CSS, and static assets`,
   "",
   "| Metric | Current | Baseline | Δ |",
   "| --- | ---: | ---: | ---: |",
 ];
 
-if (!baseline || baseline.data.totalBytes === 0) {
+const isUnseeded = (b: BundleSnapshot) =>
+  b.totalBytes === 0 && (b.cssBytes ?? 0) === 0 && (b.assetBytes ?? 0) === 0;
+
+if (!baseline || isUnseeded(baseline.data)) {
   const reason = baseline
-    ? `placeholder baseline at ${baseline.source} (totalBytes=0)`
+    ? `placeholder baseline at ${baseline.source} (unseeded)`
     : "no baseline available";
   console.warn(`\n[bundle-size-gate] ${reason}. Skipping comparison.`);
   console.warn(
@@ -146,22 +168,33 @@ if (!baseline || baseline.data.totalBytes === 0) {
   );
   summary.push(
     `| Total JS | ${fmtKB(current.totalBytes)} | _not yet seeded_ | – |`,
+    `| CSS | ${fmtKB(current.cssBytes)} | _not yet seeded_ | – |`,
+    `| Static assets | ${fmtKB(current.assetBytes)} | _not yet seeded_ | – |`,
   );
   appendSummary(summary);
   process.exit(0);
 }
 
 const base = baseline.data;
+const baseCssBytes = base.cssBytes ?? 0;
+const baseAssetBytes = base.assetBytes ?? 0;
+
 console.log(`\nBaseline source: ${baseline.source} (${base.generatedAt})`);
 console.log(`Baseline total JS: ${fmtKB(base.totalBytes)}`);
 console.log(`Baseline main chunk: ${fmtKB(base.mainChunkBytes)}`);
+console.log(`Baseline CSS: ${fmtKB(baseCssBytes)}`);
+console.log(`Baseline static assets: ${fmtKB(baseAssetBytes)}`);
 
 const totalDelta = pct(current.totalBytes, base.totalBytes);
 const mainDelta = pct(current.mainChunkBytes, base.mainChunkBytes);
+const cssDelta = pct(current.cssBytes, baseCssBytes);
+const assetDelta = pct(current.assetBytes, baseAssetBytes);
 
 summary.push(
   `| Total JS | ${fmtKB(current.totalBytes)} | ${fmtKB(base.totalBytes)} | ${totalDelta >= 0 ? "+" : ""}${totalDelta.toFixed(2)}% |`,
   `| Main chunk | ${fmtKB(current.mainChunkBytes)} | ${fmtKB(base.mainChunkBytes)} | ${mainDelta >= 0 ? "+" : ""}${mainDelta.toFixed(2)}% |`,
+  `| CSS | ${fmtKB(current.cssBytes)} | ${fmtKB(baseCssBytes)} | ${baseCssBytes === 0 ? "new" : `${cssDelta >= 0 ? "+" : ""}${cssDelta.toFixed(2)}%`} |`,
+  `| Static assets | ${fmtKB(current.assetBytes)} | ${fmtKB(baseAssetBytes)} | ${baseAssetBytes === 0 ? "new" : `${assetDelta >= 0 ? "+" : ""}${assetDelta.toFixed(2)}%`} |`,
 );
 for (const p of PILLAR_PATTERNS) {
   const cur = current.pillarChunks[p] ?? 0;
@@ -172,18 +205,35 @@ for (const p of PILLAR_PATTERNS) {
 }
 
 console.log(
-  `\nTotal JS Δ ${totalDelta.toFixed(2)}% | main chunk Δ ${mainDelta.toFixed(2)}%`,
+  `\nTotal JS Δ ${totalDelta.toFixed(2)}% | main chunk Δ ${mainDelta.toFixed(2)}% | CSS Δ ${cssDelta.toFixed(2)}% | assets Δ ${assetDelta.toFixed(2)}%`,
 );
 
+const failures: string[] = [];
+const limitPct = (REGRESSION_THRESHOLD * 100).toFixed(1);
+
 if (totalDelta / 100 > REGRESSION_THRESHOLD) {
-  const msg = `❌ FAIL: Total JS grew ${totalDelta.toFixed(2)}% (limit +${(REGRESSION_THRESHOLD * 100).toFixed(1)}%).`;
+  failures.push(
+    `Total JS grew ${totalDelta.toFixed(2)}% (limit +${limitPct}%).`,
+  );
+}
+if (baseCssBytes > 0 && cssDelta / 100 > REGRESSION_THRESHOLD) {
+  failures.push(`CSS grew ${cssDelta.toFixed(2)}% (limit +${limitPct}%).`);
+}
+if (baseAssetBytes > 0 && assetDelta / 100 > REGRESSION_THRESHOLD) {
+  failures.push(
+    `Static assets grew ${assetDelta.toFixed(2)}% (limit +${limitPct}%).`,
+  );
+}
+
+if (failures.length > 0) {
+  const msg = `❌ FAIL: ${failures.join(" ")}`;
   console.error(`\n${msg}`);
   summary.push("", `**Result:** ${msg}`);
   appendSummary(summary);
   process.exit(1);
 }
 
-const okMsg = `✅ PASS: Total JS within +${(REGRESSION_THRESHOLD * 100).toFixed(1)}% of baseline.`;
+const okMsg = `✅ PASS: Total JS, CSS, and static assets within +${limitPct}% of baseline.`;
 console.log(`\n${okMsg}`);
 summary.push("", `**Result:** ${okMsg}`);
 appendSummary(summary);
