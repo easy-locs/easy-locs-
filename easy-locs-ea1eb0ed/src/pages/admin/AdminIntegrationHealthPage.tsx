@@ -150,11 +150,25 @@ export default function AdminIntegrationHealthPage() {
     refresh();
   }, [refresh]);
 
+  const visibleRef = useRef(!document.hidden);
+
   useEffect(() => {
     if (!autoPolling) return;
     setCountdown(intervalSeconds);
 
+    const handleVisibilityChange = () => {
+      const nowVisible = !document.hidden;
+      visibleRef.current = nowVisible;
+      if (nowVisible) {
+        setCountdown(intervalSeconds);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const tickId = setInterval(() => {
+      if (!visibleRef.current) return;
+
       setCountdown((prev) => {
         if (prev <= 1) {
           if (!refreshingRef.current) {
@@ -167,7 +181,10 @@ export default function AdminIntegrationHealthPage() {
       });
     }, 1000);
 
-    return () => clearInterval(tickId);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(tickId);
+    };
   }, [autoPolling, intervalSeconds, refresh]);
 
   const handleManualRefresh = useCallback(() => {
