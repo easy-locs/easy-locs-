@@ -267,6 +267,15 @@ export interface PrayerCronHealth {
   notifications_sent_24h: number;
 }
 
+export interface PrayerCronHealthRpc {
+  status: "healthy" | "warning" | "degraded" | "critical" | "unknown";
+  consecutive_failures: number;
+  last_success: string | null;
+  total_24h_runs: number;
+  failures_24h: number;
+  edge_function_failures_24h: number;
+}
+
 export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await db("cron_execution_log")
@@ -295,6 +304,26 @@ export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
     last_status: logs[0]?.status ?? null,
     avg_duration_ms: durations.length > 0 ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0,
     notifications_sent_24h: totalSent,
+  };
+}
+
+const KNOWN_STATUSES = ["healthy", "warning", "degraded", "critical"] as const;
+
+export async function fetchPrayerCronHealthRpc(): Promise<PrayerCronHealthRpc> {
+  const { data, error } = await db.rpc("admin_check_prayer_cron_health");
+  if (error) throw error;
+  const result = data as Record<string, unknown>;
+  const rawStatus = typeof result.status === "string" ? result.status : "";
+  const status: PrayerCronHealthRpc["status"] = (KNOWN_STATUSES as readonly string[]).includes(rawStatus)
+    ? (rawStatus as PrayerCronHealthRpc["status"])
+    : "unknown";
+  return {
+    status,
+    consecutive_failures: typeof result.consecutive_failures === "number" ? result.consecutive_failures : 0,
+    last_success: typeof result.last_success === "string" ? result.last_success : null,
+    total_24h_runs: typeof result.total_24h_runs === "number" ? result.total_24h_runs : 0,
+    failures_24h: typeof result.failures_24h === "number" ? result.failures_24h : 0,
+    edge_function_failures_24h: typeof result.edge_function_failures_24h === "number" ? result.edge_function_failures_24h : 0,
   };
 }
 
