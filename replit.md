@@ -51,6 +51,11 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Security**: RLS enabled, access restricted to `service_role` only
 - **Migration**: `easy-locs-ea1eb0ed/supabase/migrations/20260416003511_cache_metrics_log.sql`
 
+## Cache Metrics Dashboard Widget (Task #400)
+- **Widget**: `src/components/dashboard/CacheMetricsWidget.tsx` — Admin dashboard widget displaying article cache performance: hit rate with color-coded thresholds (green ≥80%, yellow ≥50%, red <50%), capacity bar, KPI cards (hit rate, size, evictions, expirations) with directional trend indicators, and detailed metrics table (hits, misses, stores, uptime, TTL)
+- **Data Hook**: `src/hooks/useCacheMetrics.ts` — Fetches cache metrics from `extract-article/metrics` Edge Function endpoint with 60s auto-polling, previous-snapshot comparison for trend detection, and authenticated requests via Supabase session token
+- **Integration**: Lazy-loaded into AdminDashboard health tab between MapErrorTrendsWidget and HealthDashboard
+
 ## Map Error Analytics (Task #234)
 - **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), deduplication via TTL-based Map, dual-sink output (structured logger + event bus)
 - **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context
