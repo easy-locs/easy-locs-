@@ -31,7 +31,15 @@ export class TaskDispatcher {
     const riskLevel: RiskLevel = classifyTaskType(request.type);
     const validation = validationEngine.validate({ request, riskLevel });
 
-    const status: ExecutionTaskStatus = validation.blocked ? "BLOCKED" : "PENDING";
+    // v2 status model (task #750): blocked rows are recorded for audit;
+    // approval-gated rows enter pending_review (the dispatch RPC overrides
+    // when requires_approval is set), everything else is queued for the
+    // orchestrator. The legacy uppercase values are gone.
+    const status: ExecutionTaskStatus = validation.blocked
+      ? "blocked"
+      : request.requiresApproval
+        ? "pending_review"
+        : "queued";
     const requestedBy = (request.requestedBy ?? "system").trim() || "system";
     // Persist `approved_by` for any non-blocked task that carries a real
     // (non-system) approver — applies to both CRITICAL and approval-gated
@@ -89,6 +97,16 @@ export class TaskDispatcher {
             p_approved_by: approvedBy,
             p_blocked_reason: validation.blockedReason,
             p_idempotency_key: idempotencyKey,
+            // v2 governance / traceability fields (task #750). All optional
+            // — the SQL function defaults each to NULL / 'none' / FALSE so
+            // legacy callers (no v2 fields supplied) keep working unchanged.
+            p_root_task_id: request.rootTaskId ?? null,
+            p_correlation_id: request.correlationId ?? null,
+            p_entity_type: request.entityType ?? null,
+            p_entity_id: request.entityId ?? null,
+            p_approval_policy: request.approvalPolicy ?? "none",
+            p_requires_approval: request.requiresApproval ?? false,
+            p_retry_policy: request.retryPolicy ?? null,
           },
         );
 
@@ -106,7 +124,7 @@ export class TaskDispatcher {
         }
         if (validation.blocked) {
           failureClass = "validation_failed";
-        } else if (insertedRow.status === "BLOCKED") {
+        } else if (insertedRow.status === "blocked") {
           // Server-side gate (e.g. PHASE1_CRITICAL_FORBIDDEN, RISK_MISMATCH)
           // blocked the task even though client-side validation passed.
           failureClass = "blocked";
@@ -146,7 +164,7 @@ export class TaskDispatcher {
       runResult.status === "error" ? (runResult.errorMessage ?? "engine_run_failed") : undefined;
     const finalError = dbError ?? runError;
     const persistedOk = insertedRow !== null;
-    const serverBlocked = insertedRow?.status === "BLOCKED";
+    const serverBlocked = insertedRow?.status === "blocked";
 
     return {
       ok:

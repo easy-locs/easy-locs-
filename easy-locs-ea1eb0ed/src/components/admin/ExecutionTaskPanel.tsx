@@ -38,7 +38,19 @@ type ExecRow = {
   type: string;
   domain: string;
   risk_level: "SAFE" | "MEDIUM" | "CRITICAL";
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "BLOCKED";
+  // Phase-2 v2 status model (task #750).
+  status:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "rejected"
+    | "queued"
+    | "running"
+    | "succeeded"
+    | "failed"
+    | "blocked"
+    | "rolled_back"
+    | "cancelled";
   payload: Record<string, unknown> | null;
   result: Record<string, unknown> | null;
   error: string | null;
@@ -54,22 +66,33 @@ type ExecRow = {
   updated_at: string;
 };
 
-const STATUSES = ["", "PENDING", "RUNNING", "SUCCESS", "FAILED", "BLOCKED"] as const;
+const STATUSES = [
+  "",
+  "draft",
+  "pending_review",
+  "approved",
+  "rejected",
+  "queued",
+  "running",
+  "succeeded",
+  "failed",
+  "blocked",
+  "rolled_back",
+  "cancelled",
+] as const;
 type StatusFilter = (typeof STATUSES)[number];
 
 function StatusBadge({ status }: { status: ExecRow["status"] }) {
   const variant =
-    status === "SUCCESS"
+    status === "succeeded"
       ? "success"
-      : status === "RUNNING"
+      : status === "running"
         ? "info"
-        : status === "PENDING"
+        : status === "queued" || status === "approved" || status === "pending_review" || status === "draft"
           ? "warning"
-          : status === "BLOCKED"
+          : status === "blocked" || status === "failed" || status === "rejected" || status === "rolled_back" || status === "cancelled"
             ? "destructive"
-            : status === "FAILED"
-              ? "destructive"
-              : "secondary";
+            : "secondary";
   return <Badge variant={variant as never}>{status}</Badge>;
 }
 
@@ -141,7 +164,7 @@ function TaskRow({ row, onRetry, retrying }: {
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const logs = useMemo(() => extractLogs(row.result), [row.result]);
-  const canRetry = row.status === "FAILED";
+  const canRetry = row.status === "failed";
 
   // Sensitive types require explicit re-authorization on retry — never an
   // implicit approval bypass. SAFE (and MEDIUM types not in the approval
@@ -499,8 +522,8 @@ export function ExecutionTaskPanel() {
       ))}
 
       <p className="text-[0.625rem] text-muted-foreground text-center pt-2">
-        CRITICAL tasks require explicit authorization before they can leave PENDING. RLS restricts
-        visibility to administrators only.
+        CRITICAL tasks require explicit authorization before they can leave the queued state.
+        RLS restricts visibility to administrators only.
       </p>
     </div>
   );

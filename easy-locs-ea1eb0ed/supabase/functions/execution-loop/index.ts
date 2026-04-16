@@ -1,7 +1,8 @@
 /**
  * execution-loop — Server-Side Autonomous Execution Loop (task #711)
  *
- * Polls system.execution_tasks for PENDING tasks where:
+ * Polls system.execution_tasks for `queued` tasks (Phase-2 v2 status model,
+ * task #750) where:
  *     risk_level = 'SAFE'  OR  approved_by IS NOT NULL
  * and `next_retry_at` is null or in the past (so backoff windows are honoured).
  *
@@ -50,7 +51,18 @@ interface ExecutionTaskRow {
   type: string;
   domain: string;
   risk_level: "SAFE" | "MEDIUM" | "CRITICAL";
-  status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "BLOCKED";
+  status:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "rejected"
+    | "queued"
+    | "running"
+    | "succeeded"
+    | "failed"
+    | "blocked"
+    | "rolled_back"
+    | "cancelled";
   payload: Record<string, unknown> | null;
   approved_by: string | null;
   attempt_count: number | null;
@@ -204,12 +216,12 @@ async function validateTask(
 async function atomicClaim(taskId: string, nextAttempt: number): Promise<ExecutionTaskRow | null> {
   const { data, error } = await tasks()
     .update({
-      status: "RUNNING",
+      status: "running",
       attempt_count: nextAttempt,
       next_retry_at: null,
     })
     .eq("id", taskId)
-    .eq("status", "PENDING")
+    .eq("status", "queued")
     .select(TASK_COLUMNS)
     .maybeSingle();
   if (error) {
@@ -231,9 +243,9 @@ async function processTask(
   if (!validation.ok) {
     const reason = `Validation engine rejected task: ${validation.reason ?? "unspecified"}`;
     await tasks()
-      .update({ status: "BLOCKED", blocked_reason: reason })
+      .update({ status: "blocked", blocked_reason: reason })
       .eq("id", task.id)
-      .eq("status", "PENDING");
+      .eq("status", "queued");
     await logRun({
       engineName: "execution-loop",
       category: "task-validation-rejected",
@@ -289,7 +301,7 @@ async function processTask(
     const reason = result.refusalReason ?? "Agent refused task";
     await tasks()
       .update({
-        status: "BLOCKED",
+        status: "blocked",
         blocked_reason: reason,
         result: result.output ?? null,
       })
@@ -319,7 +331,7 @@ async function processTask(
   // SUCCESS
   await tasks()
     .update({
-      status: "SUCCESS",
+      status: "succeeded",
       result: {
         output: result.output ?? null,
         logs: result.logs,
@@ -360,7 +372,7 @@ async function handleFailure(
     const reason = `Dead-letter after ${attempt}/${maxAttempts} attempts — last error: ${errorMsg}`;
     await tasks()
       .update({
-        status: "BLOCKED",
+        status: "blocked",
         blocked_reason: reason,
         error: errorMsg,
         next_retry_at: null,
@@ -384,22 +396,23 @@ async function handleFailure(
 
   // Schedule retry — write the future pickup time into next_retry_at so the
   // BEFORE UPDATE touch trigger (which always sets updated_at = now()) does
-  // not nullify our backoff window. The state-machine trigger only allows
-  // RUNNING → {SUCCESS,FAILED,BLOCKED}, so we hop via FAILED before
-  // re-queuing as PENDING (FAILED → PENDING is an allowed transition).
+  // not nullify our backoff window. The Phase-2 v2 state-machine trigger
+  // (task #750) only allows running → {succeeded, failed, blocked}, so we
+  // hop via failed before re-queuing (failed → queued is an allowed
+  // transition in the v2 matrix).
   const backoff = backoffMs(attempt);
   const retryAt = new Date(Date.now() + backoff).toISOString();
   await tasks()
-    .update({ status: "FAILED", error: errorMsg })
+    .update({ status: "failed", error: errorMsg })
     .eq("id", task.id)
-    .eq("status", "RUNNING");
+    .eq("status", "running");
   await tasks()
     .update({
-      status: "PENDING",
+      status: "queued",
       next_retry_at: retryAt,
     })
     .eq("id", task.id)
-    .eq("status", "FAILED");
+    .eq("status", "failed");
 
   await logRun({
     engineName: `execution-loop:${agentName}`,
@@ -420,7 +433,7 @@ async function handleFailure(
 async function pickEligibleTasks(batchSize: number): Promise<ExecutionTaskRow[]> {
   // Eligibility (single unambiguous expression — no chained .or() so the
   // semantics are explicit at the SQL layer, not implied by client chaining):
-  //   status = PENDING
+  //   status = 'queued'  (Phase-2 v2 — task #750)
   //   AND (
   //         (risk_level = 'SAFE'         AND (next_retry_at IS NULL OR next_retry_at <= now()))
   //      OR (approved_by IS NOT NULL     AND (next_retry_at IS NULL OR next_retry_at <= now()))
@@ -432,7 +445,7 @@ async function pickEligibleTasks(batchSize: number): Promise<ExecutionTaskRow[]>
 
   const { data, error } = await tasks()
     .select(TASK_COLUMNS)
-    .eq("status", "PENDING")
+    .eq("status", "queued")
     .or(eligibilityExpr)
     .order("created_at", { ascending: true })
     .limit(batchSize);
