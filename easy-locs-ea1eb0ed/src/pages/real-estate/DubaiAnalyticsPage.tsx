@@ -523,13 +523,18 @@ function DistrictDetailDrawer({
   const totalPages = Math.max(1, Math.ceil(paginatedTx.total / TX_PAGE_SIZE));
 
   const stats = useMemo(() => {
-    const typeCount = new Map<string, number>();
-    for (const tx of paginatedTx.data) {
-      typeCount.set(tx.propertyType, (typeCount.get(tx.propertyType) || 0) + 1);
+    let typeBreakdown: { type: string; count: number; pct: number }[];
+    if (districtSummary?.typeBreakdown && districtSummary.typeBreakdown.length > 0) {
+      typeBreakdown = districtSummary.typeBreakdown;
+    } else {
+      const typeCount = new Map<string, number>();
+      for (const tx of paginatedTx.data) {
+        typeCount.set(tx.propertyType, (typeCount.get(tx.propertyType) || 0) + 1);
+      }
+      typeBreakdown = [...typeCount.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => ({ type, count, pct: Math.round((count / paginatedTx.data.length) * 100) }));
     }
-    const typeBreakdown = [...typeCount.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([type, count]) => ({ type, count, pct: Math.round((count / paginatedTx.data.length) * 100) }));
 
     return {
       totalTx: districtSummary?.transactionCount ?? paginatedTx.total,

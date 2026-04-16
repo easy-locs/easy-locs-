@@ -382,6 +382,7 @@ export interface DLDDistrictSummary {
   changePercent: number;
   lat: number;
   lng: number;
+  typeBreakdown?: { type: string; count: number; pct: number }[];
 }
 
 export interface DLDMarketKPI {

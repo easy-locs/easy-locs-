@@ -991,6 +991,14 @@ export function computeDistrictSummaries(
       if (count > maxCount) { maxCount = count; dominantType = type as DLDTransaction["propertyType"]; }
     }
 
+    const typeBreakdown = [...typeCount.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([type, count]) => ({
+        type,
+        count,
+        pct: txs.length > 0 ? Math.round((count / txs.length) * 100) : 0,
+      }));
+
     return {
       district: d.name,
       transactionCount: txs.length,
@@ -1000,6 +1008,7 @@ export function computeDistrictSummaries(
       changePercent,
       lat: d.lat,
       lng: d.lng,
+      typeBreakdown,
     };
   }).sort((a, b) => b.transactionCount - a.transactionCount);
 }
