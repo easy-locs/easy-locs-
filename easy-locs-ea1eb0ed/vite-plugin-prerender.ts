@@ -23,6 +23,7 @@ import {
   EXTENDED_CITY_SLUGS, EXTENDED_COUNTRY_SLUGS, BASE_URL, getProviderCount,
   type BuildCity, type BuildCountry, type BuildService, type BuildActivity,
 } from "./vite-seo-data";
+import { APP_LOCALES } from "./src/lib/i18n-locales";
 
 const DEFAULT_OG_IMAGE = `${BASE_URL}/og-default.jpg`;
 
@@ -155,16 +156,9 @@ function definitionBox(term: string, definition: string): string {
 
 // ── Hreflang ──────────────────────────────────────────────────────────────────
 // Single-URL multilingual SPA: all locales share the same canonical URL.
-// Full locale set mirrors SUPPORTED_LOCALES in src/lib/i18n-advanced.ts.
+// Locale list derived from the canonical APP_LOCALES source of truth.
 // x-default points to the canonical (en) URL per Google spec.
-const HREFLANG_LOCALES = [
-  "fr", "en", "es", "de", "pt", "it", "nl", "ar", "he", "fa",
-  "tr", "pl", "ro", "cs", "sv", "da", "fi", "nb", "el", "hu",
-  "bg", "hr", "sk", "sl", "et", "lv", "lt", "uk", "ru", "ja", "zh",
-  "hi", "bn", "sw", "th", "vi", "id", "ms", "ko", "tl", "ur",
-  "am", "ha", "yo", "wo",
-  "x-default",
-] as const;
+const HREFLANG_LOCALES = [...APP_LOCALES, "x-default"] as const;
 
 function buildHreflangLinks(canonicalUrl: string): string {
   return HREFLANG_LOCALES
