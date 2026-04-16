@@ -9,38 +9,7 @@
  * - Automatic relay mode when direct P2P fails
  */
 
-/** STUN + TURN servers for UAE/GCC resilience */
-const ICE_SERVERS: RTCIceServer[] = [
-  { urls: "stun:stun.l.google.com:19302" },
-  { urls: "stun:stun1.l.google.com:19302" },
-  // Free TURN relays (Metered.ca public TURN)
-  {
-    urls: "turn:a.relay.metered.ca:80",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:80?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turn:a.relay.metered.ca:443",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-  {
-    urls: "turns:a.relay.metered.ca:443?transport=tcp",
-    username: "e8dd65b92f62d3207f4c4861",
-    credential: "uWdxVcsLlCdLYlHp",
-  },
-];
-
-/** Timeout before declaring ICE connection failed (ms) */
-const ICE_TIMEOUT_MS = 15_000;
-
-/** Max time waiting for any remote stream (ms) */
-const STREAM_TIMEOUT_MS = 25_000;
+import { ICE_SERVERS, ICE_TIMEOUT_MS, STREAM_TIMEOUT_MS } from "@/lib/guest-call/ice-config";
 
 export type CallRole = "caller" | "callee";
 export type CallStatus =

@@ -43,7 +43,6 @@ export {
   resolvePaymentMode,
   computePlatformFee,
   checkAllProvidersHealth,
-  mockProviderAdapter,
 } from "./flight-provider-adapter";
 
 export { flightSearchService } from "./flight-search-service";

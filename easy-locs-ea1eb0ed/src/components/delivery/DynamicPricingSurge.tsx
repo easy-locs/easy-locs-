@@ -50,12 +50,7 @@ export default function DynamicPricingSurge({ orgId }: { orgId: string }) {
   const [showConfig, setShowConfig] = useState(false);
 
   // Simulated zones
-  const [zones] = useState<SurgeZone[]>([
-    { id: "z1", name: "Centre-ville", baseFee: 5, currentMultiplier: 1.8, demand: "high", activeDrivers: 3, pendingJobs: 8 },
-    { id: "z2", name: "Gare", baseFee: 6, currentMultiplier: 2.2, demand: "critical", activeDrivers: 1, pendingJobs: 6 },
-    { id: "z3", name: "Résidentiel Nord", baseFee: 4, currentMultiplier: 1.0, demand: "low", activeDrivers: 5, pendingJobs: 2 },
-    { id: "z4", name: "Zone industrielle", baseFee: 7, currentMultiplier: 1.3, demand: "medium", activeDrivers: 2, pendingJobs: 3 },
-  ]);
+  const [zones] = useState<SurgeZone[]>([]);
 
   const currentHour = new Date().getHours();
   const activePeak = config.peakHours.find(p => currentHour >= p.start && currentHour < p.end);

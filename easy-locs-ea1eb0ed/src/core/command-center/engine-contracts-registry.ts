@@ -392,28 +392,6 @@ export const CONTRACT_OMEGA_MEMORY: EngineContract = createDefaultContract(
   },
 );
 
-export const CONTRACT_OMEGA_DECISION: EngineContract = createDefaultContract(
-  "omega-decision",
-  "omega",
-  "Make data-driven decisions using priority, prediction, and knowledge graph data. All decisions are audited.",
-  {
-    priority: 90,
-    trustLevel: "GOLD",
-    executionMode: "SYNC",
-    allowedInputs: ["DecisionInput"],
-    allowedOutputs: ["DecisionOutput"],
-    allowedEvents: ["omega:decision_made"],
-    forbiddenActions: [
-      "SILENT_PATCH", "BLIND_PATCH", "ROOT_CAUSE_MASKING", "CONFLICT_CREATING_PATCH",
-      "OFF_TAXONOMY_PATCH", "OFF_VERSION_PATCH", "DIRECT_DB_WRITE_WITHOUT_VALIDATION",
-      "BYPASS_COMMAND_CENTER",
-    ],
-    learningEligibility: true,
-    maxConcurrentRuns: 10,
-    timeoutMs: 5_000,
-  },
-);
-
 export const CONTRACT_OMEGA_PRIORITY: EngineContract = createDefaultContract(
   "omega-priority",
   "omega",
@@ -458,29 +436,6 @@ export const CONTRACT_OMEGA_PREDICTION: EngineContract = createDefaultContract(
   },
 );
 
-export const CONTRACT_OMEGA_SELF_IMPROVEMENT: EngineContract = createDefaultContract(
-  "omega-self-improvement",
-  "omega",
-  "Track system weaknesses and propose validated improvement cycles. Never applies unsafe changes autonomously.",
-  {
-    priority: 65,
-    trustLevel: "SILVER",
-    executionMode: "SCHEDULED",
-    allowedInputs: ["WeaknessSignal", "ImprovementProposal"],
-    allowedOutputs: ["SelfImprovementCycle"],
-    allowedEvents: ["omega:improvement_proposed", "omega:improvement_applied"],
-    forbiddenActions: [
-      "SILENT_PATCH", "BLIND_PATCH", "ROOT_CAUSE_MASKING", "CONFLICT_CREATING_PATCH",
-      "OFF_TAXONOMY_PATCH", "OFF_VERSION_PATCH", "DIRECT_DB_WRITE_WITHOUT_VALIDATION",
-      "BYPASS_COMMAND_CENTER", "AUTO_APPLY_UNSAFE_CHANGE",
-    ],
-    learningEligibility: true,
-    rollbackPolicy: { enabled: true, auto_rollback_on_failure: true, rollback_timeout_ms: 30_000 },
-    maxConcurrentRuns: 1,
-    timeoutMs: 60_000,
-  },
-);
-
 export const CONTRACT_OMEGA_BUSINESS_OPPORTUNITY: EngineContract = createDefaultContract(
   "omega-business-opportunity",
   "omega",
@@ -503,28 +458,6 @@ export const CONTRACT_OMEGA_BUSINESS_OPPORTUNITY: EngineContract = createDefault
   },
 );
 
-export const CONTRACT_OMEGA_ADAPTIVE_UX: EngineContract = createDefaultContract(
-  "omega-adaptive-ux",
-  "omega",
-  "Adapt UI/UX based on user behavior, segment patterns, and preference signals. Proposals only — never auto-applies.",
-  {
-    priority: 65,
-    trustLevel: "SILVER",
-    executionMode: "SCHEDULED",
-    allowedInputs: ["UXSignal", "UserSegmentProfile"],
-    allowedOutputs: ["UXAdaptationProposal"],
-    allowedEvents: ["omega:ux_proposal_ready"],
-    forbiddenActions: [
-      "SILENT_PATCH", "BLIND_PATCH", "ROOT_CAUSE_MASKING", "CONFLICT_CREATING_PATCH",
-      "OFF_TAXONOMY_PATCH", "OFF_VERSION_PATCH", "DIRECT_DB_WRITE_WITHOUT_VALIDATION",
-      "BYPASS_COMMAND_CENTER", "AUTO_APPLY_UX_CHANGE",
-    ],
-    learningEligibility: true,
-    maxConcurrentRuns: 2,
-    timeoutMs: 20_000,
-  },
-);
-
 export const CONTRACT_OMEGA_INCIDENT_RESPONSE: EngineContract = createDefaultContract(
   "omega-incident-response",
   "omega",
@@ -544,28 +477,6 @@ export const CONTRACT_OMEGA_INCIDENT_RESPONSE: EngineContract = createDefaultCon
     learningEligibility: true,
     maxConcurrentRuns: 5,
     timeoutMs: 30_000,
-  },
-);
-
-export const CONTRACT_OMEGA_CODE_EVOLUTION: EngineContract = createDefaultContract(
-  "omega-code-evolution",
-  "omega",
-  "Suggest validated code improvements and track tech debt. Never auto-applies unsafe changes.",
-  {
-    priority: 55,
-    trustLevel: "BRONZE",
-    executionMode: "SCHEDULED",
-    allowedInputs: ["TechDebtSignal", "CodeSuggestion"],
-    allowedOutputs: ["CodeEvolutionSuggestion", "TechDebtReport"],
-    allowedEvents: ["omega:code_suggestion_ready"],
-    forbiddenActions: [
-      "SILENT_PATCH", "BLIND_PATCH", "ROOT_CAUSE_MASKING", "CONFLICT_CREATING_PATCH",
-      "OFF_TAXONOMY_PATCH", "OFF_VERSION_PATCH", "DIRECT_DB_WRITE_WITHOUT_VALIDATION",
-      "BYPASS_COMMAND_CENTER", "AUTO_APPLY_CODE_CHANGE",
-    ],
-    learningEligibility: true,
-    maxConcurrentRuns: 1,
-    timeoutMs: 60_000,
   },
 );
 
@@ -990,14 +901,10 @@ export const ALL_ENGINE_CONTRACTS: Record<string, EngineContract> = {
   "sentinel-taxonomy": CONTRACT_SENTINEL_TAXONOMY,
   "knowledge-graph": CONTRACT_OMEGA_KNOWLEDGE_GRAPH,
   "omega-memory": CONTRACT_OMEGA_MEMORY,
-  "omega-decision": CONTRACT_OMEGA_DECISION,
   "omega-priority": CONTRACT_OMEGA_PRIORITY,
   "omega-prediction": CONTRACT_OMEGA_PREDICTION,
-  "omega-self-improvement": CONTRACT_OMEGA_SELF_IMPROVEMENT,
   "omega-business-opportunity": CONTRACT_OMEGA_BUSINESS_OPPORTUNITY,
-  "omega-adaptive-ux": CONTRACT_OMEGA_ADAPTIVE_UX,
   "omega-incident-response": CONTRACT_OMEGA_INCIDENT_RESPONSE,
-  "omega-code-evolution": CONTRACT_OMEGA_CODE_EVOLUTION,
   "omega-core": CONTRACT_OMEGA_CORE,
   "delivery-engine": CONTRACT_DELIVERY_ENGINE,
   "wallet-integrity-engine": CONTRACT_WALLET_INTEGRITY_ENGINE,

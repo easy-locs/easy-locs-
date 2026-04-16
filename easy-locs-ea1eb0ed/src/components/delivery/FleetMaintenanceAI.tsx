@@ -55,29 +55,14 @@ interface Prediction {
   recommendation: string;
 }
 
-const VEHICLES: Vehicle[] = [
-  { id: "v1", name: "Scooter EV-01", type: "scooter_ev", mileage: 12400, healthScore: 92, nextService: new Date(Date.now() + 604800000), lastRepair: new Date(Date.now() - 2592000000), totalCost: 145000, alerts: [{ sensor: "Batterie temp.", value: 38, threshold: 45, severity: "low" }] },
-  { id: "v2", name: "Vélo Cargo E-02", type: "cargo_bike", mileage: 8900, healthScore: 78, nextService: new Date(Date.now() + 172800000), lastRepair: new Date(Date.now() - 1296000000), totalCost: 89000, alerts: [{ sensor: "Chaîne usure", value: 72, threshold: 80, severity: "medium" }, { sensor: "Freins", value: 65, threshold: 70, severity: "high" }] },
-  { id: "v3", name: "Scooter EV-03", type: "scooter_ev", mileage: 15200, healthScore: 85, nextService: new Date(Date.now() + 1209600000), lastRepair: new Date(Date.now() - 4320000000), totalCost: 210000, alerts: [] },
-  { id: "v4", name: "Van Élec V-01", type: "van_ev", mileage: 34500, healthScore: 61, nextService: new Date(Date.now() - 86400000), lastRepair: new Date(Date.now() - 864000000), totalCost: 520000, alerts: [{ sensor: "Moteur vibration", value: 88, threshold: 75, severity: "critical" }, { sensor: "Pneus avant", value: 30, threshold: 25, severity: "high" }] },
-];
-
-const REPAIRS: RepairHistory[] = [
-  { id: "r1", vehicleId: "v4", vehicleName: "Van Élec V-01", type: "Préventif", description: "Remplacement plaquettes frein + filtres", cost: 185000, date: new Date(Date.now() - 864000000), parts: ["Plaquettes Brembo x4", "Filtre habitacle"], mechanic: "Garage EV Dakar" },
-  { id: "r2", vehicleId: "v1", vehicleName: "Scooter EV-01", type: "Correctif", description: "Remplacement contrôleur moteur", cost: 95000, date: new Date(Date.now() - 2592000000), parts: ["Contrôleur 48V", "Câblage"], mechanic: "ElecMoto SN" },
-  { id: "r3", vehicleId: "v2", vehicleName: "Vélo Cargo E-02", type: "Préventif", description: "Révision complète + chaîne", cost: 45000, date: new Date(Date.now() - 1296000000), parts: ["Chaîne Shimano", "Câbles frein"], mechanic: "VéloTech Plateau" },
-];
-
-const PREDICTIONS: Prediction[] = [
-  { vehicleId: "v4", vehicleName: "Van Élec V-01", component: "Moteur électrique", failureProbability: 78, estimatedDate: new Date(Date.now() + 604800000), estimatedCost: 450000, recommendation: "Intervention urgente recommandée sous 7 jours" },
-  { vehicleId: "v2", vehicleName: "Vélo Cargo E-02", component: "Système de freinage", failureProbability: 62, estimatedDate: new Date(Date.now() + 1209600000), estimatedCost: 35000, recommendation: "Planifier remplacement plaquettes sous 2 semaines" },
-  { vehicleId: "v1", vehicleName: "Scooter EV-01", component: "Batterie cellules", failureProbability: 25, estimatedDate: new Date(Date.now() + 7776000000), estimatedCost: 280000, recommendation: "Surveillance normale — dégradation dans 3 mois" },
-];
+const VEHICLES: Vehicle[] = [];
+const REPAIRS: RepairHistory[] = [];
+const PREDICTIONS: Prediction[] = [];
 
 export default function FleetMaintenanceAI({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"health" | "history" | "predictions">("health");
 
-  const avgHealth = Math.round(VEHICLES.reduce((s, v) => s + v.healthScore, 0) / VEHICLES.length);
+  const avgHealth = VEHICLES.length ? Math.round(VEHICLES.reduce((s, v) => s + v.healthScore, 0) / VEHICLES.length) : 0;
   const criticalAlerts = VEHICLES.reduce((s, v) => s + v.alerts.filter(a => a.severity === "critical" || a.severity === "high").length, 0);
   const totalCost = VEHICLES.reduce((s, v) => s + v.totalCost, 0);
   const overdue = VEHICLES.filter(v => v.nextService < new Date()).length;

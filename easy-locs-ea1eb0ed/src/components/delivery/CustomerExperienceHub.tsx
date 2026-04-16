@@ -25,14 +25,7 @@ interface FeedbackItem {
   date: Date;
 }
 
-const FEEDBACK: FeedbackItem[] = [
-  { id: "f1", customer: "Awa N.", rating: 5, npsScore: 10, comment: "Livraison rapide et livreur très poli !", category: "Livraison", sentiment: "positive", resolved: true, date: new Date(Date.now() - 3600000) },
-  { id: "f2", customer: "Mamadou S.", rating: 4, npsScore: 8, comment: "Bon service mais emballage moyen", category: "Colis", sentiment: "neutral", resolved: true, date: new Date(Date.now() - 7200000) },
-  { id: "f3", customer: "Fatou D.", rating: 2, npsScore: 3, comment: "Retard de 30 min, aucune communication", category: "Ponctualité", sentiment: "negative", resolved: false, date: new Date(Date.now() - 14400000) },
-  { id: "f4", customer: "Ibrahima K.", rating: 5, npsScore: 9, comment: "Excellent ! Je recommande", category: "Général", sentiment: "positive", resolved: true, date: new Date(Date.now() - 28800000) },
-  { id: "f5", customer: "Aïcha M.", rating: 1, npsScore: 1, comment: "Colis endommagé à l'arrivée, très déçue", category: "Colis", sentiment: "negative", resolved: false, date: new Date(Date.now() - 43200000) },
-  { id: "f6", customer: "Cheikh B.", rating: 4, npsScore: 7, comment: "Service correct, rien à signaler", category: "Général", sentiment: "neutral", resolved: true, date: new Date(Date.now() - 57600000) },
-];
+const FEEDBACK: FeedbackItem[] = [];
 
 const JOURNEY_STEPS = [
   { step: "Commande", satisfaction: 92, volume: 450 },
@@ -50,10 +43,10 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
   const promoters = feedback.filter(f => f.npsScore >= 9).length;
   const passives = feedback.filter(f => f.npsScore >= 7 && f.npsScore < 9).length;
   const detractors = feedback.filter(f => f.npsScore < 7).length;
-  const nps = Math.round(((promoters - detractors) / feedback.length) * 100);
-  const avgRating = (feedback.reduce((s, f) => s + f.rating, 0) / feedback.length).toFixed(1);
+  const nps = feedback.length > 0 ? Math.round(((promoters - detractors) / feedback.length) * 100) : 0;
+  const avgRating = feedback.length > 0 ? (feedback.reduce((s, f) => s + f.rating, 0) / feedback.length).toFixed(1) : "0.0";
   const unresolved = feedback.filter(f => !f.resolved).length;
-  const csat = Math.round(feedback.filter(f => f.rating >= 4).length / feedback.length * 100);
+  const csat = feedback.length > 0 ? Math.round(feedback.filter(f => f.rating >= 4).length / feedback.length * 100) : 0;
 
   const resolveIssue = (id: string) => {
     haptic("medium");
@@ -67,7 +60,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
     return <Meh className="h-3.5 w-3.5" style={{ color: "hsl(var(--warning))" }} />;
   };
 
-  const maxSat = Math.max(...JOURNEY_STEPS.map(j => j.satisfaction));
+  const maxSat = JOURNEY_STEPS.length > 0 ? Math.max(...JOURNEY_STEPS.map(j => j.satisfaction)) : 0;
 
   return (
     <div className={`space-y-3 ${className || ""}`}>
@@ -119,9 +112,9 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
           </div>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: "Promoteurs", value: promoters, pct: Math.round(promoters / feedback.length * 100), color: "--success", range: "9-10" },
-              { label: "Passifs", value: passives, pct: Math.round(passives / feedback.length * 100), color: "--warning", range: "7-8" },
-              { label: "Détracteurs", value: detractors, pct: Math.round(detractors / feedback.length * 100), color: "--destructive", range: "0-6" },
+              { label: "Promoteurs", value: promoters, pct: feedback.length > 0 ? Math.round(promoters / feedback.length * 100) : 0, color: "--success", range: "9-10" },
+              { label: "Passifs", value: passives, pct: feedback.length > 0 ? Math.round(passives / feedback.length * 100) : 0, color: "--warning", range: "7-8" },
+              { label: "Détracteurs", value: detractors, pct: feedback.length > 0 ? Math.round(detractors / feedback.length * 100) : 0, color: "--destructive", range: "0-6" },
             ].map(g => (
               <div key={g.label} className="rounded-xl p-3 text-center"
                 style={{ background: `hsl(var(${g.color}) / 0.05)`, border: `1px solid hsl(var(${g.color}) / 0.1)` }}>
@@ -216,7 +209,7 @@ export default function CustomerExperienceHub({ orgId, className }: { orgId: str
               <div key={cat} className="flex items-center gap-2 py-1">
                 <span className="text-[10px] font-medium flex-1" style={{ color: "hsl(var(--foreground))" }}>{cat}</span>
                 <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "hsl(var(--muted) / 0.5)" }}>
-                  <div className="h-full rounded-full" style={{ width: `${(count / feedback.length) * 100}%`, background: "hsl(var(--destructive))" }} />
+                  <div className="h-full rounded-full" style={{ width: `${feedback.length > 0 ? (count / feedback.length) * 100 : 0}%`, background: "hsl(var(--destructive))" }} />
                 </div>
                 <span className="text-[10px] font-bold" style={{ color: "hsl(var(--destructive))" }}>{count}</span>
               </div>

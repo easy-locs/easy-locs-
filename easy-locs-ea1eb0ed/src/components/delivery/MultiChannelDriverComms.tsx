@@ -34,12 +34,7 @@ const CHANNELS: CommChannel[] = [
   { id: "voice", name: "Vocal", icon: Phone, enabled: false, description: "Appel vocal automatique", color: "--warning" },
 ];
 
-const ESCALATION_RULES = [
-  { id: "e1", trigger: "Mission non acceptée", delay: "5 min", channels: ["Push → SMS → Appel"], active: true },
-  { id: "e2", trigger: "Livreur hors ligne en mission", delay: "3 min", channels: ["SMS → Appel → Admin"], active: true },
-  { id: "e3", trigger: "SLA critique", delay: "Immédiat", channels: ["Push + SMS + Admin"], active: true },
-  { id: "e4", trigger: "Nouvelle mission zone vide", delay: "2 min", channels: ["Push broadcast → SMS ciblé"], active: false },
-];
+const ESCALATION_RULES: { id: string; trigger: string; delay: string; channels: string[]; active: boolean }[] = [];
 
 export default function MultiChannelDriverComms({ orgId, className }: { orgId: string; className?: string }) {
   const [channels, setChannels] = useState<CommChannel[]>(CHANNELS);

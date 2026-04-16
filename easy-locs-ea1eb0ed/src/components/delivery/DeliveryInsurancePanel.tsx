@@ -35,20 +35,13 @@ interface InsuranceClaim {
   createdAt: string;
 }
 
-const TIERS: InsuranceTier[] = [
-  { id: "basic", name: "Essentiel", emoji: "🛡️", maxCoverage: 100, premiumPercent: 2, deductible: 10, features: ["Perte totale", "Vol confirmé", "Délai 72h"] },
-  { id: "standard", name: "Standard", emoji: "🔒", maxCoverage: 500, premiumPercent: 3.5, deductible: 25, features: ["Perte totale", "Vol", "Dommages", "Délai 48h", "Photos preuve"] },
-  { id: "premium", name: "Premium", emoji: "💎", maxCoverage: 2000, premiumPercent: 5, deductible: 50, features: ["Couverture complète", "Remplacement", "Priorité 24h", "Support dédié", "Remboursement express"] },
-];
+const TIERS: InsuranceTier[] = [];
 
 export default function DeliveryInsurancePanel({ orgId }: { orgId: string }) {
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [declaredValue, setDeclaredValue] = useState(0);
   const [showClaimForm, setShowClaimForm] = useState(false);
-  const [claims, setClaims] = useState<InsuranceClaim[]>([
-    { id: "c1", jobId: "job-123", tier: "standard", declaredValue: 250, claimAmount: 180, reason: "damaged", description: "Colis endommagé à la livraison", status: "reviewing", createdAt: new Date(Date.now() - 86400000 * 2).toISOString() },
-    { id: "c2", jobId: "job-089", tier: "basic", declaredValue: 80, claimAmount: 60, reason: "lost", description: "Colis jamais reçu", status: "approved", createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  ]);
+  const [claims, setClaims] = useState<InsuranceClaim[]>([]);
   const [claimForm, setClaimForm] = useState({ jobId: "", reason: "damaged", description: "", amount: 0 });
 
   const tier = TIERS.find(t => t.id === selectedTier);

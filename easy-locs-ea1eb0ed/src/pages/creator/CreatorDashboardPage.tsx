@@ -11,18 +11,9 @@ import SubPageShell from "@/components/layout/SubPageShell";
 
 type PeriodKey = "7d" | "30d" | "90d";
 
-const SAMPLE_CONTENT = [
-  { id: "1", title: "Summer Collection Guide", type: "guide", views: 1240, likes: 89, earnings: 45.50 },
-  { id: "2", title: "Best Restaurants in Dubai", type: "collection", views: 890, likes: 67, earnings: 32.00 },
-  { id: "3", title: "Property Tour: Marina View", type: "story", views: 2100, likes: 156, earnings: 78.25 },
-  { id: "4", title: "Weekly Fashion Tips", type: "post", views: 560, likes: 42, earnings: 18.75 },
-];
+const SAMPLE_CONTENT: { id: string; title: string; type: string; views: number; likes: number; earnings: number }[] = [];
 
-const SAMPLE_AFFILIATES = [
-  { id: "a1", product: "Premium Kitchen Set", clicks: 45, conversions: 3, earnings: 22.50 },
-  { id: "a2", product: "Smart Home Bundle", clicks: 120, conversions: 8, earnings: 64.00 },
-  { id: "a3", product: "Travel Backpack", clicks: 78, conversions: 5, earnings: 37.50 },
-];
+const SAMPLE_AFFILIATES: { id: string; product: string; clicks: number; conversions: number; earnings: number }[] = [];
 
 export default function CreatorDashboardPage() {
   const navigate = useNavigate();

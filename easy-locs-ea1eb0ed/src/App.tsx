@@ -31,7 +31,6 @@ const MainBottomNav = lazy(() => import("@/components/navigation/MainBottomNav")
 const SmartInstallBanner = lazy(() => import("@/components/pwa/SmartInstallBanner"));
 const SmartCloseFlowSheet = lazy(() => import("@/components/close-flow/SmartCloseFlowSheet"));
 const FloatingCTAButton = lazy(() => import("@/components/engine/FloatingCTAButton").then(m => ({ default: m.FloatingCTAButton })));
-const OrbitPromptOverlay = lazy(() => import("@/components/engine/OrbitPromptOverlay").then(m => ({ default: m.OrbitPromptOverlay })));
 const GlobalOverlayRenderer = lazy(() => import("@/components/overlays/GlobalOverlayRenderer").then(m => ({ default: m.GlobalOverlayRenderer })));
 const InAppNavigationView = lazy(() => import("@/components/navigation/InAppNavigationView").then(m => ({ default: m.InAppNavigationView })));
 const AdhanMiniPlayer = lazy(() => import("@/components/islamic/AdhanMiniPlayer").then(m => ({ default: m.AdhanMiniPlayer })));
@@ -1020,7 +1019,6 @@ const App = () => (
         <Suspense fallback={null}>
           <SmartInstallBanner />
           <FloatingCTAButton />
-          <OrbitPromptOverlay />
           <SmartCloseFlowSheet />
           <GlobalSearchTrigger />
         </Suspense>

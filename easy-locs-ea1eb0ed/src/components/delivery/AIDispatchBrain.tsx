@@ -48,30 +48,18 @@ interface ABTest {
   winner: string | null;
 }
 
-const MODELS: DispatchModel[] = [
-  { id: "m1", name: "NearestNeighbor v3", version: "3.2.1", accuracy: 87, avgLatency: 120, successRate: 91, status: "active", lastTrained: new Date(Date.now() - 86400000), trainingDataSize: 45000 },
-  { id: "m2", name: "PredictiveGNN", version: "1.4.0", accuracy: 93, avgLatency: 340, successRate: 95, status: "active", lastTrained: new Date(Date.now() - 172800000), trainingDataSize: 120000 },
-  { id: "m3", name: "ReinforcementQ-Agent", version: "2.0.0-beta", accuracy: 89, avgLatency: 280, successRate: 88, status: "testing", lastTrained: new Date(Date.now() - 43200000), trainingDataSize: 78000 },
-  { id: "m4", name: "HeuristicLegacy", version: "1.0.0", accuracy: 72, avgLatency: 45, successRate: 82, status: "deprecated", lastTrained: new Date(Date.now() - 2592000000), trainingDataSize: 15000 },
-];
+const MODELS: DispatchModel[] = [];
 
-const SIMULATIONS: SimulationResult[] = [
-  { id: "sim1", scenario: "Peak hour Dakar Centre", iterations: 10000, avgDeliveryTime: 28, costReduction: 12, successRate: 94, confidence: 96, status: "completed" },
-  { id: "sim2", scenario: "Weekend demand surge", iterations: 5000, avgDeliveryTime: 35, costReduction: 8, successRate: 91, confidence: 89, status: "completed" },
-  { id: "sim3", scenario: "Multi-zone balancing", iterations: 8000, avgDeliveryTime: 22, costReduction: 18, successRate: 97, confidence: 0, status: "running" },
-];
+const SIMULATIONS: SimulationResult[] = [];
 
-const AB_TESTS: ABTest[] = [
-  { id: "ab1", name: "GNN vs NN routing", modelA: "NearestNeighbor v3", modelB: "PredictiveGNN", traffic: 50, startDate: new Date(Date.now() - 604800000), results: { aSuccess: 1245, bSuccess: 1389, aAvgTime: 32, bAvgTime: 27 }, status: "running", winner: null },
-  { id: "ab2", name: "RL-Agent pilot", modelA: "PredictiveGNN", modelB: "ReinforcementQ-Agent", traffic: 20, startDate: new Date(Date.now() - 259200000), results: { aSuccess: 420, bSuccess: 398, aAvgTime: 29, bAvgTime: 31 }, status: "running", winner: null },
-  { id: "ab3", name: "Legacy sunset test", modelA: "HeuristicLegacy", modelB: "NearestNeighbor v3", traffic: 100, startDate: new Date(Date.now() - 1209600000), results: { aSuccess: 2100, bSuccess: 2650, aAvgTime: 38, bAvgTime: 30 }, status: "concluded", winner: "NearestNeighbor v3" },
-];
+const AB_TESTS: ABTest[] = [];
 
 export default function AIDispatchBrain({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"models" | "simulations" | "ab_tests">("models");
 
   const activeModels = MODELS.filter(m => m.status === "active").length;
-  const avgAccuracy = Math.round(MODELS.filter(m => m.status !== "deprecated").reduce((s, m) => s + m.accuracy, 0) / MODELS.filter(m => m.status !== "deprecated").length);
+  const nonDeprecated = MODELS.filter(m => m.status !== "deprecated");
+  const avgAccuracy = nonDeprecated.length > 0 ? Math.round(nonDeprecated.reduce((s, m) => s + m.accuracy, 0) / nonDeprecated.length) : 0;
   const runningSims = SIMULATIONS.filter(s => s.status === "running").length;
   const runningTests = AB_TESTS.filter(t => t.status === "running").length;
 

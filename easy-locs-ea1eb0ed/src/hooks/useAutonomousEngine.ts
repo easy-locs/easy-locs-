@@ -1,11 +1,5 @@
-/**
- * Hook combining UnifiedGlobalEngine + AutonomousBusinessEngine + AI Decision Engine.
- * Runs on mount and provides the full autonomous system state.
- */
-
 import { useState, useCallback, useEffect, useRef } from "react";
 import { runUnifiedGlobalEngine, type UnifiedEngineReport } from "@/lib/engines/unified-global-engine";
-import { runAutonomousBusinessEngine, type BusinessEngineState } from "@/lib/engines/autonomous-business-engine";
 
 interface UseAutonomousEngineOptions {
   enabled?: boolean;
@@ -19,7 +13,6 @@ export function useAutonomousEngine(options: UseAutonomousEngineOptions = {}) {
   const { enabled = true, country = null, city = null, timezone = null, intervalMs = 300_000 } = options;
 
   const [report, setReport] = useState<UnifiedEngineReport | null>(null);
-  const [businessState, setBusinessState] = useState<BusinessEngineState | null>(null);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
 
@@ -29,9 +22,6 @@ export function useAutonomousEngine(options: UseAutonomousEngineOptions = {}) {
     try {
       const engineReport = runUnifiedGlobalEngine({ country, city, timezone });
       setReport(engineReport);
-
-      const bizState = runAutonomousBusinessEngine(engineReport);
-      setBusinessState(bizState);
     } catch (e) {
       console.error("[AutonomousEngine] Error:", e);
     } finally {
@@ -49,5 +39,5 @@ export function useAutonomousEngine(options: UseAutonomousEngineOptions = {}) {
     };
   }, [enabled, execute, intervalMs]);
 
-  return { report, businessState, execute, running };
+  return { report, businessState: null, execute, running };
 }

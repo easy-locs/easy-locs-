@@ -42,36 +42,11 @@ interface DriverPerf {
 }
 
 // Mock data generators
-const generateZones = (): ZoneData[] => [
-  { id: "z1", name: "Centre-Ville", deliveries: 245, avgTime: 22, avgFee: 8.5, successRate: 97, intensity: 0.95 },
-  { id: "z2", name: "Quartier Nord", deliveries: 180, avgTime: 28, avgFee: 10.2, successRate: 94, intensity: 0.75 },
-  { id: "z3", name: "Zone Industrielle", deliveries: 120, avgTime: 35, avgFee: 12.8, successRate: 96, intensity: 0.55 },
-  { id: "z4", name: "Banlieue Est", deliveries: 85, avgTime: 40, avgFee: 14.5, successRate: 92, intensity: 0.38 },
-  { id: "z5", name: "Résidentiel Sud", deliveries: 65, avgTime: 25, avgFee: 9.0, successRate: 98, intensity: 0.28 },
-  { id: "z6", name: "Périphérie Ouest", deliveries: 40, avgTime: 45, avgFee: 16.0, successRate: 90, intensity: 0.15 },
-];
+const generateZones = (): ZoneData[] => [];
 
-const generateTrends = (days: number): TrendPoint[] => {
-  return Array.from({ length: days }, (_, i) => {
-    const date = new Date(Date.now() - (days - i - 1) * 86400000);
-    const base = 20 + Math.sin(i / 7 * Math.PI) * 8;
-    return {
-      date: date.toLocaleDateString("fr", { day: "2-digit", month: "short" }),
-      deliveries: Math.round(base + Math.random() * 10),
-      revenue: Math.round((base * 9 + Math.random() * 50) * 100) / 100,
-      avgTime: Math.round(25 + Math.random() * 15),
-      cancellations: Math.round(Math.random() * 3),
-    };
-  });
-};
+const generateTrends = (days: number): TrendPoint[] => [];
 
-const generateDriverPerf = (): DriverPerf[] => [
-  { id: "d1", name: "Karim B.", deliveries: 142, avgRating: 4.8, avgTime: 20, successRate: 98, revenue: 1250 },
-  { id: "d2", name: "Fatima M.", deliveries: 128, avgRating: 4.9, avgTime: 18, successRate: 99, revenue: 1180 },
-  { id: "d3", name: "Jean L.", deliveries: 105, avgRating: 4.5, avgTime: 28, successRate: 94, revenue: 980 },
-  { id: "d4", name: "Amina K.", deliveries: 95, avgRating: 4.7, avgTime: 22, successRate: 97, revenue: 850 },
-  { id: "d5", name: "Omar S.", deliveries: 78, avgRating: 4.3, avgTime: 32, successRate: 91, revenue: 720 },
-];
+const generateDriverPerf = (): DriverPerf[] => [];
 
 export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) {
   const [range, setRange] = useState<TimeRange>("30d");
@@ -85,7 +60,7 @@ export default function DeliveryAdvancedAnalytics({ orgId }: { orgId: string }) 
   const kpis = useMemo(() => {
     const totalDel = trends.reduce((s, t) => s + t.deliveries, 0);
     const totalRev = trends.reduce((s, t) => s + t.revenue, 0);
-    const avgTime = Math.round(trends.reduce((s, t) => s + t.avgTime, 0) / trends.length);
+    const avgTime = trends.length > 0 ? Math.round(trends.reduce((s, t) => s + t.avgTime, 0) / trends.length) : 0;
     const totalCancel = trends.reduce((s, t) => s + t.cancellations, 0);
     return { totalDel, totalRev, avgTime, totalCancel, successRate: totalDel > 0 ? ((totalDel - totalCancel) / totalDel * 100) : 0 };
   }, [trends]);

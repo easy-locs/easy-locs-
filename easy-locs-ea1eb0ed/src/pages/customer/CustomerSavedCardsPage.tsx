@@ -20,10 +20,7 @@ const BRAND_COLORS: Record<string, { bg: string; accent: string }> = {
   Amex: { bg: "linear-gradient(135deg, hsl(210 60% 45%) 0%, hsl(210 50% 35%) 100%)", accent: "hsl(210 60% 45%)" },
 };
 
-const INITIAL_CARDS: SavedCard[] = [
-  { id: "1", brand: "Visa", last4: "4242", expiry: "12/27", isDefault: true },
-  { id: "2", brand: "Mastercard", last4: "8844", expiry: "08/28", isDefault: false },
-];
+const INITIAL_CARDS: SavedCard[] = [];
 
 export default function CustomerSavedCardsPage() {
   useUiEngine("customer-customersavedcardspage");

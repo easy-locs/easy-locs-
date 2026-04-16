@@ -37,28 +37,16 @@ interface LockerSlot {
   tempZone: "ambient" | "cool" | "frozen";
 }
 
-const LOCKERS: SmartLocker[] = [
-  { id: "sl1", name: "Gare Centrale", location: "Hall Principal", totalSlots: 24, availableSlots: 8, temperature: 22, tempControlled: true, status: "online", batteryLevel: 94, lastAccess: new Date(Date.now() - 300000), dailyUses: 47 },
-  { id: "sl2", name: "Centre Commercial Plateau", location: "Entrée Nord", totalSlots: 16, availableSlots: 3, temperature: 21, tempControlled: false, status: "online", batteryLevel: 78, lastAccess: new Date(Date.now() - 600000), dailyUses: 35 },
-  { id: "sl3", name: "Campus Universitaire", location: "Bât. A", totalSlots: 12, availableSlots: 7, temperature: 23, tempControlled: false, status: "online", batteryLevel: 88, lastAccess: new Date(Date.now() - 1800000), dailyUses: 18 },
-  { id: "sl4", name: "Pharmacie Liberté", location: "Parking", totalSlots: 8, availableSlots: 0, temperature: 4, tempControlled: true, status: "maintenance", batteryLevel: 32, lastAccess: new Date(Date.now() - 7200000), dailyUses: 12 },
-  { id: "sl5", name: "Résidence HLM", location: "Entrée Principale", totalSlots: 10, availableSlots: 5, temperature: 22, tempControlled: false, status: "online", batteryLevel: 91, lastAccess: new Date(Date.now() - 900000), dailyUses: 22 },
-];
+const LOCKERS: SmartLocker[] = [];
 
-const SLOTS: LockerSlot[] = [
-  { id: "ls1", lockerId: "sl1", size: "M", status: "occupied", orderId: "CMD-2847", expiresAt: new Date(Date.now() + 3600000), tempZone: "ambient" },
-  { id: "ls2", lockerId: "sl1", size: "L", status: "reserved", orderId: "CMD-2848", expiresAt: new Date(Date.now() + 7200000), tempZone: "cool" },
-  { id: "ls3", lockerId: "sl1", size: "S", status: "empty", orderId: null, expiresAt: null, tempZone: "ambient" },
-  { id: "ls4", lockerId: "sl2", size: "XL", status: "occupied", orderId: "CMD-2849", expiresAt: new Date(Date.now() + 1800000), tempZone: "frozen" },
-  { id: "ls5", lockerId: "sl4", size: "M", status: "maintenance", orderId: null, expiresAt: null, tempZone: "cool" },
-];
+const SLOTS: LockerSlot[] = [];
 
 export default function SmartLockerNetwork({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"lockers" | "slots" | "analytics">("lockers");
 
   const totalSlots = LOCKERS.reduce((s, l) => s + l.totalSlots, 0);
   const totalAvail = LOCKERS.reduce((s, l) => s + l.availableSlots, 0);
-  const occupancy = Math.round(((totalSlots - totalAvail) / totalSlots) * 100);
+  const occupancy = totalSlots > 0 ? Math.round(((totalSlots - totalAvail) / totalSlots) * 100) : 0;
   const dailyTotal = LOCKERS.reduce((s, l) => s + l.dailyUses, 0);
 
   const statusCfg = (s: string) => ({

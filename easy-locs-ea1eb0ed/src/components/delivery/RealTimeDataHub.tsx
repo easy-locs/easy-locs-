@@ -40,26 +40,11 @@ interface MaintenancePred {
   recommendation: string;
 }
 
-const LIVE_METRICS: LiveMetric[] = [
-  { name: "Commandes/min", value: 12.4, unit: "/min", trend: "up", change: 8.2, status: "normal" },
-  { name: "Temps réponse API", value: 142, unit: "ms", trend: "stable", change: -2.1, status: "normal" },
-  { name: "Livreurs actifs", value: 48, unit: "", trend: "up", change: 12, status: "normal" },
-  { name: "Taux échec livraison", value: 3.8, unit: "%", trend: "up", change: 1.2, status: "warning" },
-  { name: "Queue attente", value: 24, unit: "jobs", trend: "up", change: 35, status: "warning" },
-  { name: "Latence paiement", value: 890, unit: "ms", trend: "up", change: 45, status: "critical" },
-];
+const LIVE_METRICS: LiveMetric[] = [];
 
-const ANOMALIES: Anomaly[] = [
-  { id: "a1", type: "Spike", metric: "Latence paiement", severity: "high", description: "Latence paiement > 800ms — seuil critique dépassé depuis 5min", detectedAt: new Date(Date.now() - 300000), resolved: false },
-  { id: "a2", type: "Pattern", metric: "Taux échec", severity: "medium", description: "Hausse inhabituelle des échecs sur zone Guédiawaye (+180%)", detectedAt: new Date(Date.now() - 1800000), resolved: false },
-  { id: "a3", type: "Drift", metric: "Volume commandes", severity: "low", description: "Volume 15% en dessous de la prévision pour cette heure", detectedAt: new Date(Date.now() - 3600000), resolved: true },
-];
+const ANOMALIES: Anomaly[] = [];
 
-const MAINTENANCE_PREDS: MaintenancePred[] = [
-  { vehicle: "Scooter EV-01", component: "Batterie", failureProbability: 78, estimatedDays: 12, recommendation: "Remplacement batterie sous 2 semaines" },
-  { vehicle: "Van Élec V-01", component: "Freins", failureProbability: 65, estimatedDays: 21, recommendation: "Inspection freins recommandée" },
-  { vehicle: "Vélo Cargo E-02", component: "Pneus", failureProbability: 42, estimatedDays: 35, recommendation: "Surveillance normale, usure standard" },
-];
+const MAINTENANCE_PREDS: MaintenancePred[] = [];
 
 export default function RealTimeDataHub({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"live" | "anomalies" | "maintenance" | "explorer">("live");
@@ -221,12 +206,7 @@ export default function RealTimeDataHub({ orgId, className }: { orgId: string; c
               Explorez les données en temps réel de l'écosystème logistique
             </p>
           </div>
-          {[
-            { table: "mobility_jobs", rows: "12,847", size: "34 MB", updated: "il y a 2s" },
-            { table: "rider_presence", rows: "1,284", size: "8 MB", updated: "il y a 1s" },
-            { table: "escrow_payments", rows: "8,432", size: "22 MB", updated: "il y a 5s" },
-            { table: "delivery_ratings", rows: "6,215", size: "12 MB", updated: "il y a 8s" },
-          ].map(t => (
+          {([] as { table: string; rows: string; size: string; updated: string }[]).map(t => (
             <div key={t.table} className="rounded-lg p-2 flex items-center gap-2"
               style={{ background: "hsl(var(--muted) / 0.15)" }}>
               <Database className="h-3 w-3" style={{ color: "hsl(var(--primary))" }} />

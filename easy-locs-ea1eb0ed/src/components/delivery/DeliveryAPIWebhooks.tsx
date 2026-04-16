@@ -54,10 +54,7 @@ const METHOD_COLORS: Record<string, string> = {
 export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
   const [tab, setTab] = useState<"docs" | "webhooks" | "keys">("docs");
   const [expandedEndpoint, setExpandedEndpoint] = useState<string | null>(null);
-  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([
-    { id: "wh1", url: "https://myapp.com/webhooks/delivery", events: ["job.created", "job.delivered"], active: true, secret: "whsec_abc123...xyz", lastTriggered: "2026-03-15T14:30:00Z", failCount: 0 },
-    { id: "wh2", url: "https://erp.company.com/api/delivery", events: ["payment.completed"], active: false, secret: "whsec_def456...uvw", failCount: 3 },
-  ]);
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([]);
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
 
@@ -73,7 +70,7 @@ export default function DeliveryAPIWebhooks({ orgId }: { orgId: string }) {
     }
     const newWh: WebhookConfig = {
       id: `wh${Date.now()}`, url: newWebhookUrl, events: selectedEvents,
-      active: true, secret: `whsec_${Math.random().toString(36).slice(2, 14)}`, failCount: 0,
+      active: true, secret: `whsec_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`, failCount: 0,
     };
     setWebhooks(prev => [...prev, newWh]);
     setNewWebhookUrl("");

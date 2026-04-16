@@ -40,10 +40,7 @@ export default function CustomerLiveTracking({ jobId, className }: Props) {
   const [driverLng, setDriverLng] = useState(2.345);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState("");
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: "m1", sender: "driver", text: "Bonjour ! J'ai récupéré votre colis, en route 🚗", time: "14:32" },
-    { id: "m2", sender: "customer", text: "Super, merci ! Je suis à l'adresse indiquée.", time: "14:33" },
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const steps: TrackingStep[] = [
     { id: "confirmed", label: "Commande confirmée", icon: CheckCircle2, status: "done", time: "14:15" },

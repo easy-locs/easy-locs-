@@ -49,14 +49,7 @@ const CATEGORIES: NotifCategory[] = [
   { id: "promo", label: "Promotions", emoji: "🎁", description: "Offres et bonus spéciaux", push: false, email: true, sms: false, inApp: true },
 ];
 
-const SMART_RULES: SmartRule[] = [
-  { id: "r1", name: "Alerte Haute Priorité", condition: "Mission urgente à <2km", action: "Notification push + son", enabled: true, emoji: "🔴" },
-  { id: "r2", name: "Streak Reminder", condition: "Streak en danger (pas de livraison à 20h)", action: "Push + rappel", enabled: true, emoji: "🔥" },
-  { id: "r3", name: "Paiement Retardé", condition: "Paiement non reçu après 48h", action: "Email + notification", enabled: true, emoji: "💸" },
-  { id: "r4", name: "Document Expirant", condition: "Document expire dans 30 jours", action: "Email + push quotidien", enabled: false, emoji: "📄" },
-  { id: "r5", name: "Score Drop", condition: "Note moyenne passe sous 4.0", action: "Push immédiat + conseils", enabled: true, emoji: "📉" },
-  { id: "r6", name: "Zone Chaude", condition: "Forte demande dans votre zone", action: "Push avec carte", enabled: false, emoji: "🗺️" },
-];
+const SMART_RULES: SmartRule[] = [];
 
 export default function SmartNotificationsEngine({ orgId }: { orgId: string }) {
   const [tab, setTab] = useState<"preferences" | "digest" | "smart-rules">("preferences");

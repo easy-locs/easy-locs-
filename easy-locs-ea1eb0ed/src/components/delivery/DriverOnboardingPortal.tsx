@@ -35,13 +35,7 @@ interface TrainingModule {
   score?: number;
 }
 
-const TRAINING_MODULES: TrainingModule[] = [
-  { id: "t1", title: "Sécurité routière & conduite responsable", duration: "15 min", completed: true, score: 92 },
-  { id: "t2", title: "Manipulation des colis fragiles", duration: "10 min", completed: true, score: 88 },
-  { id: "t3", title: "Utilisation de l'application", duration: "8 min", completed: false },
-  { id: "t4", title: "Service client & communication", duration: "12 min", completed: false },
-  { id: "t5", title: "Protocole de livraison & preuve photo", duration: "7 min", completed: false },
-];
+const TRAINING_MODULES: TrainingModule[] = [];
 
 export default function DriverOnboardingPortal({ onComplete }: { onComplete?: () => void }) {
   const [currentStep, setCurrentStep] = useState<OnboardingStep>("identity");

@@ -390,19 +390,6 @@ export function bootEngineSystem(): () => void {
     return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
   }, { phase: "deferred" });
 
-  engineOrchestrator.registerStartupTask("autonomous-business-engine-boot", () => {
-    let cancelled = false;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-    retryAsync("autonomous-business-engine-boot", async () => {
-      const { runAutonomousBusinessEngine } = await import("@/lib/engines/autonomous-business-engine");
-      if (cancelled) return;
-      const run = () => { if (_latestUnifiedReport) runAutonomousBusinessEngine(_latestUnifiedReport); };
-      setTimeout(run, 5_000);
-      intervalId = setInterval(run, 600_000);
-    }, () => cancelled);
-    return () => { cancelled = true; if (intervalId) { clearInterval(intervalId); intervalId = null; } };
-  }, { phase: "late" });
-
   engineOrchestrator.registerStartupTask("stale-cache-scanner-boot", () => {
     let teardown: (() => void) | null = null;
     let cancelled = false;

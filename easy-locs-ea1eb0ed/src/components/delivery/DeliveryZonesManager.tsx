@@ -38,11 +38,7 @@ interface DeliveryZone {
 
 const ZONE_COLORS = ["#22d3ee", "#a78bfa", "#f59e0b", "#ef4444", "#10b981", "#ec4899"];
 
-const DEFAULT_ZONES: DeliveryZone[] = [
-  { id: "z1", name: "Centre-ville", color: ZONE_COLORS[0], radiusKm: 5, centerLat: 48.8566, centerLng: 2.3522, baseFee: 3, perKmFee: 0.8, currency: "EUR", maxWeight: 30, active: true, vehicleTypes: ["bicycle", "scooter", "car"] },
-  { id: "z2", name: "Périphérie", color: ZONE_COLORS[1], radiusKm: 15, centerLat: 48.8566, centerLng: 2.3522, baseFee: 5, perKmFee: 0.6, currency: "EUR", maxWeight: 50, active: true, vehicleTypes: ["car", "van"] },
-  { id: "z3", name: "Banlieue", color: ZONE_COLORS[2], radiusKm: 30, centerLat: 48.8566, centerLng: 2.3522, baseFee: 8, perKmFee: 0.5, currency: "EUR", maxWeight: 100, active: false, restrictedHours: "22:00-06:00", vehicleTypes: ["car", "van"] },
-];
+const DEFAULT_ZONES: DeliveryZone[] = [];
 
 export default function DeliveryZonesManager({ orgId, className }: Props) {
   const [zones, setZones] = useState<DeliveryZone[]>(DEFAULT_ZONES);

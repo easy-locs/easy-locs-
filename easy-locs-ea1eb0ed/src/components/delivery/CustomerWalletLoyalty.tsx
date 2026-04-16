@@ -17,19 +17,9 @@ interface LoyaltyTier {
   color: string;
 }
 
-const TIERS: LoyaltyTier[] = [
-  { name: "Bronze", emoji: "🥉", minPoints: 0, perks: ["1 point par €", "Suivi temps réel"], color: "hsl(180 10% 55%)" },
-  { name: "Silver", emoji: "🥈", minPoints: 500, perks: ["1.5 points par €", "Livraison prioritaire", "-5% frais"], color: "hsl(var(--muted-foreground))" },
-  { name: "Gold", emoji: "🥇", minPoints: 2000, perks: ["2 points par €", "Express gratuit 1x/mois", "-10% frais", "Support prioritaire"], color: "hsl(var(--warning))" },
-  { name: "Platinum", emoji: "💎", minPoints: 5000, perks: ["3 points par €", "Express gratuit illimité", "-15% frais", "Accès VIP", "Cashback 2%"], color: "hsl(var(--hud-cyan))" },
-];
+const TIERS: LoyaltyTier[] = [];
 
-const REWARDS = [
-  { id: "r1", name: "Livraison gratuite", cost: 200, emoji: "🚚" },
-  { id: "r2", name: "-3€ sur commande", cost: 150, emoji: "💰" },
-  { id: "r3", name: "Express offert", cost: 300, emoji: "⚡" },
-  { id: "r4", name: "Double points (7j)", cost: 500, emoji: "✨" },
-];
+const REWARDS: { id: string; name: string; cost: number; emoji: string }[] = [];
 
 export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
   const { data: orders = [], isLoading: loadingOrders } = useDeliveryOrders(orgId);
@@ -41,7 +31,8 @@ export default function CustomerWalletLoyalty({ orgId }: { orgId: string }) {
   const completedOrders = orders.filter((o: any) => o.status === "completed" || o.status === "delivered");
   const totalSpent = completedOrders.reduce((s: number, o: any) => s + (o.total_amount ?? o.amount ?? 0), 0);
   const myPoints = Math.round(totalSpent * 2);
-  const currentTier = TIERS.reduce((best, t) => myPoints >= t.minPoints ? t : best, TIERS[0]);
+  const defaultTier: LoyaltyTier = { name: "—", emoji: "—", minPoints: 0, perks: [], color: "hsl(var(--muted-foreground))" };
+  const currentTier = TIERS.length ? TIERS.reduce((best, t) => myPoints >= t.minPoints ? t : best, TIERS[0]) : defaultTier;
   const nextTier = TIERS.find(t => t.minPoints > myPoints);
 
   return (

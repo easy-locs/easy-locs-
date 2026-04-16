@@ -40,40 +40,20 @@ interface ChecklistItem {
   checked: boolean;
 }
 
-const DRIVER_QUALITY: DriverQuality[] = [
-  { driver: "Ousmane B.", score: 92, grade: "A+", completedAudits: 24, failedChecks: 1, lastAudit: new Date(Date.now() - 86400000), correctiveActions: 0 },
-  { driver: "Ibrahima S.", score: 85, grade: "A", completedAudits: 18, failedChecks: 3, lastAudit: new Date(Date.now() - 172800000), correctiveActions: 1 },
-  { driver: "Aïcha M.", score: 78, grade: "B+", completedAudits: 15, failedChecks: 4, lastAudit: new Date(Date.now() - 259200000), correctiveActions: 2 },
-  { driver: "Mamadou K.", score: 65, grade: "B", completedAudits: 12, failedChecks: 6, lastAudit: new Date(Date.now() - 345600000), correctiveActions: 3 },
-  { driver: "Fatou D.", score: 55, grade: "C", completedAudits: 8, failedChecks: 8, lastAudit: new Date(Date.now() - 432000000), correctiveActions: 4 },
-];
+const DRIVER_QUALITY: DriverQuality[] = [];
 
-const RECENT_AUDITS: AuditItem[] = [
-  { id: "a1", driver: "Ousmane B.", date: new Date(Date.now() - 86400000), type: "Terrain", score: 95, passed: true, issues: [] },
-  { id: "a2", driver: "Ibrahima S.", date: new Date(Date.now() - 172800000), type: "Photo preuve", score: 78, passed: true, issues: ["Photo floue"] },
-  { id: "a3", driver: "Mamadou K.", date: new Date(Date.now() - 259200000), type: "Ponctualité", score: 52, passed: false, issues: ["Retard 20min", "Pas de notification client"] },
-  { id: "a4", driver: "Fatou D.", date: new Date(Date.now() - 345600000), type: "Véhicule", score: 45, passed: false, issues: ["Véhicule sale", "Pneu usé", "Manque gilet"] },
-];
+const RECENT_AUDITS: AuditItem[] = [];
 
-const DEFAULT_CHECKLIST: ChecklistItem[] = [
-  { id: "c1", label: "Véhicule propre et en état", category: "Véhicule", checked: false },
-  { id: "c2", label: "Gilet de sécurité porté", category: "Sécurité", checked: false },
-  { id: "c3", label: "Colis intact et bien emballé", category: "Colis", checked: false },
-  { id: "c4", label: "Photo preuve de livraison prise", category: "Preuve", checked: false },
-  { id: "c5", label: "Signature ou code client obtenu", category: "Preuve", checked: false },
-  { id: "c6", label: "Délai de livraison respecté", category: "SLA", checked: false },
-  { id: "c7", label: "Client notifié avant arrivée", category: "Communication", checked: false },
-  { id: "c8", label: "Application GPS active pendant mission", category: "Tracking", checked: false },
-];
+const DEFAULT_CHECKLIST: ChecklistItem[] = [];
 
 export default function QualityAssuranceSystem({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"scores" | "audits" | "checklist" | "compliance">("scores");
   const [checklist, setChecklist] = useState(DEFAULT_CHECKLIST);
 
-  const avgScore = Math.round(DRIVER_QUALITY.reduce((s, d) => s + d.score, 0) / DRIVER_QUALITY.length);
-  const passRate = Math.round(RECENT_AUDITS.filter(a => a.passed).length / RECENT_AUDITS.length * 100);
+  const avgScore = DRIVER_QUALITY.length > 0 ? Math.round(DRIVER_QUALITY.reduce((s, d) => s + d.score, 0) / DRIVER_QUALITY.length) : 0;
+  const passRate = RECENT_AUDITS.length > 0 ? Math.round(RECENT_AUDITS.filter(a => a.passed).length / RECENT_AUDITS.length * 100) : 0;
   const pendingActions = DRIVER_QUALITY.reduce((s, d) => s + d.correctiveActions, 0);
-  const checklistProgress = Math.round(checklist.filter(c => c.checked).length / checklist.length * 100);
+  const checklistProgress = checklist.length > 0 ? Math.round(checklist.filter(c => c.checked).length / checklist.length * 100) : 0;
 
   const gradeColor = (g: string) => {
     if (g.startsWith("A")) return "--success";
@@ -90,7 +70,7 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
     haptic("medium");
     const passed = checklist.filter(c => c.checked).length;
     const total = checklist.length;
-    const score = Math.round((passed / total) * 100);
+    const score = total > 0 ? Math.round((passed / total) * 100) : 0;
     toast.success(`✅ Audit soumis — Score: ${score}% (${passed}/${total})`);
     setChecklist(DEFAULT_CHECKLIST);
   };
@@ -229,13 +209,7 @@ export default function QualityAssuranceSystem({ orgId, className }: { orgId: st
       {view === "compliance" && (
         <div className="space-y-3">
           <p className="text-[10px] font-semibold" style={{ color: "hsl(var(--foreground))" }}>Rapport conformité</p>
-          {[
-            { label: "Photo preuve obligatoire", compliance: 94, target: 100 },
-            { label: "Délai SLA respecté", compliance: 82, target: 90 },
-            { label: "Code confirmation validé", compliance: 88, target: 95 },
-            { label: "Véhicule conforme", compliance: 76, target: 85 },
-            { label: "Communication client", compliance: 71, target: 80 },
-          ].map(r => (
+          {([] as { label: string; compliance: number; target: number }[]).map(r => (
             <div key={r.label} className="rounded-xl p-3"
               style={{ background: "hsl(var(--muted) / 0.2)", border: "1px solid hsl(var(--border) / 0.08)" }}>
               <div className="flex justify-between mb-1">

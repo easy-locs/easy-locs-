@@ -47,33 +47,17 @@ interface TokenizedPackage {
   currency: string;
 }
 
-const RECORDS: BlockRecord[] = [
-  { id: "b1", txHash: "0x7a3f...e842", blockNumber: 18294731, timestamp: new Date(Date.now() - 3600000), type: "delivery_confirmed", jobId: "JOB-847", data: { driver: "Ousmane B.", proof: "QR+Photo" }, verified: true, gasUsed: 21400 },
-  { id: "b2", txHash: "0x91c2...d5f1", blockNumber: 18294698, timestamp: new Date(Date.now() - 7200000), type: "pickup_confirmed", jobId: "JOB-843", data: { location: "14.6937,-17.4441", weight: "3.2kg" }, verified: true, gasUsed: 18900 },
-  { id: "b3", txHash: "0x4e8d...a3b7", blockNumber: 18294655, timestamp: new Date(Date.now() - 14400000), type: "payment_released", jobId: "JOB-839", data: { amount: "25000 XOF", method: "escrow_auto" }, verified: true, gasUsed: 32100 },
-  { id: "b4", txHash: "0xf2a1...c9e3", blockNumber: 18294612, timestamp: new Date(Date.now() - 28800000), type: "shipment_created", jobId: "JOB-851", data: { sender: "Shop Médina", items: "3 colis" }, verified: true, gasUsed: 24500 },
-  { id: "b5", txHash: "0xd6b8...7f24", blockNumber: 18294580, timestamp: new Date(Date.now() - 43200000), type: "dispute_filed", jobId: "JOB-835", data: { reason: "Colis endommagé", claimant: "Client" }, verified: true, gasUsed: 28700 },
-];
+const RECORDS: BlockRecord[] = [];
 
-const CONTRACTS: SmartContract[] = [
-  { id: "sc1", name: "DeliveryEscrow", address: "0x1a2b...3c4d", network: "Polygon", status: "active", totalExecutions: 4521, lastExecution: new Date(Date.now() - 3600000), version: "2.1.0" },
-  { id: "sc2", name: "ProofOfDelivery", address: "0x5e6f...7g8h", network: "Polygon", status: "active", totalExecutions: 3890, lastExecution: new Date(Date.now() - 7200000), version: "1.4.2" },
-  { id: "sc3", name: "DisputeResolver", address: "0x9i0j...1k2l", network: "Polygon", status: "active", totalExecutions: 287, lastExecution: new Date(Date.now() - 86400000), version: "1.2.0" },
-  { id: "sc4", name: "PackageToken (ERC-721)", address: "0x3m4n...5o6p", network: "Polygon", status: "active", totalExecutions: 2145, lastExecution: new Date(Date.now() - 14400000), version: "1.0.3" },
-];
+const CONTRACTS: SmartContract[] = [];
 
-const TOKENS: TokenizedPackage[] = [
-  { id: "t1", tokenId: "#8471", jobId: "JOB-847", origin: "Médina Hub", destination: "Plateau Client", status: "delivered", checkpoints: 5, owner: "Client Final", value: 45000, currency: "XOF" },
-  { id: "t2", tokenId: "#8432", jobId: "JOB-843", origin: "Parcelles Hub", destination: "Guédiawaye", status: "in_transit", checkpoints: 3, owner: "Transporteur", value: 28000, currency: "XOF" },
-  { id: "t3", tokenId: "#8513", jobId: "JOB-851", origin: "Shop Médina", destination: "Almadies", status: "minted", checkpoints: 1, owner: "Expéditeur", value: 62000, currency: "XOF" },
-  { id: "t4", tokenId: "#8392", jobId: "JOB-839", origin: "Dakar Centre", destination: "Rufisque", status: "burned", checkpoints: 6, owner: "Archivé", value: 35000, currency: "XOF" },
-];
+const TOKENS: TokenizedPackage[] = [];
 
 export default function BlockchainTraceability({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"ledger" | "contracts" | "tokens">("ledger");
 
   const totalTx = RECORDS.length;
-  const verifiedPct = Math.round((RECORDS.filter(r => r.verified).length / RECORDS.length) * 100);
+  const verifiedPct = RECORDS.length > 0 ? Math.round((RECORDS.filter(r => r.verified).length / RECORDS.length) * 100) : 0;
   const activeContracts = CONTRACTS.filter(c => c.status === "active").length;
   const activeTokens = TOKENS.filter(t => !["burned"].includes(t.status)).length;
 

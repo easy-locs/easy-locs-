@@ -40,12 +40,7 @@ interface SLAAlert {
   elapsedMinutes: number;
 }
 
-const DEFAULT_RULES: SLARule[] = [
-  { id: "r1", name: "Temps d'acceptation", maxMinutes: 10, escalateAfter: 20, priority: "high", active: true },
-  { id: "r2", name: "Temps de collecte", maxMinutes: 30, escalateAfter: 60, priority: "medium", active: true },
-  { id: "r3", name: "Temps de livraison", maxMinutes: 60, escalateAfter: 120, priority: "high", active: true },
-  { id: "r4", name: "Réponse litige", maxMinutes: 240, escalateAfter: 480, priority: "critical", active: true },
-];
+const DEFAULT_RULES: SLARule[] = [];
 
 const SEVERITY_CONFIG = {
   warning: { color: "--warning", icon: Clock, label: "Avertissement" },
@@ -77,8 +72,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
       const now = Date.now();
 
       ((jobs || []) as any[]).forEach((job: any) => {
-        // Check acceptance SLA (offered → accepted)
-        if (job.status === "offered" && job.created_at) {
+        if (rules[0] && job.status === "offered" && job.created_at) {
           const elapsed = (now - new Date(job.created_at).getTime()) / 60000;
           if (elapsed > rules[0].maxMinutes) {
             generatedAlerts.push({
@@ -90,8 +84,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
           }
         }
 
-        // Check pickup SLA
-        if (job.status === "accepted" && job.accepted_at) {
+        if (rules[1] && job.status === "accepted" && job.accepted_at) {
           const elapsed = (now - new Date(job.accepted_at).getTime()) / 60000;
           if (elapsed > rules[1].maxMinutes) {
             generatedAlerts.push({
@@ -103,8 +96,7 @@ export default function SLAAlertSystem({ orgId, className }: Props) {
           }
         }
 
-        // Check delivery SLA
-        if (job.status === "in_progress" && job.picked_up_at) {
+        if (rules[2] && job.status === "in_progress" && job.picked_up_at) {
           const elapsed = (now - new Date(job.picked_up_at).getTime()) / 60000;
           if (elapsed > rules[2].maxMinutes) {
             generatedAlerts.push({

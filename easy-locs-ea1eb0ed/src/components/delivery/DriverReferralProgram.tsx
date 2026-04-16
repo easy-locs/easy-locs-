@@ -31,11 +31,7 @@ const REWARD_TIERS = [
 
 export default function DriverReferralProgram() {
   const [referralCode] = useState(() => "EL-DRV-" + Math.random().toString(36).substring(2, 8).toUpperCase());
-  const [referrals] = useState<Referral[]>([
-    { id: "r1", refereeName: "Youssef M.", status: "completed", reward: 15, joinedAt: new Date(Date.now() - 86400000 * 12).toISOString(), completedDeliveries: 10, requiredDeliveries: 10 },
-    { id: "r2", refereeName: "Aïcha K.", status: "active", reward: 15, joinedAt: new Date(Date.now() - 86400000 * 5).toISOString(), completedDeliveries: 6, requiredDeliveries: 10 },
-    { id: "r3", refereeName: "Omar B.", status: "pending", reward: 15, joinedAt: new Date(Date.now() - 86400000 * 1).toISOString(), completedDeliveries: 0, requiredDeliveries: 10 },
-  ]);
+  const [referrals] = useState<Referral[]>([]);
 
   const stats = useMemo(() => ({
     total: referrals.length,

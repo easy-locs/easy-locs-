@@ -28,12 +28,7 @@ interface Franchise {
   startDate: Date;
 }
 
-const FRANCHISES: Franchise[] = [
-  { id: "f1", name: "Easy-Locs Dakar Centre", owner: "Moussa D.", territory: "Dakar Centre + Plateau", status: "active", revenue: 8500000, royaltyRate: 8, royaltyPaid: 680000, drivers: 18, orders: 842, rating: 4.7, startDate: new Date("2025-03-15") },
-  { id: "f2", name: "Easy-Locs Médina", owner: "Aminata S.", territory: "Médina + HLM", status: "active", revenue: 5200000, royaltyRate: 8, royaltyPaid: 416000, drivers: 12, orders: 534, rating: 4.5, startDate: new Date("2025-06-01") },
-  { id: "f3", name: "Easy-Locs Pikine", owner: "Cheikh B.", territory: "Pikine + Guédiawaye", status: "active", revenue: 3800000, royaltyRate: 10, royaltyPaid: 380000, drivers: 8, orders: 356, rating: 4.2, startDate: new Date("2025-09-15") },
-  { id: "f4", name: "Easy-Locs Rufisque", owner: "Fatou N.", territory: "Rufisque + Bargny", status: "onboarding", revenue: 0, royaltyRate: 10, royaltyPaid: 0, drivers: 0, orders: 0, rating: 0, startDate: new Date("2026-03-01") },
-];
+const FRANCHISES: Franchise[] = [];
 
 export default function FranchiseManagement({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"overview" | "territories" | "royalties" | "performance">("overview");

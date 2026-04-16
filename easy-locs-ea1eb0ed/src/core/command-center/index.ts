@@ -62,7 +62,6 @@ export {
 export {
   bootCommandCenter,
   shutdownCommandCenter,
-  executePurgePlan,
   requestEngineRunApproval,
   reportEngineRunSuccess,
   reportEngineRunError,
@@ -70,7 +69,6 @@ export {
   getCommandCenterStatus,
   validateContract,
   type CommandCenterBootReport,
-  type PurgePlanReport,
 } from "./command-center-bootstrap";
 
 export {

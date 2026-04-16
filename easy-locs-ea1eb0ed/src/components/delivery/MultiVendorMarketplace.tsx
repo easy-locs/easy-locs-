@@ -28,14 +28,7 @@ interface Product {
 
 interface CartItem extends Product { qty: number }
 
-const PRODUCTS: Product[] = [
-  { id: "p1", name: "Smartphone Samsung A54", price: 185000, seller: "TechShop DK", sellerId: "s1", zone: "Dakar Centre", rating: 4.7, stock: 15, category: "Tech", image: "📱" },
-  { id: "p2", name: "Casque JBL Tune 520BT", price: 28000, seller: "AudioPro", sellerId: "s3", zone: "Médina", rating: 4.5, stock: 32, category: "Audio", image: "🎧" },
-  { id: "p3", name: "Nike Air Max 90", price: 52000, seller: "Fashion Store", sellerId: "s2", zone: "Plateau", rating: 4.3, stock: 8, category: "Mode", image: "👟" },
-  { id: "p4", name: "Sac Samsonite Pro", price: 45000, seller: "BagStore", sellerId: "s4", zone: "Parcelles", rating: 4.1, stock: 12, category: "Bags", image: "🎒" },
-  { id: "p5", name: "Montre Xiaomi Band 8", price: 18000, seller: "TechShop DK", sellerId: "s1", zone: "Dakar Centre", rating: 4.6, stock: 25, category: "Tech", image: "⌚" },
-  { id: "p6", name: "T-shirt Adidas Original", price: 15000, seller: "Fashion Store", sellerId: "s2", zone: "Plateau", rating: 4.2, stock: 40, category: "Mode", image: "👕" },
-];
+const PRODUCTS: Product[] = [];
 
 export default function MultiVendorMarketplace({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"catalog" | "cart" | "routing">("catalog");

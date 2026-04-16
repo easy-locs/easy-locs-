@@ -48,25 +48,11 @@ interface Insurer {
   activePolicies: number;
 }
 
-const POLICIES: Policy[] = [
-  { id: "p1", name: "Protection Colis Standard", provider: "AXA Assurance", coverage: "Dommage, perte, vol", maxAmount: 500000, premium: 15000, currency: "XOF", status: "active", autoRenew: true, coveredItems: ["Colis < 20kg", "Fragile", "Électronique"] },
-  { id: "p2", name: "Assurance Flotte", provider: "Allianz Sénégal", coverage: "Accident véhicule, tiers", maxAmount: 5000000, premium: 85000, currency: "XOF", status: "active", autoRenew: true, coveredItems: ["Scooters", "Vélos cargo", "Vans"] },
-  { id: "p3", name: "Responsabilité Civile Pro", provider: "NSIA Assurance", coverage: "RC professionnelle", maxAmount: 10000000, premium: 120000, currency: "XOF", status: "active", autoRenew: false, coveredItems: ["Blessure tiers", "Dommage propriété"] },
-  { id: "p4", name: "Protection Premium", provider: "AXA Assurance", coverage: "Tous risques", maxAmount: 2000000, premium: 45000, currency: "XOF", status: "pending", autoRenew: true, coveredItems: ["Haute valeur", "International", "Express"] },
-];
+const POLICIES: Policy[] = [];
 
-const CLAIMS: Claim[] = [
-  { id: "c1", policyId: "p1", type: "Dommage colis", description: "Colis électronique endommagé pendant transport", amount: 125000, currency: "XOF", status: "approved", filedAt: new Date(Date.now() - 604800000), resolvedAt: new Date(Date.now() - 172800000), evidence: ["photo_damage.jpg", "receipt.pdf"], jobId: "job-847" },
-  { id: "c2", policyId: "p2", type: "Accident véhicule", description: "Scooter EV-01 collision mineure", amount: 350000, currency: "XOF", status: "under_review", filedAt: new Date(Date.now() - 259200000), resolvedAt: null, evidence: ["photo_scooter.jpg", "police_report.pdf"], jobId: "job-839" },
-  { id: "c3", policyId: "p1", type: "Perte colis", description: "Colis non livré — introuvable", amount: 78000, currency: "XOF", status: "paid", filedAt: new Date(Date.now() - 1209600000), resolvedAt: new Date(Date.now() - 864000000), evidence: ["tracking_log.pdf"], jobId: "job-812" },
-  { id: "c4", policyId: "p3", type: "Dommage tiers", description: "Chute produit sur client", amount: 50000, currency: "XOF", status: "rejected", filedAt: new Date(Date.now() - 1814400000), resolvedAt: new Date(Date.now() - 1728000000), evidence: ["photo.jpg"], jobId: "job-798" },
-];
+const CLAIMS: Claim[] = [];
 
-const INSURERS: Insurer[] = [
-  { name: "AXA Assurance", rating: 4.5, claimSpeed: 5, approvalRate: 87, activePolicies: 2 },
-  { name: "Allianz Sénégal", rating: 4.2, claimSpeed: 7, approvalRate: 82, activePolicies: 1 },
-  { name: "NSIA Assurance", rating: 4.0, claimSpeed: 10, approvalRate: 78, activePolicies: 1 },
-];
+const INSURERS: Insurer[] = [];
 
 export default function InsuranceClaims({ orgId, className }: { orgId: string; className?: string }) {
   const [view, setView] = useState<"policies" | "claims" | "insurers">("policies");
