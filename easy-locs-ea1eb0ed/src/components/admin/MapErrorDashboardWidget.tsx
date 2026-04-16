@@ -1,6 +1,9 @@
 import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip as UiTooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -385,6 +388,7 @@ export default function MapErrorDashboardWidget() {
               <p className="text-sm text-muted-foreground">No component data in this time range</p>
             </div>
           ) : (
+            <TooltipProvider>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
@@ -435,15 +439,22 @@ export default function MapErrorDashboardWidget() {
                       <td className="px-3 py-2 font-medium text-foreground">{row.component}</td>
                       <td className="px-3 py-2 text-foreground">{row.totalErrors}</td>
                       <td className="px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-accent rounded-full transition-all"
-                              style={{ width: `${Math.min(row.percentShare, 100)}%` }}
-                            />
-                          </div>
-                          <span className="text-foreground text-xs tabular-nums">{row.percentShare}%</span>
-                        </div>
+                        <UiTooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex items-center gap-2 cursor-default">
+                              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-accent rounded-full transition-all"
+                                  style={{ width: `${Math.min(row.percentShare, 100)}%` }}
+                                />
+                              </div>
+                              <span className="text-foreground text-xs tabular-nums">{row.percentShare}%</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <span className="text-xs">{row.totalErrors} of {totalErrors} total errors</span>
+                          </TooltipContent>
+                        </UiTooltip>
                       </td>
                       <td className="px-3 py-2 text-foreground">{row.errorRate}/min</td>
                       <td className="px-3 py-2 text-muted-foreground">{relativeTime(row.lastError)}</td>
@@ -461,6 +472,7 @@ export default function MapErrorDashboardWidget() {
                 </tbody>
               </table>
             </div>
+            </TooltipProvider>
           )}
         </CardContent>
       </Card>
