@@ -25,6 +25,7 @@ const TABLE_TO_MODULE: Record<string, OrbitModule> = {
   bookings: "business",
   transactions: "business",
   deal_rooms: "business",
+  agent_command_history: "business",
 };
 
 // Map table+eventType to platformBus events for canonical bridge propagation
@@ -45,6 +46,9 @@ const TABLE_TO_PLATFORM_EVENT: Record<string, Record<string, string>> = {
   bookings: {
     INSERT: "marketplace:booking_created",
     UPDATE: "marketplace:booking_confirmed",
+  },
+  agent_command_history: {
+    INSERT: "agent:chief_completed",
   },
 };
 

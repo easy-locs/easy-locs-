@@ -22,7 +22,8 @@ type TableName =
   | "bookings"
   | "concierge_orders"
   | "deal_rooms"
-  | "conversations_v2";
+  | "conversations_v2"
+  | "agent_command_history";
 
 type EventType = "INSERT" | "UPDATE" | "DELETE" | "*";
 
@@ -288,6 +289,8 @@ class RealtimeManager {
       { table: "deal_rooms", filter: this.orgId ? `org_id=eq.${this.orgId}` : undefined },
       // conversations_v2: V2 canonical conversations
       { table: "conversations_v2" },
+      // agent_command_history: super_admin command logs
+      { table: "agent_command_history", filter: `user_id=eq.${this.userId}` },
     ];
 
     let ch = createRealtimeChannel(`rt:user:${this.userId}`);

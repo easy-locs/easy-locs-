@@ -14,6 +14,7 @@ import { LazyMotion, domAnimation } from "framer-motion";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { I18nProvider } from "@/lib/i18n";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
+import SuperAdminGate from "@/components/auth/SuperAdminGate";
 
 // ── Shell & system (critical — loaded eagerly for app tree) ──
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
@@ -437,6 +438,7 @@ const {
   AdminMapErrorDashboardPage,
   StatementDashboardPage,
   DeveloperPortalDocs,
+  CommandCenterPage,
 } = Pages;
 
 const RewardsHubPage = lazy(() => import("@/pages/RewardsHubPage"));
@@ -1096,6 +1098,7 @@ const App = () => (
                   <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/super-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/admin/command-center" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><CommandCenterPage /></FeatureErrorBoundary></SuperAdminGate>} />
 
                   {/* ══ Internal Labs ══ */}
                   <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />

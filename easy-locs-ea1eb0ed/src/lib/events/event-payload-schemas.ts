@@ -317,6 +317,25 @@ export interface ColonCanonicalEventMap {
   "support:session_resolved": Record<string, unknown>;
   "support:payment_anomaly_detected": Record<string, unknown>;
   "support:agents_started": Record<string, unknown>;
+  "agent:chief_started": AgentEventPayload;
+  "agent:chief_completed": AgentEventPayload;
+  "agent:subtask_started": AgentEventPayload;
+  "agent:subtask_completed": AgentEventPayload;
+  "agent:status_changed": AgentStatusPayload;
+}
+
+export interface AgentEventPayload {
+  correlationId: string;
+  agentName?: string;
+  command?: string;
+  timestamp: number;
+}
+
+export interface AgentStatusPayload {
+  agentName: string;
+  status: string;
+  correlationId?: string;
+  timestamp: number;
 }
 
 export interface PropertyBookingCompletedPayload {

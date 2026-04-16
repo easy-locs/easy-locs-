@@ -1053,3 +1053,15 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Background Agents**: `src/lib/support/agents/` — shop-monitor-agent (quality scoring), learning-agent (pattern detection), payment-anomaly-agent (fraud detection). Per-agent intervals: shop 30min, payment 15min, learning 60min
 - **DB Migration**: `supabase/migrations/20260418200000_orbit_ai_support_tables.sql` — support_sessions, support_messages, support_traces, shop_quality_scores, shop_quality_events, support_learning_insights, orbit_notifications. RLS enabled with user-scoped policies
 - **Platform Bus Events**: `support:session_created`, `support:ai_classification`, `support:shop_transfer_initiated/timeout`, `support:escalation_triggered`, `support:ticket_created`, `support:session_resolved`, `support:payment_anomaly_detected`, `support:agents_started`
+
+## Chief Agent Console — Unified Command Center (Task #697)
+- **Route**: `/admin/command-center` — accessible only to `super_admin` role via `SuperAdminGate` component
+- **Edge Function**: `supabase/functions/chief-agent/index.ts` — receives natural language commands, verifies `super_admin` role server-side via `has_role` RPC, uses `_shared/ai-router.ts` for LLM interpretation (OpenAI → Anthropic fallback), dispatches to real backend services (sentinel-server, command-center-api, health-check) in parallel, synthesizes results via second LLM pass, returns structured JSON responses with real execution data. Logs telemetry to `sentinel_telemetry` table
+- **SuperAdminGate**: `src/components/auth/SuperAdminGate.tsx` — standalone gate component checking `super_admin` role, separate from existing `AdminGate`. Redirects non-super-admins to `/dashboard`
+- **Command Center UI**: `src/pages/admin/CommandCenterPage.tsx` — mobile-first chat interface. Clean messaging app feel. Structured response cards with severity badges (green/yellow/red), smart action buttons (Run check, Retry, Fix now, Show details, Notify, Escalate), follow-up suggestion chips, collapsible technical details. Sentinel telemetry integration via `sentinelTelemetryEngine.emit`. Realtime subscription via `db.channel` for cross-device command history sync. Desktop: optional agent status sidebar. Mobile: full-screen chat
+- **Navigation Visibility**: Command Center entry in AdminMasterControlPage is only visible to `super_admin` users (checked via `hasRole`)
+- **Zustand Store**: `src/stores/chief-agent-store.ts` — manages messages, agent statuses, command history, sidebar/history panel state
+- **Command History**: `agent_command_history` table with RLS restricted to `super_admin` only. Searchable history panel with conversation replay
+- **Platform Bus Events**: `agent:chief_started`, `agent:chief_completed`, `agent:subtask_started`, `agent:subtask_completed`, `agent:status_changed` — registered in APP_EVENTS and ColonCanonicalEventMap
+- **DB Migration**: `supabase/migrations/20260416800000_agent_command_history.sql`
+- **Audit Logging**: Every command logged with user_id, interpreted_intent, agents_used, result_summary, detailed_log, correlation_id via the chief-agent Edge Function
