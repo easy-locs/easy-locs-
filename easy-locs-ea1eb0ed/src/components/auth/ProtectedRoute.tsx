@@ -52,7 +52,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   if (loading) return <InlineSkeleton />;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (!profileLoaded) return <InlineSkeleton />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   signInWithPassword, signInWithOtp, verifyEmailOtp,
@@ -96,6 +96,7 @@ const Login = () => {
   const [phoneActivatedUserId, setPhoneActivatedUserId] = useState<string | null>(null);
   const [showContactSync, setShowContactSync] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { t } = useI18n();
   const [biometricLoginAvailable, setBiometricLoginAvailable] = useState(false);
@@ -122,14 +123,24 @@ const Login = () => {
 
     authLog("LOGIN_SESSION_DETECTED", { traceId, userId });
 
-    const destination = await getPostLoginRoute(userId);
-    authLog("LOGIN_REDIRECT_STARTED", { traceId, destination });
+    const fromState = (location.state as { from?: { pathname?: string; search?: string; hash?: string } } | null)?.from;
+    const fromPath = fromState?.pathname
+      ? `${fromState.pathname}${fromState.search ?? ""}${fromState.hash ?? ""}`
+      : null;
+    const isSafeFrom = !!fromPath
+      && fromPath.startsWith("/")
+      && !fromPath.startsWith("//")
+      && fromPath !== "/login";
+
+    const roleHome = await getPostLoginRoute(userId);
+    const destination = isSafeFrom ? fromPath! : roleHome;
+    authLog("LOGIN_REDIRECT_STARTED", { traceId, destination, fromState: !!isSafeFrom });
 
     hasRedirected.current = true;
     navigate(destination, { replace: true });
 
     authLog("LOGIN_REDIRECT_COMPLETED", { traceId, destination });
-  }, [navigate]);
+  }, [navigate, location.state]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
