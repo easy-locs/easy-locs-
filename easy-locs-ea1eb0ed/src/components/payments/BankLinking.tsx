@@ -72,8 +72,8 @@ export default function BankLinking({ onTopUpSuccess }: BankLinkingProps) {
     }
   };
 
-  const handleUnlink = async (accountId: string) => {
-    const result = await unlinkAccount(accountId);
+  const handleUnlink = async (itemId: string) => {
+    const result = await unlinkAccount(itemId);
     if (result.ok) {
       toast.success(t("bank.unlinked") || "Account removed");
       loadAccounts();
@@ -85,9 +85,12 @@ export default function BankLinking({ onTopUpSuccess }: BankLinkingProps) {
     const amount = parseFloat(topUpAmount);
     if (isNaN(amount) || amount <= 0) return;
 
+    const account = accounts.find((a) => a.id === selectedAccount);
+    if (!account) return;
+
     setTransferring(selectedAccount);
     try {
-      const result = await initiateAchTransfer(selectedAccount, amount);
+      const result = await initiateAchTransfer(account.plaidAccountId, amount, "USD", account.itemId);
       if (result.ok) {
         toast.success(`${formatMoney(amount, "USD")} transferred to wallet`);
         onTopUpSuccess?.(amount);
@@ -164,7 +167,7 @@ export default function BankLinking({ onTopUpSuccess }: BankLinkingProps) {
                   <p className="text-[10px] text-muted-foreground capitalize">{account.accountType}</p>
                 </div>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleUnlink(account.id); }}
+                  onClick={(e) => { e.stopPropagation(); handleUnlink(account.itemId); }}
                   className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

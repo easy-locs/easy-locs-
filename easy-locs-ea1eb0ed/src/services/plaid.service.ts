@@ -11,6 +11,7 @@ export interface LinkedBankAccount {
   currency: string;
   linkedAt: string;
   plaidAccountId: string;
+  itemId: string;
 }
 
 export interface PlaidLinkTokenResponse {
@@ -38,8 +39,6 @@ export interface IncomeVerificationResult {
   confidence: "high" | "medium" | "low";
 }
 
-const linkedAccounts = new Map<string, LinkedBankAccount[]>();
-
 async function getCurrentUserId(): Promise<string | null> {
   const { data } = await supabase.auth.getSession();
   return data?.session?.user?.id ?? null;
@@ -50,7 +49,7 @@ export async function createLinkToken(): Promise<PlaidLinkTokenResponse> {
   if (!userId) throw new Error("Not authenticated");
 
   const { data, error } = await db.functions.invoke("plaid-link-token", {
-    body: { action: "create_link_token", user_id: userId },
+    body: { action: "create_link_token" },
   });
   if (error) throw new Error("Failed to create Plaid link token");
   return {
@@ -66,32 +65,45 @@ export async function exchangePublicToken(
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const { data, error } = await db.functions.invoke("plaid-link-token", {
+  const { data: exchangeData, error: exchangeError } = await db.functions.invoke("plaid-link-token", {
     body: {
       action: "exchange_public_token",
       publicToken,
-      user_id: userId,
-      institution_name: institutionName,
     },
   });
-  if (error) {
+  if (exchangeError || !(exchangeData?.itemId || exchangeData?.item_id)) {
     return { ok: false, error: "Failed to exchange token with Plaid" };
   }
 
-  const accounts: LinkedBankAccount[] = (data.accounts || []).map((a: Record<string, unknown>) => ({
-    id: `bank_${crypto.randomUUID()}`,
-    institutionName,
-    accountName: (a.name as string) || "Account",
-    accountMask: (a.mask as string) || "****",
-    accountType: a.subtype === "savings" ? "savings" : "checking",
-    balance: (a.balances as Record<string, unknown>)?.current ?? 0,
-    currency: (a.balances as Record<string, unknown>)?.iso_currency_code ?? "USD",
-    linkedAt: new Date().toISOString(),
-    plaidAccountId: a.account_id as string,
-  }));
+  const itemId = exchangeData.itemId || exchangeData.item_id;
 
-  const existing = linkedAccounts.get(userId) || [];
-  linkedAccounts.set(userId, [...existing, ...accounts]);
+  const { data: accountsData, error: accountsError } = await db.functions.invoke("plaid-link-token", {
+    body: {
+      action: "get_accounts",
+      itemId,
+    },
+  });
+
+  if (accountsError || !accountsData?.accounts) {
+    return { ok: false, error: "Token exchanged but failed to fetch account details. Please try again." };
+  }
+
+  const accounts: LinkedBankAccount[] = (accountsData.accounts || []).map((a: Record<string, unknown>) => {
+    const balances = (a.balances ?? {}) as Record<string, unknown>;
+    const accountId = (a.id ?? a.account_id) as string;
+    return {
+      id: accountId,
+      institutionName,
+      accountName: (a.name as string) || (a.officialName as string) || "Account",
+      accountMask: (a.mask as string) || "****",
+      accountType: a.subtype === "savings" ? "savings" as const : "checking" as const,
+      balance: (balances.current ?? balances.available ?? 0) as number,
+      currency: (balances.currency ?? balances.iso_currency_code ?? "USD") as string,
+      linkedAt: new Date().toISOString(),
+      plaidAccountId: accountId,
+      itemId,
+    };
+  });
 
   return { ok: true, accounts };
 }
@@ -99,16 +111,57 @@ export async function exchangePublicToken(
 export async function getLinkedAccounts(): Promise<LinkedBankAccount[]> {
   const userId = await getCurrentUserId();
   if (!userId) return [];
-  return linkedAccounts.get(userId) || [];
+
+  const { data, error } = await db.from("plaid_items")
+    .select("item_id, created_at")
+    .eq("user_id", userId);
+
+  if (error || !data?.length) return [];
+
+  const allAccounts: LinkedBankAccount[] = [];
+
+  for (const item of data) {
+    try {
+      const { data: accountsData, error: accountsError } = await db.functions.invoke("plaid-link-token", {
+        body: { action: "get_accounts", itemId: item.item_id },
+      });
+      if (accountsError || !accountsData?.accounts) continue;
+
+      const accounts: LinkedBankAccount[] = accountsData.accounts.map((a: Record<string, unknown>) => {
+        const balances = (a.balances ?? {}) as Record<string, unknown>;
+        const accountId = (a.id ?? a.account_id) as string;
+        return {
+          id: accountId,
+          institutionName: "Bank",
+          accountName: (a.name as string) || (a.officialName as string) || "Account",
+          accountMask: (a.mask as string) || "****",
+          accountType: a.subtype === "savings" ? "savings" as const : "checking" as const,
+          balance: (balances.current ?? balances.available ?? 0) as number,
+          currency: (balances.currency ?? balances.iso_currency_code ?? "USD") as string,
+          linkedAt: item.created_at,
+          plaidAccountId: accountId,
+          itemId: item.item_id,
+        };
+      });
+      allAccounts.push(...accounts);
+    } catch {
+      continue;
+    }
+  }
+
+  return allAccounts;
 }
 
 export async function unlinkAccount(accountId: string): Promise<{ ok: boolean; error?: string }> {
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
 
-  const accounts = linkedAccounts.get(userId) || [];
-  const filtered = accounts.filter((a) => a.id !== accountId);
-  linkedAccounts.set(userId, filtered);
+  const { error } = await db.from("plaid_items")
+    .delete()
+    .eq("user_id", userId)
+    .eq("item_id", accountId);
+
+  if (error) return { ok: false, error: "Failed to unlink account" };
   return { ok: true };
 }
 
@@ -116,31 +169,40 @@ export async function initiateAchTransfer(
   accountId: string,
   amount: number,
   currency = "USD",
+  itemId?: string,
 ): Promise<AchTransferResult> {
   const userId = await getCurrentUserId();
   if (!userId) return { ok: false, error: "Not authenticated" };
-
-  const accounts = linkedAccounts.get(userId) || [];
-  const account = accounts.find((a) => a.id === accountId);
-  if (!account) return { ok: false, error: "Account not found" };
   if (amount <= 0) return { ok: false, error: "Invalid amount" };
-  if (amount > account.balance) return { ok: false, error: "Insufficient bank balance" };
+
+  if (!itemId) {
+    const { data: items } = await db.from("plaid_items")
+      .select("item_id")
+      .eq("user_id", userId)
+      .limit(1)
+      .single();
+    if (!items) return { ok: false, error: "No linked bank account found" };
+    itemId = items.item_id;
+  }
 
   const { data, error } = await db.functions.invoke("plaid-link-token", {
     body: {
       action: "create_ach_transfer",
-      user_id: userId,
-      accountId: account.plaidAccountId,
+      itemId,
+      accountId,
       amount,
-      currency,
+      description: `Easy-Locs wallet top-up (${currency})`,
     },
   });
   if (error) {
     return { ok: false, error: "ACH transfer failed. Please try again." };
   }
 
-  account.balance -= amount;
-  return { ok: true, transferId: data.transferId || data.transfer_id, amount };
+  return {
+    ok: true,
+    transferId: data.transferId || data.transfer_id,
+    amount: data.amount ?? amount,
+  };
 }
 
 export async function verifyIncome(): Promise<IncomeVerificationResult> {
@@ -148,7 +210,7 @@ export async function verifyIncome(): Promise<IncomeVerificationResult> {
   if (!userId) return { verified: false, confidence: "low" };
 
   const { data, error } = await db.functions.invoke("plaid-link-token", {
-    body: { action: "verify_income", user_id: userId },
+    body: { action: "verify_income" },
   });
   if (error) {
     return { verified: false, confidence: "low" };
@@ -162,7 +224,5 @@ export async function verifyIncome(): Promise<IncomeVerificationResult> {
 }
 
 export async function refreshAccountBalances(): Promise<LinkedBankAccount[]> {
-  const userId = await getCurrentUserId();
-  if (!userId) return [];
-  return linkedAccounts.get(userId) || [];
+  return getLinkedAccounts();
 }

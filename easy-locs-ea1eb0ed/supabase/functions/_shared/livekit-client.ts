@@ -169,3 +169,8 @@ export async function listRooms(): Promise<RoomInfo[]> {
 export function getLiveKitUrl(): string {
   return getLiveKitCredentials().url;
 }
+
+export function getLiveKitWsUrl(): string {
+  const url = getLiveKitCredentials().url;
+  return url.replace(/^https:\/\//, "wss://").replace(/^http:\/\//, "ws://");
+}

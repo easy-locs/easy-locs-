@@ -32,17 +32,23 @@ interface UseLiveKitRoomOptions {
   onParticipantLeft?: (participantId: string) => void;
 }
 
+interface LiveKitTokenResult {
+  token: string;
+  livekitUrl?: string;
+}
+
 async function fetchLiveKitToken(
   userId: string,
   roomName: string,
   userName?: string,
-): Promise<string | null> {
+): Promise<LiveKitTokenResult | null> {
   try {
     const { data, error } = await db.functions.invoke("livekit-room-token", {
       body: { action: "join_room", roomName, participantName: userName || userId },
     });
     if (error) throw error;
-    return data?.token ?? null;
+    if (!data?.token) return null;
+    return { token: data.token, livekitUrl: data.livekitUrl };
   } catch {
     return null;
   }
@@ -78,9 +84,9 @@ export function useLiveKitRoom(options: UseLiveKitRoomOptions) {
     setState((s) => ({ ...s, connecting: true, error: null }));
 
     try {
-      const token = await fetchLiveKitToken(userId, roomName);
-      if (!token) throw new Error("Failed to obtain room token");
-      tokenRef.current = token;
+      const tokenResult = await fetchLiveKitToken(userId, roomName);
+      if (!tokenResult) throw new Error("Failed to obtain room token");
+      tokenRef.current = tokenResult.token;
 
       let Room: any;
       try {
@@ -156,8 +162,12 @@ export function useLiveKitRoom(options: UseLiveKitRoomOptions) {
         setState((s) => ({ ...s, error: null }));
       });
 
-      const wsUrl = import.meta.env.VITE_LIVEKIT_WS_URL || "wss://livekit.example.com";
-      await room.connect(wsUrl, token);
+      const rawUrl = tokenResult.livekitUrl || import.meta.env.VITE_LIVEKIT_WS_URL;
+      if (!rawUrl) {
+        throw new Error("LiveKit WebSocket URL not configured. Set VITE_LIVEKIT_WS_URL.");
+      }
+      const wsUrl = rawUrl.replace(/^https:\/\//, "wss://").replace(/^http:\/\//, "ws://");
+      await room.connect(wsUrl, tokenResult.token);
 
       const localP: LiveKitParticipant = {
         id: room.localParticipant?.identity || userId,
