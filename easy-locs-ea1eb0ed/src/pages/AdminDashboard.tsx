@@ -15,6 +15,7 @@ const CacheMetricsWidget = lazy(() => import("@/components/dashboard/CacheMetric
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
 const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
 const WorkflowExecutionPanel = lazy(() => import("@/components/admin/WorkflowExecutionPanel").then(m => ({ default: m.WorkflowExecutionPanel })));
+const SearchSyncStatusWidget = lazy(() => import("@/components/admin/SearchSyncStatusWidget"));
 
 interface Stats {
   totalUsers: number;
@@ -430,6 +431,9 @@ const AdminDashboard = () => {
             {/* Health Tab */}
             {activeTab === "health" && (
               <div className="space-y-6">
+                <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading search sync status…</div>}>
+                  <SearchSyncStatusWidget />
+                </Suspense>
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading prayer health…</div>}>
                   <PrayerCronHealthWidget />
                 </Suspense>

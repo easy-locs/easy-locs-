@@ -1650,6 +1650,9 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - Sort: price_asc/desc, rating, newest
 - Graceful fallback: Meilisearch → search-global FTS → client-side
 - Bulk sync via `sync-meilisearch` edge function (shops, products, properties, services, profiles)
+- Automated incremental sync via `sync-meilisearch-cron` edge function (every 15 min via pg_cron + dispatcher)
+- Near-real-time indexing via `search_sync_queue` table with DB triggers on all indexed tables
+- Sync history tracked in `search_sync_log` table; visible in admin dashboard Health tab (`SearchSyncStatusWidget`)
 - Supabase secrets: `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`
 - Setup: `./scripts/setup-integrations.sh set-meili`
 - Post-deploy sync: `supabase functions invoke sync-meilisearch --body '{}'`
