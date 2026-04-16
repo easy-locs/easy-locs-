@@ -9,6 +9,7 @@ import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
+import LeafletFallbackMap from "@/components/map/LeafletFallbackMap";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { useMapRetry } from "@/hooks/map/useMapRetry";
 import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
@@ -796,6 +797,21 @@ export default memo(function UnifiedMap({
   }, [mapReady, radarOverlay, weather.isRaining]);
 
   if (mapError) {
+    const isWebGLError = mapError.toLowerCase().includes("3d") || mapError.toLowerCase().includes("webgl");
+    if (isWebGLError) {
+      return (
+        <LeafletFallbackMap
+          entities={entities}
+          userLat={userLat ?? center?.[1] ?? 25.2}
+          userLng={userLng ?? center?.[0] ?? 55.27}
+          showUserLocation={showUserLocation}
+          selectedId={selectedId}
+          onSelectEntity={onSelectEntity}
+          className={`rounded-2xl overflow-hidden ${className}`}
+          radiusKm={radiusKm}
+        />
+      );
+    }
     return (
       <MapErrorFallback
         message={mapError}

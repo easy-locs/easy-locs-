@@ -468,6 +468,7 @@ function useBootProgress() {
 export default function SplashScreen({ children }: { children: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === "undefined") return false;
+    if (import.meta.env.DEV) return false;
     try {
       return !sessionStorage.getItem("el_splash_shown");
     } catch {
