@@ -4,6 +4,7 @@
  */
 import { ENTITY_ICON_MAP, iconPin } from "./easy-locs-icons";
 import { MARKER_COLORS } from "@/config/colors";
+import { safeSetHtml } from "@/lib/utils/sanitize-html";
 
 export type PresenceMode = "off" | "pin" | "live";
 export type EntityType = "fixed_store" | "mobile_seller" | "mobile_service" | "driver";
@@ -109,7 +110,7 @@ export function createMarkerElement(
     position: relative;
     filter: drop-shadow(0 3px 8px ${style.color}44);
   `;
-  el.innerHTML = style.icon;
+  safeSetHtml(el, style.icon);
 
   // Glow ring for all markers
   const glow = document.createElement("div");

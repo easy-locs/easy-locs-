@@ -9,6 +9,7 @@ import {
 import { findTinyTapTargets, findDottedLabels, findUntranslatedKeys, titleize } from "@/lib/ui-engine/utils";
 import { findBrokenCards } from "@/lib/ui-engine/utils";
 import { runTextAudit, autoFixTextFindings } from "@/lib/ui-engine/textAudit";
+import { safeSetOuterHtml } from "@/lib/utils/sanitize-html";
 
 export type RepairOperationType = "invalidate" | "refresh" | "reset" | "reconnect" | "fallback" | "suppress";
 
@@ -84,7 +85,7 @@ function recordDomSnapshot(el: HTMLElement): void {
 function restoreDomSnapshot(el: HTMLElement): boolean {
   const snapshot = domSnapshotMap.get(el);
   if (snapshot) {
-    el.outerHTML = snapshot;
+    safeSetOuterHtml(el, snapshot);
     return true;
   }
   return false;
