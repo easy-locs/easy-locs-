@@ -297,6 +297,15 @@ export default defineConfig(({ mode }) => ({
       "jspdf",
       "html2canvas",
       "@capacitor/app",
+      "@capacitor/camera",
+      "@capacitor/haptics",
+      "@capacitor/keyboard",
+      "@capacitor/network",
+      "@capacitor/push-notifications",
+      "@capacitor/splash-screen",
+      "@capacitor/status-bar",
+      "@nicepkg/capacitor-nfc",
+      "tesseract.js",
     ],
   },
   resolve: {
@@ -335,7 +344,18 @@ export default defineConfig(({ mode }) => ({
       },
     },
     rollupOptions: {
-      external: ["@capacitor/filesystem", "@capacitor/app"],
+      external: [
+        "@capacitor/filesystem",
+        "@capacitor/app",
+        "@capacitor/camera",
+        "@capacitor/haptics",
+        "@capacitor/keyboard",
+        "@capacitor/network",
+        "@capacitor/push-notifications",
+        "@capacitor/splash-screen",
+        "@capacitor/status-bar",
+        "@nicepkg/capacitor-nfc",
+      ],
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
@@ -349,6 +369,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("html2canvas")) return "vendor-html2canvas";
             if (id.includes("jsqr") || id.includes("html5-qrcode")) return "vendor-qr";
             if (id.includes("react-markdown")) return "vendor-markdown";
+            if (id.includes("tesseract")) return "vendor-ocr";
             if (id.includes("posthog")) return "vendor-analytics";
             if (id.includes("@sentry")) return "vendor-sentry";
             if (id.includes("framer-motion")) return "vendor-motion";

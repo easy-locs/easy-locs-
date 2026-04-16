@@ -399,7 +399,6 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `command-center-api` — RESTful API for engine governance: GET status, POST approve-repair, POST quarantine, POST release, GET history, GET agents, GET events
 - `prayer-push-cron` — Scans `prayer_push_schedules` every 60s, sends push notifications for prayers within a 2-minute window. Dedicated pg_cron job (`prayer-push-cron-direct`) calls it every minute via `pg_net`, bypassing the 5-minute dispatcher cycle. Health check (`prayer-push-cron-health`) runs every 15 minutes and alerts via `server_events` on consecutive failures. **Retry logic**: Failed sends are tracked via `prayer_send_states` JSONB column with claimed/sent/failed states; failed prayers are retried on subsequent cron cycles up to `max_retry_count` (default 3). Stale claims (>5min) are automatically reclaimed. State transitions use `mark_prayer_sent`/`mark_prayer_failed` DB functions with guarded updates (only transitions from 'claimed' state).
 
-<<<<<<< HEAD
 ### Unified Cron Response Reconciliation (migration: `20260417100000_unified_cron_response_reconciliation.sql`)
 - `monitored_http_dispatch(job_name, endpoint, body, requires_auth)` — Generic reusable wrapper for all pg_net cron dispatches. Logs to `cron_execution_log`, stores `pg_net_request_id` in metadata, sends failures to DLQ. All pg_net cron jobs (prayer-push, job-runner, dlq-processor, watchdog, email-queue, etc.) now use this function
 - `monitored_prayer_push_cron()` — Thin wrapper that delegates to `monitored_http_dispatch('prayer-push-cron', 'prayer-push-cron')` for backward compatibility
@@ -408,13 +407,6 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `check_prayer_cron_health()` — Backward-compat thin wrapper around `check_cron_dispatch_health('prayer-push-cron')`
 - pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `cron-response-reconcile` (every 2 minutes — replaces prayer-push-reconcile)
 - All 11 pg_net cron dispatches now flow through `monitored_http_dispatch`: autonomous-cron-dispatcher, dlq-processor, watchdog-ping, job-queue-worker, cache-manager-refresh, backup-storage-nightly, external-health-check, email-queue-process, process-job-queue, expire-pending-referrals, cleanup-orphan-media
-=======
-### Prayer Push Cron Infrastructure (migration: `20260416800000_prayer_push_cron_schedule.sql`, `20260416900000_prayer_push_response_reconciliation.sql`, `20260417100000_prayer_push_retry_states.sql`)
-- `monitored_prayer_push_cron()` — Wrapper that logs to `cron_execution_log` and sends failures to DLQ. Stores `pg_net_request_id` in metadata for response reconciliation
-- `reconcile_prayer_push_responses()` — Checks `net._http_response` for completed prayer-push-cron dispatches, updates `cron_execution_log` status from 'success' to 'failure' when Edge Function returns non-2xx, fires `server_events` alerts and DLQ entries on Edge Function errors
-- `check_prayer_cron_health()` — Returns health status (healthy/warning/degraded/critical) based on consecutive failures and 24h failure rate; includes `edge_function_failures_24h` count; inserts `server_events` alerts on degraded/critical
-- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `prayer-push-reconcile` (every 2 minutes)
->>>>>>> 5dbec7d68 (Add retry logic for failed prayer push notifications (Task #429))
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle
@@ -2128,6 +2120,90 @@ Human-facing command layer connecting the project owner to the agent team:
   - **Search**: Popular search queries with counts and recency
   - **Client Logs**: Domain-level log aggregation from structured logger buffer, error breakdown
 - **Auto-Refresh**: 60-second polling with manual refresh button
+
+## Strategic SDK Integrations (Task #451)
+15 SDKs integrated across Edge Functions, client-side libs, and Capacitor plugins:
+
+### AI Multi-Model Resilience
+- **AI Router**: `supabase/functions/_shared/ai-router.ts` — OpenAI-first with Anthropic failover (8s timeout, auto-retry on 429/5xx); normalizes response format across providers
+- **Updated Functions**: `ai-assistant`, `ai-shopping-chat`, `ai-entity-enrichment` all use ai-router instead of direct OpenAI calls
+- **Env Vars**: `OPENAI_API_KEY` (existing), `ANTHROPIC_API_KEY` (new, optional — at least one required)
+
+### Voice AI (Deepgram + ElevenLabs)
+- **Deepgram STT**: `src/lib/voice/deepgram-client.ts` — Real-time WebSocket streaming speech-to-text; gets temporary token from `voice-stt-token` Edge Function (no client-side API key)
+- **ElevenLabs TTS**: `src/lib/voice/elevenlabs-client.ts` — Natural text-to-speech proxied through `voice-tts` Edge Function (no client-side API key)
+- **Edge Proxies**: `supabase/functions/voice-tts/index.ts` (streams audio), `supabase/functions/voice-stt-token/index.ts` (issues 5-min temporary Deepgram keys)
+- **TTS Engine**: `src/lib/islamic/tts-engine.ts` — Updated to try ElevenLabs first, falls back to Web Speech API; `setTTSProvider()` / `getTTSProvider()` toggle
+- **Env Vars** (server-side only): `DEEPGRAM_API_KEY`, `ELEVENLABS_API_KEY`
+
+### pgvector + Embedding Pipeline
+- **Embedding Client**: `supabase/functions/_shared/embedding-client.ts` — OpenAI text-embedding-3-small (1536 dims) with batch support
+- **Vector Embed Function**: `supabase/functions/vector-embed/index.ts` — Edge Function to embed and upsert content into pgvector-backed tables
+- **Client Search**: `src/lib/vector/vector-search.ts` — Semantic search helper calling Supabase RPC with configurable similarity threshold
+
+### Video Infrastructure (Mux + LiveKit)
+- **Mux Client**: `supabase/functions/_shared/mux-client.ts` — Asset creation, signed playback tokens, webhook signature verification
+- **LiveKit Client**: `supabase/functions/_shared/livekit-client.ts` — Room token generation with configurable grants
+- **LiveKit Room Token**: `supabase/functions/livekit-room-token/index.ts` — Edge Function for authenticated room token generation
+- **Client Libs**: `src/lib/video/mux-player.ts` (playback URL builder), `src/lib/video/livekit-room.ts` (room connection manager)
+- **Env Vars**: `MUX_TOKEN_ID`, `MUX_TOKEN_SECRET`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_URL`
+
+### Bank Linking (Plaid)
+- **Link Token**: `supabase/functions/plaid-link-token/index.ts` — Creates Plaid Link tokens for bank account connection
+- **Client Lib**: `src/lib/banking/plaid-client.ts` — Link initialization, token exchange, account retrieval
+- **Env Vars**: `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV` (sandbox/development/production)
+
+### E-Signatures (BoldSign)
+- **Create Envelope**: `supabase/functions/esign-create-envelope/index.ts` — Creates signature envelopes with document templates
+- **Webhook**: `supabase/functions/esign-webhook/index.ts` — Processes BoldSign webhook events (completed, declined, expired)
+- **Client Lib**: `src/lib/esign/esign-service.ts` — Envelope creation, status tracking, embedded signing URL generation
+- **Env Var**: `BOLDSIGN_API_KEY`
+
+### OCR (Tesseract.js Web Worker)
+- **Worker**: `src/workers/ocr-worker.ts` — Tesseract.js running in a dedicated Web Worker for non-blocking OCR
+- **Service**: `src/lib/ocr/ocr-service.ts` — High-level API with language support, confidence scoring, auto-rotation
+- **Component**: `src/components/kyc/DocumentScanner.tsx` — Camera-based document scanning UI with cropping and OCR result display
+- **Confidence Threshold**: 60% — below triggers manual review flag
+
+### Customer Data Platform (Segment + PostHog)
+- **Segment**: `src/lib/analytics/segment.ts` — Lazy-loaded analytics.js with identify/track/page/group methods
+- **Unified Dispatcher**: `src/lib/analytics/unified-dispatcher.ts` — Sends events to both Segment and PostHog simultaneously; single init point
+- **Env Var**: `VITE_SEGMENT_WRITE_KEY`
+
+### Background Jobs (Inngest)
+- **Client**: `supabase/functions/_shared/inngest-client.ts` — Inngest client with event sending and function definitions
+- **Handler**: `supabase/functions/inngest-handler/index.ts` — Edge Function endpoint for Inngest to invoke registered functions
+- **Env Vars**: `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY`
+
+### Edge Security (Arcjet)
+- **Shield**: `supabase/functions/_shared/arcjet-shield.ts` — Bot detection, rate limiting, and request shielding with local-first guard (optional remote API)
+- **Env Var**: `ARCJET_KEY` (optional — runs local guard without it)
+
+### Web Workers (Partytown + Comlink)
+- **Partytown Config**: `src/lib/workers/partytown-config.ts` — Moves third-party scripts (analytics, ads) off main thread
+- **Comlink Interfaces**: `src/lib/workers/comlink-interfaces.ts` — Type-safe worker interfaces for OCR, image processing, data parsing
+
+### Capacitor Native Plugins (7 plugins + barrel)
+- **Camera**: `src/lib/native/camera-service.ts` — Photo capture with file input fallback for web
+- **Haptics**: `src/lib/native/haptics-service.ts` — Impact/notification/selection feedback with navigator.vibrate fallback
+- **Push**: `src/lib/native/push-service.ts` — Push notification registration, listeners, Web Push API fallback
+- **Keyboard**: `src/lib/native/keyboard-service.ts` — Keyboard show/hide events, height tracking, auto-scroll for inputs
+- **Status Bar**: `src/lib/native/statusbar-service.ts` — Style, color, overlay, immersive mode control
+- **Splash Screen**: `src/lib/native/splashscreen-service.ts` — Show/hide with fade durations
+- **Network**: `src/lib/native/network-service.ts` — Connection monitoring with type detection (wifi/cellular/none)
+- **Barrel**: `src/lib/native/native-plugins.ts` — `initNativePlugins()` initializes all plugins; re-exports all services
+- **Capacitor Config**: `capacitor.config.ts` — Added SplashScreen, StatusBar, Keyboard, PushNotifications plugin configs
+- **Dependencies**: `@capacitor/camera`, `@capacitor/haptics`, `@capacitor/keyboard`, `@capacitor/network`, `@capacitor/push-notifications`, `@capacitor/splash-screen`, `@capacitor/status-bar`
+
+### NFC Tap-to-Pay
+- **Service**: `src/lib/native/nfc-service.ts` — NFC tag scanning (Web NFC API + `@nicepkg/capacitor-nfc` native fallback), tag writing, payment processing via wallet-transfer Edge Function
+- **Functions**: `isNFCAvailable()`, `startNFCScanning()`, `stopNFCScanning()`, `processNFCPayment()`, `writeNFCTag()`
+- **Payment Flow**: Scan NFC tag → send to wallet-transfer Edge Function with card token, amount, merchant ID
+
+### Vite Config Updates
+- **Externals**: All Capacitor plugins + `@nicepkg/capacitor-nfc` added to rollup externals
+- **Optimized Deps Exclude**: Capacitor plugins + `tesseract.js` excluded from Vite pre-bundling
+- **Manual Chunks**: `vendor-ocr` chunk for tesseract.js
 
 ## Stale Referral Expiry (Task #341)
 - **Edge Function**: `supabase/functions/expire-pending-referrals/index.ts` — Scheduled function (cron via pg_cron) that expires stale pending referral redemptions older than a configurable threshold (default 90 days). Updates status from "pending" to "expired" and decrements the associated referral code's `use_count`. Requires service role auth. Accepts optional `{ expiryDays: number }` in request body to override default threshold.

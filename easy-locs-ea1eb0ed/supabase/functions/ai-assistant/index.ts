@@ -2,8 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
-import { aiModelRoute, aiModelStream } from "../_shared/ai-model-router.ts";
+import { aiRoute } from "../_shared/ai-router.ts";
 import { trackBackendEvent } from "../_shared/segment-client.ts";
 
 const corsHeaders = {
@@ -184,7 +183,7 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
-    const response = await openaiChat({
+    const { response, provider, fallbackUsed } = await aiRoute({
       messages: chatMessages,
       max_tokens: 2000,
       temperature: 0.7,
@@ -193,7 +192,7 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
 
     if (!response.ok) {
       const err = await response.text();
-      console.error("AI Gateway error:", response.status, err);
+      console.error("AI Gateway error:", response.status, err, `provider=${provider}`);
 
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
@@ -212,86 +211,43 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
     }
 
     if (stream) {
-      const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
-
-      const sseStream = new ReadableStream({
-        async start(controller) {
-          const reader = response.body!.getReader();
-          let buffer = "";
-
-          try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              buffer += decoder.decode(value, { stream: true });
-              const lines = buffer.split("\n");
-              buffer = lines.pop() || "";
-
-              for (const line of lines) {
-                const trimmed = line.trim();
-                if (!trimmed || trimmed === "data: [DONE]") {
-                  if (trimmed === "data: [DONE]") {
-                    controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
-                  }
-                  continue;
-                }
-
-                if (trimmed.startsWith("data: ")) {
-                  try {
-                    const json = JSON.parse(trimmed.slice(6));
-                    const delta = json.choices?.[0]?.delta;
-
-                    if (delta?.content) {
-                      const ssePayload = JSON.stringify({
-                        token: delta.content,
-                        finish_reason: json.choices?.[0]?.finish_reason || null,
-                      });
-                      controller.enqueue(encoder.encode(`event: token\ndata: ${ssePayload}\n\n`));
-                    }
-
-                    if (json.choices?.[0]?.finish_reason === "stop") {
-                      controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
-                    }
-                  } catch {
-                    continue;
-                  }
-                }
-              }
-            }
-
-            controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
-            controller.close();
-          } catch (err) {
-            const errorPayload = JSON.stringify({ error: err instanceof Error ? err.message : "Stream error" });
-            controller.enqueue(encoder.encode(`event: error\ndata: ${errorPayload}\n\n`));
-            controller.close();
-          }
-        },
+      logger.info("ai_stream_started", { provider, fallback: fallbackUsed });
+      trackBackendEvent(userId, "ai.assistant_stream", {
+        task: taskType,
+        provider,
+        fallback: fallbackUsed,
       });
 
-      return new Response(sseStream, {
+      return new Response(response.body, {
         headers: {
           ...corsHeaders,
           "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache, no-store",
+          "Cache-Control": "no-cache",
           "Connection": "keep-alive",
-          "X-Accel-Buffering": "no",
+          "X-AI-Provider": provider,
         },
       });
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
+    let reply: string;
+    if (provider === "anthropic") {
+      const content = data.content as Array<{ type: string; text?: string }>;
+      reply = content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
+    } else {
+      reply = data.choices?.[0]?.message?.content ?? "";
+    }
 
-    logger.info("ai_response_completed", { provider: "openai" });
+    if (!reply) reply = "Sorry, I couldn't generate a response.";
+
+    logger.info("ai_response_completed", { provider, fallback: fallbackUsed });
     trackBackendEvent(userId, "ai.assistant_response", {
       task: taskType,
-      provider: "openai",
+      provider,
+      fallback: fallbackUsed,
     });
 
-    return new Response(JSON.stringify({ reply, provider: "openai" }), {
+    return new Response(JSON.stringify({ reply, provider, fallbackUsed }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
