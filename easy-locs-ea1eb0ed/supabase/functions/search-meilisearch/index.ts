@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { meiliSearch, isMeilisearchAvailable } from "../_shared/meilisearch-client.ts";
@@ -14,6 +15,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "search-meilisearch");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

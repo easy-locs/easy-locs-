@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -46,6 +47,8 @@ Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const auth = await verifyAuth(req);
   if (!auth.ok) {
     return new Response(JSON.stringify({ error: auth.error }),

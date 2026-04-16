@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * create-listing-checkout — Stripe Checkout for listing_renewal & listing_boost.
  * Backend-authoritative pricing. No frontend pricing trust.
@@ -30,6 +31,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "create-listing-checkout");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

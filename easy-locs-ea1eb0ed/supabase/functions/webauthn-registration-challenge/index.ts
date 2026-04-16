@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { encode as base64url } from "https://deno.land/std@0.190.0/encoding/base64url.ts";
@@ -16,6 +17,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const auth = await requireAuthenticatedUser(req);
     if (!auth.authorized || !auth.userId) return auth.response!;

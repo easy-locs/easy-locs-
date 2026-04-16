@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -15,6 +16,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "admin-payout-reject");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

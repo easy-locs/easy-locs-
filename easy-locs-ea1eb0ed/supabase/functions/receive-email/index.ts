@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * Inbound Email Webhook — receives emails from SendGrid Inbound Parse
  * and routes them into the correct Communication Center thread.
@@ -91,6 +92,8 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
   // ── Webhook authentication: verify shared secret ──

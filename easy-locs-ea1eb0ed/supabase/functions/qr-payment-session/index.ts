@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * qr-payment-session — Secure QR payment flow.
  * 1. Creates a signed QR payment session with nonce + expiry
@@ -39,6 +40,8 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const rlResult = await checkServerRateLimit(req, "qr-payment-session", { maxRequests: 10, windowSeconds: 60 });
   if (!rlResult.allowed) return rateLimitResponse(rlResult);
 

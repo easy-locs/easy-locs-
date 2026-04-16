@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * create-guest-checkout — Creates a Stripe Checkout session for guest (non-app) users.
  * No auth required. Accepts a payment_request_id and returns a checkout URL.
@@ -19,6 +20,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const rlResult = await checkServerRateLimit(req, "create-guest-checkout", { maxRequests: 5, windowSeconds: 60 });
   if (!rlResult.allowed) return rateLimitResponse(rlResult);
 

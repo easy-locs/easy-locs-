@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 // deno-lint-ignore-file no-explicit-any
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -12,6 +13,8 @@ const corsHeaders = {
 Deno.serve(withEdgeLogging("refund-process-booking", async (req, logger) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const rlResult = await checkServerRateLimit(req, "refund-process-booking");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);

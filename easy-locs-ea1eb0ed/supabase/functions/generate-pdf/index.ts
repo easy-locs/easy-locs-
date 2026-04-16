@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * generate-pdf — Server-side PDF generation Edge Function.
  * Layer 3.1: Offloads PDF generation for automated flows (receipts, invoices).
@@ -131,6 +132,8 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const body: PdfRequest = await req.json();
     const { doc_type, title, country, data, org_id, upload_path } = body;

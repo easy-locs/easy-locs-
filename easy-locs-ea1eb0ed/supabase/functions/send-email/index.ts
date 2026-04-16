@@ -2,6 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,6 +27,8 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
 
   try {
     const rlResult = await checkServerRateLimit(req, "send-email");

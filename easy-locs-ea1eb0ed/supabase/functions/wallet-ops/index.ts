@@ -10,6 +10,7 @@ import { argon2Verify } from "npm:hash-wasm@4.11.0";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 
 const MAX_PIN_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 900;
@@ -124,6 +125,9 @@ Deno.serve(withEdgeLogging("wallet-ops", async (req, logger) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
 
   const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 

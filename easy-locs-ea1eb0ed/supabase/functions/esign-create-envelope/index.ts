@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { arcjetProtect, shieldMiddleware, arcjetDenyResponse } from "../_shared/arcjet-shield.ts";
@@ -39,6 +40,8 @@ async function verifyEnvelopeOwnership(
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const shieldResult = await arcjetProtect(req, shieldMiddleware("sensitive"));
   if (shieldResult.decision === "deny") return arcjetDenyResponse(shieldResult);
 

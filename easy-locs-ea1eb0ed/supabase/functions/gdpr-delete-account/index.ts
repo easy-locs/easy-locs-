@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
@@ -6,6 +7,8 @@ Deno.serve(withEdgeLogging("gdpr-delete-account", async (req, logger) => {
   const cors = getCorsHeaders(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     logger.info("gdpr_deletion_started", { method: req.method });
     const supabase = createClient(

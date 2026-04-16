@@ -4,6 +4,8 @@ import { buildCacheHeaders, generateETag, checkConditionalRequest } from "../_sh
 import { getCachedResponse, setCachedResponse, invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
 import { cachedQuery, QUERY_CACHE_NAMESPACES, invalidateQueryCache } from "../_shared/redis-query-cache.ts";
 import { isMeilisearchAvailable, searchMeilisearch } from "../_shared/search-engine-sync.ts";
+import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const CACHE_NS = "marketplace";
 
@@ -379,6 +381,30 @@ const router = createDomainRouter({
         });
       },
       requireAuth: false,
+    },
+    {
+      method: "POST",
+      pattern: "/expire-listings",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "expire-listings", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/shop-import",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "shop-import-processor", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/uae-scrape-onboard",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "uae-scrape-onboard", cors, ctx.rawBody);
+      },
     },
   ],
 });

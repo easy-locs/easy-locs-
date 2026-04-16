@@ -552,7 +552,32 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `update_agent_heartbeat()` — Upsert heartbeat for server agents
 - `record_circuit_breaker_failure()` / `record_circuit_breaker_success()` — Circuit breaker state management
 
-### Edge Functions
+### Edge Function Consolidation (Task #569)
+~200 standalone Edge Functions consolidated down to **35 deployed endpoints** (22 routers + 11 webhooks + 2 crons). All other ~180 functions are internal-only (accessed via router proxy, blocked from direct access by `requireRouterOrigin` guard). All routers include JWT verification and tier-aware rate limiting via shared middleware.
+
+**Domain Routers**: `admin-router`, `ai-router`, `ai-proxy`, `booking-router`, `commerce-router`, `food-router`, `gdpr-router`, `identity-router`, `infra-router`, `logistics-router`, `marketplace-router`, `media-router`, `notification-router`, `orbit-router`, `rent-router`, `search-router`, `stripe-router`, `system-router`, `voice-router`, `wallet-router`, `webauthn-router`, `public-api`
+
+**Shared Middleware** (`_shared/`):
+- `edge-function-consolidation.ts` — EdgeRouter class with `requireAuthenticatedUser`, `checkUserRateLimit`, per-route `skipAuth`/`skipRateLimit`, `proxyToFunction` helper
+- `domain-router.ts` — `createDomainRouter` with auth, rate limiting, metrics, CORS
+- `edge-auth.ts` — JWT verification (`requireAuthenticatedUser`, `requireServiceRole`)
+- `server-rate-limiter.ts` — Tier-aware rate limiting (free: 60/min, premium: 300/min, enterprise: 1000/min)
+
+**ai-proxy** — Dedicated storefront AI endpoint: `describe-storefront`, `generate-tags`, `suggest-price`, `chat` (generic with tier-aware token limits)
+**system-router** — Health, analytics, metrics, `firecrawl-usage` aggregation, `cache-metrics`
+
+**Internal Function Guard** — All ~196 downstream functions enforce `requireRouterOrigin(req)` at entry: rejects direct public calls, only allows requests via routers (X-Router-Origin header) or service-role callers. `EDGE_ROUTER_SECRET` env var is **required** (fails closed if unset).
+
+**Domain Boundary Enforcement** (`src/lib/architecture/domain-boundaries.ts`):
+- `ARCHITECTURE_RULES` now includes `NO_DIRECT_DB_SERVICE_IN_PAGES`, `NO_DIRECT_STORAGE_IN_UI`, `NO_DIRECT_REALTIME_IN_UI`
+- `checkImportViolation(filePath, importPath)` helper for programmatic checks
+- `EDGE_FUNCTION_CONSOLIDATION_MAP` records which standalone functions each router absorbs
+
+**CI Enforcement** — `scripts/check-domain-boundaries.sh` verifies all internal functions have the router-origin guard and checks UI-layer import rules. Run before merge.
+
+Full routing map in `supabase/functions/NAMING_CONVENTION.md`.
+
+### Edge Functions (Legacy Reference)
 - `autonomous-cron-dispatcher` — Server-side pg_cron replacement, dispatches all scheduled jobs (including omega-server-loop, sentinel-server-guards, command-center-api)
 - `omega-server-loop` — Server-side Omega intelligence cycle (KG scan, priority scoring, incident detection, prediction). Runs every 5 min via pg_cron. Writes to `server_events` + `omega_decisions`.
 - `sentinel-server-guards` — 5 critical Sentinel engines (Health, Conflict, Healing, Validation, Invariants) with per-engine circuit breakers. Quarantines failing engines independently.

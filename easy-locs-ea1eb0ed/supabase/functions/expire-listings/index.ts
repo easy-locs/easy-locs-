@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * expire-listings — Scheduled job (hourly)
  * 1. Expire active seasonal listings past their expiry date
@@ -20,6 +21,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,

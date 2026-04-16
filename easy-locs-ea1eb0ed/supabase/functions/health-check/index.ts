@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
@@ -11,6 +12,8 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const monitorSecret = Deno.env.get("HEALTH_CHECK_SECRET") ?? "";
   const authHeader = req.headers.get("authorization") ?? "";
   const isAuthenticated = monitorSecret

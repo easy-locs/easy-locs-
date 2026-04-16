@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * dld-sync-cron — Scheduled Edge Function for automatic DLD data synchronization.
  * Keeps the analytics.dld_transactions table updated with fresh data from the
@@ -34,6 +35,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authHeader = req.headers.get("Authorization") ?? "";
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const cronSecret = Deno.env.get("DLD_SYNC_CRON_SECRET");

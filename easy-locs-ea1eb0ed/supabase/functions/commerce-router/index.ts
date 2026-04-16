@@ -3,6 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
 import { cachedQuery, QUERY_CACHE_NAMESPACES, invalidateQueryCache } from "../_shared/redis-query-cache.ts";
+import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 const CACHE_NS = "commerce";
 
@@ -219,6 +221,57 @@ const router = createDomainRouter({
           status: 201,
           headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
         });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/esign/create-envelope",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "esign-create-envelope", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/esign/webhook",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "esign-webhook", cors, ctx.rawBody);
+      },
+      requireAuth: false,
+      rateLimit: false,
+    },
+    {
+      method: "POST",
+      pattern: "/order-manage",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "order-manage", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/shop-import",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "shop-import-processor", cors, ctx.rawBody);
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/social-preview",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "social-preview", cors, ctx.rawBody);
+      },
+      requireAuth: false,
+    },
+    {
+      method: "POST",
+      pattern: "/uae-scrape-onboard",
+      handler: async (ctx) => {
+        const cors = getCorsHeaders(ctx.req);
+        return proxyToFunction(ctx.req, "uae-scrape-onboard", cors, ctx.rawBody);
       },
     },
   ],

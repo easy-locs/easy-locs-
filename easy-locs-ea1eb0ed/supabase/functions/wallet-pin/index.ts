@@ -9,6 +9,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { redisGet, redisSet, redisIncr, redisExpire } from "../_shared/redis-client.ts";
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_SECONDS = 900;
@@ -153,6 +154,9 @@ Deno.serve(withEdgeLogging("wallet-pin", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
 
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");

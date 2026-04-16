@@ -56,7 +56,6 @@ async function verifyInngestSignature(req: Request, bodyText: string): Promise<b
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-
   const bodyText = req.method === "POST" ? await req.text() : "";
 
   const auth = requireServiceRole(req);

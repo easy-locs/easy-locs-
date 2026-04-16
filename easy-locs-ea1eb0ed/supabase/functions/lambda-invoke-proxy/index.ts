@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { hasAwsCredentials, lambdaInvoke } from "../_shared/aws-sdk-clients.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -21,6 +22,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authResult = requireServiceRole(req);
   if (!authResult.authorized) return authResult.response!;
 

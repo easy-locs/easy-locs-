@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -14,6 +15,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const body = await req.json();
     const messages = Array.isArray(body?.messages) ? body.messages : [];

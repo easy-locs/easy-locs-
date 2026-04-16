@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -107,6 +108,8 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   try {
     const url = new URL(req.url);
     const endpoint = req.headers.get("x-endpoint") || url.pathname.split("/").pop();

@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * commission-split — Calculate and record platform / store / driver commission splits.
  * Called by stripe-webhook after successful payment or by internal operations.
@@ -20,6 +21,8 @@ Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   // Guard: only service-role or authenticated callers with valid JWT
   const authHeader = req.headers.get("authorization") ?? "";
   const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";

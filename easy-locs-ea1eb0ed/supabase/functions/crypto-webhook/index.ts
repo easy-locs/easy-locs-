@@ -45,7 +45,6 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-
   try {
     const webhookSecret = Deno.env.get("COINBASE_WEBHOOK_SECRET");
     const signature = req.headers.get("x-cc-webhook-signature");

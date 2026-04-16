@@ -1,3 +1,4 @@
+import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
@@ -20,6 +21,8 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const routerCheck = requireRouterOrigin(req);
+  if (!routerCheck.allowed) return routerCheck.response!;
   const authCheck = requireServiceRole(req);
   if (!authCheck.authorized) return authCheck.response!;
 
