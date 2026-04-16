@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 
 const SOURCE = "ml-zones";
@@ -39,7 +39,7 @@ export const zonesLayer: MapLayerModule = {
   },
 
   update(map, zones: Array<{ id: string; lat: number; lng: number; zoneType: string; intensity?: number; label?: string }>) {
-    const src = map.getSource(SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
     src.setData({
       type: "FeatureCollection",

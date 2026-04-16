@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 type LngLat = [number, number];
 
@@ -38,11 +38,11 @@ type RadarMapGodOptions = {
   orderRoutes?: OrderRoute[];
 };
 
-function safeRemoveLayer(map: mapboxgl.Map, id: string) {
+function safeRemoveLayer(map: maplibregl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
 }
 
-function safeRemoveSource(map: mapboxgl.Map, id: string) {
+function safeRemoveSource(map: maplibregl.Map, id: string) {
   if (map.getSource(id)) map.removeSource(id);
 }
 
@@ -137,7 +137,7 @@ let weatherStationRafId: number | null = null;
 let driverRafId: number | null = null;
 let orderRouteRafId: number | null = null;
 
-export function cleanupMapGod(map: mapboxgl.Map) {
+export function cleanupMapGod(map: maplibregl.Map) {
   if (weatherStationRafId !== null) { cancelAnimationFrame(weatherStationRafId); weatherStationRafId = null; }
   if (driverRafId !== null) { cancelAnimationFrame(driverRafId); driverRafId = null; }
   if (orderRouteRafId !== null) { cancelAnimationFrame(orderRouteRafId); orderRouteRafId = null; }
@@ -155,7 +155,7 @@ export function cleanupMapGod(map: mapboxgl.Map) {
   ].forEach((id) => safeRemoveSource(map, id));
 }
 
-export function add3DBuildings(map: mapboxgl.Map) {
+export function add3DBuildings(map: maplibregl.Map) {
   if (map.getLayer("3d-buildings")) return;
 
   const labelLayerId = map
@@ -181,7 +181,7 @@ export function add3DBuildings(map: mapboxgl.Map) {
   );
 }
 
-export function addRoadGlow(map: mapboxgl.Map) {
+export function addRoadGlow(map: maplibregl.Map) {
   if (map.getLayer("road-glow")) return;
 
   map.addLayer({
@@ -199,7 +199,7 @@ export function addRoadGlow(map: mapboxgl.Map) {
   });
 }
 
-export function addWeatherSource(map: mapboxgl.Map, points: LngLat[] = []) {
+export function addWeatherSource(map: maplibregl.Map, points: LngLat[] = []) {
   safeRemoveLayer(map, "weather-stations-pulse");
   safeRemoveLayer(map, "weather-stations-core");
   safeRemoveLayer(map, "weather-heat");
@@ -216,7 +216,7 @@ export function addWeatherSource(map: mapboxgl.Map, points: LngLat[] = []) {
   });
 }
 
-export function addWeatherHeat(map: mapboxgl.Map) {
+export function addWeatherHeat(map: maplibregl.Map) {
   if (map.getLayer("weather-heat")) return;
   map.addLayer({
     id: "weather-heat",
@@ -241,7 +241,7 @@ export function addWeatherHeat(map: mapboxgl.Map) {
   });
 }
 
-export function addWeatherStations(map: mapboxgl.Map) {
+export function addWeatherStations(map: maplibregl.Map) {
   if (!map.getLayer("weather-stations-core")) {
     map.addLayer({
       id: "weather-stations-core",
@@ -274,7 +274,7 @@ export function addWeatherStations(map: mapboxgl.Map) {
   }
 }
 
-export function animateWeatherStations(map: mapboxgl.Map) {
+export function animateWeatherStations(map: maplibregl.Map) {
   if (weatherStationRafId !== null) cancelAnimationFrame(weatherStationRafId);
   let t = 0;
   function pulse() {
@@ -289,7 +289,7 @@ export function animateWeatherStations(map: mapboxgl.Map) {
   pulse();
 }
 
-export function addShops(map: mapboxgl.Map, shops: ShopPoint[]) {
+export function addShops(map: maplibregl.Map, shops: ShopPoint[]) {
   safeRemoveLayer(map, "shops-points");
   safeRemoveLayer(map, "shops-cluster-count");
   safeRemoveLayer(map, "shops-clusters");
@@ -344,7 +344,7 @@ export function addShops(map: mapboxgl.Map, shops: ShopPoint[]) {
   });
 }
 
-export function addUsers(map: mapboxgl.Map, users: UserPoint[]) {
+export function addUsers(map: maplibregl.Map, users: UserPoint[]) {
   safeRemoveLayer(map, "users-points");
   safeRemoveSource(map, "users-source");
   map.addSource("users-source", {
@@ -366,7 +366,7 @@ export function addUsers(map: mapboxgl.Map, users: UserPoint[]) {
   });
 }
 
-export function addDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
+export function addDrivers(map: maplibregl.Map, drivers: DriverPoint[]) {
   safeRemoveLayer(map, "drivers-points");
   safeRemoveLayer(map, "driver-trails");
   safeRemoveSource(map, "drivers-source");
@@ -408,7 +408,7 @@ export function addDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
   });
 }
 
-export function animateDrivers(map: mapboxgl.Map) {
+export function animateDrivers(map: maplibregl.Map) {
   if (driverRafId !== null) cancelAnimationFrame(driverRafId);
   let tick = 0;
   function animate() {
@@ -424,7 +424,7 @@ export function animateDrivers(map: mapboxgl.Map) {
   animate();
 }
 
-export function addOrderRoutes(map: mapboxgl.Map, routes: OrderRoute[]) {
+export function addOrderRoutes(map: maplibregl.Map, routes: OrderRoute[]) {
   safeRemoveLayer(map, "order-routes");
   safeRemoveSource(map, "order-routes-source");
   map.addSource("order-routes-source", {
@@ -446,7 +446,7 @@ export function addOrderRoutes(map: mapboxgl.Map, routes: OrderRoute[]) {
   });
 }
 
-export function animateOrderRoutes(map: mapboxgl.Map) {
+export function animateOrderRoutes(map: maplibregl.Map) {
   if (orderRouteRafId !== null) cancelAnimationFrame(orderRouteRafId);
   let t = 0;
   function loop() {
@@ -459,12 +459,12 @@ export function animateOrderRoutes(map: mapboxgl.Map) {
   loop();
 }
 
-export function enablePremiumCamera(map: mapboxgl.Map) {
+export function enablePremiumCamera(map: maplibregl.Map) {
   map.setPitch(55);
   map.setBearing(-18);
 }
 
-export function applyZoomLOD(map: mapboxgl.Map) {
+export function applyZoomLOD(map: maplibregl.Map) {
   const update = () => {
     const z = map.getZoom();
     if (map.getLayer("weather-heat")) {
@@ -485,7 +485,7 @@ export function applyZoomLOD(map: mapboxgl.Map) {
 }
 
 export function initMapGodEngine(
-  map: mapboxgl.Map,
+  map: maplibregl.Map,
   weatherStations: LngLat[] = [],
   options: RadarMapGodOptions = {},
 ) {
@@ -506,25 +506,25 @@ export function initMapGodEngine(
   applyZoomLOD(map);
 }
 
-export function updateDrivers(map: mapboxgl.Map, drivers: DriverPoint[]) {
-  const source = map.getSource("drivers-source") as mapboxgl.GeoJSONSource | undefined;
-  const trailSource = map.getSource("driver-trails-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateDrivers(map: maplibregl.Map, drivers: DriverPoint[]) {
+  const source = map.getSource("drivers-source") as maplibregl.GeoJSONSource | undefined;
+  const trailSource = map.getSource("driver-trails-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildDriverFeatures(drivers)));
   if (trailSource) trailSource.setData(featureCollection(buildDriverTrailFeatures(drivers)));
 }
 
-export function updateRoutes(map: mapboxgl.Map, routes: OrderRoute[]) {
-  const source = map.getSource("order-routes-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateRoutes(map: maplibregl.Map, routes: OrderRoute[]) {
+  const source = map.getSource("order-routes-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildRouteFeatures(routes)));
 }
 
-export function updateShops(map: mapboxgl.Map, shops: ShopPoint[]) {
-  const source = map.getSource("shops-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateShops(map: maplibregl.Map, shops: ShopPoint[]) {
+  const source = map.getSource("shops-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildShopFeatures(shops)));
 }
 
-export function updateUsers(map: mapboxgl.Map, users: UserPoint[]) {
-  const source = map.getSource("users-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateUsers(map: maplibregl.Map, users: UserPoint[]) {
+  const source = map.getSource("users-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildUserFeatures(users)));
 }
 

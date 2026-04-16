@@ -2,7 +2,7 @@
  * DiscoveryHeatmapLayer — Mapbox heatmap with real intensity from density + rating + reviews.
  */
 import { useEffect } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 interface HeatmapPoint {
   lat: number;
@@ -11,7 +11,7 @@ interface HeatmapPoint {
 }
 
 interface Props {
-  map: mapboxgl.Map | null;
+  map: maplibregl.Map | null;
   points: HeatmapPoint[];
   visible: boolean;
 }

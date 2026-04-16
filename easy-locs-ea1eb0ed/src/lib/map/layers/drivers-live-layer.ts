@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 
 const SOURCE = "ml-drivers";
@@ -35,7 +35,7 @@ export const driversLiveLayer: MapLayerModule = {
         id: LAYER_LABEL, type: "symbol", source: SOURCE,
         layout: {
           "text-field": ["get", "label"],
-          "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
+          "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           "text-size": 10, "text-offset": [0, 1.5], "text-allow-overlap": false,
         },
         paint: {
@@ -55,7 +55,7 @@ export const driversLiveLayer: MapLayerModule = {
   },
 
   update(map, drivers: Array<{ id: string; lat: number; lng: number; vehicleType: string; label?: string; bearing?: number }>) {
-    const src = map.getSource(SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
     src.setData({
       type: "FeatureCollection",

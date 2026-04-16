@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { getMapInstance } from "@/hooks/map/useMapCore";
 
 type PendingUpdate = { sourceId: string; data: GeoJSON.GeoJSON; timestamp: number };
@@ -29,7 +29,7 @@ function flushUpdates() {
     try {
       const mapInstance = getMapInstance();
       if (mapInstance) {
-        const src = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
+        const src = mapInstance.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
         if (src && "setData" in src) src.setData(update.data);
       }
     } catch {}
@@ -43,7 +43,7 @@ function flushUpdates() {
 
 export function cullFeaturesToViewport(
   features: GeoJSON.Feature[],
-  bounds: mapboxgl.LngLatBounds,
+  bounds: maplibregl.LngLatBounds,
   bufferDeg = 0.05
 ): GeoJSON.Feature[] {
   const sw = bounds.getSouthWest();

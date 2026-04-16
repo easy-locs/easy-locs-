@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
-import type mapboxglModule from "mapbox-gl";
+import type maplibreglModule from "maplibre-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
-type MapboxGL = typeof mapboxglModule;
+type MapboxGL = typeof maplibreglModule;
 
 export interface MobilityLiveMapHandle {
   flyTo: (lat: number, lng: number, zoom?: number) => void;
@@ -93,17 +92,17 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
   bottomPadding = 0,
 }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxglModule.Map | null>(null);
+  const mapRef = useRef<maplibreglModule.Map | null>(null);
   const mapboxglRef = useRef<MapboxGL | null>(null);
   const mapReadyRef = useRef(false);
-  const riderMarkersRef = useRef<mapboxglModule.Marker[]>([]);
-  const pickupMarkerRef = useRef<mapboxglModule.Marker | null>(null);
-  const dropoffMarkerRef = useRef<mapboxglModule.Marker | null>(null);
+  const riderMarkersRef = useRef<maplibreglModule.Marker[]>([]);
+  const pickupMarkerRef = useRef<maplibreglModule.Marker | null>(null);
+  const dropoffMarkerRef = useRef<maplibreglModule.Marker | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const routeAnimRef = useRef<number | null>(null);
   const hasRouteRef = useRef(false);
   const routeFetchControllerRef = useRef<AbortController | null>(null);
-  const driverMarkerRef = useRef<mapboxglModule.Marker | null>(null);
+  const driverMarkerRef = useRef<maplibreglModule.Marker | null>(null);
 
   const centerLat = driverLat ?? pickupLat ?? 25.2048;
   const centerLng = driverLng ?? pickupLng ?? 55.2708;
@@ -146,28 +145,21 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      setMapError(true);
-      setMapLoading(false);
-      return;
-    }
-
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
       if (!gl) { setMapError(true); setMapLoading(false); return; }
     } catch { setMapError(true); setMapLoading(false); return; }
 
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-      mapboxglRef.current = mapboxgl;
+      mapboxglRef.current = maplibregl;
 
-      let map: mapboxgl.Map;
+      let map: maplibregl.Map;
       try {
-        map = new mapboxgl.Map({
+        map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [centerLng, centerLat],
           zoom: 13,
           attributionControl: false,
@@ -313,7 +305,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     routeFetchControllerRef.current = controller;
 
     fetch(
-      `https://api.mapbox.com/directions/v5/mapbox/driving/${routeStartLng},${routeStartLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full&access_token=${MAPBOX_ACCESS_TOKEN}`,
+      `https://router.project-osrm.org/route/v1/driving/${routeStartLng},${routeStartLat};${dropoffLng},${dropoffLat}?geometries=geojson&overview=full`,
       { signal: controller.signal }
     )
       .then(r => r.json())
@@ -373,7 +365,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     }
 
     const riders = generateNearby(centerLat, centerLng, nearbyRiders);
-    const riderMarkers: mapboxglModule.Marker[] = [];
+    const riderMarkers: maplibreglModule.Marker[] = [];
 
     riders.forEach((r) => {
       const el = document.createElement("div");

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { MapPin, Save, RotateCcw, Maximize2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
@@ -28,8 +28,8 @@ export default memo(function SellerMapCard({
   className = "",
 }: SellerMapCardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markerRef = useRef<maplibregl.Marker | null>(null);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("SellerMapCard");
 
   const defaultLat = lat ?? 25.2048;
@@ -52,25 +52,19 @@ export default memo(function SellerMapCard({
     let cancelled = false;
     clearMapError();
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      handleMapError("Map not configured", { lat: defaultLat, lng: defaultLng, zoom: lat != null ? 16 : 13 });
-      return;
-    }
-
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/streets-v12",
+          style: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
           center: [defaultLng, defaultLat],
           zoom: lat != null ? 16 : 13,
           attributionControl: false,
         });
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
             handleMapError("Mapbox token is invalid or expired.", { lat: defaultLat, lng: defaultLng, zoom: lat != null ? 16 : 13 });
@@ -84,7 +78,7 @@ export default memo(function SellerMapCard({
           el.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:grab;";
           el.textContent = "📍";
 
-          const marker = new mapboxgl.Marker({ element: el, draggable: editable })
+          const marker = new maplibregl.Marker({ element: el, draggable: editable })
             .setLngLat([defaultLng, defaultLat])
             .addTo(map);
 

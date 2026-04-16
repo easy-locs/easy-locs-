@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 
 const SOURCE = "ml-rain-radar";

@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 const MAP_EVENTS = {
@@ -9,16 +9,16 @@ const MAP_EVENTS = {
 } as const;
 
 let currentHoverId: string | null = null;
-let clickHandler: ((e: mapboxgl.MapMouseEvent) => void) | null = null;
-let mousemoveHandler: ((e: mapboxgl.MapMouseEvent) => void) | null = null;
+let clickHandler: ((e: maplibregl.MapMouseEvent) => void) | null = null;
+let mousemoveHandler: ((e: maplibregl.MapMouseEvent) => void) | null = null;
 let mouseleaveHandler: (() => void) | null = null;
-let boundMap: mapboxgl.Map | null = null;
+let boundMap: maplibregl.Map | null = null;
 let setupDone = false;
 
 export function setupInteractions(
-  map: mapboxgl.Map,
+  map: maplibregl.Map,
   interactiveLayerIds: string[],
-  onSelect?: (feature: mapboxgl.MapboxGeoJSONFeature, lngLat: mapboxgl.LngLat) => void
+  onSelect?: (feature: maplibregl.MapGeoJSONFeature, lngLat: maplibregl.LngLat) => void
 ) {
   if (setupDone) {
     teardownInteractions(boundMap ?? map);
@@ -75,7 +75,7 @@ export function setupInteractions(
   setupDone = true;
 }
 
-export function teardownInteractions(map: mapboxgl.Map) {
+export function teardownInteractions(map: maplibregl.Map) {
   const target = boundMap ?? map;
   if (clickHandler) target.off("click", clickHandler);
   if (mousemoveHandler) target.off("mousemove", mousemoveHandler);

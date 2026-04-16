@@ -1,45 +1,29 @@
-/**
- * Map Engine Types — Shared types for the micro-layer map architecture.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
-/** A single map layer module */
 export interface MapLayerModule {
   id: string;
-  /** Add sources + layers to map */
-  setup: (map: mapboxgl.Map) => void;
-  /** Update data for this layer */
-  update: (map: mapboxgl.Map, data: any) => void;
-  /** Show/hide */
-  setVisible: (map: mapboxgl.Map, visible: boolean) => void;
-  /** Teardown (optional) */
-  destroy?: (map: mapboxgl.Map) => void;
-  /** Layer IDs owned by this module (for z-ordering / interaction) */
+  setup: (map: maplibregl.Map) => void;
+  update: (map: maplibregl.Map, data: any) => void;
+  setVisible: (map: maplibregl.Map, visible: boolean) => void;
+  destroy?: (map: maplibregl.Map) => void;
   layerIds: string[];
 }
 
-/** A single animation module */
 export interface MapAnimationModule {
   id: string;
-  /** Start the animation loop */
-  start: (map: mapboxgl.Map, targets: string[]) => void;
-  /** Stop the animation */
+  start: (map: maplibregl.Map, targets: string[]) => void;
   stop: () => void;
-  /** Is currently running */
   active: boolean;
 }
 
-/** Interaction event emitted by the map */
 export interface MapInteractionEvent {
   type: "click" | "hover" | "select" | "deselect";
   entityId?: string;
   entityType?: string;
   lngLat: { lng: number; lat: number };
-  features?: mapboxgl.MapboxGeoJSONFeature[];
+  features?: maplibregl.MapGeoJSONFeature[];
 }
 
-/** Style preset */
 export type MapStylePreset = "dark" | "light" | "satellite" | "premium";
 
-/** Density mode */
 export type MapDensityMode = "low" | "medium" | "high";

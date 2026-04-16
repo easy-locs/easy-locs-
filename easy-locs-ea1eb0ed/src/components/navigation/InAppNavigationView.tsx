@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { getDirections, type DirectionsStep } from "@/lib/location/geocode";
@@ -24,8 +24,8 @@ function InAppNavigationViewInner() {
   const userPoint = useGeoStore((s) => s.point);
   const locale = useI18nStore((s) => s.locale);
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
   const [activeMode, setActiveMode] = useState<TransportMode>(mode);
   const activeModeRef = useRef<TransportMode>(mode);
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; etaMinutes: number } | null>(null);
@@ -68,7 +68,7 @@ function InAppNavigationViewInner() {
   const updateCurrentSegmentHighlight = useCallback((stepIndex: number) => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
-    const src = map.getSource("nav-current-segment") as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource("nav-current-segment") as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
 
     const steps = stepsRef.current;
@@ -151,7 +151,7 @@ function InAppNavigationViewInner() {
   }, [isNavigating, userPoint?.lat, userPoint?.lng, userPoint?.heading]);
 
   const fetchRoute = useCallback(async (
-    map: mapboxgl.Map,
+    map: maplibregl.Map,
     origin: { lat: number; lng: number },
     dest: { lat: number; lng: number },
     transportMode: TransportMode,
@@ -199,7 +199,7 @@ function InAppNavigationViewInner() {
       }
 
       const coords = result.geometry.coordinates as [number, number][];
-      const src = map.getSource("nav-route") as mapboxgl.GeoJSONSource | undefined;
+      const src = map.getSource("nav-route") as maplibregl.GeoJSONSource | undefined;
       if (src) {
         src.setData(result.geometry);
       }
@@ -243,19 +243,13 @@ function InAppNavigationViewInner() {
 
     clearMapError();
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      handleMapError("Map not configured. Please set VITE_MAPBOX_TOKEN.", { lat, lng, zoom: 14 });
-      return;
-    }
-
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current!,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [lng!, lat!],
           zoom: 14,
           attributionControl: false,
@@ -263,7 +257,7 @@ function InAppNavigationViewInner() {
         });
         mapRef.current = map;
 
-      map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+      map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
         const msg = e.error?.message || String(e.error ?? "");
         if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
           handleMapError("Mapbox token is invalid or expired.", { lat, lng, zoom: 14 });
@@ -274,12 +268,12 @@ function InAppNavigationViewInner() {
           const destEl = document.createElement("div");
         destEl.style.cssText = "width:36px;height:36px;border-radius:50%;background:hsl(0,72%,51%);border:3px solid white;box-shadow:0 2px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;";
         destEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
-        new mapboxgl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
+        new maplibregl.Marker(destEl).setLngLat([lng!, lat!]).addTo(map);
 
         if (userPoint) {
           const userEl = document.createElement("div");
           userEl.style.cssText = "width:18px;height:18px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 12px rgba(59,130,246,0.5);";
-          userMarkerRef.current = new mapboxgl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
+          userMarkerRef.current = new maplibregl.Marker(userEl).setLngLat([userPoint.lng, userPoint.lat]).addTo(map);
         }
 
         map.addSource("nav-route", {
@@ -441,7 +435,7 @@ function InAppNavigationViewInner() {
     voiceInitializedRef.current = false;
     const map = mapRef.current;
     if (map && map.isStyleLoaded()) {
-      const segSrc = map.getSource("nav-current-segment") as mapboxgl.GeoJSONSource | undefined;
+      const segSrc = map.getSource("nav-current-segment") as maplibregl.GeoJSONSource | undefined;
       if (segSrc) segSrc.setData({ type: "FeatureCollection", features: [] });
     }
     const gl3 = getMapboxgl();

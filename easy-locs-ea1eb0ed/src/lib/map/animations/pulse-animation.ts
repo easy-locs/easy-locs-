@@ -1,7 +1,4 @@
-/**
- * pulse-animation — Pulsing glow effect for user location or urgent entities.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapAnimationModule } from "../engine/types";
 
 export function createPulseAnimation(): MapAnimationModule {

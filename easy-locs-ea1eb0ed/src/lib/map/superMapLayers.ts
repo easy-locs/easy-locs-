@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 export const SOURCES = {
   PLACES: "supermap-places",
@@ -63,7 +63,7 @@ export type SuperMapMode =
   | "wallet"
   | "radar";
 
-export function setupSuperMapLayers(map: mapboxgl.Map) {
+export function setupSuperMapLayers(map: maplibregl.Map) {
   try {
     if (!map.getSource(SOURCES.RADIUS)) {
       map.addSource(SOURCES.RADIUS, {
@@ -215,7 +215,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-size": 14,
           "text-allow-overlap": true,
         },
@@ -306,7 +306,7 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
         source: SOURCES.MOBILITY,
         layout: {
           "text-field": ["get", "label"],
-          "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
+          "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
           "text-size": 10,
           "text-offset": [0, 1.5],
           "text-allow-overlap": false,
@@ -350,14 +350,14 @@ export function setupSuperMapLayers(map: mapboxgl.Map) {
   }
 }
 
-export function safeSetData(map: mapboxgl.Map, sourceId: string, data: GeoJSON.FeatureCollection) {
+export function safeSetData(map: maplibregl.Map, sourceId: string, data: GeoJSON.FeatureCollection) {
   try {
-    const src = map.getSource(sourceId) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(sourceId) as maplibregl.GeoJSONSource | undefined;
     if (src) src.setData(data);
   } catch {}
 }
 
-export function setLayerVisibility(map: mapboxgl.Map, layerId: string, visible: boolean) {
+export function setLayerVisibility(map: maplibregl.Map, layerId: string, visible: boolean) {
   try {
     if (map.getLayer(layerId)) {
       map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
@@ -426,7 +426,7 @@ export function getVisibleLayersForMode(mode: SuperMapMode): Set<string> {
   }
 }
 
-export function applyMapMode(map: mapboxgl.Map, mode: SuperMapMode) {
+export function applyMapMode(map: maplibregl.Map, mode: SuperMapMode) {
   const visible = getVisibleLayersForMode(mode);
   const allLayers = Object.values(LAYERS);
   for (const layerId of allLayers) {

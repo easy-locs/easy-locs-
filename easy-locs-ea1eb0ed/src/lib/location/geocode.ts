@@ -1,13 +1,4 @@
-/**
- * geocode.ts — Reverse geocoding & place search via Mapbox.
- * Normalizes results, caches, debounces.
- * 
- * Provider contextualization: accepts country filter + proximity bias
- * so Search Brain receives enough local candidates.
- */
-
-import { MAPBOX_ACCESS_TOKEN as TOKEN } from "@/lib/mapbox/config";
-import { getMapboxLanguage } from "@/lib/navigation/locale-voice-map";
+import { getMapLanguage } from "@/lib/navigation/locale-voice-map";
 
 export interface NormalizedPlace {
   label: string;
@@ -21,32 +12,26 @@ export interface NormalizedPlace {
   lng: number;
 }
 
-// ─── Caches ───
 const reverseCache = new Map<string, { result: NormalizedPlace; ts: number }>();
 const searchCache = new Map<string, { results: NormalizedPlace[]; ts: number }>();
-const CACHE_TTL = 5 * 60_000; // 5 min
+const CACHE_TTL = 5 * 60_000;
 
 function cacheKey(lat: number, lng: number): string {
   return `${lat.toFixed(4)},${lng.toFixed(4)}`;
 }
 
-function extractContext(contexts: any[], type: string): string | undefined {
-  const c = contexts?.find((ctx: any) => ctx.id?.startsWith(type));
-  return c?.text;
-}
-
-function normalizeFeature(f: any): NormalizedPlace {
-  const ctx = f.context || [];
+function normalizeNominatimResult(r: any): NormalizedPlace {
+  const addr = r.address || {};
   return {
-    label: f.place_name || f.text || "",
-    street: f.text,
-    area: extractContext(ctx, "neighborhood") || extractContext(ctx, "locality"),
-    city: extractContext(ctx, "place"),
-    region: extractContext(ctx, "region"),
-    country: extractContext(ctx, "country"),
-    postcode: extractContext(ctx, "postcode"),
-    lat: f.center?.[1] ?? f.geometry?.coordinates?.[1] ?? 0,
-    lng: f.center?.[0] ?? f.geometry?.coordinates?.[0] ?? 0,
+    label: r.display_name || "",
+    street: addr.road || addr.pedestrian || addr.footway,
+    area: addr.neighbourhood || addr.suburb || addr.hamlet,
+    city: addr.city || addr.town || addr.village || addr.municipality,
+    region: addr.state || addr.county,
+    country: addr.country,
+    postcode: addr.postcode,
+    lat: parseFloat(r.lat),
+    lng: parseFloat(r.lon),
   };
 }
 
@@ -55,17 +40,18 @@ export async function reverseGeocode(lat: number, lng: number): Promise<Normaliz
   const cached = reverseCache.get(key);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.result;
 
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?limit=1&access_token=${TOKEN}`;
-  const res = await fetch(url);
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "EasyLocs/1.0" },
+  });
   if (!res.ok) throw new Error("Reverse geocode failed");
 
   const json = await res.json();
-  const feature = json.features?.[0];
-  if (!feature) {
+  if (!json || json.error) {
     return { label: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, lat, lng };
   }
 
-  const result = normalizeFeature(feature);
+  const result = normalizeNominatimResult(json);
   reverseCache.set(key, { result, ts: Date.now() });
   return result;
 }
@@ -75,9 +61,7 @@ export async function searchPlaces(
   options?: {
     proximity?: { lat: number; lng: number };
     limit?: number;
-    /** ISO 2-letter country code to bias/filter results (e.g. "AE") */
     country?: string;
-    /** Bounding box [minLng, minLat, maxLng, maxLat] */
     bbox?: [number, number, number, number];
   },
 ): Promise<NormalizedPlace[]> {
@@ -88,28 +72,33 @@ export async function searchPlaces(
   const cached = searchCache.get(cKey);
   if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.results;
 
-  let url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(trimmed)}.json?limit=${options?.limit || 5}&access_token=${TOKEN}`;
-  
-  // Proximity bias — Mapbox will prefer results near this point
-  if (options?.proximity) {
-    url += `&proximity=${options.proximity.lng},${options.proximity.lat}`;
-  }
-  
-  // Country filter — restricts results to specific country (ISO 3166-1 alpha-2)
+  let url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(trimmed)}&format=json&limit=${options?.limit || 5}&addressdetails=1`;
+
   if (options?.country) {
-    url += `&country=${options.country.toLowerCase()}`;
-  }
-  
-  // Bounding box filter
-  if (options?.bbox) {
-    url += `&bbox=${options.bbox.join(",")}`;
+    url += `&countrycodes=${options.country.toLowerCase()}`;
   }
 
-  const res = await fetch(url);
+  if (options?.bbox) {
+    url += `&viewbox=${options.bbox.join(",")}&bounded=1`;
+  }
+
+  const res = await fetch(url, {
+    headers: { "User-Agent": "EasyLocs/1.0" },
+  });
   if (!res.ok) throw new Error("Place search failed");
 
   const json = await res.json();
-  const results: NormalizedPlace[] = (json.features || []).map(normalizeFeature);
+  let results: NormalizedPlace[] = (json || []).map(normalizeNominatimResult);
+
+  if (options?.proximity && results.length > 1) {
+    const { lat: pLat, lng: pLng } = options.proximity;
+    results.sort((a, b) => {
+      const dA = Math.abs(a.lat - pLat) + Math.abs(a.lng - pLng);
+      const dB = Math.abs(b.lat - pLat) + Math.abs(b.lng - pLng);
+      return dA - dB;
+    });
+  }
+
   searchCache.set(cKey, { results, ts: Date.now() });
   return results;
 }
@@ -139,29 +128,36 @@ export interface DirectionsResult {
   steps: DirectionsStep[];
 }
 
+const OSRM_PROFILES: Record<string, string> = {
+  driving: "car",
+  "driving-traffic": "car",
+  walking: "foot",
+  cycling: "bike",
+};
+
 export async function getDirections(
   origin: { lat: number; lng: number },
   destination: { lat: number; lng: number },
   profile: "driving" | "driving-traffic" | "walking" | "cycling" = "driving",
-  locale?: string,
+  _locale?: string,
 ): Promise<DirectionsResult | null> {
-  const lang = getMapboxLanguage(locale || "en");
-  const effectiveProfile = profile === "driving" ? "driving-traffic" : profile;
-  const url = `https://api.mapbox.com/directions/v5/mapbox/${effectiveProfile}/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
-  let res = await fetch(url);
-  if (!res.ok && effectiveProfile === "driving-traffic") {
-    const fallbackUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true&voice_units=metric&language=${lang}&access_token=${TOKEN}`;
-    res = await fetch(fallbackUrl);
-  }
+  const osrmProfile = OSRM_PROFILES[profile] || "car";
+  const coords = `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`;
+  const url = `https://router.project-osrm.org/route/v1/${osrmProfile === "car" ? "driving" : osrmProfile === "foot" ? "walking" : "cycling"}/${coords}?overview=full&geometries=geojson&steps=true`;
+
+  const res = await fetch(url);
   if (!res.ok) return null;
+
   const json = await res.json();
+  if (json.code !== "Ok") return null;
+
   const route = json.routes?.[0];
   if (!route) return null;
 
   const steps: DirectionsStep[] = (route.legs ?? []).flatMap((leg: any) =>
     (leg.steps ?? []).map((s: any) => ({
       maneuver: {
-        instruction: s.maneuver?.instruction ?? "",
+        instruction: s.name ? `Continue on ${s.name}` : s.maneuver?.type || "Continue",
         location: s.maneuver?.location ?? [0, 0],
         type: s.maneuver?.type ?? "",
         modifier: s.maneuver?.modifier,
@@ -169,11 +165,10 @@ export async function getDirections(
       distance: s.distance ?? 0,
       duration: s.duration ?? 0,
       name: s.name ?? "",
-      voiceInstructions: (s.voiceInstructions ?? []).map((vi: any) => ({
-        distanceAlongGeometry: vi.distanceAlongGeometry ?? 0,
-        announcement: vi.announcement ?? "",
-        ssmlAnnouncement: vi.ssmlAnnouncement,
-      })),
+      voiceInstructions: s.name ? [{
+        distanceAlongGeometry: s.distance ?? 0,
+        announcement: s.name ? `Continue on ${s.name}` : "Continue",
+      }] : [],
     })),
   );
 
@@ -181,8 +176,7 @@ export async function getDirections(
     geometry: route.geometry,
     distance_m: route.distance,
     duration_s: route.duration,
-    duration_typical_s: route.duration_typical ?? null,
+    duration_typical_s: null,
     steps,
   };
 }
-

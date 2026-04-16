@@ -1,13 +1,13 @@
 /**
  * Map God Engine — pure helper functions.
  */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
-export function safeRemoveLayer(map: mapboxgl.Map, id: string) {
+export function safeRemoveLayer(map: maplibregl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
 }
 
-export function safeRemoveSource(map: mapboxgl.Map, id: string) {
+export function safeRemoveSource(map: maplibregl.Map, id: string) {
   if (map.getSource(id)) map.removeSource(id);
 }
 

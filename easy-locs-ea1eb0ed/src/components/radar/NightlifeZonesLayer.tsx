@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 interface NightlifeZone {
   id: string;
@@ -13,7 +13,7 @@ interface NightlifeZone {
 }
 
 interface Props {
-  map: mapboxgl.Map | null;
+  map: maplibregl.Map | null;
   entities: Array<{
     id: string;
     lat: number;
@@ -209,7 +209,7 @@ export default function NightlifeZonesLayer({ map, entities, visible, onZoneTap 
         layout: {
           "text-field": "HOT",
           "text-size": 9,
-          "text-font": ["DIN Pro Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-offset": [0, -2.2],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
@@ -222,7 +222,7 @@ export default function NightlifeZonesLayer({ map, entities, visible, onZoneTap 
         },
       });
 
-      const handleClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      const handleClick = (e: maplibregl.MapMouseEvent & { features?: maplibregl.MapGeoJSONFeature[] }) => {
         if (e.features && e.features.length > 0 && onZoneTap) {
           const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
           onZoneTap(coords[1], coords[0]);

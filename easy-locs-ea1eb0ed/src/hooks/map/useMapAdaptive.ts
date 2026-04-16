@@ -3,7 +3,7 @@
  * Feeds back into animation/density decisions.
  */
 import { useEffect, useRef, useState, useCallback } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { setDensity } from "@/lib/map/engine/style-engine";
 import { AnimationRegistry } from "@/lib/map/engine/animation-registry";
 import type { MapDensityMode } from "@/lib/map/engine/types";
@@ -22,7 +22,7 @@ export interface MapAdaptiveState {
 const IS_MOBILE = typeof window !== "undefined" && window.innerWidth < 768;
 
 export function useMapAdaptive(
-  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapRef: React.RefObject<maplibregl.Map | null>,
   ready: boolean,
   entityCount: number
 ) {

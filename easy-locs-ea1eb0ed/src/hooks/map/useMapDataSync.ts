@@ -3,7 +3,7 @@
  * Uses unified mapStore. GPS read from locationStore.
  */
 import { useEffect } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import {
   setupSuperMapLayers,
   safeSetData,
@@ -24,7 +24,7 @@ import {
  * Sets up legacy layers and syncs all store data to Mapbox sources.
  * Call once after map is ready.
  */
-export function useMapDataSync(mapRef: React.RefObject<mapboxgl.Map | null>, ready: boolean) {
+export function useMapDataSync(mapRef: React.RefObject<maplibregl.Map | null>, ready: boolean) {
   const mapMode = useUnifiedMapStore(s => s.mapMode);
   const entities = useUnifiedMapStore(s => s.entities);
   const mobilityPoints = useUnifiedMapStore(s => s.mobilityPoints);
@@ -92,7 +92,7 @@ export function useMapDataSync(mapRef: React.RefObject<mapboxgl.Map | null>, rea
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(STATION_SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (src) src.setData(buildStationGeoJSON(entities));
   }, [entities, ready]);
 

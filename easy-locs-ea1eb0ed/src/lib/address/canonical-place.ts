@@ -9,7 +9,7 @@
 
 export interface CanonicalPlace {
   id?: string;
-  provider: string;                    // "mapbox" | "nominatim" | "google" | "manual" | "system"
+  provider: string;                    // "nominatim" | "google" | "manual" | "system"
   provider_place_id?: string | null;
   label: string;                       // Short display label
   formatted_address: string;           // Full formatted address
@@ -116,7 +116,7 @@ export function simpleGeohash(lat: number, lng: number): string {
 
 export function fromNormalizedPlace(
   np: { label: string; lat: number; lng: number; city?: string; region?: string; country?: string; postcode?: string; area?: string; street?: string },
-  provider = "mapbox"
+  provider = "nominatim"
 ): CanonicalPlace {
   const countryCode = np.country ?? "AE";
   return {

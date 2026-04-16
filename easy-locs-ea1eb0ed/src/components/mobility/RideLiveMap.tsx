@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { MapPin } from "lucide-react";
@@ -15,10 +15,10 @@ interface RideLiveMapProps {
 
 export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const dropoffMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const driverMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const pickupMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const dropoffMarkerRef = useRef<maplibregl.Marker | null>(null);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("RideLiveMap");
   const readyRef = useRef(false);
 
@@ -37,19 +37,13 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
     let cancelled = false;
     clearMapError();
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      handleMapError("Map not configured", { lat, lng, zoom: 13 });
-      return;
-    }
-
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [lng, lat],
           zoom: 13,
           attributionControl: false,
@@ -57,7 +51,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
 
         mapRef.current = map;
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
             handleMapError("Mapbox token is invalid or expired.", { lat, lng, zoom: 13 });
@@ -66,7 +60,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
 
         map.on("load", () => {
           if (!cancelled) readyRef.current = true;
-          updateMarkersAndRoute(map, mapboxgl);
+          updateMarkersAndRoute(map, maplibregl);
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to initialize map";
@@ -95,7 +89,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
     };
   }, []);
 
-  function updateMarkersAndRoute(map: mapboxgl.Map, gl: typeof import("mapbox-gl").default) {
+  function updateMarkersAndRoute(map: maplibregl.Map, gl: typeof import("maplibre-gl").default) {
     const bounds = new gl.LngLatBounds();
     let hasPoints = false;
 
@@ -151,7 +145,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
     );
 
     if (geom && map.isStyleLoaded()) {
-      const routeSource = map.getSource("route") as mapboxgl.GeoJSONSource | undefined;
+      const routeSource = map.getSource("route") as maplibregl.GeoJSONSource | undefined;
       if (routeSource) {
         routeSource.setData({ type: "Feature", properties: {}, geometry: geom });
       } else {
@@ -178,7 +172,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !readyRef.current) return;
-    import("mapbox-gl").then((gl) => {
+    import("maplibre-gl").then((gl) => {
       updateMarkersAndRoute(map, gl.default);
     });
   }, [driver?.lat, driver?.lng, pickup?.lat, pickup?.lng, dropoff?.lat, dropoff?.lng, routeGeometry]);

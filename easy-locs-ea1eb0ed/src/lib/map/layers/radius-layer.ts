@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 import { buildRadiusGeoJSON } from "../superMapLayers";
 
@@ -41,7 +41,7 @@ export const radiusLayer: MapLayerModule = {
   },
 
   update(map, data: { lat: number; lng: number; km: number } | null) {
-    const src = map.getSource(SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
     if (!data) { src.setData(EMPTY_FC); return; }
     src.setData(buildRadiusGeoJSON(data.lat, data.lng, data.km));

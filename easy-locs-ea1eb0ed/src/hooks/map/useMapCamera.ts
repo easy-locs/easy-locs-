@@ -1,11 +1,11 @@
 import { useEffect } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 
 export function useMapCamera(
-  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapRef: React.RefObject<maplibregl.Map | null>,
   ready: boolean
 ) {
   const entities = useUnifiedMapStore(s => s.entities);

@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 
 const SOURCE = "ml-heatmap";
@@ -43,7 +43,7 @@ export const heatmapLayer: MapLayerModule = {
   },
 
   update(map, features: GeoJSON.Feature[]) {
-    const src = map.getSource(SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (src) src.setData({ type: "FeatureCollection", features });
   },
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 import { useWeatherDisplayStore } from "@/stores/weatherDisplayStore";
@@ -21,7 +21,7 @@ const RAIN_SOURCE = "supermap-rain-radar";
 const RAIN_LAYER = "supermap-rain-radar-layer";
 
 export function useMapWeather(
-  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapRef: React.RefObject<maplibregl.Map | null>,
   ready: boolean
 ) {
   const centerLat = useUnifiedMapStore(s => s.viewport.centerLat);
@@ -92,7 +92,7 @@ export function useMapWeather(
       const applyFog = effectsLevel !== "off" && weather.isRaining;
       if (applyFog) {
         const intense = effectsLevel === "immersive";
-        map.setFog({
+        (map as any).setFog?.({
           color: intense ? "rgba(94, 134, 190, 0.30)" : "rgba(94, 134, 190, 0.15)",
           "high-color": intense ? "rgba(18, 35, 58, 0.25)" : "rgba(18, 35, 58, 0.12)",
           "horizon-blend": intense ? 0.22 : 0.12,
@@ -101,7 +101,7 @@ export function useMapWeather(
           "star-intensity": 0.03,
         });
       } else {
-        map.setFog({
+        (map as any).setFog?.({
           color: "rgba(255, 255, 255, 0.02)",
           "high-color": "rgba(255, 255, 255, 0.01)",
           "horizon-blend": 0.08,
@@ -119,7 +119,7 @@ export function useMapWeather(
 
     const visible = radarOverlay !== "off";
     const layer = map.getLayer(RAIN_LAYER);
-    const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
+    const source = map.getSource(RAIN_SOURCE) as (maplibregl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
 
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");

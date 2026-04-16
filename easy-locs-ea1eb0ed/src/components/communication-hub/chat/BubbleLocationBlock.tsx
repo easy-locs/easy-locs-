@@ -7,7 +7,6 @@ import { memo, useCallback } from "react";
 import { MapPin, Navigation } from "lucide-react";
 import { useLocationViewer } from "@/families/location";
 import { useInAppNavigation } from "@/stores/useInAppNavigation";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 interface Props {
   lat: string;
@@ -37,7 +36,7 @@ function BubbleLocationBlockInner({ lat, lng, label, mode, messageId }: Props) {
   }, [lat, lng, label, openNavigation]);
 
   const isLive = mode === "live";
-  const mapUrl = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+e74c3c(${lng},${lat})/${lng},${lat},15,0/300x140@2x?access_token=${MAPBOX_ACCESS_TOKEN}`;
+  const mapUrl = `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=15&size=600x280&markers=${lat},${lng},ol-marker`;
 
   return (
     <div className="space-y-1.5 cursor-pointer" onClick={handleTap}>

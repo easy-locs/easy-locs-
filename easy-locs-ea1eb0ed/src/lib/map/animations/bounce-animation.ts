@@ -1,7 +1,4 @@
-/**
- * bounce-animation — Bounce effect for newly appearing entities.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapAnimationModule } from "../engine/types";
 
 export function createBounceAnimation(): MapAnimationModule {
@@ -15,14 +12,13 @@ export function createBounceAnimation(): MapAnimationModule {
     start(map, targetLayerIds) {
       _active = true;
       let t = 0;
-      const duration = 0.5; // seconds
+      const duration = 0.5;
       const startTime = performance.now();
 
       const animate = () => {
         if (!_active) return;
         const elapsed = (performance.now() - startTime) / 1000;
         if (elapsed > duration) {
-          // Reset to normal
           for (const layerId of targetLayerIds) {
             try {
               if (map.getLayer(layerId)) {
@@ -35,7 +31,6 @@ export function createBounceAnimation(): MapAnimationModule {
         }
 
         const progress = elapsed / duration;
-        // Bounce easing
         const bounce = Math.abs(Math.sin(progress * Math.PI * 3)) * (1 - progress);
         const radius = 8 + bounce * 6;
 

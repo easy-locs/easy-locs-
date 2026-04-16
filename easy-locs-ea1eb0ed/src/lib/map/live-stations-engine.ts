@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
 
 export const STATION_SOURCE = "live-stations-source";
@@ -46,7 +46,7 @@ export function buildStationGeoJSON(entities: GeoEntity[]): GeoJSON.FeatureColle
   };
 }
 
-export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: string) {
+export function ensureLiveStationLayers(map: maplibregl.Map, beforeLayerId?: string) {
   if (!map.getSource(STATION_SOURCE)) {
     map.addSource(STATION_SOURCE, {
       type: "geojson",
@@ -80,7 +80,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
       filter: ["has", "point_count"],
       layout: {
         "text-field": ["get", "point_count_abbreviated"],
-        "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+        "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
         "text-size": 12,
       },
       paint: {
@@ -141,7 +141,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
       minzoom: 13,
       layout: {
         "text-field": ["get", "name"],
-        "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Regular"],
+        "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
         "text-size": 10,
         "text-offset": [0, 1.35],
         "text-anchor": "top",
@@ -156,7 +156,7 @@ export function ensureLiveStationLayers(map: mapboxgl.Map, beforeLayerId?: strin
   }
 }
 
-export function animateStationPulse(map: mapboxgl.Map, frame: number) {
+export function animateStationPulse(map: maplibregl.Map, frame: number) {
   if (!map.getLayer(STATION_PULSE_LAYER)) return;
   const radius = 11 + ((Math.sin(frame / 10) + 1) / 2) * 8;
   const opacity = 0.35 + ((Math.sin(frame / 14) + 1) / 2) * 0.35;
