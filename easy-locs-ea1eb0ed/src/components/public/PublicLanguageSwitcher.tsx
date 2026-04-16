@@ -1,9 +1,6 @@
 import type { Locale } from "@/lib/i18n";
+import { LOCALE_LABELS } from "@/lib/i18n-locales";
 import { Globe } from "lucide-react";
-
-const LOCALE_LABELS: Record<string, string> = {
-  fr: "FR", en: "EN", es: "ES", de: "DE", it: "IT", pt: "PT", nl: "NL",
-};
 
 interface Props {
   locale: Locale;
