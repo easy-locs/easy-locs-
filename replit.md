@@ -59,6 +59,15 @@ Comprehensive automated test suite covering core logic, integrations, and securi
 ### Shared Production Modules
 - `src/lib/shared/rate-limit-tiers.ts` — Extracted pure rate-limit tier logic (resolveUserTier, getTierEndpointLimit, getEndpointLimit, rateLimitHeaders) shared between tests and edge functions
 
+### E2E Nightly Trend Tracking (Task #679)
+Automated nightly e2e test runs with historical trend tracking and a visual dashboard.
+
+- `.github/workflows/e2e-nightly.yml` — Nightly cron workflow (3 AM UTC daily) that runs full Playwright suite, collects trend data, commits history, and creates GitHub issues on failure
+- `scripts/collect-e2e-trends.sh` — Parses Playwright JSON reporter output into trend entries (pass/fail/flaky counts, durations, per-test details); appends to rolling 90-entry history file
+- `e2e-trends/history.json` — Rolling JSON log of nightly results (max 90 entries) with per-run pass rate, flaky/failed test lists, commit SHA, duration
+- `e2e-trends/index.html` — Static HTML dashboard (Chart.js) showing pass/fail/flaky stacked bar chart, pass rate trend line, top flaky tests table, recent runs table
+- Playwright config updated with JSON reporter (`e2e-results.json`, gitignored) for machine-readable output
+
 ### E2E Test Data Seeding (Task #663)
 Deterministic test data seeding via Playwright globalSetup/globalTeardown so e2e tests don't depend on live database state.
 

@@ -14,6 +14,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ["html", { open: "never", outputFolder: "playwright-report" }],
+    ["json", { outputFile: "e2e-results.json" }],
     ["list"],
   ],
   use: {

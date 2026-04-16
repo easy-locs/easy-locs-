@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -21,7 +21,7 @@ jobs:
   e2e:
     name: Nightly Playwright E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: ${{ env.WORKING_DIR }}
@@ -33,6 +33,9 @@ jobs:
       BASE_URL: ${{ secrets.PRODUCTION_URL }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
@@ -45,7 +48,43 @@ jobs:
       - run: npx playwright install chromium --with-deps
 
       - name: Run E2E tests against production
+        id: e2e
+        continue-on-error: true
         run: npx playwright test
+
+      - name: Collect trend data
+        if: ${{ !cancelled() }}
+        env:
+          E2E_RUN_DATE: ${{ github.event.repository.updated_at || '' }}
+          E2E_TRIGGER: ${{ github.event_name == 'schedule' && 'nightly' || 'manual' }}
+        run: bash scripts/collect-e2e-trends.sh e2e-results.json e2e-trends/history.json
+
+      - name: Generate step summary
+        if: ${{ !cancelled() }}
+        run: |
+          echo "## Nightly E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.e2e.outcome }}" == "success" ]; then
+            echo "✅ **All e2e tests passed**" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some e2e tests failed**" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f e2e-trends/history.json ]; then
+            LATEST=$(node -e "const h=JSON.parse(require('fs').readFileSync('e2e-trends/history.json','utf8'));const l=h[h.length-1];console.log('| Metric | Value |');console.log('|--------|-------|');console.log('| Total | '+l.total+' |');console.log('| Passed | '+l.passed+' |');console.log('| Failed | '+l.failed+' |');console.log('| Flaky | '+l.flaky+' |');console.log('| Pass Rate | '+l.passRate+'% |');console.log('| Duration | '+(l.durationMs/1000).toFixed(1)+'s |');")
+            echo "$LATEST" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Commit trend data
+        if: ${{ !cancelled() }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "${{ env.WORKING_DIR }}/e2e-trends/history.json"
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update e2e trend data [skip ci]"
+          git push
 
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -60,6 +99,13 @@ jobs:
           name: e2e-test-results-nightly
           path: ${{ env.WORKING_DIR }}/test-results/
           retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: e2e-trends
+          path: ${{ env.WORKING_DIR }}/e2e-trends/
+          retention-days: 30
 
   close-stale-issues:
     name: Close stale nightly failure issues
