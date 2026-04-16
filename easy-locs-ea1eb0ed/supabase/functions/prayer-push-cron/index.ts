@@ -50,7 +50,7 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
     }
 
     return new Response(
-      JSON.stringify({ processed: result.processed, sent: result.sent, failed: result.failed }),
+      JSON.stringify({ processed: result.processed, sent: result.sent, failed: result.failed, retried: result.retried }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {

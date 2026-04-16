@@ -1,3 +1,9 @@
+export interface PrayerSendState {
+  state: "claimed" | "sent" | "failed";
+  retry_count: number;
+  claimed_at: string | null;
+}
+
 export interface PrayerScheduleRow {
   user_id: string;
   schedule_date: string;
@@ -5,6 +11,8 @@ export interface PrayerScheduleRow {
   offset_minutes: number;
   timezone: string;
   sent_prayers: string[];
+  prayer_send_states: Record<string, PrayerSendState>;
+  max_retry_count: number;
 }
 
 export interface PrayerNotifyEntry {
@@ -12,6 +20,8 @@ export interface PrayerNotifyEntry {
   prayerName: string;
   prayerTime: string;
   scheduleDate: string;
+  isRetry: boolean;
+  retryCount: number;
 }
 
 export function getCurrentLocalMinutes(timezone: string): { localMinutes: number; localDate: string } {
@@ -57,11 +67,11 @@ export function isWithinWindow(
 }
 
 const PRAYER_ICONS: Record<string, string> = {
-  Fajr: "🌙",
-  Dhuhr: "☀️",
-  Asr: "🌤️",
-  Maghrib: "🌅",
-  Isha: "🌃",
+  Fajr: "\u{1F319}",
+  Dhuhr: "\u{2600}\u{FE0F}",
+  Asr: "\u{1F324}\u{FE0F}",
+  Maghrib: "\u{1F305}",
+  Isha: "\u{1F303}",
 };
 
 export interface CronLogger {
@@ -81,61 +91,67 @@ export interface SupabaseClient {
   rpc(fn: string, params: Record<string, unknown>): PromiseLike<{ data: unknown; error: { message: string } | null }>;
 }
 
-async function retryPushOnce(
+async function sendPushNotification(
   supabase: SupabaseClient,
-  logger: CronLogger,
   userId: string,
   prayerName: string,
   prayerTime: string,
   icon: string,
-): Promise<boolean> {
-  try {
-    await new Promise(r => setTimeout(r, 2000));
-    logger.info("prayer_push_retry", { userId, prayerName });
-    const { data, error } = await supabase.functions.invoke("send-push-notification", {
+): Promise<{ success: boolean; error?: string }> {
+  const { data: invokeResult, error: invokeErr } = await supabase.functions.invoke(
+    "send-push-notification",
+    {
       body: {
         user_id: userId,
-        title: `${icon} ${prayerName} — L'heure de la prière`,
-        body: `Il est ${prayerTime} — C'est l'heure de la prière ${prayerName}.`,
-        data: { event_type: "prayer_time", prayer_name: prayerName, prayer_time: prayerTime, action_url: "/dashboard/islamic?tab=prayer" },
+        title: `${icon} ${prayerName} \u2014 L'heure de la pri\u00E8re`,
+        body: `Il est ${prayerTime} \u2014 C'est l'heure de la pri\u00E8re ${prayerName}.`,
+        data: {
+          event_type: "prayer_time",
+          prayer_name: prayerName,
+          prayer_time: prayerTime,
+          action_url: "/dashboard/islamic?tab=prayer",
+        },
       },
-    });
-    if (error) {
-      logger.error("prayer_push_retry_failed", { userId, prayerName, error: error.message });
-      return false;
-    }
-    const result = data as { sent?: number; error?: string } | null;
-    if (result?.error || (result?.sent ?? 0) === 0) {
-      logger.error("prayer_push_retry_no_delivery", { userId, prayerName });
-      return false;
-    }
-    logger.info("prayer_push_retry_success", { userId, prayerName });
-    return true;
-  } catch (e) {
-    logger.error("prayer_push_retry_exception", { userId, prayerName, error: e instanceof Error ? e.message : String(e) });
-    return false;
+    },
+  );
+
+  if (invokeErr) {
+    return { success: false, error: invokeErr.message };
   }
+
+  const resultData = invokeResult as { sent?: number; failed?: number; error?: string } | null;
+  if (resultData?.error) {
+    return { success: false, error: resultData.error };
+  }
+
+  const actualSent = resultData?.sent ?? 0;
+  if (actualSent === 0) {
+    return { success: false, error: `no_tokens_delivered (failed: ${resultData?.failed ?? 0})` };
+  }
+
+  return { success: true };
 }
 
 export async function processPrayerCron(
   supabase: SupabaseClient,
   logger: CronLogger,
-): Promise<{ processed: number; sent: number; failed: number; error?: string }> {
+): Promise<{ processed: number; sent: number; failed: number; retried: number; error?: string }> {
   const { data: schedules, error: fetchErr } = await supabase
     .from("prayer_push_schedules")
-    .select("user_id, schedule_date, prayers, offset_minutes, timezone, sent_prayers") as { data: PrayerScheduleRow[] | null; error: { message: string } | null };
+    .select("user_id, schedule_date, prayers, offset_minutes, timezone, sent_prayers, prayer_send_states, max_retry_count") as { data: PrayerScheduleRow[] | null; error: { message: string } | null };
 
   if (fetchErr) {
     logger.error("prayer_push_cron_fetch_error", { error: fetchErr.message });
-    return { processed: 0, sent: 0, failed: 0, error: fetchErr.message };
+    return { processed: 0, sent: 0, failed: 0, retried: 0, error: fetchErr.message };
   }
 
   if (!schedules || schedules.length === 0) {
-    return { processed: 0, sent: 0, failed: 0 };
+    return { processed: 0, sent: 0, failed: 0, retried: 0 };
   }
 
   let totalSent = 0;
   let totalFailed = 0;
+  let totalRetried = 0;
 
   const toNotify = findPrayersToNotify(
     schedules,
@@ -143,8 +159,8 @@ export async function processPrayerCron(
   );
 
   for (const entry of toNotify) {
-    const { userId, prayerName, prayerTime } = entry;
-    const icon = PRAYER_ICONS[prayerName] || "🕌";
+    const { userId, prayerName, prayerTime, isRetry, retryCount } = entry;
+    const icon = PRAYER_ICONS[prayerName] || "\u{1F54C}";
 
     try {
       const { data: claimed, error: claimErr } = await supabase.rpc("claim_prayer_send", {
@@ -163,47 +179,45 @@ export async function processPrayerCron(
         continue;
       }
 
-      const { data: invokeResult, error: invokeErr } = await supabase.functions.invoke(
-        "send-push-notification",
-        {
-          body: {
-            user_id: userId,
-            title: `${icon} ${prayerName} — L'heure de la prière`,
-            body: `Il est ${prayerTime} — C'est l'heure de la prière ${prayerName}.`,
-            data: {
-              event_type: "prayer_time",
-              prayer_name: prayerName,
-              prayer_time: prayerTime,
-              action_url: "/dashboard/islamic?tab=prayer",
-            },
-          },
-        },
-      );
+      if (isRetry) {
+        logger.info("prayer_push_retrying", { userId, prayerName, retryCount: retryCount + 1 });
+        totalRetried++;
+      }
 
-      if (invokeErr) {
-        logger.error("prayer_push_invoke_error", { userId, prayerName, error: invokeErr.message });
+      const result = await sendPushNotification(supabase, userId, prayerName, prayerTime, icon);
+
+      if (result.success) {
+        const { error: markErr } = await supabase.rpc("mark_prayer_sent", {
+          p_user_id: userId,
+          p_date: entry.scheduleDate,
+          p_prayer_name: prayerName,
+        });
+        if (markErr) {
+          logger.error("prayer_push_mark_sent_error", { userId, prayerName, error: markErr.message });
+        }
+        logger.info("prayer_push_sent", { userId, prayerName, isRetry });
+        totalSent++;
+      } else {
+        const { error: markErr } = await supabase.rpc("mark_prayer_failed", {
+          p_user_id: userId,
+          p_date: entry.scheduleDate,
+          p_prayer_name: prayerName,
+        });
+        if (markErr) {
+          logger.error("prayer_push_mark_failed_error", { userId, prayerName, error: markErr.message });
+        }
+        logger.error("prayer_push_failed", { userId, prayerName, error: result.error, isRetry, retryCount });
         totalFailed++;
-        continue;
       }
-
-      const resultData = invokeResult as { sent?: number; failed?: number; error?: string } | null;
-      if (resultData?.error) {
-        logger.error("prayer_push_send_failed", { userId, prayerName, error: resultData.error });
-
-        const retryResult = await retryPushOnce(supabase, logger, userId, prayerName, prayerTime, icon);
-        if (retryResult) { totalSent++; } else { totalFailed++; }
-        continue;
-      }
-
-      const actualSent = resultData?.sent ?? 0;
-      if (actualSent === 0) {
-        logger.warn("prayer_push_no_tokens_delivered", { userId, prayerName, failed: resultData?.failed ?? 0 });
-        totalFailed++;
-        continue;
-      }
-
-      totalSent++;
     } catch (e) {
+      const { error: markErr } = await supabase.rpc("mark_prayer_failed", {
+        p_user_id: userId,
+        p_date: entry.scheduleDate,
+        p_prayer_name: prayerName,
+      }).catch(() => ({ error: null })) as { error: { message: string } | null };
+      if (markErr) {
+        logger.error("prayer_push_mark_failed_error", { userId, prayerName, error: markErr.message });
+      }
       logger.error("prayer_push_entry_error", {
         userId,
         prayerName,
@@ -213,8 +227,8 @@ export async function processPrayerCron(
     }
   }
 
-  logger.info("prayer_push_cron_complete", { processed: schedules.length, sent: totalSent, failed: totalFailed });
-  return { processed: schedules.length, sent: totalSent, failed: totalFailed };
+  logger.info("prayer_push_cron_complete", { processed: schedules.length, sent: totalSent, failed: totalFailed, retried: totalRetried });
+  return { processed: schedules.length, sent: totalSent, failed: totalFailed, retried: totalRetried };
 }
 
 export function findPrayersToNotify(
@@ -252,17 +266,33 @@ export function findPrayersToNotify(
 
     if (!matchesDate) continue;
 
-    const sentPrayers = schedule.sent_prayers || [];
+    const sendStates = schedule.prayer_send_states || {};
+    const maxRetries = schedule.max_retry_count ?? 3;
 
     for (const prayer of schedule.prayers) {
-      if (sentPrayers.includes(prayer.name)) continue;
+      const state = sendStates[prayer.name];
 
-      if (isWithinWindow(prayer.time, schedule.offset_minutes, localMinutes)) {
+      if (state?.state === "sent") continue;
+
+      if (state?.state === "claimed") {
+        const claimedAt = state.claimed_at ? new Date(state.claimed_at).getTime() : 0;
+        const isStale = claimedAt > 0 && (Date.now() - claimedAt) > 5 * 60 * 1000;
+        if (!isStale) continue;
+      }
+
+      if (state?.state === "failed" && state.retry_count >= maxRetries) continue;
+
+      const isRetry = state?.state === "failed" || state?.state === "claimed";
+      const retryCount = state?.retry_count ?? 0;
+
+      if (isRetry || isWithinWindow(prayer.time, schedule.offset_minutes, localMinutes)) {
         toNotify.push({
           userId: schedule.user_id,
           prayerName: prayer.name,
           prayerTime: prayer.time,
           scheduleDate: schedule.schedule_date,
+          isRetry,
+          retryCount,
         });
       }
     }
