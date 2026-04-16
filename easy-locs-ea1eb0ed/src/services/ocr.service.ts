@@ -18,13 +18,20 @@ interface FieldPattern {
   patterns: RegExp[];
 }
 
+const BOUNDARY_LOOKAHEAD =
+  "(?=\\s+(?:nombre|surname|family|name|isim|nome|nom|d\\.?o\\.?b|birth|born|date|naissance|no|number|num|id|document|expir|valid|exp|nationality|nationalit|ciudadania|sex|gender|sexe)\\b|\\s*\\d|\\s*$)";
+
+function boundedPattern(label: string, capture: string): RegExp {
+  return new RegExp(`(?:${label})\\b\\s*[:\\-]?\\s*${capture}${BOUNDARY_LOOKAHEAD}`, "i");
+}
+
 const FIELD_PATTERNS: FieldPattern[] = [
   {
     key: "full_name",
     label: "Full Name",
     patterns: [
-      /(?:name|nom|nombre|isim|nome)\s*[:\-]?\s*([A-Z][a-zA-Z\s\-']+)/i,
-      /(?:surname|family)\s*[:\-]?\s*([A-Z][a-zA-Z\s\-']+)/i,
+      boundedPattern("nombre|name|isim|nome|nom", "([A-Z][a-zA-Z\\-']+(?:\\s+[a-zA-Z\\-']+)*?)"),
+      boundedPattern("surname|family", "([A-Z][a-zA-Z\\-']+(?:\\s+[a-zA-Z\\-']+)*?)"),
     ],
   },
   {
@@ -54,7 +61,7 @@ const FIELD_PATTERNS: FieldPattern[] = [
     key: "nationality",
     label: "Nationality",
     patterns: [
-      /(?:nationality|nationalite|ciudadania)\s*[:\-]?\s*([A-Z][a-zA-Z\s]+)/i,
+      boundedPattern("nationality|nationalite|ciudadania", "([A-Z][a-zA-Z\\-']+(?:\\s+[a-zA-Z\\-']+)*?)"),
     ],
   },
   {
