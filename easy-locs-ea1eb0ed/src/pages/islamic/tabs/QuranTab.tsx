@@ -228,7 +228,7 @@ export default function QuranTab() {
   const [storageLimitMB, setStorageLimitMBState] = useState(getStorageLimitMB);
   const [totalCacheSizeMB, setTotalCacheSizeMB] = useState(0);
   const [bulkDownloadQueue, setBulkDownloadQueue] = useState<number[]>([]);
-  const [bulkDownloadProgress, setBulkDownloadProgress] = useState<{ completed: number; total: number; failed: number } | null>(null);
+  const [bulkDownloadProgress, setBulkDownloadProgress] = useState<{ completed: number; total: number; failed: number; failedSurahs: number[] } | null>(null);
   const [bulkSelectMode, setBulkSelectMode] = useState(false);
   const [bulkSelected, setBulkSelected] = useState<Set<number>>(new Set());
   const bulkCancelledRef = useRef(false);
@@ -483,7 +483,7 @@ export default function QuranTab() {
     bulkRunningRef.current = true;
     bulkCancelledRef.current = false;
     setBulkDownloadQueue(toDownload);
-    setBulkDownloadProgress({ completed: 0, total: toDownload.length, failed: 0 });
+    setBulkDownloadProgress({ completed: 0, total: toDownload.length, failed: 0, failedSurahs: [] });
     setBulkSelectMode(false);
     setBulkSelected(new Set());
 
@@ -491,6 +491,7 @@ export default function QuranTab() {
     const withTranslit = audioStore.transliterationEnabled;
     let completed = 0;
     let failed = 0;
+    const failedNums: number[] = [];
 
     for (const surahNum of toDownload) {
       if (bulkCancelledRef.current) break;
@@ -528,13 +529,15 @@ export default function QuranTab() {
           completed++;
         } else {
           failed++;
+          failedNums.push(surahNum);
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") break;
         failed++;
+        failedNums.push(surahNum);
       }
       bulkUserAbortRef.current = null;
-      setBulkDownloadProgress({ completed: completed + failed, total: toDownload.length, failed });
+      setBulkDownloadProgress({ completed: completed + failed, total: toDownload.length, failed, failedSurahs: [...failedNums] });
     }
 
     setDownloadingSurah(null);
@@ -1183,6 +1186,11 @@ export default function QuranTab() {
                 {QURAN_SURAHS.find(s => s.number === downloadingSurah)?.nameFr ?? `Sourate ${downloadingSurah}`}
               </p>
             )}
+            {bulkDownloadProgress.failedSurahs.length > 0 && (
+              <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+                Échouées : {bulkDownloadProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+              </p>
+            )}
           </div>
         )}
 
@@ -1552,6 +1560,11 @@ export default function QuranTab() {
               {QURAN_SURAHS.find(s => s.number === bulkProgress.current)?.nameFr ?? `Sourate ${bulkProgress.current}`}...
             </p>
           )}
+          {bulkProgress.failedSurahs.length > 0 && (
+            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+              Échouées : {bulkProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+            </p>
+          )}
         </motion.div>
       )}
 
@@ -1735,6 +1748,11 @@ export default function QuranTab() {
               style={{ background: GOLD, width: `${Math.round((bulkDownloadProgress.completed / bulkDownloadProgress.total) * 100)}%` }}
             />
           </div>
+          {bulkDownloadProgress.failedSurahs.length > 0 && (
+            <p className="text-[10px] leading-relaxed" style={{ color: "hsl(0 80% 50%)" }}>
+              Échouées : {bulkDownloadProgress.failedSurahs.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`).join(", ")}
+            </p>
+          )}
         </div>
       )}
 
