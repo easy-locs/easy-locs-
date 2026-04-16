@@ -299,27 +299,66 @@ export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
 }
 
 export interface ReconciliationStats {
-  total_reconciled_24h: number;
-  failures_found: number;
+  total_dispatched_24h: number;
+  confirmed_success: number;
+  edge_function_error: number;
   stale_no_response: number;
-  edge_function_failures: number;
+  pending_reconciliation: number;
+  transport_errors: number;
+  timeouts: number;
+  http_errors: { status: number; count: number }[];
+  last_reconciled_at: string | null;
 }
 
-export async function fetchReconciliationStats(): Promise<ReconciliationStats> {
+export async function fetchReconciliationStats(
+  jobName = "prayer-push-cron",
+): Promise<ReconciliationStats> {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await db("cron_execution_log")
-    .select("metadata")
-    .not("metadata->>reconciliation", "is", null)
-    .gte("started_at", cutoff);
+    .select("metadata, started_at")
+    .eq("job_name", jobName)
+    .not("metadata->>pg_net_request_id", "is", null)
+    .gte("started_at", cutoff)
+    .order("started_at", { ascending: false });
 
   if (error) throw error;
-  const rows = (data ?? []) as { metadata: Record<string, unknown> }[];
+  const rows = (data ?? []) as { metadata: Record<string, unknown>; started_at: string }[];
+
+  const dispatched = rows.filter(r => r.metadata?.dispatch_status);
+  const confirmed = dispatched.filter(r => r.metadata.dispatch_status === "confirmed_success");
+  const edgeErrors = dispatched.filter(r => r.metadata.dispatch_status === "edge_function_error");
+  const stale = dispatched.filter(r => r.metadata.dispatch_status === "stale_no_response");
+  const pending = dispatched.filter(r => r.metadata.dispatch_status === "dispatched" && r.metadata.reconciled !== true);
+
+  const transportErrs = edgeErrors.filter(r => {
+    const te = r.metadata.transport_error;
+    return typeof te === "string" && te.length > 0;
+  });
+  const timedOut = edgeErrors.filter(r => r.metadata.timed_out === true);
+
+  const httpStatusMap = new Map<number, number>();
+  for (const r of edgeErrors) {
+    const status = r.metadata.http_status;
+    if (typeof status === "number" && status > 0) {
+      httpStatusMap.set(status, (httpStatusMap.get(status) ?? 0) + 1);
+    }
+  }
+
+  const reconciledRows = dispatched.filter(r => r.metadata.reconciled === true);
+  const lastReconciled = reconciledRows.length > 0 ? reconciledRows[0].started_at : null;
 
   return {
-    total_reconciled_24h: rows.length,
-    failures_found: rows.filter(r => r.metadata?.reconciliation).length,
-    stale_no_response: rows.filter(r => r.metadata?.reconciliation === "stale_no_response").length,
-    edge_function_failures: rows.filter(r => r.metadata?.reconciliation === "edge_function_failure").length,
+    total_dispatched_24h: dispatched.length,
+    confirmed_success: confirmed.length,
+    edge_function_error: edgeErrors.length,
+    stale_no_response: stale.length,
+    pending_reconciliation: pending.length,
+    transport_errors: transportErrs.length,
+    timeouts: timedOut.length,
+    http_errors: Array.from(httpStatusMap.entries())
+      .map(([status, count]) => ({ status, count }))
+      .sort((a, b) => b.count - a.count),
+    last_reconciled_at: lastReconciled,
   };
 }
 
