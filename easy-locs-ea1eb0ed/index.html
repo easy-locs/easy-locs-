@@ -497,6 +497,33 @@
         var timeoutMs = 15000;
         var retryKey = '__el_boot_retry_v1';
 
+        function nukeServiceWorkersAndCaches() {
+          var swPromise = (navigator.serviceWorker && navigator.serviceWorker.getRegistrations)
+            ? navigator.serviceWorker.getRegistrations().then(function(regs){
+                return Promise.all(regs.map(function(r){ return r.unregister().catch(function(){}); }));
+              }).catch(function(){})
+            : Promise.resolve();
+          var cachePromise = (window.caches && caches.keys)
+            ? caches.keys().then(function(n){
+                return Promise.all(n.map(function(k){ return caches.delete(k).catch(function(){}); }));
+              }).catch(function(){})
+            : Promise.resolve();
+          return Promise.all([swPromise, cachePromise]);
+        }
+
+        // Emergency bypass: visit easy-locs.com/?nosw=1 or /?reset=1 to nuke SW + caches
+        try {
+          var qs = new URLSearchParams(window.location.search);
+          if (qs.has('nosw') || qs.has('reset')) {
+            nukeServiceWorkersAndCaches().then(function(){
+              qs.delete('nosw'); qs.delete('reset');
+              var clean = window.location.pathname + (qs.toString() ? '?' + qs.toString() : '');
+              window.location.replace(clean);
+            });
+            return;
+          }
+        } catch(e) {}
+
         function hasVisibleApp(root) {
           if (!root) return false;
           if (window.__EASYLOCS_BOOTED__ || window.__EASYLOCS_REACT_MOUNTED__) return true;
@@ -511,12 +538,16 @@
           var alreadyRetried = sessionStorage.getItem(retryKey) === '1';
           if (!alreadyRetried) {
             try { sessionStorage.setItem(retryKey, '1'); } catch(e) {}
-            try { caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).then(function(){location.reload()}).catch(function(){location.reload()}) } catch(e) { location.reload(); }
+            nukeServiceWorkersAndCaches().then(function(){ location.reload(); });
             return;
           }
           sessionStorage.removeItem(retryKey);
           var target = root.querySelector('#app-loading') || root;
-          target.innerHTML = '<div style="text-align:center;max-width:400px;padding:20px;"><p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Unable to load Easy-Locs</p><p style="font-size:13px;color:#94a3b8;margin:0 0 16px;">Please check your connection and try again.</p><button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).then(function(){location.reload()})}catch(e){location.reload()}" style="background:#1AAE8E;color:#0D1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Reload</button></div>';
+          target.innerHTML = '<div style="text-align:center;max-width:400px;padding:20px;"><p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Unable to load Easy-Locs</p><p style="font-size:13px;color:#94a3b8;margin:0 16px 16px;">Please check your connection and try again.</p><button id="el-reload-btn" style="background:#1AAE8E;color:#0D1117;border:none;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-right:8px;">Reload</button><button id="el-reset-btn" style="background:transparent;color:#94a3b8;border:1px solid #334155;padding:10px 24px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Full reset</button></div>';
+          var reload = document.getElementById('el-reload-btn');
+          var reset = document.getElementById('el-reset-btn');
+          if (reload) reload.onclick = function(){ nukeServiceWorkersAndCaches().then(function(){ location.reload(); }); };
+          if (reset) reset.onclick = function(){ nukeServiceWorkersAndCaches().then(function(){ window.location.replace('/?nosw=1'); }); };
         }
 
         function checkBoot() {
