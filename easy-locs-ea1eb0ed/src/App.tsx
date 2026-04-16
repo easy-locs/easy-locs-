@@ -704,7 +704,7 @@ const App = () => (
                   <Route path="/map" element={<Navigate to="/radar" replace />} />
                   <Route path="/discover" element={<Navigate to="/radar" replace />} />
                   <Route path="/search" element={<Navigate to="/radar" replace />} />
-                  <Route path="/explore" element={<FeatureErrorBoundary featureName="Radar"><ExplorePage /></FeatureErrorBoundary>} />
+                  <Route path="/explore" element={<FeatureErrorBoundary featureName="Radar"><Suspense fallback={<PillarSkeleton pillar="radar" />}><ExplorePage /></Suspense></FeatureErrorBoundary>} />
                   <Route path="/geo-explorer" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
                   <Route path="/geo-explorer/:countryCode" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
                   <Route path="/geo-explorer/:countryCode/:cityId" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />

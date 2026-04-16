@@ -185,3 +185,7 @@ const LeafletFallbackMap = memo(function LeafletFallbackMap({
 });
 
 export default LeafletFallbackMap;
+
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}

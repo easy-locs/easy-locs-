@@ -164,6 +164,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [hasDualRole, setHasDualRole] = useState(false);
   const [allOrgs, setAllOrgs] = useState<{ id: string; name: string; country: string; currency: string }[]>([]);
   const bootstrapOrbitRef = useRef<string | null>(null);
+  const authInitRef = useRef(false);
 
   const AUTH_QUERY_TIMEOUT = 4_000;
   const withTimeout = useCallback(<T,>(thenable: PromiseLike<T>, label: string, customMs?: number): Promise<T> =>
@@ -338,6 +339,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshSubRef = useCallback(() => refreshSubscription(), [refreshSubscription]);
 
   useEffect(() => {
+    if (authInitRef.current) return;
+    authInitRef.current = true;
+
     let mounted = true;
     let latestSeq = 0;
     const safetyTimeout = window.setTimeout(() => {

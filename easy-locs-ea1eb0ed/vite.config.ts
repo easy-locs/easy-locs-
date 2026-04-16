@@ -46,7 +46,7 @@ function cacheControlPlugin(): Plugin {
     name: "cache-control-headers",
     configureServer(server: ViteDevServer) {
       server.middlewares.use((req: IncomingMessage, res: ServerResponse, next: () => void) => {
-        if (req.url?.match(/\.(js|css|woff2?|ttf|eot|png|jpg|jpeg|svg|gif|webp|ico)(\?|$)/)) {
+        if (req.url?.match(/\.(woff2?|ttf|eot|png|jpg|jpeg|gif|webp|ico)(\?|$)/)) {
           res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
         }
         next();
