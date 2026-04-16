@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 const CI_PREVIEW_PORT = 4173;
 const BASE_URL = process.env.BASE_URL || (process.env.CI ? `http://localhost:${CI_PREVIEW_PORT}` : "http://localhost:5000");
+const isExternalUrl = !!process.env.BASE_URL && !/localhost|127\.0\.0\.1|\[::1\]/.test(process.env.BASE_URL);
 
 export default defineConfig({
   testDir: "./e2e",
@@ -36,10 +37,12 @@ export default defineConfig({
       use: { ...devices["Pixel 5"] },
     },
   ],
-  webServer: {
-    command: process.env.CI ? `npx vite preview --port ${CI_PREVIEW_PORT} --strict-port` : "npm run dev",
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  ...(!isExternalUrl && {
+    webServer: {
+      command: process.env.CI ? `npx vite preview --port ${CI_PREVIEW_PORT} --strict-port` : "npm run dev",
+      url: BASE_URL,
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  }),
 });
