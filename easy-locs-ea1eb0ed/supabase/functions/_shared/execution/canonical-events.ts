@@ -14,6 +14,23 @@ export const CANONICAL_EXECUTION_EVENTS = {
   TASK_SUCCEEDED: "task.succeeded",
   TASK_FAILED: "task.failed",
   TASK_BLOCKED: "task.blocked",
+  /**
+   * Emitted when a registered `TaskVerifier` confirms the expected post-
+   * mutation state (task #753). Carries the verifier's optional `details`.
+   */
+  TASK_VERIFIED: "task.verified",
+  /**
+   * Emitted when a `TaskVerifier` reports a mismatch between expected and
+   * actual state (task #753). Carries `expected`, `actual`, and the
+   * `mismatch_path`. The orchestrator transitions the task to `failed` with
+   * `error_code = VERIFICATION_MISMATCH` right after this event.
+   */
+  TASK_VERIFICATION_FAILED: "task.verification_failed",
+  /**
+   * Legacy placeholder kept for backwards compatibility. New code should not
+   * emit it — every task is now required to have a verifier, otherwise it
+   * is blocked with `error_code = NO_VERIFIER`.
+   */
   TASK_VERIFICATION_SKIPPED: "task.verification_skipped",
   TASK_UNLOCKED: "task.unlocked",
   TASK_IDEMPOTENT_HIT: "task.idempotent_hit",

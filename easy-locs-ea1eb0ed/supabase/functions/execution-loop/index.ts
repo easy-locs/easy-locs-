@@ -33,6 +33,8 @@ import { getAgentForDomain } from "../_shared/execution-agents/registry.ts";
 import type { AgentTaskInput, AgentTaskOutput } from "../_shared/execution-agents/contract.ts";
 import { ExecutionOrchestratorV2 } from "../_shared/execution/orchestrator-v2.ts";
 import { globalAdapterRegistry } from "../_shared/execution/adapter-registry.ts";
+import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.ts";
+import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
@@ -296,6 +298,9 @@ function getOrchestratorV2(): ExecutionOrchestratorV2 {
     idempotency: new PostgresIdempotencyService(sb),
     validator,
     sink,
+    // Phase-2 task #753: non-skippable Verification Layer. Missing verifier
+    // → NO_VERIFIER → blocked.
+    verification: new TaskVerificationService(globalVerifierRegistry),
     ownerId: `execution-loop-${crypto.randomUUID()}`,
   });
   return _orchestrator;

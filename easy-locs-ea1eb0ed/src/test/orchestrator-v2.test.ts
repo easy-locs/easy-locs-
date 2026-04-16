@@ -28,6 +28,13 @@ import {
   InMemoryEventSink,
   CANONICAL_EXECUTION_EVENTS,
 } from "../../supabase/functions/_shared/execution/canonical-events.ts";
+import {
+  VerifierRegistry,
+  type TaskVerifier,
+} from "../../supabase/functions/_shared/execution/verifier-registry.ts";
+import {
+  TaskVerificationService,
+} from "../../supabase/functions/_shared/execution/verification-service.ts";
 import type {
   AdapterResult,
   DomainAdapter,
@@ -116,6 +123,12 @@ const PASSING_VALIDATOR: ValidationGate = {
   validate: async () => ({ ok: true }),
 };
 
+const PASSING_VERIFIER = (domain: string, taskType: string): TaskVerifier => ({
+  domain,
+  taskType,
+  verify: async () => ({ ok: true }),
+});
+
 function makeOrchestrator(opts: {
   registry?: AdapterRegistry;
   repo?: MemoryRepository;
@@ -123,12 +136,18 @@ function makeOrchestrator(opts: {
   idem?: MemoryIdempotencyService;
   sink?: InMemoryEventSink;
   validator?: ValidationGate;
+  verifiers?: VerifierRegistry;
+  /** When true (default), auto-register a passing verifier matching the
+   * first adapter so existing happy-path tests stay happy. */
+  autoVerifier?: boolean;
 }) {
   const registry = opts.registry ?? new AdapterRegistry();
   const repo = opts.repo ?? new MemoryRepository();
   const locks = opts.locks ?? new MemoryLockService();
   const idem = opts.idem ?? new MemoryIdempotencyService();
   const sink = opts.sink ?? new InMemoryEventSink();
+  const verifiers = opts.verifiers ?? new VerifierRegistry();
+  const verification = new TaskVerificationService(verifiers);
   const orch = new ExecutionOrchestratorV2({
     registry,
     repository: repo,
@@ -136,10 +155,11 @@ function makeOrchestrator(opts: {
     idempotency: idem,
     validator: opts.validator ?? PASSING_VALIDATOR,
     sink,
+    verification,
     ownerId: "test-orch",
     lockTtlSeconds: 30,
   });
-  return { orch, registry, repo, locks, idem, sink };
+  return { orch, registry, repo, locks, idem, sink, verifiers };
 }
 
 describe("ExecutionOrchestratorV2", () => {
@@ -154,8 +174,9 @@ describe("ExecutionOrchestratorV2", () => {
         actionsTaken: ["did_thing"],
       }),
     };
-    const { orch, registry, repo, sink, locks } = makeOrchestrator({});
+    const { orch, registry, repo, sink, locks, verifiers } = makeOrchestrator({});
     registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER(task.domain, task.type));
     repo.seed(task);
 
     const outcome = await orch.run(task.id);
@@ -168,7 +189,7 @@ describe("ExecutionOrchestratorV2", () => {
       CANONICAL_EXECUTION_EVENTS.TASK_QUEUED,
       CANONICAL_EXECUTION_EVENTS.TASK_LOCKED,
       CANONICAL_EXECUTION_EVENTS.TASK_STARTED,
-      CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_SKIPPED,
+      CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED,
       CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED,
       CANONICAL_EXECUTION_EVENTS.TASK_UNLOCKED,
     ]);
@@ -290,8 +311,9 @@ describe("ExecutionOrchestratorV2", () => {
         };
       },
     };
-    const { orch, registry, repo, sink, locks } = makeOrchestrator({});
+    const { orch, registry, repo, sink, locks, verifiers } = makeOrchestrator({});
     registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER("marketplace", "PUBLISH_LISTING"));
     repo.seed(task);
 
     const outcome = await orch.run(task.id);
@@ -306,7 +328,7 @@ describe("ExecutionOrchestratorV2", () => {
     expect(names[0]).toBe(CANONICAL_EXECUTION_EVENTS.TASK_QUEUED);
     expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_LOCKED);
     expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_STARTED);
-    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_SKIPPED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED);
     expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
     expect(names[names.length - 1]).toBe(CANONICAL_EXECUTION_EVENTS.TASK_UNLOCKED);
     // Every event carries the correlation id from the task.
@@ -322,8 +344,9 @@ describe("ExecutionOrchestratorV2", () => {
       taskType: task.type,
       execute: async () => ({ success: true, output: { ok: true } }),
     };
-    const { orch, registry, repo } = makeOrchestrator({});
+    const { orch, registry, repo, verifiers } = makeOrchestrator({});
     registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER(task.domain, task.type));
     repo.seed(task);
 
     const outcome = await orch.run(task.id);
@@ -375,8 +398,9 @@ describe("ExecutionOrchestratorV2", () => {
         throw new Error("sink down");
       },
     };
-    const { orch, registry, repo } = makeOrchestrator({ sink: failingSink as unknown as InMemoryEventSink });
+    const { orch, registry, repo, verifiers } = makeOrchestrator({ sink: failingSink as unknown as InMemoryEventSink });
     registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER(task.domain, task.type));
     repo.seed(task);
 
     const outcome = await orch.run(task.id);
@@ -384,6 +408,229 @@ describe("ExecutionOrchestratorV2", () => {
     expect(outcome.finalStatus).toBe("succeeded");
     expect((outcome.sinkErrors ?? []).length).toBeGreaterThan(0);
     expect(outcome.sinkErrors?.[0]).toContain("sink down");
+  });
+});
+
+describe("Verification layer (task #753)", () => {
+  it("blocks with NO_VERIFIER when the adapter succeeded but no verifier is registered", async () => {
+    const task = buildTask();
+    let executed = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => {
+        executed = true;
+        return { success: true, output: { ok: true } };
+      },
+    };
+    const { orch, registry, repo, sink, locks } = makeOrchestrator({});
+    registry.register(adapter); // no verifier registered
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(executed).toBe(true);
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBe("NO_VERIFIER");
+    expect(repo.tasks.get(task.id)?.status).toBe("blocked");
+    expect(locks.has("test:TEST_ACTION")).toBe(false); // lock released
+    const names = sink.names();
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_BLOCKED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED);
+    // Persisted verification payload documents the refusal.
+    const result = repo.tasks.get(task.id)?.execution_result as Record<string, unknown> | null;
+    const verification = result?.verification as Record<string, unknown> | undefined;
+    expect(verification?.ok).toBe(false);
+    expect(verification?.error_code).toBe("NO_VERIFIER");
+  });
+
+  it("fails a lying adapter: verifier mismatch blocks the success path and emits task.verification_failed", async () => {
+    const task = buildTask({
+      entity_type: "listing",
+      entity_id: "L-99",
+    });
+    // Lying adapter: claims success but the source of truth will disagree.
+    const lyingAdapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => ({
+        success: true,
+        output: { listingId: "L-99", published: true },
+        actionsTaken: ["fake_publish"],
+      }),
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => ({
+        ok: false,
+        expected: { published: true },
+        actual: { published: false },
+        mismatchPath: "published",
+        details: { source: "db.listings" },
+      }),
+    };
+    const { orch, registry, repo, sink, locks, verifiers } = makeOrchestrator({});
+    registry.register(lyingAdapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.finalStatus).toBe("failed");
+    expect(outcome.errorCode).toBe("VERIFICATION_MISMATCH");
+    expect(repo.tasks.get(task.id)?.status).toBe("failed");
+    expect(locks.has("test:TEST_ACTION")).toBe(false);
+    const names = sink.names();
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_FAILED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED);
+    // Ordering: verification_failed must come before failed.
+    expect(names.indexOf(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED))
+      .toBeLessThan(names.indexOf(CANONICAL_EXECUTION_EVENTS.TASK_FAILED));
+    // task.verification_failed carries expected/actual/mismatch_path.
+    const failedEvt = sink.events.find(
+      (e) => e.name === CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED,
+    );
+    expect(failedEvt?.payload).toMatchObject({
+      errorCode: "VERIFICATION_MISMATCH",
+      expected: { published: true },
+      actual: { published: false },
+      mismatch_path: "published",
+    });
+    // Persisted result captures the structured mismatch.
+    const result = repo.tasks.get(task.id)?.execution_result as Record<string, unknown>;
+    const verification = result.verification as Record<string, unknown>;
+    expect(verification.ok).toBe(false);
+    expect(verification.error_code).toBe("VERIFICATION_MISMATCH");
+    expect(verification.mismatch_path).toBe("published");
+  });
+
+  it("fails with VERIFIER_THREW when the verifier itself raises", async () => {
+    const task = buildTask();
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => ({ success: true }),
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => {
+        throw new Error("db unreachable");
+      },
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({});
+    registry.register(adapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.finalStatus).toBe("failed");
+    expect(outcome.errorCode).toBe("VERIFIER_THREW");
+    expect(outcome.errorMessage).toContain("db unreachable");
+    const names = sink.names();
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_FAILED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
+  });
+
+  it("succeeds and emits task.verified (in order) when the verifier confirms the expected state", async () => {
+    const task = buildTask();
+    let verifyCalls = 0;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => ({ success: true, output: { ok: true } }),
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => {
+        verifyCalls++;
+        return { ok: true, details: { read_at: "2026-04-16T00:00:00.000Z" } };
+      },
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({});
+    registry.register(adapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(verifyCalls).toBe(1);
+    expect(outcome.finalStatus).toBe("succeeded");
+    const names = sink.names();
+    expect(names.indexOf(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED))
+      .toBeLessThan(names.indexOf(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED));
+    // Persisted result merges the verification payload under the canonical key.
+    const result = repo.tasks.get(task.id)?.execution_result as Record<string, unknown>;
+    const verification = result.verification as Record<string, unknown>;
+    expect(verification.ok).toBe(true);
+    expect(verification.details).toMatchObject({ read_at: "2026-04-16T00:00:00.000Z" });
+  });
+
+  it("skips verification entirely when the adapter itself reports failure", async () => {
+    const task = buildTask();
+    let verifyCalls = 0;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => ({
+        success: false,
+        errorCode: "ADAPTER_FAILED",
+        errorMessage: "honest failure",
+      }),
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => {
+        verifyCalls++;
+        return { ok: true };
+      },
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({});
+    registry.register(adapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(verifyCalls).toBe(0);
+    expect(outcome.finalStatus).toBe("failed");
+    expect(outcome.errorCode).toBe("ADAPTER_FAILED");
+    const names = sink.names();
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED);
+    expect(names).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED);
+  });
+});
+
+describe("VerifierRegistry", () => {
+  it("rejects duplicate registration unless overwrite=true", () => {
+    const reg = new VerifierRegistry();
+    const v: TaskVerifier = {
+      domain: "x",
+      taskType: "Y",
+      verify: async () => ({ ok: true }),
+    };
+    reg.register(v);
+    expect(() => reg.register(v)).toThrow(/already registered/);
+    expect(() => reg.register(v, { overwrite: true })).not.toThrow();
+  });
+
+  it("looks up case-insensitively on domain and task type", () => {
+    const reg = new VerifierRegistry();
+    reg.register({
+      domain: "Marketplace",
+      taskType: "publish_listing",
+      verify: async () => ({ ok: true }),
+    });
+    expect(reg.get("marketplace", "PUBLISH_LISTING")).not.toBeNull();
+    expect(reg.has("MARKETPLACE", "publish_listing")).toBe(true);
   });
 });
 

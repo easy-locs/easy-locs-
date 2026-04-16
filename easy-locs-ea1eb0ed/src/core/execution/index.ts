@@ -46,3 +46,24 @@ export {
   type IdempotencyClaimResult,
   type ExistingResult,
 } from "./idempotency-service";
+// Phase-2 (task #753) — verification layer.
+export {
+  VerifierRegistry,
+  verifierRegistry,
+  type TaskVerifier,
+  type VerifierResult,
+  type VerifierOk,
+  type VerifierMismatch,
+} from "./verifier";
+export {
+  TaskVerificationService,
+  taskVerificationService,
+  TASK_VERIFICATION_FAILED_EVENT,
+  VERIFICATION_ERROR_CODES,
+  MAX_VERIFICATION_WINDOW_MS,
+  type VerificationOutcome,
+  type VerificationPersister,
+  type VerificationPersistPatch,
+  type VerificationRunOptions,
+  type VerificationErrorCode,
+} from "./verification-service";
