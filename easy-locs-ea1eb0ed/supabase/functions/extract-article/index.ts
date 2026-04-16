@@ -384,11 +384,19 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {
     const metricsKey = Deno.env.get("CACHE_METRICS_KEY");
     const providedKey = reqUrl.searchParams.get("key");
-    if (metricsKey && providedKey !== metricsKey) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!metricsKey || providedKey !== metricsKey) {
+      return new Response(
+        JSON.stringify({
+          error: "Forbidden",
+          message: !metricsKey
+            ? "CACHE_METRICS_KEY is not configured — metrics endpoint is disabled"
+            : "Invalid metrics key",
+        }),
+        {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
     const snapshot = getCacheMetricsSnapshot();
     logger.info("cache_metrics_requested", snapshot);

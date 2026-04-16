@@ -32,7 +32,7 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 
 ## Cache Performance Metrics for Article Extraction (Task #377)
 - **Metrics Tracking**: `easy-locs-ea1eb0ed/supabase/functions/extract-article/index.ts` — cumulative counters for cache hits, misses, evictions, expirations, and stores with computed hit rate
-- **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); optionally protected via `CACHE_METRICS_KEY` env var
+- **Diagnostic Endpoint**: `GET /metrics` — returns JSON snapshot of all cache metrics (hit rate, current size, uptime, counters); **requires** `CACHE_METRICS_KEY` env var (returns 403 if not configured or if key mismatch)
 - **Periodic Logging**: `cache_metrics_summary` log entry emitted every 5 minutes during active requests for production monitoring
 - **Enhanced Logs**: `cache_hit` and `cache_miss` log entries now include running metrics (hit rate, total misses)
 
