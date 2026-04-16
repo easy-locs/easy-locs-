@@ -93,9 +93,9 @@ function OverviewTab() {
         db("approval_requests").select("*", { count: "exact", head: true }).eq("status", "pending"),
         db("monitoring_findings").select("*", { count: "exact", head: true }).eq("status", "open"),
         db("system_health_snapshots").select("*").order("checked_at", { ascending: false }).limit(10),
-        dashboardRepo.countExecutionTasks({ status: "PENDING" }).catch(() => 0),
-        dashboardRepo.countExecutionTasks({ status: "RUNNING" }).catch(() => 0),
-        dashboardRepo.countExecutionTasks({ status: "BLOCKED" }).catch(() => 0),
+        dashboardRepo.countExecutionTasks({ status: "queued" }).catch(() => 0),
+        dashboardRepo.countExecutionTasks({ status: "running" }).catch(() => 0),
+        dashboardRepo.countExecutionTasks({ status: "blocked" }).catch(() => 0),
       ]);
       return {
         activeAgents: agents.count || 0,
@@ -779,16 +779,31 @@ function actorColor(actor: string): string {
   }
 }
 
-type ExecStatusFilter = "" | "PENDING" | "RUNNING" | "SUCCESS" | "FAILED" | "BLOCKED";
+type ExecStatusFilter =
+  | ""
+  | "draft"
+  | "pending_review"
+  | "approved"
+  | "rejected"
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "blocked"
+  | "rolled_back"
+  | "cancelled";
 type ExecRiskFilter = "" | "SAFE" | "MEDIUM" | "CRITICAL";
 
 const EXEC_STATUSES: { id: ExecStatusFilter; label: string }[] = [
   { id: "", label: "All" },
-  { id: "PENDING", label: "Pending" },
-  { id: "RUNNING", label: "Running" },
-  { id: "SUCCESS", label: "Success" },
-  { id: "BLOCKED", label: "Blocked" },
-  { id: "FAILED", label: "Failed" },
+  { id: "pending_review", label: "Pending Review" },
+  { id: "queued", label: "Queued" },
+  { id: "running", label: "Running" },
+  { id: "succeeded", label: "Succeeded" },
+  { id: "blocked", label: "Blocked" },
+  { id: "failed", label: "Failed" },
+  { id: "rolled_back", label: "Rolled Back" },
+  { id: "cancelled", label: "Cancelled" },
 ];
 
 const EXEC_RISKS: { id: ExecRiskFilter; label: string }[] = [
@@ -908,11 +923,17 @@ function ExecutionTab() {
 
 function ExecStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    PENDING: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    RUNNING: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    SUCCESS: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    BLOCKED: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-    FAILED: "bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+    draft: "bg-slate-100 text-slate-700 dark:bg-slate-900/30 dark:text-slate-400",
+    pending_review: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    rejected: "bg-zinc-200 text-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-300",
+    queued: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    running: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    succeeded: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    failed: "bg-red-200 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+    blocked: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    rolled_back: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    cancelled: "bg-zinc-200 text-zinc-700 dark:bg-zinc-900/50 dark:text-zinc-300",
   };
   return (
     <span className={`text-[0.625rem] font-bold px-2 py-0.5 rounded-full ${colors[status] || "bg-muted text-muted-foreground"}`}>

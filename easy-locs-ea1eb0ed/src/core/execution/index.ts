@@ -19,3 +19,10 @@ export {
   type OrchestratorTransport,
   type OrchestratorResponse,
 } from "./orchestrator-adapter";
+// Phase-2 (task #750) — v2 transition matrix mirror.
+export {
+  TASK_TRANSITIONS,
+  assertTaskTransition,
+  isTerminalStatus,
+  type TransitionAssertion,
+} from "./transitions";

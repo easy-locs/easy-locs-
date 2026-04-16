@@ -25,6 +25,10 @@ import type {
 } from "./types";
 
 export interface OrchestratorResponse {
+  // v2 status alignment (task #750): kept as a small enum here because the
+  // transport contract historically signalled outcome with these three
+  // tokens. They are mapped to the v2 lifecycle states (succeeded / failed /
+  // queued) before any DB transition.
   status: "SUCCESS" | "FAILED" | "PENDING";
   result?: Record<string, unknown>;
   error?: string;
@@ -64,7 +68,7 @@ export class OrchestratorAdapter {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select("*")
-      .eq("status", "PENDING")
+      .eq("status", "queued")
       .order("created_at", { ascending: true })
       .limit(limit);
 
@@ -94,7 +98,7 @@ export class OrchestratorAdapter {
             : "SAFE";
       const reason =
         `ADAPTER_RISK_MISMATCH: stored risk_level=${task.risk_level} but classifier=${classifiedRisk} for type=${task.type} — promoting to ${stricter} and blocking`;
-      await this.transition(task.id, "BLOCKED", {
+      await this.transition(task.id, "blocked", {
         blocked_reason: reason,
         risk_level: stricter,
       } as never);
@@ -118,7 +122,7 @@ export class OrchestratorAdapter {
     });
     if (revalidation.blocked) {
       const reason = `ADAPTER_REVALIDATION_FAILED: ${revalidation.blockedReason}`;
-      await this.transition(task.id, "BLOCKED", { blocked_reason: reason });
+      await this.transition(task.id, "blocked", { blocked_reason: reason });
       await this.log(task, "blocked", reason, 0);
       return { status: "FAILED", error: reason };
     }
@@ -127,7 +131,7 @@ export class OrchestratorAdapter {
     if (task.risk_level === "CRITICAL" && !task.approved_by) {
       const reason =
         `ADAPTER_REJECTED_CRITICAL: task ${task.id} (${task.type}) is CRITICAL without approved_by`;
-      await this.transition(task.id, "BLOCKED", { blocked_reason: reason });
+      await this.transition(task.id, "blocked", { blocked_reason: reason });
       await this.log(task, "blocked", reason, 0);
       return { status: "FAILED", error: reason };
     }
@@ -152,7 +156,7 @@ export class OrchestratorAdapter {
       };
     }
 
-    await this.transition(task.id, "RUNNING", {
+    await this.transition(task.id, "running", {
       attempt_count: task.attempt_count + 1,
     });
 
@@ -169,12 +173,12 @@ export class OrchestratorAdapter {
     const durationMs = Date.now() - start;
 
     if (response.status === "SUCCESS") {
-      await this.transition(task.id, "SUCCESS", {
+      await this.transition(task.id, "succeeded", {
         result: response.result ?? {},
         error: null,
       });
     } else {
-      await this.transition(task.id, "FAILED", {
+      await this.transition(task.id, "failed", {
         error: response.error ?? "unknown orchestrator failure",
       });
     }
