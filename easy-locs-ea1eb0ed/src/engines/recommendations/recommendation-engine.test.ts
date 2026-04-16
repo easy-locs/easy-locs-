@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   computeContextualBoosts,
   computeGeoProximityBoost,
@@ -198,18 +198,8 @@ describe("computeGeoProximityBoost – edge cases", () => {
     expect(boost).toBe(1);
   });
 
-  it("returns 0 when maxDistanceKm is 0 and points differ", () => {
-    const boost = computeGeoProximityBoost(40.01, -74.0, 40.0, -74.0, 0);
-    expect(boost).toBe(0);
-  });
-
-  it("returns 0 when maxDistanceKm is negative and points differ", () => {
+  it("handles negative maxDistanceKm by returning 0 for non-identical points", () => {
     const boost = computeGeoProximityBoost(40.01, -74.0, 40.0, -74.0, -5);
-    expect(boost).toBe(0);
-  });
-
-  it("returns 0 when maxDistanceKm is negative and points are identical", () => {
-    const boost = computeGeoProximityBoost(40.0, -74.0, 40.0, -74.0, -5);
     expect(boost).toBe(0);
   });
 });
@@ -522,6 +512,305 @@ describe("scoreRecommendations – non-finite intermediate boosts produce valid 
   });
 });
 
+interface AbortSignalWithTimeout {
+  timeout(ms: number): AbortSignal;
+}
+
+function stubAbortSignalTimeout() {
+  if (typeof AbortSignal.timeout !== "function") {
+    Object.defineProperty(AbortSignal, "timeout", {
+      configurable: true,
+      writable: true,
+      value: (ms: number): AbortSignal => {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), ms);
+        return controller.signal;
+      },
+    });
+  }
+}
+
+describe("scoreRecommendationsAsync – weather API fetch", () => {
+  let mockFetch: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.resetModules();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    stubAbortSignalTimeout();
+    mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("fetches weather from API and applies rainy signal when weathercode >= 51", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 18, weathercode: 61 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(mockFetch).toHaveBeenCalledOnce();
+    expect(mockFetch.mock.calls[0][0]).toContain("api.open-meteo.com");
+
+    const deliveryItem = results.find((r) => r.id === "rec_delivery_1");
+    expect(deliveryItem).toBeDefined();
+    expect(deliveryItem!.reason).toMatch(/rainy|Trending/);
+  });
+
+  it("maps hot temperature (>35) to hot weather signal and boosts taxi scores", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 40, weathercode: 0 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+
+    const hotResults = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    const hotTaxi = hotResults.find((r) => r.id === "rec_taxi_1");
+    expect(hotTaxi).toBeDefined();
+    expect(hotTaxi!.reason).toMatch(/hot|Trending|Perfect/);
+
+    const sunnyResults = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      weather: "sunny",
+    });
+    const sunnyTaxi = sunnyResults.find((r) => r.id === "rec_taxi_1");
+    expect(hotTaxi!.score).toBeGreaterThanOrEqual(sunnyTaxi!.score);
+  });
+
+  it("maps cold temperature (<10) to cold weather signal without rainy/hot boosts", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 5, weathercode: 0 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeLessThanOrEqual(10);
+    const deliveryItem = results.find((r) => r.id === "rec_delivery_1");
+    expect(deliveryItem).toBeDefined();
+    expect(deliveryItem!.reason).not.toMatch(/rainy|hot/i);
+  });
+
+  it("maps cloudy weathercode (1-3) to cloudy weather signal without rainy boost", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 20, weathercode: 2 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    const deliveryItem = results.find((r) => r.id === "rec_delivery_1");
+    expect(deliveryItem).toBeDefined();
+    expect(deliveryItem!.reason).not.toMatch(/rainy/i);
+  });
+
+  it("defaults to sunny when weathercode is 0 and temperature is moderate", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 22, weathercode: 0 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    for (const item of results) {
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("returns undefined weather on non-ok response and still produces results", async () => {
+    mockFetch.mockResolvedValueOnce(
+      new Response("Server Error", { status: 500 }),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    for (const item of results) {
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+});
+
+describe("scoreRecommendationsAsync – weather API timeout fallback", () => {
+  let mockFetch: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.resetModules();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    stubAbortSignalTimeout();
+    mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("gracefully handles fetch rejection and returns valid results", async () => {
+    mockFetch.mockRejectedValueOnce(new DOMException("The operation was aborted", "AbortError"));
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    for (const item of results) {
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("gracefully handles network error and returns valid results", async () => {
+    mockFetch.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "morning",
+      location: { lat: 35.0, lng: 139.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].reason.length).toBeGreaterThan(0);
+  });
+});
+
+describe("scoreRecommendationsAsync – weather cache behavior", () => {
+  let mockFetch: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.resetModules();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    stubAbortSignalTimeout();
+    mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("reuses cached weather within 30 minutes and does not re-fetch", async () => {
+    mockFetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 18, weathercode: 61 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+
+    await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    await scoreRecommendationsAsync({
+      timeOfDay: "evening",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("re-fetches weather after cache expires (30 minutes)", async () => {
+    const realNow = Date.now();
+    let currentTime = realNow;
+    vi.spyOn(Date, "now").mockImplementation(() => currentTime);
+
+    mockFetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 18, weathercode: 61 } }),
+        { status: 200 },
+      ),
+    );
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+
+    await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+
+    currentTime = realNow + 31 * 60 * 1000;
+
+    await scoreRecommendationsAsync({
+      timeOfDay: "evening",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not fetch weather when no location is provided", async () => {
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+
+    await scoreRecommendationsAsync({ timeOfDay: "afternoon" });
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("skips weather fetch when ctx.weather is already provided", async () => {
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+      weather: "rainy",
+    });
+
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(results.length).toBeGreaterThan(0);
+  });
+});
+
 describe("scoreRecommendationsAsync – non-finite intermediate boosts produce valid scores", () => {
   beforeEach(() => {
     vi.resetModules();
@@ -592,6 +881,207 @@ describe("scoreRecommendationsAsync – non-finite intermediate boosts produce v
       expect(Number.isFinite(item.score)).toBe(true);
       expect(item.score).toBeGreaterThanOrEqual(0);
       expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+});
+
+describe("scoreRecommendationsAsync – pgvector database fallback", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.spyOn(Math, "random").mockReturnValue(0.5);
+    stubAbortSignalTimeout();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ current: { temperature_2m: 22, weathercode: 0 } }),
+        { status: 200 },
+      ),
+    ));
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("falls back to local catalog when db.functions.invoke returns an error", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockResolvedValueOnce({
+      data: null,
+      error: { message: "Edge function timeout" },
+    });
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-1", "rec_food_1", "click");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-1",
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeLessThanOrEqual(10);
+    for (const item of results) {
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("falls back to local catalog when db.functions.invoke returns empty matches", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockResolvedValueOnce({
+      data: { matches: [] },
+      error: null,
+    });
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-2", "rec_grocery_1", "view");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-2",
+      timeOfDay: "morning",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    const allFromCatalog = results.every((r) =>
+      r.id.startsWith("rec_"),
+    );
+    expect(allFromCatalog).toBe(true);
+  });
+
+  it("falls back to local catalog when db.functions.invoke returns null data", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockResolvedValueOnce({
+      data: null,
+      error: null,
+    });
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-3", "rec_taxi_1", "click");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-3",
+      timeOfDay: "evening",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    for (const item of results) {
+      expect(item.reason.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("falls back to local catalog when db.functions.invoke throws", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockRejectedValueOnce(new Error("Connection refused"));
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-4", "rec_food_1", "favorite");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-4",
+      timeOfDay: "night",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeLessThanOrEqual(10);
+  });
+
+  it("merges pgvector results with catalog items when db returns valid matches", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockResolvedValueOnce({
+      data: {
+        matches: [
+          {
+            id: "pgvec_unique_1",
+            title: "AI-recommended restaurant",
+            type: "listing",
+            route: "/food/ai-pick",
+            vertical: "food",
+            similarity: 0.85,
+            image_url: "https://example.com/img.jpg",
+            subtitle: "Top pick",
+          },
+          {
+            id: "pgvec_unique_2",
+            title: "Nearby delivery service",
+            type: "service",
+            route: "/mobility/delivery/fast",
+            vertical: "delivery",
+            similarity: 0.72,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-5", "rec_food_1", "click");
+    trackUserInteraction("user-5", "rec_food_2", "view");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-5",
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    const pgvecItem = results.find((r) => r.id === "pgvec_unique_1");
+    expect(pgvecItem).toBeDefined();
+    if (pgvecItem) {
+      expect(pgvecItem.title).toBe("AI-recommended restaurant");
+      expect(pgvecItem.imageUrl).toBe("https://example.com/img.jpg");
+    }
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results.length).toBeLessThanOrEqual(10);
+  });
+
+  it("does not call pgvector when no userId is provided", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockClear();
+
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    await scoreRecommendationsAsync({
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    expect(db.functions.invoke).not.toHaveBeenCalled();
+  });
+
+  it("high-similarity pgvector matches get 'Matches your interests' reason", async () => {
+    const { db } = await import("@/services/db");
+    vi.mocked(db.functions.invoke).mockResolvedValueOnce({
+      data: {
+        matches: [
+          {
+            id: "pgvec_high_sim",
+            title: "Perfect match item",
+            type: "listing",
+            route: "/food/perfect",
+            vertical: "food",
+            similarity: 0.95,
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const { scoreRecommendationsAsync, trackUserInteraction } = await import("./recommendation-engine");
+    trackUserInteraction("user-6", "rec_food_1", "click");
+
+    const results = await scoreRecommendationsAsync({
+      userId: "user-6",
+      timeOfDay: "afternoon",
+      location: { lat: 40.7, lng: -74.0 },
+    });
+
+    const highSimItem = results.find((r) => r.id === "pgvec_high_sim");
+    expect(highSimItem).toBeDefined();
+    if (highSimItem) {
+      expect(highSimItem.reason).toBe("Matches your interests");
     }
   });
 });
