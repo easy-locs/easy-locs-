@@ -1,5 +1,8 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useAuthSession } from "@/contexts/AuthContext";
+import { hasRole } from "@/repositories/auth-utils.repository";
 import SubPageShell from "@/components/layout/SubPageShell";
 
 const PANELS = [
@@ -58,9 +61,26 @@ const PANELS = [
   { label: "⚡ API Documentation", path: "/developer-portal/docs" },
 ];
 
+const SUPER_ADMIN_PANELS = [
+  { label: "🤖 Command Center", path: "/admin/command-center" },
+];
+
 export default function AdminMasterControlPage() {
   useUiEngine("admin-adminmastercontrolpage");
   const navigate = useNavigate();
+  const { user } = useAuthSession();
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    hasRole(user.id, "super_admin").then((result) => {
+      if (!cancelled) setIsSuperAdmin(result);
+    });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const visiblePanels = isSuperAdmin ? [...PANELS, ...SUPER_ADMIN_PANELS] : PANELS;
 
   return (
     <SubPageShell>
@@ -74,7 +94,7 @@ export default function AdminMasterControlPage() {
       </div>
 
       <div className="space-y-3">
-        {PANELS.map((item) => (
+        {visiblePanels.map((item) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}

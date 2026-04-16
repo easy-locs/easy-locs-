@@ -26,7 +26,7 @@ export async function signInWithPassword(email: string, password: string) {
   return db.auth.signInWithPassword({ email, password });
 }
 
-export async function hasRole(userId: string, role: "accountant" | "admin" | "agent" | "member" | "owner" | "staff") {
+export async function hasRole(userId: string, role: "accountant" | "admin" | "agent" | "member" | "owner" | "staff" | "super_admin") {
   const { data } = await db.rpc("has_role", { _user_id: userId, _role: role });
   return !!data;
 }

@@ -129,6 +129,13 @@ export const APP_EVENTS = {
   BROWSER_REPAIR_RUN_COMPLETED: "browser_repair:run_completed",
   BROWSER_REPAIR_ISSUE_FOUND: "browser_repair:issue_found",
   BROWSER_REPAIR_COMPLETED: "browser_repair:completed",
+
+  // Agent / Chief Agent
+  AGENT_CHIEF_STARTED: "agent:chief_started",
+  AGENT_CHIEF_COMPLETED: "agent:chief_completed",
+  AGENT_SUBTASK_STARTED: "agent:subtask_started",
+  AGENT_SUBTASK_COMPLETED: "agent:subtask_completed",
+  AGENT_STATUS_CHANGED: "agent:status_changed",
 } as const;
 
 export type AppEventKey = (typeof APP_EVENTS)[keyof typeof APP_EVENTS];
