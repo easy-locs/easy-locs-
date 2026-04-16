@@ -509,7 +509,8 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get("x-internal-secret") || "";
-  if (authHeader !== INTERNAL_SECRET) {
+  const { constantTimeEqual } = await import("../_shared/webhook-signature.ts");
+  if (!constantTimeEqual(authHeader, INTERNAL_SECRET)) {
     return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403 });
   }
 

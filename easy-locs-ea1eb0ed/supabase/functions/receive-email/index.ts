@@ -9,6 +9,8 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
+import { constantTimeEqual } from "../_shared/webhook-signature.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -89,18 +91,18 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
   } catch { return null; }
 }
 
-Deno.serve(async (req) => {
+async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
-  // ── Webhook authentication: verify shared secret ──
+  // ── Webhook authentication: verify shared secret (constant-time compare) ──
   const WEBHOOK_SECRET = Deno.env.get("SENDGRID_INBOUND_SECRET");
   if (WEBHOOK_SECRET) {
-    const providedSecret = req.headers.get("x-webhook-secret");
-    if (providedSecret !== WEBHOOK_SECRET) {
+    const providedSecret = req.headers.get("x-webhook-secret") ?? "";
+    if (!constantTimeEqual(providedSecret, WEBHOOK_SECRET)) {
       console.warn("[receive-email] Rejected: invalid webhook secret");
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -284,4 +286,6 @@ Deno.serve(async (req) => {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}
+
+Deno.serve(withRateLimit("receive-email", handler, { maxRequests: 120, windowSeconds: 60 }));

@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +41,7 @@ async function resolveApiKey(supabaseAdmin: any, apiKey: string) {
   return data as { id: string; org_id: string; user_id: string; scopes: string[] };
 }
 
-Deno.serve(async (req) => {
+async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -218,4 +219,6 @@ Deno.serve(async (req) => {
     console.error("Public API error:", err);
     return json({ error: "Internal server error" }, 500);
   }
-});
+}
+
+Deno.serve(withRateLimit("public-api", handler, { maxRequests: 120, windowSeconds: 60 }));
