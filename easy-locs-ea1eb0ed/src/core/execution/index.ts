@@ -26,3 +26,23 @@ export {
   isTerminalStatus,
   type TransitionAssertion,
 } from "./transitions";
+// Phase-2 (task #751) — locks & idempotency primitives.
+export {
+  getTaskLockKey,
+  acquireExecutionLock,
+  releaseExecutionLock,
+  withExecutionLock,
+  type TaskLockTarget,
+  type LockHandle,
+  type LockAcquireResult,
+  type WithExecutionLockResult,
+  type WithExecutionLockOptions,
+} from "./lock-service";
+export {
+  computeIdempotencyKey,
+  claimIdempotencyKey,
+  findExistingResult,
+  type IdempotencyKeyInput,
+  type IdempotencyClaimResult,
+  type ExistingResult,
+} from "./idempotency-service";
