@@ -111,6 +111,9 @@ Deno.serve(async (req) => {
     const { clientId, secret, baseUrl } = getPlaidConfig();
 
     if (!action || action === "create_link_token") {
+      const webhookUrl = Deno.env.get("PLAID_WEBHOOK_URL")
+        ?? `${Deno.env.get("SUPABASE_URL")}/functions/v1/plaid-webhook`;
+
       const response = await fetch(`${baseUrl}/link/token/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,6 +126,7 @@ Deno.serve(async (req) => {
           country_codes: ["US", "FR", "GB", "DE", "ES", "IT", "NL", "BE"],
           language: body.language ?? "en",
           redirect_uri: body.redirectUri ?? undefined,
+          webhook: webhookUrl,
         }),
       });
 
