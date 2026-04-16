@@ -43,11 +43,23 @@ The market intelligence page connects to the live Dubai Land Department (DLD) RE
 - `status` - Returns current data source configuration and record counts
 - `kpis`, `districts`, `trends`, `transactions`, `top-transactions`, `building-history`, `comparables`, `buildings`, `summary` - Analytics query endpoints
 
+### Scheduled Sync (Task #539)
+- **Shared Sync Module**: `supabase/functions/_shared/dld-sync.ts` - Extracted sync/upsert/tryLiveDLDFetch logic shared by `dld-analytics` and `dld-sync-cron`
+- **Cron Edge Function**: `supabase/functions/dld-sync-cron/index.ts` - Scheduled DLD data sync
+  - Daily full sync at 03:00 UTC (`dld-sync-daily` pg_cron job)
+  - Hourly recent-data sync at :15 past each hour (`dld-sync-hourly` pg_cron job, fetches last 7 days)
+  - Auth: service role key or `DLD_SYNC_CRON_SECRET`
+  - Respects existing 10-minute cooldown (bypassed for `fullSync` mode)
+  - Logs all runs to `analytics.dld_sync_log` table
+- **Migration**: `supabase/migrations/20260417500000_dld_sync_log_and_cron.sql` - Creates sync log table and pg_cron schedules
+
 ### Data Flow
 ```
 DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Function (query) -> Frontend
-                                                                                         |
-                                                                           Fallback Demo Data (if edge function unavailable)
+                                                                                          |
+                                                                            Fallback Demo Data (if edge function unavailable)
+     ^                                                                       
+     |--- pg_cron (daily full + hourly recent) -> dld-sync-cron Edge Function
 ```
 
 ## Phase 2 Feature Expansion Engine
