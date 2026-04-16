@@ -4,6 +4,7 @@ import {
   computeGeoProximityBoost,
   type ContextualFactors,
 } from "./contextual-signals";
+import { sanitizeScore } from "./recommendation-engine";
 
 vi.mock("@/services/db", () => ({
   db: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
@@ -336,6 +337,169 @@ describe("scoreRecommendations – scoring behavior", () => {
     const results = scoreRecommendations({ timeOfDay: "night" });
     for (const item of results) {
       expect(item.reason.length).toBeGreaterThan(0);
+    }
+  });
+});
+
+describe("sanitizeScore", () => {
+  it("returns the value when it is a finite number", () => {
+    expect(sanitizeScore(42)).toBe(42);
+    expect(sanitizeScore(-5)).toBe(-5);
+    expect(sanitizeScore(0)).toBe(0);
+  });
+
+  it("returns fallback for NaN", () => {
+    expect(sanitizeScore(NaN)).toBe(0);
+    expect(sanitizeScore(NaN, 30)).toBe(30);
+  });
+
+  it("returns fallback for Infinity", () => {
+    expect(sanitizeScore(Infinity)).toBe(0);
+    expect(sanitizeScore(Infinity, 10)).toBe(10);
+  });
+
+  it("returns fallback for -Infinity", () => {
+    expect(sanitizeScore(-Infinity)).toBe(0);
+    expect(sanitizeScore(-Infinity, 50)).toBe(50);
+  });
+});
+
+describe("scoreRecommendations – non-finite intermediate boosts produce valid scores", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("produces valid scores when cosineSimilarity returns NaN", async () => {
+    vi.doMock("./vector-similarity", async () => {
+      const actual = await vi.importActual<typeof import("./vector-similarity")>("./vector-similarity");
+      return {
+        ...actual,
+        cosineSimilarity: () => NaN,
+      };
+    });
+    const { scoreRecommendations } = await import("./recommendation-engine");
+    const results = scoreRecommendations({
+      timeOfDay: "morning",
+      recentRoutes: ["/food/test"],
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("produces valid scores when cosineSimilarity returns Infinity", async () => {
+    vi.doMock("./vector-similarity", async () => {
+      const actual = await vi.importActual<typeof import("./vector-similarity")>("./vector-similarity");
+      return {
+        ...actual,
+        cosineSimilarity: () => Infinity,
+      };
+    });
+    const { scoreRecommendations } = await import("./recommendation-engine");
+    const results = scoreRecommendations({
+      timeOfDay: "morning",
+      recentRoutes: ["/food/test"],
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("produces valid scores when geoProximityBoost returns NaN", async () => {
+    vi.doMock("./contextual-signals", async () => {
+      const actual = await vi.importActual<typeof import("./contextual-signals")>("./contextual-signals");
+      return {
+        ...actual,
+        computeGeoProximityBoost: () => NaN,
+      };
+    });
+    const { scoreRecommendations } = await import("./recommendation-engine");
+    const results = scoreRecommendations({
+      timeOfDay: "morning",
+      location: { lat: 40.0, lng: -74.0 },
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+});
+
+describe("scoreRecommendationsAsync – non-finite intermediate boosts produce valid scores", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("produces valid scores when cosineSimilarity returns NaN (async)", async () => {
+    vi.doMock("./vector-similarity", async () => {
+      const actual = await vi.importActual<typeof import("./vector-similarity")>("./vector-similarity");
+      return {
+        ...actual,
+        cosineSimilarity: () => NaN,
+      };
+    });
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "morning",
+      recentRoutes: ["/food/test"],
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("produces valid scores when geoProximityBoost returns Infinity (async)", async () => {
+    vi.doMock("./contextual-signals", async () => {
+      const actual = await vi.importActual<typeof import("./contextual-signals")>("./contextual-signals");
+      return {
+        ...actual,
+        computeGeoProximityBoost: () => Infinity,
+      };
+    });
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      timeOfDay: "morning",
+      location: { lat: 40.0, lng: -74.0 },
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
+    }
+  });
+
+  it("produces valid scores when pgvector returns non-finite similarity (async)", async () => {
+    vi.doMock("@/services/db", () => ({
+      db: {
+        functions: {
+          invoke: vi.fn().mockResolvedValue({
+            data: {
+              matches: [
+                { id: "pgvec_nan", title: "NaN item", type: "listing", route: "/food", vertical: "food", similarity: NaN },
+                { id: "pgvec_inf", title: "Inf item", type: "listing", route: "/grocery", vertical: "grocery", similarity: Infinity },
+              ],
+            },
+            error: null,
+          }),
+        },
+      },
+    }));
+    const { scoreRecommendationsAsync } = await import("./recommendation-engine");
+    const results = await scoreRecommendationsAsync({
+      userId: "test-user",
+      timeOfDay: "morning",
+    });
+    for (const item of results) {
+      expect(Number.isFinite(item.score)).toBe(true);
+      expect(item.score).toBeGreaterThanOrEqual(0);
+      expect(item.score).toBeLessThanOrEqual(100);
     }
   });
 });
