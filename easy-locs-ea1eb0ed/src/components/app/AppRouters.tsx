@@ -2,13 +2,12 @@
  * AppRouters — Extracted route-level decision components from App.tsx.
  * Single responsibility: root-level routing logic (/, /home).
  */
-import { Suspense, useEffect, useState, lazy } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import SharedPageLoader from "@/components/brand/PageLoader";
 import Index from "@/pages/Index";
-
-const Dashboard = lazy(() => import("@/pages/Dashboard"));
+import { Dashboard } from "@/app/app-route-registry";
 
 const PageLoader = ({ dark }: { dark?: boolean }) => <SharedPageLoader dark={dark} />;
 
