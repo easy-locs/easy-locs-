@@ -4,18 +4,36 @@
  */
 import { lazy, type ComponentType } from "react";
 
+const LAZY_TIMEOUT_MS = 20_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, name: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Chunk "${name}" timed out after ${ms / 1000}s`));
+    }, ms);
+    promise.then(
+      (val) => { clearTimeout(timer); resolve(val); },
+      (err) => { clearTimeout(timer); reject(err); },
+    );
+  });
+}
+
 function safeLazy(factory: () => Promise<{ default: ComponentType<any> }>, name: string) {
   return lazy(async () => {
     try {
-      const mod = await factory();
+      console.debug(`[lazy] Loading chunk: ${name}`);
+      const mod = await withTimeout(factory(), LAZY_TIMEOUT_MS, name);
       if (!mod?.default) throw new Error(`Missing default export for ${name}`);
+      console.debug(`[lazy] Loaded chunk: ${name}`);
       return mod;
     } catch (err) {
       console.error(`[lazy] Failed to load chunk: ${name}`, err);
       return {
         default: () => (
-          <div className="p-8 text-center text-destructive">
-            Failed to load {name}. <button onClick={() => window.location.reload()} className="underline ml-2">Reload</button>
+          <div style={{ padding: "2rem", textAlign: "center", color: "#ef4444", background: "hsl(225 28% 8%)", minHeight: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "0.75rem" }}>
+            <p style={{ fontSize: "0.875rem", fontWeight: 600 }}>Failed to load {name}</p>
+            <p style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{err instanceof Error ? err.message : "Unknown error"}</p>
+            <button onClick={() => window.location.reload()} style={{ padding: "0.5rem 1.25rem", borderRadius: "0.5rem", border: "none", background: "#1AAE8E", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "0.8125rem" }}>Reload page</button>
           </div>
         ),
       } as { default: ComponentType<any> };
