@@ -64,6 +64,7 @@ const IntelligenceTicker = lazy(() => import("@/components/dashboard/Intelligenc
 const ForexWidget = lazy(() => import("@/components/dashboard/ForexWidget"));
 const EngineHealthWidget = lazy(() => import("@/components/dashboard/EngineHealthWidget"));
 const PrayerTimesWidget = lazy(() => import("@/components/dashboard/PrayerTimesWidget"));
+const MLRecommendationsWidget = lazy(() => import("@/components/dashboard/MLRecommendationsWidget"));
 const NewsDashboardSection = lazy(() => import("@/components/dashboard/NewsDashboardSection"));
 
 import foodImg from "@/assets/categories/food.png";
@@ -613,6 +614,11 @@ export default function SmartHome() {
         </Suspense>
         <Suspense fallback={<WidgetSkeleton height={200} lines={4} />}>
           <NewsDashboardSection country={vm.countryCode || "FR"} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <div className="section-spacer-compact">
+            <MLRecommendationsWidget />
+          </div>
         </Suspense>
         <ActiveCartBanner />
         <SmartQuickActions />

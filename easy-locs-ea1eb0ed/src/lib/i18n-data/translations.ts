@@ -1,6 +1,7 @@
 import { ISLAMIC_TRANSLATIONS } from "../i18n-islamic";
 import { ISLAMIC_EXTRA_TRANSLATIONS } from "../i18n-islamic-extra";
 import { EXTRA_TRANSLATIONS } from "./translations-extra";
+import { SUPER_APP_TRANSLATIONS } from "./translations-super-app";
 
 export const GLOBAL_TRANSLATIONS: Record<string, Record<string, string>> = {
   en: {
@@ -4965,6 +4966,11 @@ for (const [locale, keys] of Object.entries(ISLAMIC_TRANSLATIONS)) {
 }
 
 for (const [locale, keys] of Object.entries(ISLAMIC_EXTRA_TRANSLATIONS)) {
+  if (!GLOBAL_TRANSLATIONS[locale]) GLOBAL_TRANSLATIONS[locale] = {};
+  Object.assign(GLOBAL_TRANSLATIONS[locale], keys);
+}
+
+for (const [locale, keys] of Object.entries(SUPER_APP_TRANSLATIONS)) {
   if (!GLOBAL_TRANSLATIONS[locale]) GLOBAL_TRANSLATIONS[locale] = {};
   Object.assign(GLOBAL_TRANSLATIONS[locale], keys);
 }

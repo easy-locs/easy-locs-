@@ -50,6 +50,44 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - Per-pillar skeleton components (`PillarSkeleton`) for dashboard/radar/orbit/wallet/me
 - `NavigationTracker` component records navigation patterns for predictive prefetch
 
+## Super-App Strategic Features (Task #450)
+
+### ML Recommendation Engine
+- **Engine**: `src/engines/recommendations/recommendation-engine.ts` — Vector similarity + collaborative filtering + contextual boosting replacing rule-based scoring
+- **Modules**: `vector-similarity.ts` (cosine similarity, TF-IDF vectors), `collaborative-filter.ts` (user-user/item-item CF), `contextual-signals.ts` (time, weather, location, device boosting)
+- **Hook**: `src/hooks/useRecommendations.ts` — Interaction tracking via `trackUserInteraction()`, auto-refresh on route change
+
+### Social Graph (Follow/Unfollow)
+- **Service**: `src/services/social-graph.service.ts` — Follow/unfollow, mutual detection, follower/following counts, Following feed (in-memory fallback, DB-ready)
+- **Hooks**: `src/hooks/useSocialGraph.ts` — `useFollow`, `useFollowCounts`, `useFollowers`, `useFollowingList`, `useFollowingFeed`
+- **Components**: `src/components/social/FollowButton.tsx`, `FollowingFeed.tsx`, `FollowersList.tsx`
+- **Page**: `SocialHubPage.tsx` updated with follower/following counts, Feed/Network/Hub tabs
+
+### Virtual Card Issuance
+- **Service**: `src/services/virtual-cards.service.ts` — Create/freeze/unfreeze/cancel/fund virtual Visa cards, spending limits, Apple Pay/Google Pay provisioning (in-memory state, Stripe Issuing-ready)
+- **Hook**: `src/hooks/useVirtualCards.ts` — Full card lifecycle management
+- **Page**: `src/pages/wallet/VirtualCardsPage.tsx` — Card management UI with reveal/hide card details, funding, limit adjustment
+- **Route**: `/wallet/virtual-cards` (protected)
+
+### Embedded Finance: BNPL
+- **Service**: `src/services/bnpl.service.ts` — KYC-gated eligibility, 3/4/6-month installment plans, 0% interest
+- **Hook**: `src/hooks/useBnpl.ts` — Eligibility check, plan creation, installment payment
+- **Components**: `src/components/checkout/BnplOption.tsx` — Checkout integration with payment schedule preview
+- **Page**: `src/pages/wallet/InstallmentsPage.tsx` — Track and pay installments
+- **Route**: `/wallet/installments` (protected)
+
+### Embedded Finance: Micro-Insurance
+- **Service**: `src/services/micro-insurance.service.ts` — Package protection & trip protection policies, claim filing
+- **Hook**: `src/hooks/useMicroInsurance.ts` — Offer display, purchase, claim submission
+- **Component**: `src/components/checkout/MicroInsuranceOption.tsx` — Checkout toggle with coverage details
+
+### i18n Expansion (ar/es/pt/tr)
+- **Translations**: `src/lib/i18n-data/translations-super-app.ts` — New keys for social graph, virtual cards, BNPL, insurance, recommendations across en/fr/ar/es/pt/tr
+- **Integration**: Merged into `GLOBAL_TRANSLATIONS` via `translations.ts`
+
+### Feature Flags (Task #450)
+- `enable_social_graph`, `enable_virtual_cards`, `enable_bnpl`, `enable_micro_insurance`, `enable_ml_recommendations` — all default ON in `feature-flag-registry.ts`
+
 ## Visual Design System (Apple/Tesla Premium v4)
 - **Design Philosophy**: Minimalist, Apple/Tesla-inspired — solid backgrounds over blur, clean hierarchy, 3 shadow levels max
 - **CSS**: `index.css` ~1600 lines — single `:root` token block, no duplicates, clean RTL/dark/scrollbar rules. Purged unused ds-*, glass-card, page-empty-state, stats-grid, action-card-grid, card-small/medium/large/listing/carousel classes

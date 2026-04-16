@@ -30,6 +30,8 @@ const CardPayment = lazy(() => import("@/components/payments/CardPayment"));
 const AppleGooglePayButton = lazy(() => import("@/components/payments/AppleGooglePayButton"));
 const MobileMoneyPayment = lazy(() => import("@/components/payments/MobileMoneyPayment"));
 const CryptoPayment = lazy(() => import("@/components/payments/CryptoPayment"));
+const BnplOption = lazy(() => import("@/components/checkout/BnplOption"));
+const MicroInsuranceOption = lazy(() => import("@/components/checkout/MicroInsuranceOption"));
 
 type PaymentMethod = "wallet" | "card" | "cash" | "mobile_money" | "crypto";
 type DeliveryMode = "delivery" | "pickup";
@@ -48,6 +50,8 @@ export default function CheckoutPage() {
   const [step, setStep] = useState<CheckoutStep>("review");
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [selectedBnplPlan, setSelectedBnplPlan] = useState<number | null>(null);
+  const [insurancePremium, setInsurancePremium] = useState(0);
   const idempotencyRef = useRef(crypto.randomUUID());
   const flowStartRef = useRef(Date.now());
   const flowCompletedRef = useRef(false);
@@ -107,7 +111,7 @@ export default function CheckoutPage() {
   }
 
   const deliveryFee = mode === "delivery" ? 5 : 0;
-  const grandTotal = total + deliveryFee;
+  const grandTotal = total + deliveryFee + insurancePremium;
   const cur = resolveDisplayCurrency({ country: "AE" });
   const fmt = (n: number) => formatMoneyByCountry(n, null, cur);
 
@@ -670,6 +674,32 @@ export default function CheckoutPage() {
             className="w-full rounded-2xl p-3 text-sm resize-none h-20 bg-card border border-border/20"
           />
         </section>
+
+        {/* BNPL & Insurance options */}
+        {user?.id && total > 0 && (
+          <section className="space-y-3">
+            <p className="text-[11px] font-bold uppercase tracking-wider mb-2 text-muted-foreground">Financing & Protection</p>
+            <Suspense fallback={null}>
+              <BnplOption
+                userId={user.id}
+                orderAmount={total}
+                currency={cur}
+                onSelect={(count) => setSelectedBnplPlan(count)}
+                onDeselect={() => setSelectedBnplPlan(null)}
+              />
+            </Suspense>
+            {mode === "delivery" && (
+              <Suspense fallback={null}>
+                <MicroInsuranceOption
+                  type="package_protection"
+                  orderAmount={total}
+                  currency={cur}
+                  onToggle={(selected, premium) => setInsurancePremium(selected ? premium : 0)}
+                />
+              </Suspense>
+            )}
+          </section>
+        )}
 
         {/* Payment method */}
         <section>

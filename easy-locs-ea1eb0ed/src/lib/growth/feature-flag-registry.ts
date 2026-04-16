@@ -36,7 +36,12 @@ export type PlatformFlag =
   | "enable_commerce_suggestions"
   | "enable_religious_utilities"
   | "enable_intelligence_shadow_validation"
-  | "enable_repair_pipeline";
+  | "enable_repair_pipeline"
+  | "enable_social_graph"
+  | "enable_virtual_cards"
+  | "enable_bnpl"
+  | "enable_micro_insurance"
+  | "enable_ml_recommendations";
 
 /** Default values — all off for safety, rollout one by one */
 const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
@@ -71,6 +76,11 @@ const FLAG_DEFAULTS: Record<PlatformFlag, boolean> = {
   enable_religious_utilities: false,
   enable_intelligence_shadow_validation: false,
   enable_repair_pipeline: true,
+  enable_social_graph: true,
+  enable_virtual_cards: true,
+  enable_bnpl: true,
+  enable_micro_insurance: true,
+  enable_ml_recommendations: true,
 };
 
 const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
@@ -105,6 +115,11 @@ const FLAG_DESCRIPTIONS: Record<PlatformFlag, string> = {
   enable_religious_utilities: "Religious utility modules (prayer times, mosques — requires user opt-in)",
   enable_intelligence_shadow_validation: "Shadow-mode validation for real intelligence providers (dev only, zero user impact)",
   enable_repair_pipeline: "Autonomous repair pipeline — taxonomy-first rollout (default OFF, requires activation sheet)",
+  enable_social_graph: "Social graph — follow/unfollow, Following feed, mutual detection",
+  enable_virtual_cards: "Virtual Visa card issuance via Stripe Issuing (create, freeze, fund, spending limits)",
+  enable_bnpl: "Buy Now Pay Later — installment plans at checkout (3/4/6-month terms)",
+  enable_micro_insurance: "Micro-insurance — package protection and trip protection at checkout",
+  enable_ml_recommendations: "ML-powered recommendation engine (vector similarity, collaborative filtering, contextual boosting)",
 };
 
 // ── In-memory cache ──
