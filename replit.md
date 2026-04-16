@@ -38,10 +38,23 @@ Comprehensive automated test suite covering core logic, integrations, and securi
 - `src/lib/utils/__tests__/sanitize-html.test.ts` — XSS: data: URIs, SVG injection, MathML, stripDataUris, sanitizePlainText (60 tests)
 - `src/test/map-error-fallback.test.tsx` — MapErrorFallback component, useMapCore error states (35 tests)
 
-### Playwright E2E Tests
-- `e2e/16-visual-regression.spec.ts` — Real visual snapshot tests: renders key pages (homepage, login, signup, explore, marketplace) at mobile/tablet/desktop viewports with `toHaveScreenshot()` and 2% pixel diff threshold; responsive layout checks (nav collapse, form centering)
-- `e2e/08-booking.spec.ts` — Full booking journey: search→select property→view detail→attempt booking; dashboard booking tab navigation
-- `e2e/11-search.spec.ts` — Marketplace search filtering, filter controls, search→detail navigation, explore page content sections
+### Playwright E2E Tests (144 unique tests across 16 spec files, run on chromium-desktop + chromium-mobile = 288 total; CI via `e2e` job in `.github/workflows/ci.yml`)
+- `e2e/01-login.spec.ts` — Login: Password tab (email #login-email, password #login-password), field binding, invalid credentials toast, HTML validation (empty email/password), submit disabled/spinner state, forgot password navigation, Phone/OTP tabs; authenticated session (Supabase token, protected routes, session persistence)
+- `e2e/02-signup.spec.ts` — Signup: Phone/Email tabs, required field attributes, value binding, weak password toast, empty name/email HTML validation, submit loading state, strong password submission, Phone↔Email tab switching
+- `e2e/03-navigation-pillars.spec.ts` — 5-pillar navigation error boundary checks, nav element, theme switcher
+- `e2e/04-orbit-messaging.spec.ts` — Messaging: composer textarea, send/clear, sent message DOM verification, conversation list, sequential sends, contacts page, add contact form, multiline input
+- `e2e/05-checkout-payment.spec.ts` — Checkout: order total/subtotal with currency or empty cart, payment dialog trigger, food checkout, address selector, rapid navigation stability
+- `e2e/06-wallet-topup.spec.ts` — Wallet Hub: numeric balance with currency, quick actions, tab switching; Transfer dialog: open/fill/dismiss; Transfer page: amount input (placeholder=0), preset buttons (25/50/100/250/500), note textarea, send validation; Top-up: amount min=1/max=50000, presets (50/100/200/500/1000), payment methods; Request funds page
+- `e2e/07-create-property.spec.ts` — AddProperty: label input, country selector, listing modes, financial fields, description textarea, empty form validation, submit→success toast "enregistré"/redirect to /dashboard/country; CreateListing: category/title/description fields, value binding, submit→"published" toast or /my-shop redirect
+- `e2e/08-booking.spec.ts` — Discovery: property listing cards, detail navigation with heading, price with currency, image gallery, Book/Reserve button, full journey (marketplace→detail→book→booking UI); Authenticated: booking form (name/email/phone fields), price breakdown, Continue to Payment, guest info fill→advance, payment methods (wallet/card/mobile money/crypto), booking reference, confirmation page, Contact Host/Search actions
+- `e2e/09-profile.spec.ts` — Profile: Me page content, user name display, navigation links, edit form pre-filled inputs, save/submit button, name editing roundtrip, save outcome toast, properties page, orders page
+- `e2e/10-settings.spec.ts` — Settings: section headings, toggle aria-checked switch, re-toggle revert, rapid clicks stability, multiple switches, account/security/notification sub-pages
+- `e2e/11-search.spec.ts` — Marketplace search filtering, filter controls, search→detail navigation, explore page content
+- `e2e/12-notifications.spec.ts` — Notifications: page rendering, heading, content/empty state; authenticated personalized content
+- `e2e/13-pwa-install.spec.ts` — PWA: viewport meta, manifest link, theme-color meta
+- `e2e/14-language-switch.spec.ts` — i18n: locale storage, translated login/signup labels
+- `e2e/15-dark-mode.spec.ts` — Theme: Light/Dark/System options, class toggling, Orbit accents
+- `e2e/16-visual-regression.spec.ts` — Visual snapshots at 3 viewports, responsive layout checks
 
 ### Shared Production Modules
 - `src/lib/shared/rate-limit-tiers.ts` — Extracted pure rate-limit tier logic (resolveUserTier, getTierEndpointLimit, getEndpointLimit, rateLimitHeaders) shared between tests and edge functions
