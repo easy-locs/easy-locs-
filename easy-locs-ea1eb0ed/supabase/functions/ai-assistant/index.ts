@@ -184,87 +184,116 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
+    const response = await openaiChat({
+      messages: chatMessages,
+      max_tokens: 2000,
+      temperature: 0.7,
+      stream: !!stream,
+    });
+
+    if (!response.ok) {
+      const err = await response.text();
+      console.error("AI Gateway error:", response.status, err);
+
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: "Payment required." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(JSON.stringify({ error: "Service error" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (stream) {
-      try {
-        const streamResult = await aiModelStream({
-          messages: chatMessages,
-          max_tokens: 2000,
-          temperature: 0.7,
-        });
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
 
-        logger.info("ai_stream_started", { provider: streamResult.provider, fallback: streamResult.fallback });
-        trackBackendEvent(userId, "ai.assistant_stream", {
-          task: taskType,
-          provider: streamResult.provider,
-          fallback: streamResult.fallback,
-        });
+      const sseStream = new ReadableStream({
+        async start(controller) {
+          const reader = response.body!.getReader();
+          let buffer = "";
 
-        return new Response(streamResult.stream, {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-AI-Provider": streamResult.provider,
-          },
-        });
-      } catch (err) {
-        console.error("[ai-assistant] Stream error:", err);
-        return new Response(JSON.stringify({ error: "AI stream failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
+          try {
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
 
-    try {
-      const result = await aiModelRoute({
-        messages: chatMessages,
-        max_tokens: 2000,
-        temperature: 0.7,
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() || "";
+
+              for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed || trimmed === "data: [DONE]") {
+                  if (trimmed === "data: [DONE]") {
+                    controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
+                  }
+                  continue;
+                }
+
+                if (trimmed.startsWith("data: ")) {
+                  try {
+                    const json = JSON.parse(trimmed.slice(6));
+                    const delta = json.choices?.[0]?.delta;
+
+                    if (delta?.content) {
+                      const ssePayload = JSON.stringify({
+                        token: delta.content,
+                        finish_reason: json.choices?.[0]?.finish_reason || null,
+                      });
+                      controller.enqueue(encoder.encode(`event: token\ndata: ${ssePayload}\n\n`));
+                    }
+
+                    if (json.choices?.[0]?.finish_reason === "stop") {
+                      controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
+                    }
+                  } catch {
+                    continue;
+                  }
+                }
+              }
+            }
+
+            controller.enqueue(encoder.encode("event: done\ndata: {}\n\n"));
+            controller.close();
+          } catch (err) {
+            const errorPayload = JSON.stringify({ error: err instanceof Error ? err.message : "Stream error" });
+            controller.enqueue(encoder.encode(`event: error\ndata: ${errorPayload}\n\n`));
+            controller.close();
+          }
+        },
       });
 
-      if (!result.response.ok) {
-        const err = await result.response.text();
-        console.error("AI Gateway error:", result.response.status, err);
-
-        if (result.response.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-
-        return new Response(JSON.stringify({ error: "Service error" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      const data = await result.response.json();
-      let reply: string;
-      if (result.provider === "anthropic") {
-        const content = data.content as Array<{ type: string; text?: string }>;
-        reply = content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
-      } else {
-        reply = data.choices?.[0]?.message?.content ?? "";
-      }
-
-      if (!reply) reply = "Sorry, I couldn't generate a response.";
-
-      logger.info("ai_response_completed", { provider: result.provider, fallback: result.fallback });
-      trackBackendEvent(userId, "ai.assistant_response", {
-        task: taskType,
-        provider: result.provider,
-        fallback: result.fallback,
-      });
-
-      return new Response(JSON.stringify({ reply, provider: result.provider }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } catch (err) {
-      console.error("[ai-assistant] All AI providers failed:", err);
-      return new Response(JSON.stringify({ error: "All AI providers are currently unavailable" }), {
-        status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return new Response(sseStream, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache, no-store",
+          "Connection": "keep-alive",
+          "X-Accel-Buffering": "no",
+        },
       });
     }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
+
+    logger.info("ai_response_completed", { provider: "openai" });
+    trackBackendEvent(userId, "ai.assistant_response", {
+      task: taskType,
+      provider: "openai",
+    });
+
+    return new Response(JSON.stringify({ reply, provider: "openai" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), {

@@ -2070,6 +2070,59 @@ Human-facing command layer connecting the project owner to the agent team:
 - **Event Bus**: `Events.referralConverted()` helper added for programmatic conversion tracking
 - **Layer 6 — Resilience**: `share-offline-queue.ts` — IndexedDB queue with retry logic; `buildBrandedFallback()` in social-preview for 404/error cases; deep-link-handler extended with new routes
 
+## Backend & Data Engine Overhaul 2026 (Task #447)
+
+### Edge Function Consolidation
+- **Domain Routers**: 6 consolidated routers reduce cold starts by grouping related endpoints:
+  - `identity-router` — profiles, OTP, organizations, WebAuthn
+  - `commerce-router` — bookings, orders, transactions, payments
+  - `wallet-router` — balance, transfers, topup, transaction history
+  - `orbit-router` — conversations, messages, translation
+  - `marketplace-router` — listings CRUD, search (Meilisearch + FTS fallback), trending, categories
+  - `system-router` — health checks, slow queries, edge metrics, search sync, analytics
+- **Shared Router Framework**: `supabase/functions/_shared/domain-router.ts` — path-based dispatch with auth, rate limiting, CORS
+- **Original 158 functions remain** as granular endpoints; routers provide consolidated entry points
+
+### Search Engine Abstraction (Meilisearch + PostgreSQL FTS)
+- **Meilisearch Client**: `supabase/functions/_shared/search-engine-sync.ts` — index config, document sync, typo-tolerant search
+- **Sync Pipeline**: Database triggers (`notify_search_sync`) fire NOTIFY events on INSERT/UPDATE/DELETE for external sync workers
+- **Client Abstraction**: `src/lib/search-engine/search-engine-client.ts` — tries Meilisearch via marketplace-router first, falls back to search-global PostgreSQL FTS
+- **Faceted Filtering**: Type, city, vertical, category, rating, price, open_now via Meilisearch filterableAttributes
+- **PostgreSQL remains source of truth**: Meilisearch is a read replica synced via triggers/periodic batch
+
+### Edge-Level Response Caching
+- **Two-Tier Cache**: `supabase/functions/_shared/edge-cache.ts` — in-memory LRU (200 entries) + Upstash Redis with smart cache keys
+- **Cache Key Dimensions**: user context, geo region, role — configurable per route via `CacheOptions`
+- **Auto-Invalidation**: `invalidateCacheOnMutation()` called on all POST/PUT/DELETE routes to bust stale cache
+- **Redis Query Cache**: `supabase/functions/_shared/redis-query-cache.ts` — repository-level TTL caching for hot-path queries (trending, categories, dashboard aggregations)
+
+### Structured Cache Headers
+- **Cache Header Builder**: `supabase/functions/_shared/cache-headers.ts` — presets for listing, search, user_data, mutation, static, dashboard, health, immutable
+- **ETag Support**: `generateETag()` + `checkConditionalRequest()` for 304 Not Modified responses
+- **Stale-While-Revalidate**: CDN-friendly headers on search and listing endpoints
+- **Client Cache**: `src/lib/cache/query-cache.ts` — in-browser LRU with stale-while-revalidate background refresh
+
+### AI Streaming (SSE)
+- **Token-by-Token SSE**: `supabase/functions/ai-assistant/index.ts` — proper SSE framing with `event: token`, `event: done`, `event: error` events
+- **Stream Parser**: Reads OpenAI streaming chunks, extracts deltas, re-frames as structured SSE with `{ token, finish_reason }` payloads
+- **Client Consumer**: `src/core/omega/omega-streaming.ts` — `streamOmegaResponse()` with abort support, `createOmegaStreamController()` for lifecycle management
+- **Headers**: `Cache-Control: no-cache, no-store`, `X-Accel-Buffering: no` for proxy compatibility
+
+### Connection Pooling & Performance
+- **Migration**: `supabase/migrations/20260416000000_connection_pooling_and_sync.sql`
+- **Edge Metrics Table**: `edge_function_metrics` — per-request latency, cache hit tracking, error rates with 7-day retention
+- **Performance View**: `edge_function_performance` — aggregated p95/p99 latency, cache hit percentage, error counts by function
+- **pg_cron Cleanup**: Automatic cleanup of old metrics (7 days) and slow query logs (30 days)
+
+### Unified APM Dashboard
+- **Component**: `src/components/admin/ApmDashboard.tsx` — 5-tab admin view:
+  - **Overview**: KPI cards (slow queries, latency, cache hit rate, errors), recent error table
+  - **Slow Queries**: Full query log with mean/max latency, call counts, row counts
+  - **Edge Functions**: Per-function p95/p99 latency, cache hit %, error counts
+  - **Search**: Popular search queries with counts and recency
+  - **Client Logs**: Domain-level log aggregation from structured logger buffer, error breakdown
+- **Auto-Refresh**: 60-second polling with manual refresh button
+
 ## Stale Referral Expiry (Task #341)
 - **Edge Function**: `supabase/functions/expire-pending-referrals/index.ts` — Scheduled function (cron via pg_cron) that expires stale pending referral redemptions older than a configurable threshold (default 90 days). Updates status from "pending" to "expired" and decrements the associated referral code's `use_count`. Requires service role auth. Accepts optional `{ expiryDays: number }` in request body to override default threshold.
 - **Cron Schedule**: `supabase/migrations/20260416700000_expire_pending_referrals_cron.sql` — Registers pg_cron job `expire-pending-referrals` to run daily at 2 AM UTC via `net.http_post` with service role auth.

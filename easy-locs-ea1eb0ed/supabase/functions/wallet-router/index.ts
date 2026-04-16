@@ -1,61 +1,170 @@
-import { EdgeRouter } from "../_shared/edge-function-consolidation.ts";
-import { arcjetProtect, arcjetDenyResponse } from "../_shared/arcjet-protection.ts";
-import { trackBackendEvent } from "../_shared/segment-client.ts";
+import { createDomainRouter } from "../_shared/domain-router.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { buildCacheHeaders } from "../_shared/cache-headers.ts";
+import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
-
-const router = new EdgeRouter("wallet-router");
-
-async function proxyToFunction(req: Request, functionName: string): Promise<Response> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const authHeader = req.headers.get("Authorization") ?? "";
-
-  const resp = await fetch(`${supabaseUrl}/functions/v1/${functionName}`, {
-    method: req.method,
-    headers: {
-      Authorization: authHeader,
-      "Content-Type": req.headers.get("Content-Type") ?? "application/json",
-      "x-forwarded-for": req.headers.get("x-forwarded-for") ?? "",
-      "cf-connecting-ip": req.headers.get("cf-connecting-ip") ?? "",
-    },
-    body: req.body,
-    // @ts-ignore Deno supports duplex
-    duplex: "half",
-  });
-
-  const responseHeaders = new Headers(corsHeaders);
-  const ct = resp.headers.get("Content-Type");
-  if (ct) responseHeaders.set("Content-Type", ct);
-  return new Response(resp.body, { status: resp.status, headers: responseHeaders });
+function getSupabase() {
+  return createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
 }
 
-router.post("/ops", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "wallet-ops");
+const router = createDomainRouter({
+  domain: "wallet",
+  routes: [
+    {
+      method: "POST",
+      pattern: "/balance",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+
+        const { data, error } = await supabase
+          .from("wallet_accounts")
+          .select("id, owner_user_id, currency, available_balance, balance, balance_locked, pending_balance, status, updated_at")
+          .eq("owner_user_id", ctx.userId)
+          .eq("status", "active")
+          .maybeSingle();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const cacheHeaders = buildCacheHeaders("user_data");
+        return new Response(JSON.stringify({ wallet: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/transactions",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const { limit: reqLimit } = ctx.body as { limit?: number };
+        const queryLimit = Math.min(reqLimit ?? 50, 200);
+
+        const { data, error } = await supabase
+          .from("wallet_transactions")
+          .select("*")
+          .eq("sender_id", ctx.userId)
+          .order("created_at", { ascending: false })
+          .limit(queryLimit);
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        const cacheHeaders = buildCacheHeaders("user_data");
+        return new Response(JSON.stringify({ transactions: data }), {
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/transfer",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const { recipient_id, amount, currency, reference } = ctx.body as {
+          recipient_id: string;
+          amount: number;
+          currency?: string;
+          reference?: string;
+        };
+
+        if (!recipient_id || !amount || amount <= 0) {
+          return new Response(
+            JSON.stringify({ error: "Invalid transfer parameters" }),
+            { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const { data, error } = await supabase
+          .from("wallet_transactions")
+          .insert({
+            sender_id: ctx.userId,
+            recipient_id,
+            amount,
+            currency: currency || "AED",
+            context_type: "transfer",
+            title: "Transfer",
+            subtitle: reference || null,
+            status: "pending",
+          })
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateCacheOnMutation("wallet");
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ transaction: data }), {
+          status: 201,
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+    {
+      method: "POST",
+      pattern: "/topup",
+      handler: async (ctx) => {
+        const supabase = getSupabase();
+        const { amount, currency, payment_method } = ctx.body as {
+          amount: number;
+          currency?: string;
+          payment_method?: string;
+        };
+
+        if (!amount || amount <= 0) {
+          return new Response(
+            JSON.stringify({ error: "Invalid amount" }),
+            { status: 400, headers: { ...ctx.corsHeaders, "Content-Type": "application/json" } },
+          );
+        }
+
+        const { data, error } = await supabase
+          .from("wallet_transactions")
+          .insert({
+            sender_id: ctx.userId,
+            amount,
+            currency: currency || "AED",
+            context_type: "topup",
+            title: "Top Up",
+            subtitle: payment_method || "card",
+            status: "pending",
+          })
+          .select()
+          .single();
+
+        if (error) {
+          return new Response(JSON.stringify({ error: error.message }), {
+            status: 500,
+            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        await invalidateCacheOnMutation("wallet");
+        const cacheHeaders = buildCacheHeaders("mutation");
+        return new Response(JSON.stringify({ transaction: data }), {
+          status: 201,
+          headers: { ...ctx.corsHeaders, "Content-Type": "application/json", ...cacheHeaders },
+        });
+      },
+    },
+  ],
 });
 
-router.post("/pin", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "shield", "rate-limit"], rateLimitMax: 5 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  return proxyToFunction(req, "wallet-pin");
-});
+Deno.serve(router);
 
-router.post("/transfer", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["bot", "shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  trackBackendEvent("system", "wallet.transfer_initiated");
-  return proxyToFunction(req, "wallet-transfer");
-});
-
-router.post("/topup", async (req) => {
-  const arcjet = await arcjetProtect(req, { modes: ["shield", "rate-limit"], rateLimitMax: 10 });
-  if (!arcjet.allowed) return arcjetDenyResponse(arcjet);
-  trackBackendEvent("system", "wallet.topup_initiated");
-  return proxyToFunction(req, "create-wallet-topup");
-});
-
-Deno.serve(router.serve());
