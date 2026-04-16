@@ -369,10 +369,11 @@ All 12 pillars implemented for production-ready deployment in any country:
 - `command-center-api` — RESTful API for engine governance: GET status, POST approve-repair, POST quarantine, POST release, GET history, GET agents, GET events
 - `prayer-push-cron` — Scans `prayer_push_schedules` every 60s, sends push notifications for prayers within a 2-minute window. Dedicated pg_cron job (`prayer-push-cron-direct`) calls it every minute via `pg_net`, bypassing the 5-minute dispatcher cycle. Health check (`prayer-push-cron-health`) runs every 15 minutes and alerts via `server_events` on consecutive failures.
 
-### Prayer Push Cron Infrastructure (migration: `20260416800000_prayer_push_cron_schedule.sql`)
-- `monitored_prayer_push_cron()` — Wrapper that logs to `cron_execution_log` and sends failures to DLQ
-- `check_prayer_cron_health()` — Returns health status (healthy/warning/degraded/critical) based on consecutive failures and 24h failure rate; inserts `server_events` alerts on degraded/critical
-- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes)
+### Prayer Push Cron Infrastructure (migration: `20260416800000_prayer_push_cron_schedule.sql`, `20260416900000_prayer_push_response_reconciliation.sql`)
+- `monitored_prayer_push_cron()` — Wrapper that logs to `cron_execution_log` and sends failures to DLQ. Stores `pg_net_request_id` in metadata for response reconciliation
+- `reconcile_prayer_push_responses()` — Checks `net._http_response` for completed prayer-push-cron dispatches, updates `cron_execution_log` status from 'success' to 'failure' when Edge Function returns non-2xx, fires `server_events` alerts and DLQ entries on Edge Function errors
+- `check_prayer_cron_health()` — Returns health status (healthy/warning/degraded/critical) based on consecutive failures and 24h failure rate; includes `edge_function_failures_24h` count; inserts `server_events` alerts on degraded/critical
+- pg_cron jobs: `prayer-push-cron-direct` (every minute), `prayer-push-cron-health` (every 15 minutes), `prayer-push-reconcile` (every 2 minutes)
 - `send-push-notification` — FCM push notifications to registered devices
 - `dlq-processor` — Dead letter queue retry processor (exponential backoff)
 - `alert-dispatcher` — External alerting (email, Telegram, webhook, SMS) with 15-min throttle
