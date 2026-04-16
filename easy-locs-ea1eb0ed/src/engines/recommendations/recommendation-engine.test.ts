@@ -4,7 +4,7 @@ import {
   computeGeoProximityBoost,
   type ContextualFactors,
 } from "./contextual-signals";
-import { sanitizeScore } from "./recommendation-engine";
+import { sanitizeScore, getSanitizationWarningCount, resetSanitizationWarningCount } from "./recommendation-engine";
 
 vi.mock("@/services/db", () => ({
   db: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
@@ -342,6 +342,10 @@ describe("scoreRecommendations – scoring behavior", () => {
 });
 
 describe("sanitizeScore", () => {
+  beforeEach(() => {
+    resetSanitizationWarningCount();
+  });
+
   it("returns the value when it is a finite number", () => {
     expect(sanitizeScore(42)).toBe(42);
     expect(sanitizeScore(-5)).toBe(-5);
@@ -361,6 +365,94 @@ describe("sanitizeScore", () => {
   it("returns fallback for -Infinity", () => {
     expect(sanitizeScore(-Infinity)).toBe(0);
     expect(sanitizeScore(-Infinity, 50)).toBe(50);
+  });
+
+  it("emits a console.warn when a non-finite value is sanitized", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sanitizeScore(NaN, 0, "test-item", "test-source");
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain("test-item");
+    expect(warnSpy.mock.calls[0][0]).toContain("test-source");
+    expect(warnSpy.mock.calls[0][0]).toContain("NaN");
+    warnSpy.mockRestore();
+  });
+
+  it("includes Infinity label in warning for Infinity values", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sanitizeScore(Infinity, 0, "inf-item", "inf-source");
+    expect(warnSpy.mock.calls[0][0]).toContain("Infinity");
+    expect(warnSpy.mock.calls[0][0]).toContain("inf-item");
+    warnSpy.mockRestore();
+  });
+
+  it("does not emit a warning for finite values", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sanitizeScore(42, 0, "ok-item", "ok-source");
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
+  });
+
+  it("increments the sanitization warning counter on non-finite values", () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    const before = getSanitizationWarningCount();
+    sanitizeScore(NaN, 0, "a", "b");
+    sanitizeScore(Infinity, 0, "c", "d");
+    expect(getSanitizationWarningCount()).toBe(before + 2);
+    vi.restoreAllMocks();
+  });
+
+  it("uses 'unknown' labels when context is omitted", () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    sanitizeScore(NaN);
+    expect(warnSpy.mock.calls[0][0]).toContain('item="unknown"');
+    expect(warnSpy.mock.calls[0][0]).toContain('source="unknown"');
+    warnSpy.mockRestore();
+  });
+
+});
+
+describe("sanitizeScore – health reporting on non-finite values", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("calls reportHealth with degraded status when a non-finite value is sanitized", async () => {
+    const mockReportHealth = vi.fn();
+    vi.doMock("@/lib/runtime/health-aggregator", () => ({
+      reportHealth: mockReportHealth,
+    }));
+    vi.doMock("@/services/db", () => ({
+      db: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
+    }));
+    const { sanitizeScore: localSanitize } = await import("./recommendation-engine");
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    localSanitize(NaN, 0, "health-item", "health-source");
+    expect(mockReportHealth).toHaveBeenCalledWith(
+      "recommendation-engine",
+      "degraded",
+      undefined,
+      expect.stringContaining("health-item"),
+    );
+    expect(mockReportHealth).toHaveBeenCalledWith(
+      "recommendation-engine",
+      "degraded",
+      undefined,
+      expect.stringContaining("health-source"),
+    );
+    vi.restoreAllMocks();
+  });
+
+  it("does not call reportHealth for finite values", async () => {
+    const mockReportHealth = vi.fn();
+    vi.doMock("@/lib/runtime/health-aggregator", () => ({
+      reportHealth: mockReportHealth,
+    }));
+    vi.doMock("@/services/db", () => ({
+      db: { functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) } },
+    }));
+    const { sanitizeScore: localSanitize } = await import("./recommendation-engine");
+    localSanitize(42, 0, "ok-item", "ok-source");
+    expect(mockReportHealth).not.toHaveBeenCalled();
   });
 });
 
