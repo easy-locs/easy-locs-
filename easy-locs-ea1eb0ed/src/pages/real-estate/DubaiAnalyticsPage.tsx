@@ -24,6 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import type maplibregl from "maplibre-gl";
 import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { safeSetHtml } from "@/lib/utils/sanitize-html";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
 const navy = "hsl(var(--navy, 226 24% 14%))";
@@ -427,7 +428,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
         font-size: 0.5625rem; font-weight: 700; color: #fff; text-align: center;
         line-height: 1.1; padding: 2px; box-shadow: 0 0 ${size/2}px rgba(234,179,8,${opacity * 0.5});
       `;
-      el.innerHTML = `<span>${s.transactionCount}</span>`;
+      safeSetHtml(el, `<span>${s.transactionCount}</span>`);
       el.title = `${s.district}: ${s.transactionCount} ${t("dld.tx_label")} — AED ${formatAED(s.avgPricePerSqft)}${t("dld.per_sqft")}`;
       el.addEventListener("click", () => onSelect(s.district));
 

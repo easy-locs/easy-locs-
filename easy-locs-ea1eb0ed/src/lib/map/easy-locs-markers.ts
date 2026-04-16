@@ -3,6 +3,7 @@
  * live pulse, focus ping, and hover/click interactions.
  */
 import { EASYLOCS_RADAR_THEME } from "./easy-locs-radar-theme";
+import { safeSetHtml } from "@/lib/utils/sanitize-html";
 
 export function getMarkerVisual(presence: string, entityType: string): { color: string; label: string } {
   let color: string = EASYLOCS_RADAR_THEME.store;
@@ -106,7 +107,7 @@ export function createEasyLocsMarkerElement(
     display: flex; align-items: center; justify-content: center;
     position: relative; z-index: 2;
   `;
-  dot.innerHTML = iconFor(entityType);
+  safeSetHtml(dot, iconFor(entityType));
   root.appendChild(dot);
 
   // Live pulse

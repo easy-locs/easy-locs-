@@ -8,6 +8,7 @@ import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { useMapRetry } from "@/hooks/map/useMapRetry";
 import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 import { Car } from "lucide-react";
+import { safeSetHtml } from "@/lib/utils/sanitize-html";
 
 type MapboxGL = typeof maplibreglModule;
 
@@ -398,7 +399,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
 
     riders.forEach((r) => {
       const el = document.createElement("div");
-      el.innerHTML = SVG_CAR(r.heading);
+      safeSetHtml(el, SVG_CAR(r.heading));
       el.style.transition = "transform 2s ease-in-out";
       const marker = new mgl.Marker(el).setLngLat([r.lng, r.lat]).addTo(map);
       riderMarkers.push(marker);

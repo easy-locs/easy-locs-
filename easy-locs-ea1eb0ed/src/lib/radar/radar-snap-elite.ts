@@ -4,6 +4,7 @@
  */
 import type maplibregl from "maplibre-gl";
 import { RADAR_INTENSITY_COLORS as RADAR_INTENSITY, DRIVER_STATUS_COLORS as DRIVER_COLORS } from "@/config/colors";
+import { safeSetHtml } from "@/lib/utils/sanitize-html";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // TYPES
@@ -365,12 +366,15 @@ export function renderSnapEliteSidePanel(map: maplibregl.Map, stations: SnapElit
   }
 
   const sorted = [...stations].sort((a, b) => (b.intensity ?? 0) - (a.intensity ?? 0)).slice(0, 6);
-  state.sidePanel.innerHTML = `
+  safeSetHtml(
+    state.sidePanel,
+    `
     <div style="margin-bottom:10px;padding:10px 12px;border-radius:18px;background:rgba(8,12,22,0.72);color:white;font-weight:800;font-size:13px;letter-spacing:.2px;backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,0.08)">
       RADAR LIVE STATIONS
     </div>
     ${sorted.map(buildStationCard).join("")}
-  `;
+  `,
+  );
 }
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
