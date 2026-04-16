@@ -3,6 +3,12 @@ import { useLocation } from "react-router-dom";
 import { trackAnalyticsEvent } from "@/lib/analytics/analyticsEngine";
 import { REFERRAL_TRACKED_KEY, PENDING_REF_KEY } from "@/lib/referral-cache";
 
+const _trackedInMemory = new Set<string>();
+
+export function _resetInMemoryDedup() {
+  _trackedInMemory.clear();
+}
+
 export function useReferralAttribution(userId?: string | null) {
   const { search, pathname } = useLocation();
 
@@ -16,11 +22,24 @@ export function useReferralAttribution(userId?: string | null) {
     } catch {}
 
     const dedupKey = `${pathname}:${ref}`;
+
+    let alreadyTracked = false;
     try {
       const tracked = sessionStorage.getItem(REFERRAL_TRACKED_KEY);
-      if (tracked === dedupKey) return;
-      sessionStorage.setItem(REFERRAL_TRACKED_KEY, dedupKey);
-    } catch {}
+      if (tracked === dedupKey) {
+        alreadyTracked = true;
+      } else {
+        sessionStorage.setItem(REFERRAL_TRACKED_KEY, dedupKey);
+      }
+    } catch {
+      if (_trackedInMemory.has(dedupKey)) {
+        alreadyTracked = true;
+      } else {
+        _trackedInMemory.add(dedupKey);
+      }
+    }
+
+    if (alreadyTracked) return;
 
     trackAnalyticsEvent({
       eventType: "link_clicked",

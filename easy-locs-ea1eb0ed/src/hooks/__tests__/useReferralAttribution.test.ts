@@ -29,7 +29,10 @@ vi.mock("@/lib/analytics/analyticsEngine", () => ({
 
 import { useLocation } from "react-router-dom";
 import { trackAnalyticsEvent } from "@/lib/analytics/analyticsEngine";
-import { useReferralAttribution } from "../useReferralAttribution";
+import {
+  useReferralAttribution,
+  _resetInMemoryDedup,
+} from "../useReferralAttribution";
 
 const mockUseLocation = vi.mocked(useLocation);
 const mockTrackAnalytics = vi.mocked(trackAnalyticsEvent);
@@ -37,6 +40,7 @@ const mockTrackAnalytics = vi.mocked(trackAnalyticsEvent);
 describe("useReferralAttribution – storage failure resilience", () => {
   beforeEach(() => {
     sessionStorage.clear();
+    _resetInMemoryDedup();
     mockUseLocation.mockReturnValue(mockLocation);
     mockTrackAnalytics.mockResolvedValue(undefined);
   });
@@ -148,6 +152,48 @@ describe("useReferralAttribution – storage failure resilience", () => {
     expect(mockTrackAnalytics).not.toHaveBeenCalled();
   });
 
+  it("deduplicates via in-memory fallback when sessionStorage is unavailable", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).toHaveBeenCalledTimes(1);
+
+    mockTrackAnalytics.mockClear();
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).not.toHaveBeenCalled();
+  });
+
+  it("in-memory fallback allows different dedup keys", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).toHaveBeenCalledTimes(1);
+
+    mockTrackAnalytics.mockClear();
+
+    const otherLocation: Location = {
+      search: "?ref=OTHER",
+      pathname: "/other",
+      hash: "",
+      state: null,
+      key: "default",
+    };
+    mockUseLocation.mockReturnValue(otherLocation);
+
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).toHaveBeenCalledTimes(1);
+  });
+
   it("does not crash when analytics tracking itself fails alongside storage failure", () => {
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new DOMException("blocked");
@@ -179,5 +225,23 @@ describe("useReferralAttribution – storage failure resilience", () => {
         userId: null,
       })
     );
+  });
+
+  it("_resetInMemoryDedup clears the in-memory set", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new DOMException("blocked");
+    });
+
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).toHaveBeenCalledTimes(1);
+
+    mockTrackAnalytics.mockClear();
+    _resetInMemoryDedup();
+
+    renderHook(() => useReferralAttribution("user-1"));
+    expect(mockTrackAnalytics).toHaveBeenCalledTimes(1);
   });
 });
