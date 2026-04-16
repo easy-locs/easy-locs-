@@ -53,6 +53,16 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Route**: `/dashboard/referral-funnel` — Protected route registered in `app-route-registry.tsx` and `App.tsx`
 - **Cross-link**: Existing Referrals page (`src/pages/Referrals.tsx`) has a "View Funnel" link to the dashboard
 
+## Next-Gen Real Estate Analytics Platform (Task #336)
+- **Dashboard Card**: `src/components/dashboard/RealEstateAnalyticsCard.tsx` — Market pulse card on SmartHome dashboard between OrbitPreviewWidget and PropertyDashboardWidget, showing live avg price/sqft, transaction volume with trend arrow, hottest district, and "Deep Dive" CTA linking to full analytics page
+- **Building Price History**: `src/components/analytics/BuildingPriceHistory.tsx` — Searchable building selector with transaction table (unit size, price, price/sqft, date, type) and Recharts line chart showing building price-per-sqft trend over time
+- **Comparable Sales**: `src/components/analytics/ComparableSales.tsx` — Compact card list of recent similar transactions (same district + property type + bedroom count) with median price benchmarking
+- **Cross-Domain Links**: Market Intelligence button on RealEstateDetailPage navigates to DubaiAnalyticsPage pre-filtered by district and building via URL params
+- **Filter Interconnection**: DubaiAnalyticsPage district selection cascades into building list; building selection cascades into comparables; URL params (`?district=X&building=Y`) synchronize state
+- **Fallback Data**: Enhanced deterministic demo data with realistic building names per district (10-15 buildings each via `DISTRICT_BUILDINGS` map in `fallback-dld-transactions.ts`)
+- **Service Methods**: `dldAnalyticsService.getBuildingHistory()`, `.getComparableSales()`, `.getMarketSummary()`, `.getBuildingsForDistrict()`, `.getAllBuildings()` in `dld-analytics.service.ts`
+- **Edge Function Endpoints**: `building-history?building=X`, `comparables?district=X&type=Y&bedrooms=Z`, `summary` added to `supabase/functions/dld-analytics/index.ts`
+
 ## Dynamic Contextual Logo System
 - **`src/hooks/useDynamicLogo.ts`** — Hook that determines logo context (section via router, time of day, special events) and exposes gradient colors, micro-icon, animation intensity
 - **Section Detection**: Routes mapped to 8 sections (food, taxi, hotel, commerce, services, travel, immo, orbit) via regex patterns

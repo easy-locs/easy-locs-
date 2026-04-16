@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { dldAnalyticsService, getDataSource, resetDataSourceTracking, type DLDAnalyticsFilters } from "@/services/dld-analytics.service";
@@ -15,6 +15,8 @@ import {
   MapPin, ChevronRight, X, SlidersHorizontal, Activity, Info, Share2,
 } from "lucide-react";
 import ShareButtons from "@/components/public/ShareButtons";
+import BuildingPriceHistory from "@/components/analytics/BuildingPriceHistory";
+import ComparableSales from "@/components/analytics/ComparableSales";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend,
 } from "recharts";
@@ -802,6 +804,13 @@ function FilterPanel({
 export default function DubaiAnalyticsPage() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const urlDistrict = searchParams.get("district") || undefined;
+  const urlBuilding = searchParams.get("building") || undefined;
+  const urlType = searchParams.get("type") || undefined;
+  const urlBedrooms = searchParams.get("bedrooms") ? Number(searchParams.get("bedrooms")) : undefined;
+  const urlSubjectPrice = searchParams.get("subjectPrice") ? Number(searchParams.get("subjectPrice")) : undefined;
 
   const [kpis, setKpis] = useState<DLDMarketKPI | null>(null);
   const [summaries, setSummaries] = useState<DLDDistrictSummary[]>([]);
@@ -811,9 +820,20 @@ export default function DubaiAnalyticsPage() {
   const [districtTx, setDistrictTx] = useState<DLDTransaction[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
-  const [filters, setFilters] = useState<DLDAnalyticsFilters>({ period: "2026-04" });
+  const [filters, setFilters] = useState<DLDAnalyticsFilters>({
+    period: "2026-04",
+    district: urlDistrict,
+    propertyType: urlType as DLDPropertyType | undefined,
+  });
   const [loading, setLoading] = useState(true);
   const [dataSource, setDataSource] = useState<"live" | "demo">("demo");
+
+  const [activeBuilding, setActiveBuilding] = useState<string>(urlBuilding || "");
+  const [activeBuildingDistrict, setActiveBuildingDistrict] = useState<string>(urlDistrict || "");
+  const [activeBuildingPricePerSqft, setActiveBuildingPricePerSqft] = useState<number | undefined>(urlSubjectPrice);
+  const [activeBuildingPropertyType, setActiveBuildingPropertyType] = useState<string | undefined>(urlType);
+  const [activeBuildingBedrooms, setActiveBuildingBedrooms] = useState<number | undefined>(urlBedrooms);
+  const hasSubjectContext = useRef(Boolean(urlType || urlBedrooms !== undefined || urlSubjectPrice));
 
   const [districts, setDistricts] = useState<string[]>(() => dldAnalyticsService.getAvailableDistricts());
   const districtRequestVersion = useRef(0);
@@ -856,12 +876,31 @@ export default function DubaiAnalyticsPage() {
 
   const handleSelectDistrict = useCallback(async (district: string) => {
     setSelectedDistrict(district);
+    setActiveBuildingDistrict(district);
+    setActiveBuilding("");
+    setActiveBuildingPricePerSqft(undefined);
+    setActiveBuildingPropertyType(undefined);
+    setActiveBuildingBedrooms(undefined);
+    hasSubjectContext.current = false;
+    setFilters(prev => ({ ...prev, district }));
     const version = ++districtRequestVersion.current;
     const txs = await dldAnalyticsService.getDistrictTransactions(district, filters);
     if (districtRequestVersion.current === version) {
       setDistrictTx(txs);
     }
   }, [filters]);
+
+  const handleBuildingSelect = useCallback((building: string, district: string, avgPricePerSqft?: number, dominantType?: string, dominantBedrooms?: number) => {
+    setActiveBuilding(building);
+    setActiveBuildingDistrict(district);
+    if (hasSubjectContext.current) {
+      hasSubjectContext.current = false;
+    } else {
+      setActiveBuildingPricePerSqft(avgPricePerSqft);
+      setActiveBuildingPropertyType(dominantType);
+      setActiveBuildingBedrooms(dominantBedrooms);
+    }
+  }, []);
 
   useEffect(() => {
     if (!selectedDistrict) return;
@@ -873,9 +912,31 @@ export default function DubaiAnalyticsPage() {
     });
   }, [filters, selectedDistrict]);
 
+  useEffect(() => {
+    const params = new URLSearchParams();
+    const district = filters.district || activeBuildingDistrict;
+    if (district) params.set("district", district);
+    if (activeBuilding) params.set("building", activeBuilding);
+    if (activeBuildingPropertyType) params.set("type", activeBuildingPropertyType);
+    if (activeBuildingBedrooms !== undefined && activeBuildingBedrooms !== null) params.set("bedrooms", String(activeBuildingBedrooms));
+    if (activeBuildingPricePerSqft) params.set("subjectPrice", String(activeBuildingPricePerSqft));
+    const newSearch = params.toString();
+    const currentSearch = searchParams.toString();
+    if (newSearch !== currentSearch) {
+      setSearchParams(params, { replace: true });
+    }
+  }, [filters.district, activeBuildingDistrict, activeBuilding, activeBuildingPropertyType, activeBuildingBedrooms, activeBuildingPricePerSqft]);
+
   const handleFiltersChange = useCallback((newFilters: DLDAnalyticsFilters) => {
     setFilters(newFilters);
-  }, []);
+    if (newFilters.district !== filters.district) {
+      setActiveBuildingDistrict(newFilters.district || "");
+      setActiveBuilding("");
+      setActiveBuildingPricePerSqft(undefined);
+      setActiveBuildingPropertyType(undefined);
+      setActiveBuildingBedrooms(undefined);
+    }
+  }, [filters.district]);
 
   return (
     <SubPageShell noContentPad>
@@ -975,6 +1036,28 @@ export default function DubaiAnalyticsPage() {
             <DistrictRankingTable summaries={summaries} onSelectDistrict={handleSelectDistrict} t={t} />
             <TrendCharts trends={trends} t={t} />
             <VolumeChart trends={allTrends} t={t} />
+
+            <BuildingPriceHistory
+              preselectedBuilding={activeBuilding || undefined}
+              preselectedDistrict={activeBuildingDistrict || filters.district}
+              onBuildingSelect={handleBuildingSelect}
+              onBuildingClear={() => {
+                setActiveBuilding("");
+                setActiveBuildingPricePerSqft(undefined);
+                setActiveBuildingPropertyType(undefined);
+                setActiveBuildingBedrooms(undefined);
+                hasSubjectContext.current = false;
+              }}
+            />
+
+            {(activeBuildingDistrict || filters.district) && (
+              <ComparableSales
+                district={activeBuildingDistrict || filters.district || ""}
+                propertyType={activeBuildingPropertyType || filters.propertyType}
+                bedrooms={activeBuildingBedrooms}
+                subjectPricePerSqft={activeBuildingPricePerSqft}
+              />
+            )}
           </>
         )}
 

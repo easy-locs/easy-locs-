@@ -30,6 +30,8 @@ CREATE INDEX IF NOT EXISTS idx_dld_tx_date ON analytics.dld_transactions (transa
 CREATE INDEX IF NOT EXISTS idx_dld_tx_type ON analytics.dld_transactions (property_type);
 CREATE INDEX IF NOT EXISTS idx_dld_tx_district_date ON analytics.dld_transactions (district, transaction_date);
 CREATE INDEX IF NOT EXISTS idx_dld_tx_amount ON analytics.dld_transactions (amount);
+CREATE INDEX IF NOT EXISTS idx_dld_tx_building ON analytics.dld_transactions (building_name);
+CREATE INDEX IF NOT EXISTS idx_dld_tx_building_date ON analytics.dld_transactions (building_name, transaction_date);
 
 ALTER TABLE analytics.dld_transactions ENABLE ROW LEVEL SECURITY;
 

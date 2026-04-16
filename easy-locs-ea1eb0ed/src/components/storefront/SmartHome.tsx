@@ -33,6 +33,7 @@ import type { SmartCategory, SmartHero } from "@/lib/smart-home-engine";
 import { useI18n } from "@/lib/i18n";
 import OrbitPreviewWidget from "@/components/dashboard/OrbitPreviewWidget";
 import PropertyDashboardWidget from "@/components/dashboard/PropertyDashboardWidget";
+import RealEstateAnalyticsCard from "@/components/dashboard/RealEstateAnalyticsCard";
 import EssentialServicesStrip from "@/components/dashboard/EssentialServicesStrip";
 import { ServiceMenuGrid, ServiceMenuDrawer } from "@/components/menu";
 import LiveTrackingBanner from "@/components/dashboard/LiveTrackingBanner";
@@ -626,6 +627,7 @@ export default function SmartHome() {
       </div>
 
       <OrbitPreviewWidget onNavigate={smartNavigate} />
+      <RealEstateAnalyticsCard />
       <PropertyDashboardWidget />
 
       <div className="px-4">
