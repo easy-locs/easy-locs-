@@ -94,6 +94,8 @@ const cacheMetrics: CacheMetrics = {
 };
 
 let lastMetricsLogAt = Date.now();
+let lastMetricsPersistAt = 0;
+const METRICS_PERSIST_INTERVAL_MS = 15 * 60 * 1_000;
 
 function sampleCacheSize(): void {
   cacheMetrics.sizeSampleSum += articleCache.size;
@@ -160,6 +162,44 @@ function maybeLogMetricsSummary(logger: ReturnType<typeof createEdgeLogger>): vo
         }).then(() => {}).catch(() => {});
       }
     } catch {}
+  }
+}
+
+async function maybePersistMetrics(logger: ReturnType<typeof createEdgeLogger>): Promise<void> {
+  const now = Date.now();
+  if (now - lastMetricsPersistAt < METRICS_PERSIST_INTERVAL_MS) return;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) return;
+
+  const snapshot = getCacheMetricsSnapshot();
+  try {
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const { error } = await supabase.from("cache_metrics_log").insert({
+      function_name: "extract-article",
+      hits: snapshot.hits,
+      misses: snapshot.misses,
+      evictions: snapshot.evictions,
+      expirations: snapshot.expirations,
+      stores: snapshot.stores,
+      hit_rate: snapshot.hitRate,
+      current_size: snapshot.currentSize,
+      average_size: snapshot.averageSize,
+      max_size: snapshot.maxSize,
+      ttl_ms: snapshot.ttlMs,
+      uptime_ms: snapshot.uptimeMs,
+    });
+    if (error) {
+      logger.warn("cache_metrics_persist_failed", { error: error.message });
+    } else {
+      lastMetricsPersistAt = now;
+      logger.info("cache_metrics_persisted", snapshot);
+    }
+  } catch (err) {
+    logger.warn("cache_metrics_persist_error", {
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
 }
 
@@ -477,6 +517,11 @@ Deno.serve(async (req) => {
 
   sampleCacheSize();
   maybeLogMetricsSummary(logger);
+  maybePersistMetrics(logger).catch((err) => {
+    logger.warn("cache_metrics_persist_unexpected", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  });
 
   try {
     const ipRlResult = await checkServerRateLimit(req, "extract-article", {

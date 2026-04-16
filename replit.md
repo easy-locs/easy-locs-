@@ -36,6 +36,13 @@ Built with React + Vite + TypeScript, backed by Supabase. Property management, m
 - **Periodic Logging**: `cache_metrics_summary` log entry emitted every 5 minutes during active requests for production monitoring
 - **Enhanced Logs**: `cache_hit` and `cache_miss` log entries now include running metrics (hit rate, total misses)
 
+## Cache Metrics Database Persistence (Task #401)
+- **Table**: `cache_metrics_log` — stores periodic snapshots of article extraction cache metrics (hits, misses, evictions, expirations, stores, hit_rate, current_size, average_size, max_size, ttl_ms, uptime_ms)
+- **Persistence Logic**: `maybePersistMetrics()` in `easy-locs-ea1eb0ed/supabase/functions/extract-article/index.ts` — writes a snapshot every 15 minutes using service role client; first snapshot writes on first request after cold start; timestamp only advances on successful insert (retries on failure)
+- **Retention**: Daily cron job (`cleanup-cache-metrics-log`) deletes rows older than 30 days (requires `pg_cron` extension)
+- **Security**: RLS enabled, access restricted to `service_role` only
+- **Migration**: `easy-locs-ea1eb0ed/supabase/migrations/20260416003511_cache_metrics_log.sql`
+
 ## Map Error Analytics (Task #234)
 - **Analytics Module**: `src/lib/analytics/map-error-analytics.ts` — centralized map error tracking with error type classification (token, webgl, network, init_failure, runtime, unknown), deduplication via TTL-based Map, dual-sink output (structured logger + event bus)
 - **Instrumented Components**: `useMapCore` hook, `LiveMap` component, `MapErrorBoundary` class — all map error paths fire `map.load_failure` events with error type, component, coordinates, and user context
