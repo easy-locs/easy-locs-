@@ -34,7 +34,7 @@ const RealEstateAnalyticsCard = memo(function RealEstateAnalyticsCard() {
 
   if (!summary) return null;
 
-  const isUp = summary.volumeTrend >= 0;
+  const isUp = summary.data.volumeTrend >= 0;
 
   return (
     <div className="px-4" style={{ marginBottom: "var(--section-gap)" }}>
@@ -68,14 +68,14 @@ const RealEstateAnalyticsCard = memo(function RealEstateAnalyticsCard() {
           <div className="grid grid-cols-3 gap-2 mb-3">
             <div className="p-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }}>
               <p className="text-[16px] font-extrabold text-white">
-                AED {summary.avgPricePerSqft.toLocaleString()}
+                AED {summary.data.avgPricePerSqft.toLocaleString()}
               </p>
               <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">Avg/sqft</p>
             </div>
             <div className="p-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }}>
               <div className="flex items-center gap-1">
                 <p className="text-[16px] font-extrabold text-white">
-                  {formatAED(summary.totalVolume)}
+                  {formatAED(summary.data.totalVolume)}
                 </p>
               </div>
               <div className="flex items-center gap-1 mt-0.5">
@@ -84,14 +84,14 @@ const RealEstateAnalyticsCard = memo(function RealEstateAnalyticsCard() {
                   style={{ color: isUp ? "#22c55e" : "#ef4444" }}
                 >
                   {isUp ? <TrendingUp size={8} /> : <TrendingDown size={8} />}
-                  {isUp ? "+" : ""}{summary.volumeTrend}%
+                  {isUp ? "+" : ""}{summary.data.volumeTrend}%
                 </span>
                 <p className="text-[9px] text-white/40 uppercase tracking-wider">Vol</p>
               </div>
             </div>
             <div className="p-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.06)" }}>
               <p className="text-[16px] font-extrabold text-white">
-                {summary.transactionCount.toLocaleString()}
+                {summary.data.transactionCount.toLocaleString()}
               </p>
               <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">Txn</p>
             </div>
@@ -103,7 +103,7 @@ const RealEstateAnalyticsCard = memo(function RealEstateAnalyticsCard() {
           >
             <MapPin size={12} color={goldHex} />
             <span className="text-[11px] text-white/70">
-              Hottest: <span className="font-bold text-white">{summary.hottestDistrict}</span>
+              Hottest: <span className="font-bold text-white">{summary.data.hottestDistrict}</span>
             </span>
             <span className="text-[10px] text-white/40 ml-auto">This month</span>
           </div>

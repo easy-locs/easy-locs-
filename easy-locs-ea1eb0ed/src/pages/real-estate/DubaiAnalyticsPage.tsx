@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import SubPageShell from "@/components/layout/SubPageShell";
-import { dldAnalyticsService, type DLDAnalyticsFilters, type PaginatedResult, getDataSource, resetDataSourceTracking } from "@/services/dld-analytics.service";
+import { dldAnalyticsService, type DLDAnalyticsFilters, type PaginatedResult, deriveDataSource } from "@/services/dld-analytics.service";
 import type {
   DLDMarketKPI,
   DLDDistrictSummary,
@@ -884,9 +884,8 @@ export default function DubaiAnalyticsPage() {
 
   const loadData = useCallback(async (f: DLDAnalyticsFilters) => {
     setLoading(true);
-    resetDataSourceTracking();
     try {
-      const [kpiData, summaryData, trendData, allTrendData] = await Promise.all([
+      const [kpiResult, summaryResult, trendResult, allTrendResult] = await Promise.all([
         dldAnalyticsService.getMarketKPIs(f),
         dldAnalyticsService.getDistrictSummaries(f),
         dldAnalyticsService.getMonthlyTrends(
@@ -895,11 +894,16 @@ export default function DubaiAnalyticsPage() {
         ),
         dldAnalyticsService.getMonthlyTrends(undefined, f),
       ]);
-      setKpis(kpiData);
-      setSummaries(summaryData);
-      setTrends(trendData);
-      setAllTrends(allTrendData);
-      setDataSource(getDataSource());
+      setKpis(kpiResult.data);
+      setSummaries(summaryResult.data);
+      setTrends(trendResult.data);
+      setAllTrends(allTrendResult.data);
+      setDataSource(deriveDataSource([
+        kpiResult.source,
+        summaryResult.source,
+        trendResult.source,
+        allTrendResult.source,
+      ]));
     } catch (err) {
       console.error("[DubaiAnalytics] Failed to load data", err);
     }
@@ -923,7 +927,7 @@ export default function DubaiAnalyticsPage() {
     const version = ++districtRequestVersion.current;
     const result = await dldAnalyticsService.getDistrictTransactions(district, filters, 0, TX_PAGE_SIZE);
     if (districtRequestVersion.current === version) {
-      setDistrictTxResult(result);
+      setDistrictTxResult(result.data);
     }
   }, [filters]);
 
@@ -951,7 +955,7 @@ export default function DubaiAnalyticsPage() {
       TX_PAGE_SIZE,
     );
     if (districtRequestVersion.current === version) {
-      setDistrictTxResult(result);
+      setDistrictTxResult(result.data);
       setDistrictTxPageLoading(false);
     }
   }, [selectedDistrict, filters]);
@@ -962,7 +966,7 @@ export default function DubaiAnalyticsPage() {
     const version = ++districtRequestVersion.current;
     dldAnalyticsService.getDistrictTransactions(selectedDistrict, filters, 0, TX_PAGE_SIZE).then(result => {
       if (districtRequestVersion.current === version) {
-        setDistrictTxResult(result);
+        setDistrictTxResult(result.data);
       }
     });
   }, [filters, selectedDistrict]);

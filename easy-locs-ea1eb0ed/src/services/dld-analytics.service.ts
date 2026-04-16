@@ -34,6 +34,11 @@ export interface PaginatedResult<T> {
   limit: number;
 }
 
+export interface Sourced<T> {
+  data: T;
+  source: "live" | "demo";
+}
+
 function matchesPeriod(dateStr: string, period: string): boolean {
   if (period.includes("Q")) {
     const [year, q] = period.split("-Q");
@@ -73,9 +78,6 @@ function applyFilters(transactions: DLDTransaction[], filters: DLDAnalyticsFilte
 
   return result;
 }
-
-let _liveCallCount = 0;
-let _demoCallCount = 0;
 
 const EDGE_FUNCTION_BASE_URL = typeof import.meta !== "undefined"
   ? (import.meta.env?.VITE_SUPABASE_EDGE_URL as string | undefined)
@@ -122,27 +124,14 @@ async function fetchFromEdgeFunction<T>(
 
 export { probeEdgeFunction };
 
-export function getDataSource(): "live" | "demo" {
-  if (_liveCallCount > 0 && _demoCallCount === 0) return "live";
-  return _demoCallCount > 0 ? "demo" : "demo";
-}
-
-export function resetDataSourceTracking(): void {
-  _liveCallCount = 0;
-  _demoCallCount = 0;
-}
-
-function trackSource<T>(result: T | null): boolean {
-  if (result) {
-    _liveCallCount++;
-    return true;
-  }
-  _demoCallCount++;
-  return false;
+export function deriveDataSource(sources: Array<"live" | "demo">): "live" | "demo" {
+  if (sources.length === 0) return "demo";
+  if (sources.every(s => s === "live")) return "live";
+  return "demo";
 }
 
 export const dldAnalyticsService = {
-  async getMarketKPIs(filters?: DLDAnalyticsFilters): Promise<DLDMarketKPI> {
+  async getMarketKPIs(filters?: DLDAnalyticsFilters): Promise<Sourced<DLDMarketKPI>> {
     const remote = await fetchFromEdgeFunction<DLDMarketKPI>("dld-analytics/kpis", {
       period: filters?.period,
       propertyType: filters?.propertyType,
@@ -150,17 +139,17 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const allTxs = await ensureTransactionsReady();
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
       ? applyFilters(allTxs, { ...filters, period: undefined })
       : allTxs;
-    return computeMarketKPIs(txs, filters?.period);
+    return { data: computeMarketKPIs(txs, filters?.period), source: "demo" };
   },
 
-  async getDistrictSummaries(filters?: DLDAnalyticsFilters): Promise<DLDDistrictSummary[]> {
+  async getDistrictSummaries(filters?: DLDAnalyticsFilters): Promise<Sourced<DLDDistrictSummary[]>> {
     const remote = await fetchFromEdgeFunction<DLDDistrictSummary[]>("dld-analytics/districts", {
       period: filters?.period,
       propertyType: filters?.propertyType,
@@ -168,17 +157,17 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const allTxs = await ensureTransactionsReady();
     const hasNonPeriodFilters = filters && (filters.propertyType || filters.district || filters.minPrice || filters.maxPrice || filters.transactionType);
     const txs = hasNonPeriodFilters
       ? applyFilters(allTxs, { ...filters, period: undefined })
       : allTxs;
-    return computeDistrictSummaries(txs, filters?.period);
+    return { data: computeDistrictSummaries(txs, filters?.period), source: "demo" };
   },
 
-  async getMonthlyTrends(districts?: string[], filters?: DLDAnalyticsFilters): Promise<DLDMonthlyTrend[]> {
+  async getMonthlyTrends(districts?: string[], filters?: DLDAnalyticsFilters): Promise<Sourced<DLDMonthlyTrend[]>> {
     const remote = await fetchFromEdgeFunction<DLDMonthlyTrend[]>("dld-analytics/trends", {
       period: filters?.period,
       propertyType: filters?.propertyType,
@@ -187,11 +176,11 @@ export const dldAnalyticsService = {
       minPrice: filters?.minPrice,
       maxPrice: filters?.maxPrice,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const allTxs = await ensureTransactionsReady();
     const txs = filters ? applyFilters(allTxs, { ...filters, period: undefined }) : allTxs;
-    return computeMonthlyTrends(txs, districts);
+    return { data: computeMonthlyTrends(txs, districts), source: "demo" };
   },
 
   async getDistrictTransactions(
@@ -199,7 +188,7 @@ export const dldAnalyticsService = {
     filters?: DLDAnalyticsFilters,
     offset: number = 0,
     limit: number = 20,
-  ): Promise<PaginatedResult<DLDTransaction>> {
+  ): Promise<Sourced<PaginatedResult<DLDTransaction>>> {
     const remote = await fetchFromEdgeFunction<{ data: DLDTransaction[]; total: number; offset: number; limit: number }>("dld-analytics/transactions", {
       district,
       period: filters?.period,
@@ -209,12 +198,15 @@ export const dldAnalyticsService = {
       offset,
       limit,
     });
-    if (trackSource(remote)) {
+    if (remote) {
       return {
-        data: remote!.data,
-        total: remote!.total,
-        offset: remote!.offset,
-        limit: remote!.limit,
+        data: {
+          data: remote.data,
+          total: remote.total,
+          offset: remote.offset,
+          limit: remote.limit,
+        },
+        source: "live",
       };
     }
 
@@ -226,10 +218,13 @@ export const dldAnalyticsService = {
     const sorted = [...txs].sort((a, b) => b.amount - a.amount);
     const safeOffset = Math.max(0, Math.min(offset, sorted.length));
     return {
-      data: sorted.slice(safeOffset, safeOffset + limit),
-      total: sorted.length,
-      offset: safeOffset,
-      limit,
+      data: {
+        data: sorted.slice(safeOffset, safeOffset + limit),
+        total: sorted.length,
+        offset: safeOffset,
+        limit,
+      },
+      source: "demo",
     };
   },
 
@@ -237,7 +232,7 @@ export const dldAnalyticsService = {
     filters?: DLDAnalyticsFilters,
     offset: number = 0,
     limit: number = 20,
-  ): Promise<PaginatedResult<DLDTransaction>> {
+  ): Promise<Sourced<PaginatedResult<DLDTransaction>>> {
     const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/top-transactions", {
       limit,
       propertyType: filters?.propertyType,
@@ -246,14 +241,17 @@ export const dldAnalyticsService = {
       maxPrice: filters?.maxPrice,
       transactionType: filters?.transactionType,
     });
-    if (trackSource(remote)) {
-      const sorted = [...remote!].sort((a, b) => b.amount - a.amount);
+    if (remote) {
+      const sorted = [...remote].sort((a, b) => b.amount - a.amount);
       const safeOffset = Math.max(0, Math.min(offset, sorted.length));
       return {
-        data: sorted.slice(safeOffset, safeOffset + limit),
-        total: sorted.length,
-        offset: safeOffset,
-        limit,
+        data: {
+          data: sorted.slice(safeOffset, safeOffset + limit),
+          total: sorted.length,
+          offset: safeOffset,
+          limit,
+        },
+        source: "live",
       };
     }
 
@@ -262,10 +260,13 @@ export const dldAnalyticsService = {
     const sorted = txs.sort((a, b) => b.amount - a.amount);
     const safeOffset = Math.max(0, Math.min(offset, sorted.length));
     return {
-      data: sorted.slice(safeOffset, safeOffset + limit),
-      total: sorted.length,
-      offset: safeOffset,
-      limit,
+      data: {
+        data: sorted.slice(safeOffset, safeOffset + limit),
+        total: sorted.length,
+        offset: safeOffset,
+        limit,
+      },
+      source: "demo",
     };
   },
 
@@ -293,14 +294,14 @@ export const dldAnalyticsService = {
     return [...new Set(txs.map(t => t.transactionDate.slice(0, 7)))].sort();
   },
 
-  async getBuildingHistory(buildingName: string): Promise<DLDTransaction[]> {
+  async getBuildingHistory(buildingName: string): Promise<Sourced<DLDTransaction[]>> {
     const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/building-history", {
       building: buildingName,
     });
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const txs = await ensureTransactionsReady();
-    return computeBuildingHistory(txs, buildingName);
+    return { data: computeBuildingHistory(txs, buildingName), source: "demo" };
   },
 
   async getComparableSales(
@@ -308,24 +309,24 @@ export const dldAnalyticsService = {
     propertyType?: string,
     bedrooms?: number,
     limit: number = 20
-  ): Promise<{ comparables: DLDTransaction[]; medianPricePerSqft: number }> {
+  ): Promise<Sourced<{ comparables: DLDTransaction[]; medianPricePerSqft: number }>> {
     const remote = await fetchFromEdgeFunction<{ comparables: DLDTransaction[]; medianPricePerSqft: number }>(
       "dld-analytics/comparables",
       { district, type: propertyType, bedrooms, limit }
     );
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const txs = await ensureTransactionsReady();
-    return computeComparableSales(txs, district, propertyType, bedrooms, limit);
+    return { data: computeComparableSales(txs, district, propertyType, bedrooms, limit), source: "demo" };
   },
 
-  async getMarketSummary(): Promise<{
+  async getMarketSummary(): Promise<Sourced<{
     avgPricePerSqft: number;
     totalVolume: number;
     transactionCount: number;
     volumeTrend: number;
     hottestDistrict: string;
-  }> {
+  }>> {
     const remote = await fetchFromEdgeFunction<{
       avgPricePerSqft: number;
       totalVolume: number;
@@ -333,10 +334,10 @@ export const dldAnalyticsService = {
       volumeTrend: number;
       hottestDistrict: string;
     }>("dld-analytics/summary", {});
-    if (trackSource(remote)) return remote!;
+    if (remote) return { data: remote, source: "live" };
 
     const txs = await ensureTransactionsReady();
-    return computeMarketSummary(txs);
+    return { data: computeMarketSummary(txs), source: "demo" };
   },
 
   async getDataSourceStatus(): Promise<{

@@ -37,8 +37,8 @@ export default function ComparableSales({
     if (!district) return;
     setLoading(true);
     dldAnalyticsService.getComparableSales(district, propertyType, bedroomFilter, 20).then(result => {
-      setComparables(result.comparables);
-      setMedianPrice(result.medianPricePerSqft);
+      setComparables(result.data.comparables);
+      setMedianPrice(result.data.medianPricePerSqft);
       setLoading(false);
     });
   }, [district, propertyType, bedroomFilter]);

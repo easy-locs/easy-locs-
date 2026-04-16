@@ -86,8 +86,9 @@ export default function BuildingPriceHistory({
       return;
     }
     setLoading(true);
-    dldAnalyticsService.getBuildingHistory(selectedBuilding).then(txs => {
+    dldAnalyticsService.getBuildingHistory(selectedBuilding).then(result => {
       if (buildingRequestVersion.current !== version) return;
+      const txs = result.data;
       setTransactions(txs);
       setLoading(false);
       if (txs.length > 0 && onBuildingSelect) {
