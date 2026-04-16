@@ -1,19 +1,18 @@
 import { test, expect } from "./fixtures/base.fixture";
+import { SEED_WALLET } from "./seed/load-state";
 
 test.describe("Wallet & Transfer Flow (Authenticated)", () => {
   test.describe("Wallet Hub", () => {
-    test("wallet page displays numeric balance and currency", async ({ authenticatedPage: page }) => {
+    test("wallet page displays seeded balance and currency", async ({ authenticatedPage: page }) => {
       await page.goto("/#/wallet");
       await page.waitForLoadState("networkidle");
 
       await expect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
 
-      const walletPage = page.locator("[data-wallet-page]");
       const bodyText = await page.locator("body").textContent();
       expect(bodyText).toMatch(/\d+/);
 
-      const hasCurrency = /(FCFA|CFA|XOF|€|\$|USD|EUR)/i.test(bodyText || "");
-      expect(hasCurrency).toBe(true);
+      expect(bodyText).toMatch(new RegExp(SEED_WALLET.currency, "i"));
     });
 
     test("wallet page has quick action buttons (Top Up, Send, Request, Scan)", async ({ authenticatedPage: page }) => {

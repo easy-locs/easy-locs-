@@ -1,50 +1,63 @@
-import { test, expect } from "@playwright/test";
+import { test as pwTest, expect as pwExpect } from "@playwright/test";
 import { test as authTest, expect as authExpect } from "./fixtures/base.fixture";
+import { SEED_LISTING, SEED_LISTING_2 } from "./seed/load-state";
 
-test.describe("Booking Flow — Property Discovery", () => {
-  test.beforeEach(async ({ page }) => {
+pwTest.describe("Booking Flow — Property Discovery", () => {
+  pwTest.beforeEach(async ({ page }) => {
     await page.goto("/#/real-estate");
     await page.waitForLoadState("networkidle");
-    await expect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
+    await pwExpect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
   });
 
-  test("marketplace renders multiple property listing cards", async ({ page }) => {
+  pwTest("marketplace renders seeded property listing cards", async ({ page }) => {
     const listings = page.locator("a[href]");
-    await expect(listings.first()).toBeVisible({ timeout: 10000 });
-    expect(await listings.count()).toBeGreaterThan(1);
+    await pwExpect(listings.first()).toBeVisible({ timeout: 10000 });
+    pwExpect(await listings.count()).toBeGreaterThanOrEqual(2);
+
+    const body = await page.locator("body").textContent();
+    const hasFirstListing = body?.includes(SEED_LISTING.title) || body?.includes(SEED_LISTING.city);
+    const hasSecondListing = body?.includes(SEED_LISTING_2.title) || body?.includes(SEED_LISTING_2.city);
+    pwExpect(hasFirstListing || hasSecondListing).toBe(true);
   });
 
-  test("clicking a listing navigates to detail page with property heading", async ({ page }) => {
+  pwTest("seeded listing title is visible in marketplace", async ({ page }) => {
+    const body = await page.locator("body").textContent();
+    pwExpect(
+      body?.includes(SEED_LISTING.title) || body?.includes(SEED_LISTING_2.title)
+    ).toBe(true);
+  });
+
+  pwTest("clicking a listing navigates to detail page with property heading", async ({ page }) => {
     const firstLink = page.locator("a[href]").first();
-    await expect(firstLink).toBeVisible({ timeout: 10000 });
+    await pwExpect(firstLink).toBeVisible({ timeout: 10000 });
     const linkText = await firstLink.textContent();
-    expect(linkText!.trim().length).toBeGreaterThan(0);
+    pwExpect(linkText!.trim().length).toBeGreaterThan(0);
 
     await firstLink.click();
     await page.waitForLoadState("networkidle");
 
     const heading = page.locator("h1, h2, [data-testid='property-title']").first();
-    await expect(heading).toBeVisible({ timeout: 10000 });
+    await pwExpect(heading).toBeVisible({ timeout: 10000 });
     const headingText = await heading.textContent();
-    expect(headingText!.trim().length).toBeGreaterThan(0);
+    pwExpect(headingText!.trim().length).toBeGreaterThan(0);
   });
 
-  test("property detail displays price with currency", async ({ page }) => {
+  pwTest("property detail displays seeded price with currency", async ({ page }) => {
     await page.locator("a[href]").first().click();
     await page.waitForLoadState("networkidle");
 
     const bodyText = await page.locator("body").textContent();
-    expect(bodyText).toMatch(/\d+[\s.,]*\d*\s*(FCFA|CFA|€|XOF|\$|\/|nuit|night|mois|month)/i);
+    pwExpect(bodyText).toMatch(/\d+[\s.,]*\d*\s*(FCFA|CFA|€|XOF|\$|\/|nuit|night|mois|month)/i);
   });
 
-  test("property detail displays images or media gallery", async ({ page }) => {
+  pwTest("property detail displays images or media gallery", async ({ page }) => {
     await page.locator("a[href]").first().click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator("img").first()).toBeVisible({ timeout: 10000 });
+    await pwExpect(page.locator("img").first()).toBeVisible({ timeout: 10000 });
   });
 
-  test("property detail has Book/Reserve or Contact action button", async ({ page }) => {
+  pwTest("property detail has Book/Reserve or Contact action button", async ({ page }) => {
     await page.locator("a[href]").first().click();
     await page.waitForLoadState("networkidle");
 
@@ -53,12 +66,12 @@ test.describe("Booking Flow — Property Discovery", () => {
       'button:has-text("Contact"), button:has-text("Contacter"), ' +
       '[data-testid="booking-btn"], [data-testid="contact-btn"]'
     ).first();
-    await expect(bookBtn).toBeVisible({ timeout: 10000 });
+    await pwExpect(bookBtn).toBeVisible({ timeout: 10000 });
   });
 
-  test("full journey: marketplace → listing detail → click Book → booking UI appears", async ({ page }) => {
+  pwTest("full journey: marketplace → listing detail → click Book → booking UI appears", async ({ page }) => {
     const firstCard = page.locator("a[href]").first();
-    await expect(firstCard).toBeVisible({ timeout: 10000 });
+    await pwExpect(firstCard).toBeVisible({ timeout: 10000 });
     await firstCard.click();
     await page.waitForLoadState("networkidle");
 
@@ -66,20 +79,20 @@ test.describe("Booking Flow — Property Discovery", () => {
       'button:has-text("Book"), button:has-text("Réserver"), ' +
       '[data-testid="booking-btn"]'
     ).first();
-    await expect(bookBtn).toBeVisible({ timeout: 10000 });
+    await pwExpect(bookBtn).toBeVisible({ timeout: 10000 });
 
     const urlBefore = page.url();
     await bookBtn.click();
     await page.waitForLoadState("networkidle");
 
-    await expect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
+    await pwExpect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
 
-    await expect(async () => {
+    await pwExpect(async () => {
       const navigatedToBooking = page.url().includes("booking") || page.url().includes("payment");
       const dialogShown = await page.locator('[role="dialog"]').isVisible().catch(() => false);
       const formShown = await page.locator('input[type="text"], input[type="email"], input[type="date"]').first().isVisible().catch(() => false);
       const urlChanged = page.url() !== urlBefore;
-      expect(navigatedToBooking || dialogShown || formShown || urlChanged).toBe(true);
+      pwExpect(navigatedToBooking || dialogShown || formShown || urlChanged).toBe(true);
     }).toPass({ timeout: 10000 });
   });
 });

@@ -1,7 +1,17 @@
 import { test as base, expect, type Page } from "@playwright/test";
+import {
+  getSeededListingIds,
+  SEED_LISTING,
+  SEED_LISTING_2,
+  SEED_WALLET,
+} from "../seed/load-state";
 
 type Fixtures = {
   authenticatedPage: Page;
+  seededListingIds: string[];
+  seedListing: typeof SEED_LISTING;
+  seedListing2: typeof SEED_LISTING_2;
+  seedWallet: typeof SEED_WALLET;
 };
 
 export const test = base.extend<Fixtures>({
@@ -53,6 +63,22 @@ export const test = base.extend<Fixtures>({
     }
 
     await use(page);
+  },
+
+  seededListingIds: async ({}, use) => {
+    await use(getSeededListingIds());
+  },
+
+  seedListing: async ({}, use) => {
+    await use(SEED_LISTING);
+  },
+
+  seedListing2: async ({}, use) => {
+    await use(SEED_LISTING_2);
+  },
+
+  seedWallet: async ({}, use) => {
+    await use(SEED_WALLET);
   },
 });
 

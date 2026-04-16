@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { SEED_LISTING } from "./seed/load-state";
 
 test.describe("Search & Marketplace Filtering", () => {
   test("renders explore page with content sections", async ({ page }) => {
@@ -22,7 +23,7 @@ test.describe("Search & Marketplace Filtering", () => {
     await expect(searchInput).toHaveValue("appartement paris");
   });
 
-  test("marketplace page loads property listings", async ({ page }) => {
+  test("marketplace page loads property listings (seeded)", async ({ page }) => {
     await page.goto("/#/real-estate");
     await page.waitForLoadState("networkidle");
 
@@ -33,7 +34,7 @@ test.describe("Search & Marketplace Filtering", () => {
     expect(await listings.count()).toBeGreaterThan(0);
   });
 
-  test("marketplace search input filters listings", async ({ page }) => {
+  test("marketplace search input filters listings using seeded city", async ({ page }) => {
     await page.goto("/#/real-estate");
     await page.waitForLoadState("networkidle");
 
@@ -43,7 +44,7 @@ test.describe("Search & Marketplace Filtering", () => {
     const listingsBefore = await page.locator("a[href]").count();
     expect(listingsBefore).toBeGreaterThan(0);
 
-    await searchInput.fill("villa");
+    await searchInput.fill(SEED_LISTING.city);
     await page.waitForTimeout(1500);
 
     await expect(page.locator('.error-boundary, [data-testid="error-fallback"]')).toHaveCount(0);
