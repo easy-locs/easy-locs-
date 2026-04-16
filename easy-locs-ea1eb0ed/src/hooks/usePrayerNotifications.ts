@@ -30,11 +30,48 @@ export function dispatchPrayerPrefsChanged(): void {
   window.dispatchEvent(new CustomEvent(PRAYER_PREFS_CHANGED_EVENT));
 }
 
-function parseTimeToDate(timeStr: string): Date {
+export function parseTimeToDate(timeStr: string): Date {
   const [h = "0", m = "0"] = timeStr.split(":");
   const d = new Date();
   d.setHours(parseInt(h), parseInt(m), 0, 0);
   return d;
+}
+
+export interface CheckAndNotifyDeps {
+  prefs: NotificationPrefs | null;
+  prefsLoaded: boolean;
+  firedSet: Set<string>;
+  prayers: PrayerTime[];
+  showNotification: (name: string, time: string) => void;
+  playAdhanSound: (name: string) => void;
+}
+
+export function checkAndNotify(deps: CheckAndNotifyDeps): void {
+  const { prefs, prefsLoaded, firedSet, prayers, showNotification, playAdhanSound } = deps;
+  if (!prefs || !prefs.enabled) return;
+  if (!prefsLoaded) return;
+
+  const now = new Date();
+  const todayKey = now.toDateString();
+  const offsetMinutes = prefs.offset_minutes ?? 0;
+  for (const prayer of prayers) {
+    const prayerKey = prayer.name.toLowerCase() as keyof NotificationPrefs;
+    if (prefs[prayerKey] === false) continue;
+
+    const fireKey = `${todayKey}-${prayer.name}`;
+    if (firedSet.has(fireKey)) continue;
+
+    const prayerDate = parseTimeToDate(prayer.time);
+    prayerDate.setMinutes(prayerDate.getMinutes() - offsetMinutes);
+
+    const diffMs = now.getTime() - prayerDate.getTime();
+
+    if (diffMs >= 0 && diffMs < 120_000) {
+      firedSet.add(fireKey);
+      void showNotification(prayer.name, prayer.time);
+      void playAdhanSound(prayer.name);
+    }
+  }
 }
 
 async function ensureNotificationPermission(): Promise<boolean> {
@@ -170,36 +207,19 @@ export function usePrayerNotifications(
   useEffect(() => {
     if (!prayers.length) return;
 
-    const checkAndNotify = () => {
-      const prefs = prefsRef.current;
-      if (!prefs || !prefs.enabled) return;
-      if (!prefsLoadedRef.current) return;
-
-      const now = new Date();
-      const todayKey = now.toDateString();
-      const offsetMinutes = prefs.offset_minutes ?? 0;
-      for (const prayer of prayers) {
-        const prayerKey = prayer.name.toLowerCase() as keyof NotificationPrefs;
-        if (prefs[prayerKey] === false) continue;
-
-        const fireKey = `${todayKey}-${prayer.name}`;
-        if (firedRef.current.has(fireKey)) continue;
-
-        const prayerDate = parseTimeToDate(prayer.time);
-        prayerDate.setMinutes(prayerDate.getMinutes() - offsetMinutes);
-
-        const diffMs = now.getTime() - prayerDate.getTime();
-
-        if (diffMs >= 0 && diffMs < 120_000) {
-          firedRef.current.add(fireKey);
-          void showPrayerPushNotification(prayer.name, prayer.time);
-          void playAdhan(prayer.name);
-        }
-      }
+    const poll = () => {
+      checkAndNotify({
+        prefs: prefsRef.current,
+        prefsLoaded: prefsLoadedRef.current,
+        firedSet: firedRef.current,
+        prayers,
+        showNotification: showPrayerPushNotification,
+        playAdhanSound: playAdhan,
+      });
     };
 
-    checkAndNotify();
-    const interval = setInterval(checkAndNotify, 30_000);
+    poll();
+    const interval = setInterval(poll, 30_000);
     return () => clearInterval(interval);
   }, [prayers]);
 
