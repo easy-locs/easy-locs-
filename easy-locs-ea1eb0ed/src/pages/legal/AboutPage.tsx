@@ -7,18 +7,17 @@ import { Link } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
 const AboutPage = () => {
-  const { t, locale } = useI18n();
-  const isFr = locale === "fr";
+  const { t } = useI18n();
 
   const values = [
-    { icon: Shield, title: isFr ? "Conformité mondiale" : "Global Compliance", desc: isFr ? "Documents juridiques adaptés à la législation de chaque pays — baux, quittances, inventaires." : "Legal documents tailored to each country's legislation — leases, receipts, inventories." },
-    { icon: Globe, title: isFr ? "190+ pays" : "190+ Countries", desc: isFr ? "Gérez vos biens partout dans le monde avec devises, langues et modèles locaux." : "Manage properties worldwide with local currencies, languages, and templates." },
-    { icon: Users, title: isFr ? "Multi-rôles" : "Multi-role", desc: isFr ? "Propriétaires, locataires, prestataires et clients — chacun dispose de son portail dédié." : "Landlords, tenants, service providers, and clients — each with a dedicated portal." },
-    { icon: Building, title: isFr ? "Tout-en-un" : "All-in-one", desc: isFr ? "Gestion locative, locations saisonnières, marketplace de services et conciergerie." : "Property management, seasonal rentals, service marketplace, and concierge." },
-    { icon: Sparkles, title: isFr ? "IA intégrée" : "AI-Powered", desc: isFr ? "Génération automatique de documents, audit qualité, suggestions intelligentes." : "Automatic document generation, quality audits, smart suggestions." },
-    { icon: BarChart3, title: isFr ? "Finance & Comptabilité" : "Finance & Accounting", desc: isFr ? "Suivi des revenus, dépenses, résultat net et bilans fiscaux par pays." : "Track revenue, expenses, net results, and tax reports by country." },
-    { icon: FileText, title: isFr ? "Documents légaux" : "Legal Documents", desc: isFr ? "Baux meublés/vides, quittances, états des lieux, mises en demeure — générés en 1 clic." : "Furnished/unfurnished leases, receipts, inventories, formal notices — generated in 1 click." },
-    { icon: Headphones, title: isFr ? "Conciergerie" : "Concierge", desc: isFr ? "Réservations, chauffeurs privés, ménage, transferts aéroport et activités locales." : "Bookings, private drivers, cleaning, airport transfers, and local activities." },
+    { icon: Shield, titleKey: "page.about.value_compliance", descKey: "page.about.value_compliance_desc" },
+    { icon: Globe, titleKey: "page.about.value_countries", descKey: "page.about.value_countries_desc" },
+    { icon: Users, titleKey: "page.about.value_roles", descKey: "page.about.value_roles_desc" },
+    { icon: Building, titleKey: "page.about.value_allinone", descKey: "page.about.value_allinone_desc" },
+    { icon: Sparkles, titleKey: "page.about.value_ai", descKey: "page.about.value_ai_desc" },
+    { icon: BarChart3, titleKey: "page.about.value_finance", descKey: "page.about.value_finance_desc" },
+    { icon: FileText, titleKey: "page.about.value_legal", descKey: "page.about.value_legal_desc" },
+    { icon: Headphones, titleKey: "page.about.value_concierge", descKey: "page.about.value_concierge_desc" },
   ];
 
   useUiEngine("legal-aboutpage");
@@ -40,86 +39,75 @@ const AboutPage = () => {
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-4xl">
-          {/* Hero section */}
           <div className="text-center mb-12">
             <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">
-              {isFr ? "Easy-Locs® — La super app mondiale" : "Easy-Locs® — The Global Super App"}
+              {t("page.about.hero_title")}
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              {isFr
-                ? "La super app tout-en-un pour commander à manger, réserver un taxi, trouver un hôtel, accéder aux services locaux et gérer vos biens — le tout depuis une seule plateforme, dans plus de 190 pays."
-                : "The all-in-one super app for food delivery, taxi rides, hotel bookings, local services, and property management — all from a single platform, in 190+ countries."}
+              {t("page.about.hero_desc")}
             </p>
           </div>
 
-          {/* Mission */}
           <div className="bg-card border border-border rounded-2xl p-6 sm:p-8 mb-10">
             <h2 className="text-xl font-bold text-foreground mb-3">
-              {isFr ? "Notre mission" : "Our Mission"}
+              {t("page.about.mission_title")}
             </h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              {isFr
-                ? "Connecter les gens aux services dont ils ont besoin, partout dans le monde. Que vous commandiez un repas, réserviez un trajet, trouviez un hôtel ou gériez des biens — Easy-Locs simplifie tout depuis une seule plateforme."
-                : "Connecting people with the services they need, anywhere in the world. Whether you're ordering food, booking a ride, finding a hotel, or managing properties — Easy-Locs simplifies everything from a single platform."}
+              {t("page.about.mission_p1")}
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              {isFr
-                ? "Easy-Locs® automatise la génération de documents juridiques conformes, le suivi des paiements (SEPA, Stripe, virement), la communication avec les locataires et les clients, et s'adapte à la législation de chaque pays."
-                : "Easy-Locs® automates compliant legal document generation, payment tracking (SEPA, Stripe, bank transfer), communication with tenants and clients, and adapts to each country's legislation."}
+              {t("page.about.mission_p2")}
             </p>
           </div>
 
-          {/* Three pillars */}
           <div className="mb-10">
             <h2 className="text-xl font-bold text-foreground mb-5 text-center">
-              {isFr ? "3 piliers, 1 plateforme" : "3 Pillars, 1 Platform"}
+              {t("page.about.pillars_title")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { emoji: "🏠", title: isFr ? "Gestion Locative" : "Property Management", desc: isFr ? "Baux, loyers, quittances, comptabilité, interventions" : "Leases, rents, receipts, accounting, maintenance" },
-                { emoji: "🏖️", title: isFr ? "Locations Saisonnières" : "Seasonal Rentals", desc: isFr ? "Réservations directes, calendrier, pricing dynamique" : "Direct bookings, calendar, dynamic pricing" },
-                { emoji: "🛍️", title: isFr ? "Marketplace & Conciergerie" : "Marketplace & Concierge", desc: isFr ? "Services, activités, emplois, réservations" : "Services, activities, jobs, bookings" },
+                { emoji: "🏠", titleKey: "page.about.pillar_property", descKey: "page.about.pillar_property_desc" },
+                { emoji: "🏖️", titleKey: "page.about.pillar_seasonal", descKey: "page.about.pillar_seasonal_desc" },
+                { emoji: "🛍️", titleKey: "page.about.pillar_marketplace", descKey: "page.about.pillar_marketplace_desc" },
               ].map(p => (
-                <div key={p.title} className="border border-border rounded-xl p-5 bg-card text-center">
+                <div key={p.titleKey} className="border border-border rounded-xl p-5 bg-card text-center">
                   <span className="text-3xl mb-3 block">{p.emoji}</span>
-                  <h3 className="font-bold text-foreground mb-1">{p.title}</h3>
-                  <p className="text-sm text-muted-foreground">{p.desc}</p>
+                  <h3 className="font-bold text-foreground mb-1">{t(p.titleKey)}</h3>
+                  <p className="text-sm text-muted-foreground">{t(p.descKey)}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Values grid */}
           <h2 className="text-xl font-bold text-foreground mb-5 text-center">
-            {isFr ? "Ce qui nous différencie" : "What Sets Us Apart"}
+            {t("page.about.differentiator_title")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
             {values.map((v) => (
-              <div key={v.title} className="border border-border rounded-xl p-5 bg-card">
+              <div key={v.titleKey} className="border border-border rounded-xl p-5 bg-card">
                 <v.icon className="h-6 w-6 text-accent mb-3" />
-                <h3 className="font-semibold text-foreground mb-1">{v.title}</h3>
-                <p className="text-sm text-muted-foreground">{v.desc}</p>
+                <h3 className="font-semibold text-foreground mb-1">{t(v.titleKey)}</h3>
+                <p className="text-sm text-muted-foreground">{t(v.descKey)}</p>
               </div>
             ))}
           </div>
 
-          {/* CTA */}
           <div className="text-center space-y-4">
             <h2 className="text-xl font-bold text-foreground">
-              {isFr ? "Prêt à commencer ?" : "Ready to get started?"}
+              {t("page.about.cta_title")}
             </h2>
             <div className="flex flex-wrap justify-center gap-3">
               <Link to="/signup" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent text-accent-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
-                {isFr ? "Créer un compte gratuit" : "Create a free account"}
+                {t("page.about.cta_create_account")}
               </Link>
               <Link to="/explore" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition-colors">
-                {isFr ? "Explorer la marketplace" : "Explore the marketplace"}
+                {t("page.about.cta_explore")}
               </Link>
             </div>
             <nav className="flex flex-wrap justify-center gap-4 mt-6 text-sm" aria-label="Related pages">
-              <Link to="/property-management" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Gestion locative →" : "Property Management →"}</Link>
-              <Link to="/seasonal-rentals-booking" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Locations saisonnières →" : "Seasonal Rentals →"}</Link>
-              <Link to="/concierge-services" className="text-muted-foreground hover:text-foreground transition-colors">{isFr ? "Conciergerie →" : "Concierge →"}</Link>
+              <Link to="/property-management" className="text-muted-foreground hover:text-foreground transition-colors">{t("page.about.link_property")}</Link>
+              <Link to="/seasonal-rentals-booking" className="text-muted-foreground hover:text-foreground transition-colors">{t("page.about.link_seasonal")}</Link>
+              <Link to="/concierge-services" className="text-muted-foreground hover:text-foreground transition-colors">{t("page.about.link_concierge")}</Link>
               <Link to="/marketplace" className="text-muted-foreground hover:text-foreground transition-colors">Marketplace →</Link>
             </nav>
           </div>

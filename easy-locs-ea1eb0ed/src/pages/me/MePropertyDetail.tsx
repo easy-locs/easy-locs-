@@ -24,12 +24,12 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 
 type Tab = "overview" | "bail" | "appels" | "quittances" | "paiements";
 
-const TABS: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { key: "overview", label: "Vue", icon: Eye },
-  { key: "bail", label: "Bail", icon: Key },
-  { key: "appels", label: "Appels", icon: Zap },
-  { key: "quittances", label: "Quittances", icon: Receipt },
-  { key: "paiements", label: "Paiements", icon: CreditCard },
+const TAB_KEYS: { key: Tab; labelKey: string; icon: React.ComponentType<{ className?: string }> }[] = [
+  { key: "overview", labelKey: "page.me.tab_overview", icon: Eye },
+  { key: "bail", labelKey: "page.me.tab_lease", icon: Key },
+  { key: "appels", labelKey: "page.me.tab_calls", icon: Zap },
+  { key: "quittances", labelKey: "page.me.tab_receipts", icon: Receipt },
+  { key: "paiements", labelKey: "page.me.tab_payments", icon: CreditCard },
 ];
 
 const fadeUp = {
@@ -64,7 +64,7 @@ export default function MePropertyDetail() {
     const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     const propTenantsActive = propTenants.filter(t => t.rent_amount > 0 && (!t.lease_end || t.lease_end >= today));
     if (propTenantsActive.length === 0) {
-      toast({ title: "Aucun locataire actif", description: "Ajoutez un locataire avec un loyer défini" });
+      toast({ title: t("page.me.no_active_tenant"), description: t("page.me.add_tenant_with_rent") });
       return;
     }
     const existingCalls = await rentalRepo.fetchExistingRentCallsForMonth(orgId, month);
@@ -77,15 +77,15 @@ export default function MePropertyDetail() {
         total_amount: tn.rent_amount + tn.charges_amount,
       }));
     if (newCalls.length === 0) {
-      toast({ title: "Déjà généré", description: "Les appels de loyer de ce mois sont déjà créés" });
+      toast({ title: t("page.me.already_generated"), description: t("page.me.rent_calls_created") });
       return;
     }
     try {
       await rentalRepo.insertRentCalls(newCalls);
-      toast({ title: `${newCalls.length} appel(s) généré(s)` });
+      toast({ title: t("page.me.calls_generated").replace("{{count}}", String(newCalls.length)) });
     } catch (err: any) {
       console.error("[Property]", err.message);
-      toast({ title: "Erreur", description: "Une erreur est survenue. Veuillez réessayer.", variant: "destructive" });
+      toast({ title: t("page.me.error"), description: t("page.me.error_retry"), variant: "destructive" });
     }
   }, [orgId, propertyId, propTenants, today, toast]);
 
@@ -113,7 +113,7 @@ export default function MePropertyDetail() {
     if (isError) return (<div className="state-container"><p className="text-sm text-destructive">Something went wrong. Please try again.</p></div>);
 
   return (
-    <SubPageShell title="Chargement..." onBack={() => navigate("/me/gestion-immo")} noContentPad>
+    <SubPageShell title={t("page.me.loading")} onBack={() => navigate("/me/gestion-immo")} noContentPad>
       <div className="max-w-md mx-auto px-4 py-4 space-y-4">
         <Skeleton className="h-8 w-48 mb-4" />
         <Skeleton className="h-32 w-full mb-3" />
@@ -126,11 +126,11 @@ export default function MePropertyDetail() {
 
   if (!property) {
     return (
-      <SubPageShell title="Bien introuvable" onBack={() => navigate("/me/gestion-immo")} noContentPad>
+      <SubPageShell title={t("page.me.property_not_found")} onBack={() => navigate("/me/gestion-immo")} noContentPad>
         <div className="flex-1 flex flex-col items-center py-20 text-center">
           <Home className="w-12 h-12 text-muted-foreground mb-4" />
-          <p className="text-sm font-semibold text-foreground">Bien introuvable</p>
-          <button onClick={() => navigate("/me/gestion-immo")} className="text-primary text-sm mt-2 underline">Retour</button>
+          <p className="text-sm font-semibold text-foreground">{t("page.me.property_not_found")}</p>
+          <button onClick={() => navigate("/me/gestion-immo")} className="text-primary text-sm mt-2 underline">{t("page.me.back")}</button>
         </div>
       </SubPageShell>
     );
@@ -155,7 +155,7 @@ export default function MePropertyDetail() {
         <PropertyHeader property={property} activeTenants={activeTenants} fmt={fmt} monthlyTotal={monthlyTotal} totalCollected={totalCollected} unpaidCount={unpaidCalls.length} />
 
         <div className="flex gap-1 p-1 rounded-2xl bg-muted/50 overflow-x-auto scrollbar-hide">
-          {TABS.map(tab => {
+          {TAB_KEYS.map(tab => {
             const Icon = tab.icon;
             return (
               <button
@@ -166,7 +166,7 @@ export default function MePropertyDetail() {
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
-                {tab.label}
+                {t(tab.labelKey)}
               </button>
             );
           })}
@@ -207,6 +207,7 @@ export default function MePropertyDetail() {
 function PropertyHeader({ property, activeTenants, fmt, monthlyTotal, totalCollected, unpaidCount }: {
   property: any; activeTenants: any[]; fmt: (n: number) => string; monthlyTotal: number; totalCollected: number; unpaidCount: number;
 }) {
+  const { t } = useI18n();
   const isOccupied = activeTenants.length > 0;
   return (
     <div className="rounded-2xl p-4 bg-card border border-border relative overflow-hidden">
@@ -214,17 +215,17 @@ function PropertyHeader({ property, activeTenants, fmt, monthlyTotal, totalColle
       <div className="grid grid-cols-3 gap-3 text-center">
         <div>
           <p className="text-lg font-bold text-foreground">{fmt(monthlyTotal)}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Loyer/mois</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.rent_per_month")}</p>
         </div>
         <div>
           <p className="text-lg font-bold" style={{ color: isOccupied ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }}>
             {activeTenants.length}
           </p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Locataire{activeTenants.length !== 1 ? "s" : ""}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.tenants")}</p>
         </div>
         <div>
           <p className={`text-lg font-bold ${unpaidCount > 0 ? "text-destructive" : "text-foreground"}`}>{unpaidCount}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">Impayé{unpaidCount !== 1 ? "s" : ""}</p>
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-semibold">{t("page.me.unpaid")}</p>
         </div>
       </div>
     </div>
@@ -232,33 +233,34 @@ function PropertyHeader({ property, activeTenants, fmt, monthlyTotal, totalColle
 }
 
 function OverviewTab({ property, activeTenants, propTenants, leases, fmt, cc }: any) {
+  const { t } = useI18n();
   const propertyType = cc.propertyTypes?.find((p: any) => p.value === property.property_type)?.label || property.property_type;
   return (
     <div className="space-y-4">
       <div className="rounded-2xl p-4 bg-card border border-border space-y-3">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Caractéristiques</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("page.me.features_title")}</h3>
         <div className="grid grid-cols-2 gap-2.5">
-          <InfoRow icon={Building2} label="Type" value={propertyType} />
-          <InfoRow icon={Ruler} label="Surface" value={`${property.surface} m²`} />
-          <InfoRow icon={Home} label="Pièces" value={`${property.rooms}`} />
-          <InfoRow icon={Thermometer} label="Chauffage" value={property.heating} />
-          <InfoRow icon={Sofa} label="Meublé" value={property.furnished ? "Oui" : "Non"} />
-          {property.floor != null && <InfoRow icon={Building2} label="Étage" value={`${property.floor}`} />}
+          <InfoRow icon={Building2} label={t("page.me.type")} value={propertyType} />
+          <InfoRow icon={Ruler} label={t("page.me.surface")} value={`${property.surface} m²`} />
+          <InfoRow icon={Home} label={t("page.me.rooms")} value={`${property.rooms}`} />
+          <InfoRow icon={Thermometer} label={t("page.me.heating")} value={property.heating} />
+          <InfoRow icon={Sofa} label={t("page.me.furnished")} value={property.furnished ? t("page.me.furnished_yes") : t("page.me.furnished_no")} />
+          {property.floor != null && <InfoRow icon={Building2} label={t("page.me.floor")} value={`${property.floor}`} />}
         </div>
       </div>
 
       <div className="rounded-2xl p-4 bg-card border border-border space-y-3">
-        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Finances</h3>
+        <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("page.me.finances")}</h3>
         <div className="grid grid-cols-2 gap-2.5">
-          <InfoRow icon={DollarSign} label="Loyer" value={fmt(property.monthly_rent)} />
-          <InfoRow icon={DollarSign} label="Charges" value={fmt(property.monthly_charges)} />
-          <InfoRow icon={Shield} label="Dépôt" value={fmt(property.deposit_amount)} />
+          <InfoRow icon={DollarSign} label={t("page.me.rent")} value={fmt(property.monthly_rent)} />
+          <InfoRow icon={DollarSign} label={t("page.me.charges")} value={fmt(property.monthly_charges)} />
+          <InfoRow icon={Shield} label={t("page.me.deposit")} value={fmt(property.deposit_amount)} />
         </div>
       </div>
 
       {activeTenants.length > 0 && (
         <div className="rounded-2xl p-4 bg-card border border-border space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Locataires actifs</h3>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">{t("page.me.active_tenants")}</h3>
           {activeTenants.map((t: any) => (
             <div key={t.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-muted/30">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
@@ -291,9 +293,10 @@ function InfoRow({ icon: Icon, label, value }: { icon: React.ComponentType<{ cla
 }
 
 function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateLease, property, toast }: any) {
+  const { t } = useI18n();
   const handleAutoGenerate = async () => {
     if (activeTenants.length === 0) {
-      toast({ title: "Aucun locataire", description: "Ajoutez un locataire avant de générer un bail", variant: "destructive" });
+      toast({ title: t("page.me.no_tenant_for_lease"), description: t("page.me.add_tenant_before_lease"), variant: "destructive" });
       return;
     }
     const tenant = activeTenants[0];
@@ -305,26 +308,26 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
         deposit_amount: tenant.deposit_amount, lease_type: tenant.lease_type,
         birth_date: tenant.birth_date, birth_place: tenant.birth_place,
       });
-      toast({ title: "Bail généré avec succès" });
+      toast({ title: t("page.me.lease_generated") });
     } catch {
-      toast({ title: "Erreur", description: "Impossible de générer le bail", variant: "destructive" });
+      toast({ title: t("page.me.error"), description: t("page.me.lease_error"), variant: "destructive" });
     }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <AppCardTitle lines={1}>Baux</AppCardTitle>
+        <AppCardTitle lines={1}>{t("page.me.leases")}</AppCardTitle>
         <button
           onClick={handleAutoGenerate}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform bg-primary/10 text-primary"
         >
-          <Zap className="w-3.5 h-3.5" /> Auto-générer
+          <Zap className="w-3.5 h-3.5" /> {t("page.me.auto_generate")}
         </button>
       </div>
 
       {leases.length === 0 && bailDocs.length === 0 ? (
-        <EmptyState icon={Key} message="Aucun bail" sub="Générez automatiquement un bail pour vos locataires" />
+        <EmptyState icon={Key} message={t("page.me.no_lease")} sub={t("page.me.no_lease_sub")} />
       ) : (
         <div className="space-y-2">
           {leases.map((lease: any) => (
@@ -332,26 +335,26 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
               <div className="flex items-center justify-between mb-2.5">
                 <div className="flex items-center gap-2">
                   <Key className="w-4 h-4" style={{ color: lease.status === "active" ? "hsl(152 60% 42%)" : "hsl(215 15% 50%)" }} />
-                  <span className="text-sm font-semibold text-foreground">{lease.tenants?.name || "Locataire"}</span>
+                  <span className="text-sm font-semibold text-foreground">{lease.tenants?.name || t("page.me.tenant_label")}</span>
                 </div>
                 <LeaseStatusBadge status={lease.status} />
               </div>
               <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-                <span><Calendar className="w-3 h-3 inline mr-1" />Début: {lease.start_date ? new Date(lease.start_date).toLocaleDateString("fr-FR") : "—"}</span>
-                <span><Calendar className="w-3 h-3 inline mr-1" />Fin: {lease.end_date ? new Date(lease.end_date).toLocaleDateString("fr-FR") : "Indéterminée"}</span>
-                <span>Loyer: {fmt(lease.rent_amount || 0)}</span>
-                <span>Charges: {fmt(lease.charges_amount || 0)}</span>
+                <span><Calendar className="w-3 h-3 inline mr-1" />{t("page.me.start_label")}: {lease.start_date ? new Date(lease.start_date).toLocaleDateString("fr-FR") : "—"}</span>
+                <span><Calendar className="w-3 h-3 inline mr-1" />{t("page.me.end_label")}: {lease.end_date ? new Date(lease.end_date).toLocaleDateString("fr-FR") : t("page.me.end_indefinite")}</span>
+                <span>{t("page.me.rent_label")}: {fmt(lease.rent_amount || 0)}</span>
+                <span>{t("page.me.charges_label")}: {fmt(lease.charges_amount || 0)}</span>
               </div>
               <div className="flex items-center gap-2 mt-3">
                 {lease.signed_by_owner ? (
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé (bailleur)</span>
+                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_owner")}</span>
                 ) : (
-                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> En attente signature</span>
+                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
                 )}
                 {lease.signed_by_tenant ? (
-                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> Signé (locataire)</span>
+                  <span className="text-[10px] font-semibold text-emerald-600 flex items-center gap-1"><CheckCircle className="w-3 h-3" /> {t("page.me.signed_tenant")}</span>
                 ) : (
-                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> En attente</span>
+                  <span className="text-[10px] font-semibold text-amber-600 flex items-center gap-1"><Clock className="w-3 h-3" /> {t("page.me.awaiting_signature")}</span>
                 )}
               </div>
             </div>
@@ -363,20 +366,21 @@ function BailTab({ leases, bailDocs, fmt, navigate, activeTenants, autoGenerateL
 }
 
 function AppelsTab({ propRentCalls, fmt, generateMonthlyRentCalls }: any) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <AppCardTitle lines={1}>Appels de loyer</AppCardTitle>
+        <AppCardTitle lines={1}>{t("page.me.rent_calls")}</AppCardTitle>
         <button
           onClick={generateMonthlyRentCalls}
           className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold active:scale-95 transition-transform bg-primary/10 text-primary"
         >
-          <Zap className="w-3.5 h-3.5" /> Générer ce mois
+          <Zap className="w-3.5 h-3.5" /> {t("page.me.generate_month")}
         </button>
       </div>
 
       {propRentCalls.length === 0 ? (
-        <EmptyState icon={Zap} message="Aucun appel de loyer" sub="Générez automatiquement les appels mensuels" />
+        <EmptyState icon={Zap} message={t("page.me.no_rent_calls")} sub={t("page.me.no_rent_calls_sub")} />
       ) : (
         <div className="space-y-2">
           {propRentCalls.map((rc: any) => (
@@ -389,6 +393,7 @@ function AppelsTab({ propRentCalls, fmt, generateMonthlyRentCalls }: any) {
 }
 
 function RentCallCard({ rentCall, fmt }: { rentCall: any; fmt: (n: number) => string }) {
+  const { t } = useI18n();
   const monthLabel = rentCall.month ? new Date(rentCall.month + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : "—";
   return (
     <div className="rounded-2xl p-3.5 bg-card border border-border">
@@ -400,7 +405,7 @@ function RentCallCard({ rentCall, fmt }: { rentCall: any; fmt: (n: number) => st
           <div>
             <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
             <p className="text-[10px] text-muted-foreground">
-              Loyer: {fmt(rentCall.rent_amount)} + Charges: {fmt(rentCall.charges_amount)}
+              {t("page.me.rent_label")}: {fmt(rentCall.rent_amount)} + {t("page.me.charges_label")}: {fmt(rentCall.charges_amount)}
             </p>
           </div>
         </div>
@@ -409,7 +414,7 @@ function RentCallCard({ rentCall, fmt }: { rentCall: any; fmt: (n: number) => st
           <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
             rentCall.paid ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-600"
           }`}>
-            {rentCall.paid ? "Payé" : "En attente"}
+            {rentCall.paid ? t("page.me.paid") : t("page.me.pending")}
           </span>
         </div>
       </div>
@@ -418,21 +423,22 @@ function RentCallCard({ rentCall, fmt }: { rentCall: any; fmt: (n: number) => st
 }
 
 function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, tenants }: any) {
+  const { t } = useI18n();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <AppCardTitle lines={1}>Quittances de loyer</AppCardTitle>
+        <AppCardTitle lines={1}>{t("page.me.receipts")}</AppCardTitle>
       </div>
 
       <div className="rounded-2xl p-3 bg-primary/5 border border-primary/10">
         <p className="text-[11px] text-muted-foreground">
-          Les quittances sont générées automatiquement à chaque paiement validé. Vous pouvez aussi les générer manuellement ci-dessous.
+          {t("page.me.receipts_hint")}
         </p>
       </div>
 
       {paidCalls.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-muted-foreground">Paiements éligibles à quittance</h4>
+          <h4 className="text-xs font-semibold text-muted-foreground">{t("page.me.eligible_payments")}</h4>
           {paidCalls.map((rc: any) => {
             const monthLabel = rc.month ? new Date(rc.month + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : "—";
             return (
@@ -456,7 +462,7 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
                       onClick={() => generateReceiptForPayment(rc)}
                       className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-semibold active:scale-95 transition-transform bg-primary/10 text-primary"
                     >
-                      <FileText className="w-3 h-3" /> Générer
+                      <FileText className="w-3 h-3" /> {t("page.me.generate_receipt")}
                     </button>
                   )}
                 </div>
@@ -468,7 +474,7 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
 
       {quittances.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold text-muted-foreground">Documents générés</h4>
+          <h4 className="text-xs font-semibold text-muted-foreground">{t("page.me.generated_documents")}</h4>
           {quittances.map((doc: any) => (
             <div key={doc.id} className="rounded-2xl p-3.5 bg-card border border-border flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -493,13 +499,14 @@ function QuittancesTab({ quittances, paidCalls, fmt, generateReceiptForPayment, 
       )}
 
       {quittances.length === 0 && paidCalls.length === 0 && (
-        <EmptyState icon={Receipt} message="Aucune quittance" sub="Les quittances sont générées après validation du paiement" />
+        <EmptyState icon={Receipt} message={t("page.me.no_receipts")} sub={t("page.me.no_receipts_sub")} />
       )}
     </div>
   );
 }
 
 function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
+  const { t } = useI18n();
   const unpaid = propRentCalls.filter((r: any) => !r.paid);
   const paid = propRentCalls.filter((r: any) => r.paid);
 
@@ -508,7 +515,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
       {unpaid.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-destructive flex items-center gap-1.5">
-            <AlertTriangle className="w-4 h-4" /> En attente ({unpaid.length})
+            <AlertTriangle className="w-4 h-4" /> {t("page.me.pending")} ({unpaid.length})
           </h3>
           {unpaid.map((rc: any) => {
             const monthLabel = rc.month ? new Date(rc.month + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : "—";
@@ -518,7 +525,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
                 <div className="flex items-center justify-between mb-2.5">
                   <div>
                     <p className="text-sm font-semibold text-foreground capitalize">{monthLabel}</p>
-                    <p className="text-[10px] text-muted-foreground">{tenant?.name || "Locataire"}</p>
+                    <p className="text-[10px] text-muted-foreground">{tenant?.name || t("page.me.tenant_label")}</p>
                   </div>
                   <p className="text-sm font-bold text-destructive">{fmt(rc.total_amount)}</p>
                 </div>
@@ -527,7 +534,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
                   className="w-full py-2 rounded-xl text-xs font-semibold text-primary-foreground active:scale-[0.98] transition-transform"
                   style={{ background: "hsl(var(--primary))" }}
                 >
-                  <CheckCircle className="w-3.5 h-3.5 inline mr-1.5" /> Marquer payé
+                  <CheckCircle className="w-3.5 h-3.5 inline mr-1.5" /> {t("page.me.mark_paid")}
                 </button>
               </div>
             );
@@ -538,7 +545,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
       {paid.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-            <CheckCircle className="w-4 h-4 text-emerald-500" /> Payés ({paid.length})
+            <CheckCircle className="w-4 h-4 text-emerald-500" /> {t("page.me.paid")} ({paid.length})
           </h3>
           {paid.map((rc: any) => {
             const monthLabel = rc.month ? new Date(rc.month + "-01").toLocaleDateString("fr-FR", { month: "long", year: "numeric" }) : "—";
@@ -566,7 +573,7 @@ function PaiementsTab({ propRentCalls, fmt, togglePayment, tenants }: any) {
       )}
 
       {propRentCalls.length === 0 && (
-        <EmptyState icon={CreditCard} message="Aucun paiement" sub="Les paiements apparaissent après la génération des appels de loyer" />
+        <EmptyState icon={CreditCard} message={t("page.me.no_payments")} sub={t("page.me.no_payments_sub")} />
       )}
     </div>
   );
@@ -585,13 +592,14 @@ function EmptyState({ icon: Icon, message, sub }: { icon: React.ComponentType<{ 
 }
 
 function LeaseStatusBadge({ status }: { status: string }) {
-  const config: Record<string, { bg: string; text: string; label: string }> = {
-    active: { bg: "bg-emerald-500/10", text: "text-emerald-600", label: "Actif" },
-    draft: { bg: "bg-muted", text: "text-muted-foreground", label: "Brouillon" },
-    pending_signature: { bg: "bg-amber-500/10", text: "text-amber-600", label: "Signature" },
-    archived: { bg: "bg-muted", text: "text-muted-foreground", label: "Archivé" },
-    terminated: { bg: "bg-destructive/10", text: "text-destructive", label: "Résilié" },
+  const { t } = useI18n();
+  const config: Record<string, { bg: string; text: string; labelKey: string }> = {
+    active: { bg: "bg-emerald-500/10", text: "text-emerald-600", labelKey: "page.me.lease_status.active" },
+    draft: { bg: "bg-muted", text: "text-muted-foreground", labelKey: "page.me.lease_status.draft" },
+    pending_signature: { bg: "bg-amber-500/10", text: "text-amber-600", labelKey: "page.me.lease_status.pending_signature" },
+    archived: { bg: "bg-muted", text: "text-muted-foreground", labelKey: "page.me.lease_status.archived" },
+    terminated: { bg: "bg-destructive/10", text: "text-destructive", labelKey: "page.me.lease_status.terminated" },
   };
   const c = config[status] || config.draft;
-  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${c.bg} ${c.text}`}>{c.label}</span>;
+  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${c.bg} ${c.text}`}>{t(c.labelKey)}</span>;
 }

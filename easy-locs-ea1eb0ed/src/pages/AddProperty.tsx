@@ -24,10 +24,10 @@ const SURFACE_UNITS = [
   { value: "sqft", label: "ft²" },
 ];
 const ENERGY_CLASSES = ["A", "B", "C", "D", "E", "F", "G"];
-const LISTING_MODES = [
-  { value: "long_term", label: "Location longue durée", icon: "🏠" },
-  { value: "seasonal", label: "Location saisonnière", icon: "🌴" },
-  { value: "sale", label: "Vente", icon: "💰" },
+const LISTING_MODE_KEYS = [
+  { value: "long_term", labelKey: "page.property.long_term", icon: "🏠" },
+  { value: "seasonal", labelKey: "page.property.seasonal", icon: "🌴" },
+  { value: "sale", labelKey: "page.property.sale", icon: "💰" },
 ];
 
 const defaultForm = {
@@ -162,7 +162,7 @@ const AddProperty = () => {
           </div>
           <div>
             <h1 className="text-xl font-bold text-foreground">{t("page.rental.add_property") || "Ajouter un bien"}</h1>
-            <p className="text-sm text-muted-foreground">Renseignez les informations essentielles, activez les sections optionnelles</p>
+            <p className="text-sm text-muted-foreground">{t("page.property.fill_info_hint")}</p>
           </div>
         </div>
 
@@ -172,15 +172,15 @@ const AddProperty = () => {
           <div className="bg-accent/5 border border-accent/20 rounded-xl p-4">
             <label className="block text-xs font-semibold text-accent mb-2">{L.country} *</label>
             <CountrySelect value={form.country} onChange={(code) => set({ country: code })} />
-            <p className="text-xs text-muted-foreground mt-1.5">{t("page.add_property.country_hint") || "Le pays détermine la législation, la devise et les modèles."}</p>
+            <p className="text-xs text-muted-foreground mt-1.5">{t("page.add_property.country_hint")}</p>
           </div>
 
           {/* Listing purpose — always visible */}
           <div>
-            <label className="block text-xs font-semibold text-foreground mb-2">Modes d'exploitation *</label>
-            <p className="text-xs text-muted-foreground mb-3">Sélectionnez un ou plusieurs modes pour ce bien</p>
+            <label className="block text-xs font-semibold text-foreground mb-2">{t("page.property.listing_modes_label")}</label>
+            <p className="text-xs text-muted-foreground mb-3">{t("page.property.rental_modes_desc")}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {LISTING_MODES.map(mode => {
+              {LISTING_MODE_KEYS.map(mode => {
                 const isActive = form.listing_modes.includes(mode.value);
                 return (
                   <button key={mode.value} type="button"
@@ -196,22 +196,22 @@ const AddProperty = () => {
                         ? "border-accent bg-accent/10 text-accent shadow-sm"
                         : "border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50"
                     }`}>
-                    <span className="text-lg block mb-1">{mode.icon}</span>{mode.label}
+                    <span className="text-lg block mb-1">{mode.icon}</span>{t(mode.labelKey)}
                   </button>
                 );
               })}
             </div>
             {form.listing_modes.length > 1 && (
               <p className="text-xs text-accent mt-2 font-medium">
-                ✨ Mode multi-exploitation : {form.listing_modes.length} modes activés
+                ✨ {t("page.property.multi_mode").replace("{{count}}", String(form.listing_modes.length))}
               </p>
             )}
           </div>
 
           {/* ── Section: Identification ── */}
-          <Section id="identification" icon={<Building2 className="h-4 w-4 text-muted-foreground" />} title="Identification" defaultOpen>
+          <Section id="identification" icon={<Building2 className="h-4 w-4 text-muted-foreground" />} title={t("page.property.identification")} defaultOpen>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div><Label className="text-xs">{L.propertyName} *</Label><Input value={form.label} onChange={e => set({ label: e.target.value })} placeholder="Ex: Studio Rivoli" /></div>
+              <div><Label className="text-xs">{L.propertyName} *</Label><Input value={form.label} onChange={e => set({ label: e.target.value })} placeholder={t("page.property.name_placeholder")} /></div>
               <div><Label className="text-xs">{L.building}</Label><Input value={form.building_name} onChange={e => set({ building_name: e.target.value })} /></div>
               <div><Label className="text-xs">{L.lotNumber}</Label><Input value={form.lot_number} onChange={e => set({ lot_number: e.target.value })} /></div>
             </div>
@@ -230,7 +230,7 @@ const AddProperty = () => {
           </Section>
 
           {/* ── Section: Location ── */}
-          <Section id="location" icon={<DoorOpen className="h-4 w-4 text-muted-foreground" />} title="Localisation" defaultOpen>
+          <Section id="location" icon={<DoorOpen className="h-4 w-4 text-muted-foreground" />} title={t("page.property.location")} defaultOpen>
             <div>
               <Label className="text-xs">{L.address}</Label>
               <AddressAutocomplete value={form.address} onChange={val => set({ address: val })}
@@ -257,7 +257,7 @@ const AddProperty = () => {
           </Section>
 
           {/* ── Section: Characteristics (toggleable) ── */}
-          <Section id="characteristics" icon={<Ruler className="h-4 w-4 text-muted-foreground" />} title="Caractéristiques détaillées">
+          <Section id="characteristics" icon={<Ruler className="h-4 w-4 text-muted-foreground" />} title={t("page.property.characteristics")}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div>
                 <Label className="text-xs">{L.surface}</Label>
@@ -269,13 +269,13 @@ const AddProperty = () => {
                 </div>
               </div>
               <div><Label className="text-xs">{L.rooms}</Label><Input type="number" value={form.rooms || ""} onChange={e => set({ rooms: +e.target.value })} /></div>
-              <div><Label className="text-xs">Bedrooms</Label><Input type="number" value={form.bedrooms || ""} onChange={e => set({ bedrooms: +e.target.value })} /></div>
-              <div><Label className="text-xs">Bathrooms</Label><Input type="number" value={form.bathrooms || ""} onChange={e => set({ bathrooms: +e.target.value })} /></div>
+              <div><Label className="text-xs">{t("page.property.bedrooms")}</Label><Input type="number" value={form.bedrooms || ""} onChange={e => set({ bedrooms: +e.target.value })} /></div>
+              <div><Label className="text-xs">{t("page.property.bathrooms")}</Label><Input type="number" value={form.bathrooms || ""} onChange={e => set({ bathrooms: +e.target.value })} /></div>
               <div><Label className="text-xs">{L.floor}</Label><Input type="number" value={form.floor ?? ""} onChange={e => set({ floor: e.target.value ? +e.target.value : undefined })} /></div>
-              <div><Label className="text-xs">Année de construction</Label><Input type="number" value={form.year_built ?? ""} onChange={e => set({ year_built: e.target.value ? +e.target.value : undefined })} placeholder="2005" /></div>
+              <div><Label className="text-xs">{t("page.property.year_built")}</Label><Input type="number" value={form.year_built ?? ""} onChange={e => set({ year_built: e.target.value ? +e.target.value : undefined })} placeholder="2005" /></div>
             </div>
             <div>
-              <Label className="text-xs flex items-center gap-1"><Zap className="h-3.5 w-3.5" /> Classe énergétique (DPE)</Label>
+              <Label className="text-xs flex items-center gap-1"><Zap className="h-3.5 w-3.5" /> {t("page.property.energy_class")}</Label>
               <div className="flex gap-1.5 mt-1">
                 {ENERGY_CLASSES.map(ec => (
                   <button key={ec} type="button" onClick={() => set({ energy_class: form.energy_class === ec ? "" : ec })}
@@ -286,20 +286,20 @@ const AddProperty = () => {
           </Section>
 
           {/* ── Section: Amenities (toggleable) ── */}
-          <Section id="amenities" icon={<Thermometer className="h-4 w-4 text-muted-foreground" />} title="Équipements & Prestations">
+          <Section id="amenities" icon={<Thermometer className="h-4 w-4 text-muted-foreground" />} title={t("page.property.amenities")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <ToggleRow label={L.furnished} icon={<Home className="h-4 w-4" />} checked={form.furnished} onChange={v => set({ furnished: v })} />
-              <ToggleRow label="Parking" icon={<Car className="h-4 w-4" />} checked={form.parking} onChange={v => set({ parking: v })} />
-              <ToggleRow label="Garden" icon={<Trees className="h-4 w-4" />} checked={form.garden} onChange={v => set({ garden: v })} />
-              <ToggleRow label="Terrace" icon={<Sun className="h-4 w-4" />} checked={form.terrace} onChange={v => set({ terrace: v })} />
-              <ToggleRow label="Balcony" icon={<Sun className="h-4 w-4" />} checked={form.balcony} onChange={v => set({ balcony: v })} />
-              <ToggleRow label="Elevator" icon={<Building2 className="h-4 w-4" />} checked={form.elevator} onChange={v => set({ elevator: v })} />
-              <ToggleRow label="Pool" icon={<Waves className="h-4 w-4" />} checked={form.pool} onChange={v => set({ pool: v })} />
+              <ToggleRow label={t("page.property.parking")} icon={<Car className="h-4 w-4" />} checked={form.parking} onChange={v => set({ parking: v })} />
+              <ToggleRow label={t("page.property.garden")} icon={<Trees className="h-4 w-4" />} checked={form.garden} onChange={v => set({ garden: v })} />
+              <ToggleRow label={t("page.property.terrace")} icon={<Sun className="h-4 w-4" />} checked={form.terrace} onChange={v => set({ terrace: v })} />
+              <ToggleRow label={t("page.property.balcony")} icon={<Sun className="h-4 w-4" />} checked={form.balcony} onChange={v => set({ balcony: v })} />
+              <ToggleRow label={t("page.property.elevator")} icon={<Building2 className="h-4 w-4" />} checked={form.elevator} onChange={v => set({ elevator: v })} />
+              <ToggleRow label={t("page.property.pool")} icon={<Waves className="h-4 w-4" />} checked={form.pool} onChange={v => set({ pool: v })} />
             </div>
           </Section>
 
           {/* ── Section: Financial (toggleable) ── */}
-          <Section id="financial" icon={<span className="text-sm">💰</span>} title="Financier">
+          <Section id="financial" icon={<span className="text-sm">💰</span>} title={t("page.property.financial")}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div><Label className="text-xs">{L.rent} ({cc.currencySymbol})</Label><Input type="number" value={form.monthly_rent || ""} onChange={e => set({ monthly_rent: +e.target.value })} /></div>
               <div><Label className="text-xs">{L.charges} ({cc.currencySymbol})</Label><Input type="number" value={form.monthly_charges || ""} onChange={e => set({ monthly_charges: +e.target.value })} /></div>
@@ -308,12 +308,12 @@ const AddProperty = () => {
           </Section>
 
           {/* ── Section: Description (toggleable) ── */}
-          <Section id="description" icon={<span className="text-sm">📝</span>} title="Description">
-            <div><Label className="text-xs">Description de l'annonce</Label>
-              <Textarea value={form.description} onChange={e => set({ description: e.target.value })} rows={4} placeholder="Décrivez votre bien : emplacement, luminosité, proximité transports..." />
+          <Section id="description" icon={<span className="text-sm">📝</span>} title={t("page.property.description_section")}>
+            <div><Label className="text-xs">{t("page.property.description_label")}</Label>
+              <Textarea value={form.description} onChange={e => set({ description: e.target.value })} rows={4} placeholder={t("page.property.description_placeholder")} />
             </div>
             <div><Label className="text-xs">{L.notes}</Label>
-              <Textarea value={form.notes} onChange={e => set({ notes: e.target.value })} rows={2} placeholder="Notes internes (non publiées)" />
+              <Textarea value={form.notes} onChange={e => set({ notes: e.target.value })} rows={2} placeholder={t("page.property.internal_notes")} />
             </div>
           </Section>
 

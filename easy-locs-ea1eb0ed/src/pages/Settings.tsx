@@ -28,15 +28,15 @@ import { useUiEngine } from "@/hooks/useUiEngine";
    ──────────────────────────────────────────── */
 type SettingsGroup = "account" | "orbit" | "wallet" | "addresses" | "notifications" | "security" | "business" | "preferences";
 
-const GROUP_META: { key: SettingsGroup; icon: React.ElementType; label: string; labelFr: string }[] = [
-  { key: "account",       icon: User,            label: "Account",       labelFr: "Compte" },
-  { key: "orbit",         icon: Globe,           label: "Orbit",         labelFr: "Orbit" },
-  { key: "wallet",        icon: Wallet,          label: "Wallet",        labelFr: "Portefeuille" },
-  { key: "addresses",     icon: MapPin,          label: "Addresses",     labelFr: "Adresses" },
-  { key: "notifications", icon: Bell,            label: "Notifications", labelFr: "Notifications" },
-  { key: "security",      icon: Shield,          label: "Security",      labelFr: "Sécurité" },
-  { key: "business",      icon: Store,           label: "Business",      labelFr: "Entreprise" },
-  { key: "preferences",   icon: Palette,         label: "Preferences",   labelFr: "Préférences" },
+const GROUP_META: { key: SettingsGroup; icon: React.ElementType; labelKey: string }[] = [
+  { key: "account",       icon: User,            labelKey: "page.settings.group_account" },
+  { key: "orbit",         icon: Globe,           labelKey: "page.settings.group_orbit" },
+  { key: "wallet",        icon: Wallet,          labelKey: "page.settings.group_wallet" },
+  { key: "addresses",     icon: MapPin,          labelKey: "page.settings.group_addresses" },
+  { key: "notifications", icon: Bell,            labelKey: "page.settings.group_notifications" },
+  { key: "security",      icon: Shield,          labelKey: "page.settings.group_security" },
+  { key: "business",      icon: Store,           labelKey: "page.settings.group_business" },
+  { key: "preferences",   icon: Palette,         labelKey: "page.settings.group_preferences" },
 ];
 
 const Settings = () => {
@@ -363,7 +363,7 @@ const Settings = () => {
                 }`}
               >
                 <g.icon className={`h-4 w-4 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                <span className={`text-[10px] font-semibold text-center leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>{g.label}</span>
+                <span className={`text-[10px] font-semibold text-center leading-tight ${isActive ? "text-primary" : "text-muted-foreground"}`}>{t(g.labelKey)}</span>
               </button>
             );
           })}

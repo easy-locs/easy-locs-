@@ -13,12 +13,13 @@ import type { C2CListingRow } from "@/repositories/domain/c2c.repo";
 import SEOHead from "@/components/SEOHead";
 import { useLocationStore } from "@/stores/locationStore";
 import { tc } from "@/lib/i18n-canonical";
+import { useI18n } from "@/lib/i18n";
 
-const QUICK_FILTERS = [
-  { id: "all", label: "Tout", icon: Sparkles },
-  { id: "nearby", label: "Près de moi", icon: MapPin },
-  { id: "new", label: "Neuf", icon: TrendingUp },
-  { id: "free", label: "Gratuit", icon: Flame },
+const QUICK_FILTER_KEYS = [
+  { id: "all", labelKey: "page.annonces.hub.all", icon: Sparkles },
+  { id: "nearby", labelKey: "page.annonces.hub.nearby", icon: MapPin },
+  { id: "new", labelKey: "page.annonces.hub.new", icon: TrendingUp },
+  { id: "free", labelKey: "page.annonces.hub.free", icon: Flame },
 ];
 
 const RECENT_SEARCHES_KEY = "c2c_recent_searches";
@@ -56,6 +57,7 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
 };
 
 export default function AnnoncesHub() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [listings, setListings] = useState<C2CListingRow[]>([]);
@@ -181,7 +183,7 @@ export default function AnnoncesHub() {
     <DashboardLayout>
       <SEOHead
         title="Annonces — Easy-Locs Classifieds"
-        description="Achetez et vendez entre particuliers. Véhicules, électronique, mode, immobilier et plus. Annonces gratuites, paiement QR sécurisé."
+        description={t("page.annonces.hub.seo_description")}
         canonical={`${window.location.origin}/annonces`}
         keywords="annonces, classifieds, c2c, petites annonces, vendre, acheter, occasion, leboncoin"
         ogType="website"
@@ -193,10 +195,10 @@ export default function AnnoncesHub() {
           className="flex items-center justify-between mb-5"
         >
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Annonces</h1>
+            <h1 className="text-2xl font-extrabold tracking-tight">{t("page.annonces.hub.title")}</h1>
             {userLocation && (
               <p className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                <MapPin className="h-3 w-3 text-primary" /> Position détectée
+                <MapPin className="h-3 w-3 text-primary" /> {t("page.annonces.hub.position_detected")}
               </p>
             )}
           </div>
@@ -205,7 +207,7 @@ export default function AnnoncesHub() {
             onClick={() => navigate("/annonces/publier")}
             className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-primary/20"
           >
-            <Plus className="h-4 w-4" /> Vendre
+            <Plus className="h-4 w-4" /> {t("page.annonces.hub.sell")}
           </motion.button>
         </motion.div>
 
@@ -218,7 +220,7 @@ export default function AnnoncesHub() {
                 onChange={e => setQuery(e.target.value)}
                 onFocus={() => setSearchFocused(true)}
                 onKeyDown={e => { if (e.key === "Enter") handleSearchSubmit(); }}
-                placeholder="Rechercher une annonce..."
+                placeholder={t("page.annonces.hub.search_placeholder")}
                 className="pl-9 bg-muted/50 border-border/50 h-11 rounded-xl"
               />
               {query && (
@@ -245,8 +247,8 @@ export default function AnnoncesHub() {
                 className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-20 overflow-hidden"
               >
                 <div className="flex items-center justify-between px-4 pt-3 pb-1">
-                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Recherches récentes</span>
-                  <button onClick={() => { clearRecentSearches(); setRecentSearches([]); }} className="text-[10px] text-primary">Effacer</button>
+                  <span className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {t("page.annonces.hub.recent_searches")}</span>
+                  <button onClick={() => { clearRecentSearches(); setRecentSearches([]); }} className="text-[10px] text-primary">{t("page.annonces.hub.clear")}</button>
                 </div>
                 {recentSearches.map(s => (
                   <button key={s} onClick={() => handleRecentSearchClick(s)} className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted/50 transition-colors flex items-center gap-2">
@@ -262,7 +264,7 @@ export default function AnnoncesHub() {
         {searchFocused && <div className="fixed inset-0 z-10" onClick={() => setSearchFocused(false)} />}
 
         <div className="flex gap-2 overflow-x-auto pb-2 mb-5 hide-scrollbar">
-          {QUICK_FILTERS.map(f => {
+          {QUICK_FILTER_KEYS.map(f => {
             const Icon = f.icon;
             return (
               <motion.button
@@ -276,7 +278,7 @@ export default function AnnoncesHub() {
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {f.label}
+                {t(f.labelKey)}
               </motion.button>
             );
           })}
@@ -284,9 +286,9 @@ export default function AnnoncesHub() {
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold">Catégories</h2>
+            <h2 className="text-sm font-bold">{t("page.annonces.hub.categories")}</h2>
             <button onClick={() => setShowAllCategories(!showAllCategories)} className="text-xs text-primary font-medium flex items-center gap-0.5">
-              {showAllCategories ? "Réduire" : "Voir tout"} <ChevronRight className={`h-3 w-3 transition-transform ${showAllCategories ? "rotate-90" : ""}`} />
+              {showAllCategories ? t("page.annonces.hub.collapse") : t("page.annonces.hub.see_all")} <ChevronRight className={`h-3 w-3 transition-transform ${showAllCategories ? "rotate-90" : ""}`} />
             </button>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
@@ -313,7 +315,7 @@ export default function AnnoncesHub() {
               <div className="p-1.5 rounded-lg bg-amber-500/10">
                 <TrendingUp className="h-4 w-4 text-amber-600" />
               </div>
-              <h2 className="text-sm font-bold">Tendances</h2>
+              <h2 className="text-sm font-bold">{t("page.annonces.hub.trending")}</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
               {trendingListings.map((l, i) => (
@@ -333,7 +335,7 @@ export default function AnnoncesHub() {
 
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-muted-foreground font-medium">
-            {loading ? "Chargement..." : `${listings.length} annonce${listings.length !== 1 ? "s" : ""}`}
+            {loading ? t("page.annonces.hub.loading") : t("page.annonces.hub.listings_found").replace("{{count}}", String(listings.length))}
           </p>
           <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
             <button onClick={() => setViewMode("grid")} className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-background shadow-sm" : ""}`}><Grid3X3 className="h-3.5 w-3.5" /></button>
@@ -363,14 +365,14 @@ export default function AnnoncesHub() {
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
               <Search className="h-7 w-7 opacity-40" />
             </div>
-            <p className="font-semibold text-foreground">Aucune annonce trouvée</p>
-            <p className="text-sm mt-1">Modifiez vos filtres ou publiez la première !</p>
+            <p className="font-semibold text-foreground">{t("page.annonces.hub.no_listings_found")}</p>
+            <p className="text-sm mt-1">{t("page.annonces.hub.change_filters")}</p>
             <motion.button
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate("/annonces/publier")}
               className="mt-5 bg-primary text-primary-foreground text-sm font-bold px-6 py-3 rounded-xl shadow-lg shadow-primary/20"
             >
-              Publier une annonce
+              {t("page.annonces.hub.publish_listing")}
             </motion.button>
           </motion.div>
         ) : (
@@ -398,13 +400,13 @@ export default function AnnoncesHub() {
               <div className="flex justify-center py-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  Chargement...
+                  {t("page.annonces.hub.loading")}
                 </div>
               </div>
             )}
 
             {!hasMore && listings.length > 0 && (
-              <p className="text-center text-xs text-muted-foreground/60 py-6">Vous avez tout vu !</p>
+              <p className="text-center text-xs text-muted-foreground/60 py-6">{t("page.annonces.hub.all_seen")}</p>
             )}
           </>
         )}

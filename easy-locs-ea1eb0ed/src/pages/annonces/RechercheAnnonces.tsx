@@ -14,21 +14,22 @@ import type { C2CListingRow } from "@/repositories/domain/c2c.repo";
 import SEOHead from "@/components/SEOHead";
 import { useLocationStore } from "@/stores/locationStore";
 import { tc } from "@/lib/i18n-canonical";
+import { useI18n } from "@/lib/i18n";
 
-const DATE_FILTERS = [
-  { value: "all", label: "Tout" },
-  { value: "today", label: "Aujourd'hui" },
-  { value: "3days", label: "3 jours" },
-  { value: "week", label: "7 jours" },
-  { value: "month", label: "30 jours" },
+const DATE_FILTER_KEYS = [
+  { value: "all", labelKey: "page.annonces.search.all_dates" },
+  { value: "today", labelKey: "page.annonces.search.today" },
+  { value: "3days", labelKey: "page.annonces.search.3days" },
+  { value: "week", labelKey: "page.annonces.search.week" },
+  { value: "month", labelKey: "page.annonces.search.month" },
 ];
 
-const SORT_OPTIONS = [
-  { value: "date_desc", label: "Plus récent" },
-  { value: "date_asc", label: "Plus ancien" },
-  { value: "price_asc", label: "Prix ↑" },
-  { value: "price_desc", label: "Prix ↓" },
-  { value: "distance", label: "Distance" },
+const SORT_OPTION_KEYS = [
+  { value: "date_desc", labelKey: "page.annonces.search.sort_newest" },
+  { value: "date_asc", labelKey: "page.annonces.search.sort_oldest" },
+  { value: "price_asc", labelKey: "page.annonces.search.sort_price_asc" },
+  { value: "price_desc", labelKey: "page.annonces.search.sort_price_desc" },
+  { value: "distance", labelKey: "page.annonces.search.sort_distance" },
 ];
 
 const SAVED_SEARCHES_KEY = "c2c_saved_searches";
@@ -57,6 +58,7 @@ function removeSavedSearch(id: string) {
 }
 
 export default function RechercheAnnonces() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -167,10 +169,10 @@ export default function RechercheAnnonces() {
     if (condition) params.condition = condition;
     if (priceMin) params.prix_min = priceMin;
     if (priceMax) params.prix_max = priceMax;
-    const label = query || (selectedCat ? selectedCat.label : "Recherche");
+    const label = query || (selectedCat ? selectedCat.label : t("page.annonces.search.default_label"));
     saveSavedSearch(label, params);
     setSavedSearches(getSavedSearches());
-    toast.success("Recherche sauvegardée");
+    toast.success(t("page.annonces.search.saved"));
   };
 
   const handleLoadSavedSearch = (s: SavedSearch) => {
@@ -191,19 +193,23 @@ export default function RechercheAnnonces() {
     setCategory(""); setSubcategory(""); setCondition(""); setPriceMin(""); setPriceMax(""); setDateFilter("all"); setDelivery(""); setSortBy("date_desc");
   };
 
-  const seoTitle = query ? `"${query}" — Recherche Annonces` : (category ? `${selectedCat?.label || category} — Annonces` : "Recherche — Annonces Easy-Locs");
+  const seoTitle = query
+    ? `"${query}" — ${t("page.annonces.search.seo_title_suffix")}`
+    : (category
+      ? `${selectedCat?.label || category} — ${t("page.annonces.search.seo_title_suffix")}`
+      : t("page.annonces.search.seo_title_default"));
 
   return (
     <SubPageShell>
       <SEOHead
         title={seoTitle}
-        description={`Recherchez parmi des milliers d'annonces${category ? ` dans ${selectedCat?.label || category}` : ""}. Filtres avancés, tri par prix et distance.`}
+        description={t("page.annonces.search.seo_description")}
         noindex
       />
       <div className="max-w-4xl mx-auto pb-12">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-muted active:scale-95 transition-transform"><ArrowLeft className="h-4 w-4" /></button>
-          <h1 className="text-lg font-extrabold flex-1">Recherche</h1>
+          <h1 className="text-lg font-extrabold flex-1">{t("page.annonces.search.title")}</h1>
           <button onClick={() => setShowSaved(!showSaved)} className="p-2 rounded-full hover:bg-muted relative active:scale-95 transition-transform">
             <Bookmark className="h-4 w-4" />
             {savedSearches.length > 0 && (
@@ -221,7 +227,7 @@ export default function RechercheAnnonces() {
               className="overflow-hidden mb-4"
             >
               <div className="bg-card border border-border/50 rounded-xl p-3 space-y-2">
-                <p className="text-xs font-bold flex items-center gap-1"><BookmarkCheck className="h-3 w-3 text-primary" /> Recherches sauvegardées</p>
+                <p className="text-xs font-bold flex items-center gap-1"><BookmarkCheck className="h-3 w-3 text-primary" /> {t("page.annonces.search.saved_searches")}</p>
                 {savedSearches.map(s => (
                   <div key={s.id} className="flex items-center gap-2">
                     <button onClick={() => handleLoadSavedSearch(s)} className="flex-1 text-left text-sm hover:text-primary transition-colors truncate">{s.label}</button>
@@ -240,7 +246,7 @@ export default function RechercheAnnonces() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter") doSearch(); }}
-              placeholder="Rechercher..."
+              placeholder={t("page.annonces.search.placeholder")}
               className="pl-9 h-11 rounded-xl bg-muted/50 border-border/50"
             />
             {query && (
@@ -273,14 +279,14 @@ export default function RechercheAnnonces() {
             >
               <div className="bg-card rounded-2xl border border-border/50 p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold">Filtres</span>
-                  <button onClick={clearAllFilters} className="text-[10px] text-primary font-semibold">Tout effacer</button>
+                  <span className="text-xs font-bold">{t("page.annonces.search.filters")}</span>
+                  <button onClick={clearAllFilters} className="text-[10px] text-primary font-semibold">{t("page.annonces.search.clear_all")}</button>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold">Catégorie</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.category")}</label>
                   <div className="flex gap-2 flex-wrap mt-1.5">
-                    <button onClick={() => { setCategory(""); setSubcategory(""); }} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${!category ? "bg-primary text-primary-foreground shadow-md" : "bg-muted/60 text-muted-foreground"}`}>Toutes</button>
+                    <button onClick={() => { setCategory(""); setSubcategory(""); }} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${!category ? "bg-primary text-primary-foreground shadow-md" : "bg-muted/60 text-muted-foreground"}`}>{t("page.annonces.search.all_categories")}</button>
                     {C2C_CATEGORY_TREE.map(cat => (
                       <button key={cat.key} onClick={() => { setCategory(cat.key); setSubcategory(""); }} className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all active:scale-95 ${category === cat.key ? "bg-primary text-primary-foreground shadow-md" : "bg-muted/60 text-muted-foreground"}`}>
                         {cat.emoji} {cat.label}
@@ -291,9 +297,9 @@ export default function RechercheAnnonces() {
 
                 {selectedCat && (
                   <div>
-                    <label className="text-xs font-bold">Sous-catégorie</label>
+                    <label className="text-xs font-bold">{t("page.annonces.search.subcategory")}</label>
                     <div className="flex gap-2 flex-wrap mt-1.5">
-                      <button onClick={() => setSubcategory("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!subcategory ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>Toutes</button>
+                      <button onClick={() => setSubcategory("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!subcategory ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>{t("page.annonces.search.all_categories")}</button>
                       {selectedCat.subcategories.map(sub => (
                         <button key={sub.value} onClick={() => setSubcategory(sub.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${subcategory === sub.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
                           {sub.label}
@@ -304,18 +310,18 @@ export default function RechercheAnnonces() {
                 )}
 
                 <div>
-                  <label className="text-xs font-bold">Prix</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.price")}</label>
                   <div className="flex gap-2 mt-1.5 items-center">
-                    <Input type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)} placeholder="Min" className="w-28 text-sm h-10 rounded-xl" />
+                    <Input type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)} placeholder={t("page.annonces.search.min")} className="w-28 text-sm h-10 rounded-xl" />
                     <span className="text-muted-foreground text-sm">—</span>
-                    <Input type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)} placeholder="Max" className="w-28 text-sm h-10 rounded-xl" />
+                    <Input type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)} placeholder={t("page.annonces.search.max")} className="w-28 text-sm h-10 rounded-xl" />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold">État</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.condition")}</label>
                   <div className="flex gap-2 flex-wrap mt-1.5">
-                    <button onClick={() => setCondition("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!condition ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>Tous</button>
+                    <button onClick={() => setCondition("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!condition ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>{t("page.annonces.search.all_conditions")}</button>
                     {C2C_CONDITIONS.map(c => (
                       <button key={c.value} onClick={() => setCondition(c.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${condition === c.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
                         {c.emoji} {c.label}
@@ -325,20 +331,20 @@ export default function RechercheAnnonces() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold">Date de publication</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.publication_date")}</label>
                   <div className="flex gap-2 flex-wrap mt-1.5">
-                    {DATE_FILTERS.map(d => (
+                    {DATE_FILTER_KEYS.map(d => (
                       <button key={d.value} onClick={() => setDateFilter(d.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${dateFilter === d.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
-                        {d.label}
+                        {t(d.labelKey)}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold">Livraison</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.delivery")}</label>
                   <div className="flex gap-2 flex-wrap mt-1.5">
-                    <button onClick={() => setDelivery("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!delivery ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>Tous</button>
+                    <button onClick={() => setDelivery("")} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${!delivery ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>{t("page.annonces.search.all_delivery")}</button>
                     {C2C_DELIVERY_OPTIONS.map(d => (
                       <button key={d.value} onClick={() => setDelivery(d.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${delivery === d.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
                         {d.emoji} {d.label}
@@ -349,21 +355,21 @@ export default function RechercheAnnonces() {
 
                 {userLoc && (
                   <div>
-                    <label className="text-xs font-bold">Rayon : {radiusKm >= 1000 ? "Tout le pays" : `${radiusKm} km`}</label>
+                    <label className="text-xs font-bold">{t("page.annonces.search.radius")} : {radiusKm >= 1000 ? t("page.annonces.search.whole_country") : `${radiusKm} km`}</label>
                     <input type="range" min={1} max={1000} value={radiusKm} onChange={e => setRadiusKm(parseInt(e.target.value))} className="w-full mt-1.5 accent-primary" />
                     <div className="flex justify-between text-[9px] text-muted-foreground">
                       <span>1 km</span>
-                      <span>Tout le pays</span>
+                      <span>{t("page.annonces.search.whole_country")}</span>
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="text-xs font-bold">Trier par</label>
+                  <label className="text-xs font-bold">{t("page.annonces.search.sort_by")}</label>
                   <div className="flex gap-2 flex-wrap mt-1.5">
-                    {SORT_OPTIONS.map(s => (
+                    {SORT_OPTION_KEYS.map(s => (
                       <button key={s.value} onClick={() => setSortBy(s.value)} className={`px-3 py-1.5 rounded-xl text-xs font-medium ${sortBy === s.value ? "bg-primary text-primary-foreground" : "bg-muted/60 text-muted-foreground"}`}>
-                        {s.label}
+                        {t(s.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -375,7 +381,7 @@ export default function RechercheAnnonces() {
 
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs text-muted-foreground font-medium">
-            {loading ? "Recherche en cours..." : `${listings.length} annonce${listings.length !== 1 ? "s" : ""} trouvée${listings.length !== 1 ? "s" : ""}`}
+            {loading ? t("page.annonces.search.searching") : t("page.annonces.search.results_found").replace("{{count}}", String(listings.length))}
             {sortBy === "distance" && userLoc && radiusKm < 1000 && ` · ${radiusKm} km`}
           </p>
           <div className="flex gap-1 bg-muted/50 rounded-lg p-0.5">
@@ -406,10 +412,10 @@ export default function RechercheAnnonces() {
             <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-4">
               <Search className="h-7 w-7 opacity-40" />
             </div>
-            <p className="font-bold text-foreground">Aucun résultat</p>
-            <p className="text-sm mt-1">Essayez de modifier vos critères de recherche.</p>
+            <p className="font-bold text-foreground">{t("page.annonces.search.no_results")}</p>
+            <p className="text-sm mt-1">{t("page.annonces.search.modify_criteria")}</p>
             {activeFilterCount > 0 && (
-              <button onClick={clearAllFilters} className="mt-3 text-sm text-primary font-semibold">Effacer les filtres</button>
+              <button onClick={clearAllFilters} className="mt-3 text-sm text-primary font-semibold">{t("page.annonces.search.clear_filters")}</button>
             )}
           </motion.div>
         ) : (
@@ -428,14 +434,14 @@ export default function RechercheAnnonces() {
             </div>
 
             {!hasMore && listings.length > 0 && (
-              <p className="text-center text-xs text-muted-foreground/60 py-6">Vous avez tout vu !</p>
+              <p className="text-center text-xs text-muted-foreground/60 py-6">{t("page.annonces.search.all_seen")}</p>
             )}
 
             {loadingMore && (
               <div className="flex justify-center py-6">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  Chargement...
+                  {t("page.annonces.hub.loading")}
                 </div>
               </div>
             )}

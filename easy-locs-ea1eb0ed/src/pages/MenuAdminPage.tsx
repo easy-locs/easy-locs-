@@ -4,9 +4,11 @@ import { BackCard } from "@/components/ui/back-card";
 import { publishImportedMenuToCatalog } from "@/lib/onboarding/menu-publisher";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUiEngine } from "@/hooks/useUiEngine";
+import { useI18n } from "@/lib/i18n";
 
 export default function MenuAdminPage() {
   useUiEngine("menuadminpage");
+  const { t } = useI18n();
   const { user, orgId } = useAuth();
   const [done, setDone] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -14,7 +16,7 @@ export default function MenuAdminPage() {
 
   const publish = async () => {
     if (!user?.id) {
-      setMessage("Connectez-vous pour publier un menu importé.");
+      setMessage(t("page.menu_admin.login_required"));
       return;
     }
 
@@ -28,12 +30,14 @@ export default function MenuAdminPage() {
 
       setMessage(
         result.importedCount > 0
-          ? `${result.createdCount} article(s) publiés, ${result.skippedCount} déjà existant(s).`
-          : "Aucun menu importé trouvé pour ce compte."
+          ? t("page.menu_admin.publish_result")
+              .replace("{{created}}", String(result.createdCount))
+              .replace("{{skipped}}", String(result.skippedCount))
+          : t("page.menu_admin.no_menu")
       );
       setDone(true);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Échec de publication du menu.");
+      setMessage(error instanceof Error ? error.message : t("page.menu_admin.publish_error"));
     } finally {
       setLoading(false);
     }
@@ -41,10 +45,10 @@ export default function MenuAdminPage() {
 
   return (
     <SubPageShell noContentPad className="bg-background p-4 space-y-6">
-      <BackCard label="Back" to="/dashboard" />
+      <BackCard label={t("page.menu_admin.back")} to="/dashboard" />
       <div className="space-y-1">
-        <h1 className="text-2xl font-bold text-foreground">Menu Admin</h1>
-        <p className="text-sm text-muted-foreground">Publier les menus importés vers le catalogue live</p>
+        <h1 className="text-2xl font-bold text-foreground">{t("page.menu_admin.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("page.menu_admin.publish_desc")}</p>
       </div>
 
       <button
@@ -52,7 +56,7 @@ export default function MenuAdminPage() {
         disabled={loading}
         className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold disabled:opacity-50"
       >
-        {loading ? "Publication en cours..." : "Publier le menu importé"}
+        {loading ? t("page.menu_admin.publishing") : t("page.menu_admin.publish_btn")}
       </button>
 
       {message && (
@@ -63,7 +67,7 @@ export default function MenuAdminPage() {
 
       {done && !message && (
         <div className="bg-card border border-border rounded-xl p-4">
-          <p className="text-sm text-foreground">Publication terminée.</p>
+          <p className="text-sm text-foreground">{t("page.menu_admin.publish_done")}</p>
         </div>
       )}
     </SubPageShell>

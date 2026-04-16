@@ -8,21 +8,21 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 
 const GOLD = "hsl(var(--accent))";
 
-const SECTIONS = [
-  { id: "responsable", title: "1. Responsable du traitement" },
-  { id: "dpo", title: "2. Délégué à la Protection des Données" },
-  { id: "collectees", title: "3. Données collectées" },
-  { id: "finalites", title: "4. Finalités du traitement" },
-  { id: "base-legale", title: "5. Base légale" },
-  { id: "conservation", title: "6. Durée de conservation" },
-  { id: "droits", title: "7. Vos droits (RGPD)" },
-  { id: "cookies", title: "8. Cookies et traceurs" },
-  { id: "sous-traitants", title: "9. Sous-traitants" },
-  { id: "transferts", title: "10. Transferts internationaux" },
-  { id: "securite", title: "11. Sécurité" },
-  { id: "mineurs", title: "12. Données des mineurs" },
-  { id: "modifications", title: "13. Modifications" },
-  { id: "contact", title: "14. Contact" },
+const SECTION_KEYS = [
+  { id: "responsable", key: "page.legal.privacy.s1" },
+  { id: "dpo", key: "page.legal.privacy.s2" },
+  { id: "collectees", key: "page.legal.privacy.s3" },
+  { id: "finalites", key: "page.legal.privacy.s4" },
+  { id: "base-legale", key: "page.legal.privacy.s5" },
+  { id: "conservation", key: "page.legal.privacy.s6" },
+  { id: "droits", key: "page.legal.privacy.s7" },
+  { id: "cookies", key: "page.legal.privacy.s8" },
+  { id: "sous-traitants", key: "page.legal.privacy.s9" },
+  { id: "transferts", key: "page.legal.privacy.s10" },
+  { id: "securite", key: "page.legal.privacy.s11" },
+  { id: "mineurs", key: "page.legal.privacy.s12" },
+  { id: "modifications", key: "page.legal.privacy.s13" },
+  { id: "contact", key: "page.legal.privacy.s14" },
 ];
 
 const PrivacyPage = () => {
@@ -44,11 +44,11 @@ const PrivacyPage = () => {
       <Navbar />
       <main className="flex-1 pt-24 pb-16">
         <div className="container max-w-3xl">
-          <h1 className="text-3xl font-bold text-foreground mb-2">{t("legal.privacy.title") || "Politique de Confidentialité"}</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">{t("page.legal.privacy.title")}</h1>
 
           <div className="flex items-center gap-4 mb-6 text-xs text-muted-foreground">
-            <span><strong>Version :</strong> 2.0</span>
-            <span><strong>Dernière mise à jour :</strong> 14 avril 2026</span>
+            <span><strong>{t("page.privacy.version_label")}</strong> 2.0</span>
+            <span><strong>{t("page.privacy.last_updated_label")}</strong> 14 avril 2026</span>
           </div>
 
           <div className="rounded-xl border p-4 mb-8" style={{ borderColor: GOLD, background: "hsl(var(--card))" }}>
@@ -56,19 +56,19 @@ const PrivacyPage = () => {
               onClick={() => setTocOpen(!tocOpen)}
               className="flex items-center justify-between w-full text-sm font-semibold"
             >
-              Sommaire
+              {t("page.privacy.toc_label")}
               {tocOpen ? <ChevronUp style={{ width: 16, height: 16 }} /> : <ChevronDown style={{ width: 16, height: 16 }} />}
             </button>
             {tocOpen && (
               <nav className="mt-3 space-y-1">
-                {SECTIONS.map((s) => (
+                {SECTION_KEYS.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => scrollTo(s.id)}
                     className="block text-xs hover:underline w-full text-left py-0.5"
                     style={{ color: GOLD }}
                   >
-                    {s.title}
+                    {t(s.key)}
                   </button>
                 ))}
               </nav>
@@ -77,17 +77,17 @@ const PrivacyPage = () => {
 
           <div className="prose prose-sm max-w-none text-muted-foreground space-y-6">
             <section id="responsable">
-              <h2 className="text-lg font-semibold text-foreground">1. Responsable du traitement</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s1")}</h2>
               <p>Easy-Locs SAS, immatriculée en France.<br />Siège social : Paris, France<br />Email : <a href="mailto:legal@easy-locs.com" style={{ color: GOLD }}>legal@easy-locs.com</a></p>
             </section>
 
             <section id="dpo">
-              <h2 className="text-lg font-semibold text-foreground">2. Délégué à la Protection des Données (DPO)</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s2")}</h2>
               <p>Vous pouvez contacter notre DPO pour toute question relative à la protection de vos données personnelles : <a href="mailto:dpo@easy-locs.com" style={{ color: GOLD }}>dpo@easy-locs.com</a></p>
             </section>
 
             <section id="collectees">
-              <h2 className="text-lg font-semibold text-foreground">3. Données collectées</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s3")}</h2>
               <p>Nous collectons les catégories de données suivantes :</p>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Identité :</strong> nom, prénom, adresse email, numéro de téléphone</li>
@@ -101,7 +101,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="finalites">
-              <h2 className="text-lg font-semibold text-foreground">4. Finalités du traitement</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s4")}</h2>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Gestion du compte et authentification</li>
                 <li>Fourniture des services (gestion locative, marketplace, wallet, communication)</li>
@@ -115,7 +115,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="base-legale">
-              <h2 className="text-lg font-semibold text-foreground">5. Base légale</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s5")}</h2>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Exécution du contrat (Art. 6.1.b RGPD) :</strong> fourniture du Service</li>
                 <li><strong>Consentement (Art. 6.1.a RGPD) :</strong> cookies analytics/marketing, communication marketing, géolocalisation</li>
@@ -125,7 +125,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="conservation">
-              <h2 className="text-lg font-semibold text-foreground">6. Durée de conservation</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s6")}</h2>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Données de compte :</strong> durée d'utilisation + 30 jours après suppression</li>
                 <li><strong>Données financières :</strong> 5 ans (obligation légale comptable)</li>
@@ -136,7 +136,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="droits">
-              <h2 className="text-lg font-semibold text-foreground">7. Vos droits (RGPD)</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s7")}</h2>
               <p>Conformément au RGPD, vous disposez des droits suivants :</p>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Droit d'accès (Art. 15) :</strong> obtenir une copie de vos données</li>
@@ -151,7 +151,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="cookies">
-              <h2 className="text-lg font-semibold text-foreground">8. Cookies et traceurs</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s8")}</h2>
               <p>Nous utilisons des cookies selon trois catégories :</p>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Essentiels :</strong> authentification, session, préférences de langue (toujours actifs)</li>
@@ -162,7 +162,7 @@ const PrivacyPage = () => {
             </section>
 
             <section id="sous-traitants">
-              <h2 className="text-lg font-semibold text-foreground">9. Sous-traitants</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s9")}</h2>
               <ul className="list-disc pl-6 space-y-1">
                 <li><strong>Supabase :</strong> hébergement et base de données (UE — Singapour)</li>
                 <li><strong>Stripe :</strong> traitement des paiements (certifié PCI-DSS)</li>
@@ -174,12 +174,12 @@ const PrivacyPage = () => {
             </section>
 
             <section id="transferts">
-              <h2 className="text-lg font-semibold text-foreground">10. Transferts internationaux</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s10")}</h2>
               <p>Certaines données peuvent être transférées hors de l'UE/EEE dans le cadre de nos sous-traitants. Ces transferts sont encadrés par des clauses contractuelles types (Art. 46.2.c RGPD) ou des décisions d'adéquation de la Commission Européenne.</p>
             </section>
 
             <section id="securite">
-              <h2 className="text-lg font-semibold text-foreground">11. Sécurité</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s11")}</h2>
               <p>Nous mettons en œuvre des mesures techniques et organisationnelles conformes à l'état de l'art :</p>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Chiffrement en transit (TLS 1.3) et au repos</li>
@@ -192,17 +192,17 @@ const PrivacyPage = () => {
             </section>
 
             <section id="mineurs">
-              <h2 className="text-lg font-semibold text-foreground">12. Données des mineurs</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s12")}</h2>
               <p>Le Service n'est pas destiné aux personnes de moins de 16 ans (ou l'âge minimum requis par la législation locale). Nous ne collectons pas sciemment de données de mineurs. Si vous constatez qu'un mineur utilise le Service, contactez-nous immédiatement.</p>
             </section>
 
             <section id="modifications">
-              <h2 className="text-lg font-semibold text-foreground">13. Modifications</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s13")}</h2>
               <p>Nous pouvons mettre à jour cette Politique de Confidentialité. Toute modification significative sera notifiée par email ou notification in-app au moins 30 jours avant son entrée en vigueur. La version en vigueur est toujours accessible depuis l'application.</p>
             </section>
 
             <section id="contact">
-              <h2 className="text-lg font-semibold text-foreground">14. Contact</h2>
+              <h2 className="text-lg font-semibold text-foreground">{t("page.legal.privacy.s14")}</h2>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Questions générales : <a href="mailto:legal@easy-locs.com" style={{ color: GOLD }}>legal@easy-locs.com</a></li>
                 <li>Protection des données : <a href="mailto:dpo@easy-locs.com" style={{ color: GOLD }}>dpo@easy-locs.com</a></li>

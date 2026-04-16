@@ -13,18 +13,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import SEOHead from "@/components/SEOHead";
 import { tc } from "@/lib/i18n-canonical";
+import { useI18n } from "@/lib/i18n";
 import { useLocationStore } from "@/stores/locationStore";
 
-const STEPS = [
-  { key: "c2c.step_category", label: "Catégorie", emoji: "📁" },
-  { key: "c2c.step_title", label: "Titre & Description", emoji: "✏️" },
-  { key: "c2c.step_attributes", label: "Caractéristiques", emoji: "📋" },
-  { key: "c2c.step_condition", label: "État", emoji: "✨" },
-  { key: "c2c.step_photos", label: "Photos", emoji: "📸" },
-  { key: "c2c.step_price", label: "Prix", emoji: "💰" },
-  { key: "c2c.step_location", label: "Localisation", emoji: "📍" },
-  { key: "c2c.step_delivery", label: "Livraison", emoji: "🚚" },
-  { key: "c2c.step_preview", label: "Aperçu", emoji: "👀" },
+const STEP_KEYS = [
+  { labelKey: "page.annonces.publish.step_category", emoji: "📁" },
+  { labelKey: "page.annonces.publish.step_title", emoji: "✏️" },
+  { labelKey: "page.annonces.publish.step_attributes", emoji: "📋" },
+  { labelKey: "page.annonces.publish.step_condition", emoji: "✨" },
+  { labelKey: "page.annonces.publish.step_photos", emoji: "📸" },
+  { labelKey: "page.annonces.publish.step_price", emoji: "💰" },
+  { labelKey: "page.annonces.publish.step_location", emoji: "📍" },
+  { labelKey: "page.annonces.publish.step_delivery", emoji: "🚚" },
+  { labelKey: "page.annonces.publish.step_preview", emoji: "👀" },
 ];
 
 function generateSlug(title: string, subcategory: string): string {
@@ -70,7 +71,7 @@ function AttributeField({ field, value, onChange }: { field: C2CAttributeField; 
           <label className="text-sm font-semibold">{field.label}{field.required && <span className="text-red-500"> *</span>}</label>
           <div className="relative mt-1.5">
             <select value={value || ""} onChange={e => onChange(e.target.value)} className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm appearance-none pr-8 h-11">
-              <option value="">Sélectionner...</option>
+              <option value="">{t("page.annonces.publish.select_placeholder")}</option>
               {field.options?.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -115,6 +116,7 @@ function AttributeField({ field, value, onChange }: { field: C2CAttributeField; 
 }
 
 export default function PublierAnnonce() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { draft, setField, setAttribute, setStep, reset } = useC2CDraftStore();
@@ -147,7 +149,7 @@ export default function PublierAnnonce() {
 
     const prohibited = checkProhibited(draft.title + " " + draft.description);
     if (prohibited) {
-      setError(`Contenu interdit détecté : "${prohibited}". Veuillez modifier votre annonce.`);
+      setError(`${t("page.annonces.publish.prohibited")}: "${prohibited}".`);
       return;
     }
 
@@ -180,10 +182,10 @@ export default function PublierAnnonce() {
       } as Partial<import("@/repositories/domain/c2c.repo").C2CListingRow>);
 
       reset();
-      toast.success(asDraft ? "Brouillon sauvegardé" : "Annonce publiée avec succès !");
+      toast.success(asDraft ? t("page.annonces.publish.draft_saved") : t("page.annonces.publish.published_success"));
       navigate(asDraft ? "/annonces/mes-annonces" : "/annonces");
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Erreur lors de la publication");
+      setError(e instanceof Error ? e.message : t("page.annonces.publish.publish_error"));
     } finally {
       setPublishing(false);
     }
@@ -232,7 +234,7 @@ export default function PublierAnnonce() {
       }
     }
     setField("photoUrls", [...draft.photoUrls, ...compressed]);
-    toast.success(`${compressed.length} photo${compressed.length > 1 ? "s" : ""} ajoutée${compressed.length > 1 ? "s" : ""}`, { duration: 1500 });
+    toast.success(t("page.annonces.publish.photos_added").replace("{{count}}", String(compressed.length)), { duration: 1500 });
   };
 
   const removePhoto = (idx: number) => {
@@ -253,13 +255,13 @@ export default function PublierAnnonce() {
           <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-muted active:scale-95 transition-transform"><ArrowLeft className="h-4 w-4" /></button>
           <div className="flex-1">
             <h1 className="text-lg font-extrabold">{tc("c2c.publish")}</h1>
-            <p className="text-xs text-muted-foreground">{STEPS[step].emoji} {STEPS[step].label}</p>
+            <p className="text-xs text-muted-foreground">{STEP_KEYS[step].emoji} {t(STEP_KEYS[step].labelKey)}</p>
           </div>
-          <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{step + 1}/{STEPS.length}</span>
+          <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{step + 1}/{STEP_KEYS.length}</span>
         </div>
 
         <div className="flex gap-0.5 mb-6">
-          {STEPS.map((_, i) => (
+          {STEP_KEYS.map((_, i) => (
             <div key={i} className="flex-1 h-1.5 rounded-full overflow-hidden bg-muted/60">
               <motion.div
                 initial={{ width: 0 }}
@@ -282,7 +284,7 @@ export default function PublierAnnonce() {
           >
             {step === 0 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Choisissez une catégorie</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.choose_category")}</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {C2C_CATEGORY_TREE.map(cat => (
                     <motion.button
@@ -303,7 +305,7 @@ export default function PublierAnnonce() {
                     animate={{ opacity: 1, height: "auto" }}
                     className="space-y-2 overflow-hidden"
                   >
-                    <h3 className="text-sm font-bold">Sous-catégorie</h3>
+                    <h3 className="text-sm font-bold">{t("page.annonces.publish.subcategory")}</h3>
                     <div className="grid grid-cols-2 gap-2">
                       {selectedCategory.subcategories.map(sub => (
                         <button
@@ -324,7 +326,7 @@ export default function PublierAnnonce() {
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-sm font-semibold">Titre <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-semibold">{t("page.annonces.publish.title_label")} <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${qualityColors[titleQuality]}`} />
                       <span className="text-[10px] text-muted-foreground">{draft.title.length}/100</span>
@@ -333,12 +335,12 @@ export default function PublierAnnonce() {
                   <Input value={draft.title} onChange={e => setField("title", e.target.value)} placeholder="Ex: iPhone 15 Pro 256Go Noir" maxLength={100} className="h-11" />
                   <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
                     <Sparkles className="h-3 w-3 text-amber-500" />
-                    Conseil : inclure la marque, le modèle et l'état
+                    {t("page.annonces.publish.title_hint")}
                   </p>
                 </div>
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-sm font-semibold">Description <span className="text-red-500">*</span></label>
+                    <label className="text-sm font-semibold">{t("page.annonces.publish.description_label")} <span className="text-red-500">*</span></label>
                     <div className="flex items-center gap-1.5">
                       <div className={`w-2 h-2 rounded-full ${qualityColors[descQuality]}`} />
                       <span className="text-[10px] text-muted-foreground">{draft.description.length}/5000</span>
@@ -347,7 +349,7 @@ export default function PublierAnnonce() {
                   <textarea
                     value={draft.description}
                     onChange={e => setField("description", e.target.value)}
-                    placeholder="Décrivez votre article en détail : état, raison de la vente, accessoires inclus..."
+                    placeholder={t("page.annonces.publish.description_placeholder")}
                     className="w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm min-h-[140px] resize-y focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     maxLength={5000}
                   />
@@ -357,7 +359,7 @@ export default function PublierAnnonce() {
 
             {step === 2 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Caractéristiques</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.attributes")}</h2>
                 {attributes.length > 0 ? (
                   attributes.map(field => (
                     <AttributeField
@@ -370,8 +372,8 @@ export default function PublierAnnonce() {
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Info className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                    <p className="text-sm">Pas de caractéristiques spécifiques pour cette catégorie.</p>
-                    <p className="text-xs mt-1">Passez à l'étape suivante</p>
+                    <p className="text-sm">{t("page.annonces.publish.no_attributes")}</p>
+                    <p className="text-xs mt-1">{t("page.annonces.publish.next_step")}</p>
                   </div>
                 )}
               </div>
@@ -379,7 +381,7 @@ export default function PublierAnnonce() {
 
             {step === 3 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">État de l'article</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.item_condition")}</h2>
                 <div className="space-y-2">
                   {C2C_CONDITIONS.map(c => (
                     <motion.button
@@ -398,18 +400,18 @@ export default function PublierAnnonce() {
 
             {step === 4 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Photos</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.photos")}</h2>
                 <div className="bg-muted/30 rounded-xl p-3 text-xs text-muted-foreground flex items-start gap-2 border border-border/20">
                   <Camera className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
                   <div>
-                    <p className="font-medium text-foreground">Min 3 photos, max 10</p>
-                    <p className="mt-0.5">La première photo sera la couverture. Glissez pour réorganiser.</p>
+                    <p className="font-medium text-foreground">{t("page.annonces.publish.photos_hint")}</p>
+                    <p className="mt-0.5">{t("page.annonces.publish.photos_cover_hint")}</p>
                   </div>
                 </div>
                 {draft.photoUrls.length < 3 && (
                   <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-500/10 rounded-xl px-3 py-2 font-medium">
                     <Info className="h-3.5 w-3.5" />
-                    {3 - draft.photoUrls.length} photo{3 - draft.photoUrls.length > 1 ? "s" : ""} de plus requise{3 - draft.photoUrls.length > 1 ? "s" : ""}
+                    {t("page.annonces.publish.photos_required").replace("{{count}}", String(3 - draft.photoUrls.length))}
                   </div>
                 )}
                 <div className="grid grid-cols-3 gap-2">
@@ -432,13 +434,13 @@ export default function PublierAnnonce() {
                     >
                       <img src={url} alt="" className="w-full h-full object-cover" />
                       <button onClick={() => removePhoto(i)} className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity active:scale-95"><X className="h-3 w-3" /></button>
-                      {i === 0 && <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">Couverture</div>}
+                      {i === 0 && <div className="absolute bottom-1.5 left-1.5 bg-primary text-primary-foreground text-[9px] px-2 py-0.5 rounded-full font-bold shadow-sm">{t("page.annonces.publish.cover")}</div>}
                     </div>
                   ))}
                   {draft.photoUrls.length < 10 && (
                     <label className="aspect-square rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 hover:border-primary/50 transition-all active:scale-95">
                       <Camera className="h-7 w-7 text-muted-foreground mb-1.5" />
-                      <span className="text-[10px] text-muted-foreground font-medium">Ajouter</span>
+                      <span className="text-[10px] text-muted-foreground font-medium">{t("page.annonces.publish.add")}</span>
                       <input type="file" accept="image/*" multiple onChange={handlePhotoUpload} className="hidden" />
                     </label>
                   )}
@@ -448,7 +450,7 @@ export default function PublierAnnonce() {
 
             {step === 5 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Prix</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.price_label")}</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {C2C_PRICE_TYPES.map(pt => (
                     <motion.button
@@ -487,7 +489,7 @@ export default function PublierAnnonce() {
                     </div>
                     {draft.priceType === "negotiable" && (
                       <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
-                        <Info className="h-3 w-3" /> Les acheteurs pourront vous envoyer des offres
+                        <Info className="h-3 w-3" /> {t("page.annonces.publish.negotiable_hint")}
                       </p>
                     )}
                   </motion.div>
@@ -497,17 +499,17 @@ export default function PublierAnnonce() {
 
             {step === 6 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Localisation</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.location")}</h2>
                 <div>
-                  <label className="text-sm font-semibold">Ville <span className="text-red-500">*</span></label>
+                  <label className="text-sm font-semibold">{t("page.annonces.publish.city")} <span className="text-red-500">*</span></label>
                   <Input value={draft.city} onChange={e => setField("city", e.target.value)} placeholder="Paris, Lyon, Marseille..." className="mt-1.5 h-11" />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold">Quartier</label>
-                  <Input value={draft.quartier} onChange={e => setField("quartier", e.target.value)} placeholder="Quartier (optionnel)" className="mt-1.5 h-11" />
+                  <label className="text-sm font-semibold">{t("page.annonces.publish.neighbourhood")}</label>
+                  <Input value={draft.quartier} onChange={e => setField("quartier", e.target.value)} placeholder={t("page.annonces.publish.neighbourhood")} className="mt-1.5 h-11" />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold">Pays</label>
+                  <label className="text-sm font-semibold">{t("page.annonces.publish.country_label")}</label>
                   <Input value={draft.country} onChange={e => setField("country", e.target.value)} placeholder="France" className="mt-1.5 h-11" />
                 </div>
                 <button
@@ -526,7 +528,7 @@ export default function PublierAnnonce() {
                   }}
                   className="flex items-center gap-2 text-sm text-primary font-semibold hover:underline active:scale-95 transition-transform"
                 >
-                  <MapPin className="h-4 w-4" /> Utiliser ma position
+                  <MapPin className="h-4 w-4" /> {t("page.annonces.publish.use_position")}
                 </button>
                 {draft.lat && draft.lng && (
                   <p className="text-xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
@@ -538,7 +540,7 @@ export default function PublierAnnonce() {
 
             {step === 7 && (
               <div className="space-y-4">
-                <h2 className="text-base font-bold">Options de livraison</h2>
+                <h2 className="text-base font-bold">{t("page.annonces.publish.delivery_options")}</h2>
                 {C2C_DELIVERY_OPTIONS.map(opt => (
                   <motion.button
                     key={opt.value}
@@ -557,7 +559,7 @@ export default function PublierAnnonce() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <Eye className="h-5 w-5 text-primary" />
-                  <h2 className="text-base font-bold">Aperçu de votre annonce</h2>
+                  <h2 className="text-base font-bold">{t("page.annonces.publish.preview_title")}</h2>
                 </div>
                 <div className="bg-card rounded-2xl border border-border/50 overflow-hidden shadow-lg">
                   {draft.photoUrls[0] && (
@@ -571,9 +573,9 @@ export default function PublierAnnonce() {
                     </div>
                   )}
                   <div className="p-4 space-y-2.5">
-                    <h3 className="font-extrabold text-lg">{draft.title || "Titre de l'annonce"}</h3>
+                    <h3 className="font-extrabold text-lg">{draft.title || t("page.annonces.publish.listing_title_default")}</h3>
                     <p className="text-xl font-black text-primary">
-                      {draft.priceType === "free" ? "Gratuit" : draft.priceType === "on_demand" ? "Sur demande" :
+                      {draft.priceType === "free" ? t("page.annonces.free") : draft.priceType === "on_demand" ? t("page.annonces.publish.on_demand") :
                         new Intl.NumberFormat("fr-FR", { style: "currency", currency: draft.currency }).format(draft.price ?? 0)}
                     </p>
                     <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">{draft.description}</p>
@@ -617,20 +619,20 @@ export default function PublierAnnonce() {
           <div className="max-w-lg mx-auto flex gap-3">
             {step > 0 && (
               <Button variant="outline" onClick={prevStep} className="flex-1 h-12 rounded-xl font-bold">
-                <ArrowLeft className="h-4 w-4 mr-1.5" /> Retour
+                <ArrowLeft className="h-4 w-4 mr-1.5" /> {t("page.annonces.publish.back")}
               </Button>
             )}
             {step < 8 ? (
               <Button onClick={nextStep} disabled={!canNext()} className="flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/20">
-                Suivant <ArrowRight className="h-4 w-4 ml-1.5" />
+                {t("page.annonces.publish.next")} <ArrowRight className="h-4 w-4 ml-1.5" />
               </Button>
             ) : (
               <div className="flex gap-2 flex-1">
                 <Button variant="outline" onClick={() => handlePublish(true)} disabled={publishing} className="flex-1 h-12 rounded-xl font-bold">
-                  Brouillon
+                  {t("page.annonces.publish.draft")}
                 </Button>
                 <Button onClick={() => handlePublish(false)} disabled={publishing} className="flex-1 h-12 rounded-xl font-bold shadow-lg shadow-primary/20">
-                  <Check className="h-4 w-4 mr-1" /> {publishing ? "Publication..." : "Publier"}
+                  <Check className="h-4 w-4 mr-1" /> {publishing ? t("page.annonces.publish.publishing") : t("page.annonces.publish.publish_btn")}
                 </Button>
               </div>
             )}

@@ -20,38 +20,40 @@ import { useAuth } from "@/contexts/AuthContext";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useLocationStore } from "@/stores/locationStore";
 import { tc } from "@/lib/i18n-canonical";
+import { useI18n } from "@/lib/i18n";
 import { haversineKm } from "@/lib/geo/distance";
 import SEOHead from "@/components/SEOHead";
 import { getTrustBadge, computeTrustLevel, type TrustLevel } from "@/lib/c2c/c2c-moderation";
 
-const CONDITION_STYLES: Record<string, { label: string; color: string }> = {
-  new: { label: "Neuf", color: "text-emerald-600 bg-emerald-500/10" },
-  like_new: { label: "Comme neuf", color: "text-emerald-500 bg-emerald-500/10" },
-  good: { label: "Bon état", color: "text-blue-600 bg-blue-500/10" },
-  fair: { label: "État correct", color: "text-amber-600 bg-amber-500/10" },
-  for_parts: { label: "Pour pièces", color: "text-red-600 bg-red-500/10" },
+const CONDITION_LABEL_KEYS: Record<string, { key: string; color: string }> = {
+  new: { key: "page.annonces.condition.new", color: "text-emerald-600 bg-emerald-500/10" },
+  like_new: { key: "page.annonces.condition.like_new", color: "text-emerald-500 bg-emerald-500/10" },
+  good: { key: "page.annonces.condition.good", color: "text-blue-600 bg-blue-500/10" },
+  fair: { key: "page.annonces.condition.fair", color: "text-amber-600 bg-amber-500/10" },
+  for_parts: { key: "page.annonces.condition.for_parts", color: "text-red-600 bg-red-500/10" },
 };
 
-const PRICE_INDICATOR = {
-  good_deal: { label: "Bonne affaire", emoji: "🟢", color: "text-emerald-600", bg: "bg-emerald-500/5" },
-  fair_price: { label: "Prix juste", emoji: "🟡", color: "text-amber-600", bg: "bg-amber-500/5" },
-  above_market: { label: "Au-dessus du marché", emoji: "🔴", color: "text-red-600", bg: "bg-red-500/5" },
+const PRICE_INDICATOR_KEYS = {
+  good_deal: { key: "page.annonces.price_indicator.good_deal", emoji: "🟢", color: "text-emerald-600", bg: "bg-emerald-500/5" },
+  fair_price: { key: "page.annonces.price_indicator.fair_price", emoji: "🟡", color: "text-amber-600", bg: "bg-amber-500/5" },
+  above_market: { key: "page.annonces.price_indicator.above_market", emoji: "🔴", color: "text-red-600", bg: "bg-red-500/5" },
 };
 
 function formatPrice(price: number, currency: string) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: currency || "EUR", maximumFractionDigits: 0 }).format(price);
 }
 
-function timeSince(dateStr: string) {
+function timeSince(dateStr: string, t: (k: string) => string) {
   const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60) return "À l'instant";
-  if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)} h`;
-  if (diff < 2592000) return `Il y a ${Math.floor(diff / 86400)} j`;
-  return new Date(dateStr).toLocaleDateString("fr-FR");
+  if (diff < 60) return t("page.annonces.detail.just_now");
+  if (diff < 3600) return t("page.annonces.detail.minutes_ago").replace("{{count}}", String(Math.floor(diff / 60)));
+  if (diff < 86400) return t("page.annonces.detail.hours_ago").replace("{{count}}", String(Math.floor(diff / 3600)));
+  if (diff < 2592000) return t("page.annonces.detail.days_ago").replace("{{count}}", String(Math.floor(diff / 86400)));
+  return new Date(dateStr).toLocaleDateString();
 }
 
 export default function AnnonceDetail() {
+  const { t } = useI18n();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -134,7 +136,7 @@ export default function AnnonceDetail() {
     touchDeltaX.current = 0;
   }, [photoIdx, photos.length]);
 
-  const condition = listing?.condition ? CONDITION_STYLES[listing.condition] : null;
+  const conditionInfo = listing?.condition ? CONDITION_LABEL_KEYS[listing.condition] : null;
   const catInfo = listing?.subcategory ? findC2CSubcategory(listing.subcategory) : null;
   const provider = listing?.marketplace_providers;
   const isOwner = user?.id && (listing?.user_id === user.id || provider?.user_id === user.id);
@@ -167,7 +169,7 @@ export default function AnnonceDetail() {
       await navigator.share({ title: listing?.title, url }).catch(() => {});
     } else {
       await navigator.clipboard.writeText(url);
-      toast.success("Lien copié !", { duration: 1500 });
+      toast.success(t("page.news.link_copied"), { duration: 1500 });
     }
   };
 
@@ -183,13 +185,13 @@ export default function AnnonceDetail() {
       message,
       expires_at: expiresAt,
     });
-    toast.success("Offre envoyée !", { description: `${formatPrice(amount, listing.currency || "EUR")} proposé au vendeur` });
+    toast.success(t("page.annonces.detail.offer_sent"), { description: t("page.annonces.detail.offer_sent_desc").replace("{{amount}}", formatPrice(amount, listing.currency || "EUR")) });
   };
 
   const handleReport = async (reason: string, details: string) => {
     if (!user || !listing) return;
     await c2cService.reportListing({ listing_id: listing.id, reporter_id: user.id, reason, details });
-    toast.success("Signalement envoyé", { description: "Nous examinerons cette annonce" });
+    toast.success(t("page.annonces.detail.report_sent"), { description: t("page.annonces.detail.report_sent_desc") });
   };
 
   const handleShowQrPayment = () => {
@@ -202,7 +204,7 @@ export default function AnnonceDetail() {
     const { toggleFollowListing } = await import("@/lib/c2c/listing-followers");
     const isNow = await toggleFollowListing(user.id, listing.id);
     setSaved(isNow);
-    toast.success(isNow ? "Ajouté aux favoris" : "Retiré des favoris", { duration: 1500 });
+    toast.success(isNow ? t("page.annonces.detail.added_to_favorites") : t("page.annonces.detail.removed_from_favorites"), { duration: 1500 });
   };
 
   if (loading) {
@@ -227,10 +229,10 @@ export default function AnnonceDetail() {
         <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
           <Tag className="h-8 w-8 text-muted-foreground/40" />
         </div>
-        <p className="font-bold text-lg mb-1">Annonce introuvable</p>
-        <p className="text-sm text-muted-foreground mb-6">Cette annonce n'existe pas ou a été supprimée.</p>
+        <p className="font-bold text-lg mb-1">{t("page.annonces.listing_label")}</p>
+        <p className="text-sm text-muted-foreground mb-6">{t("page.annonces.not_found")}</p>
         <button onClick={() => navigate("/annonces")} className="px-6 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold shadow-lg shadow-primary/20">
-          Retour aux annonces
+          {t("page.annonces.back_to_listings")}
         </button>
       </div>
     );
@@ -240,12 +242,12 @@ export default function AnnonceDetail() {
 
   const customAttrs = listing.custom_attributes && typeof listing.custom_attributes === "object" ? listing.custom_attributes : {};
   const attrEntries = Object.entries(customAttrs).filter(([, v]) => v != null && v !== "" && v !== false);
-  const priceInd = priceIntel ? PRICE_INDICATOR[priceIntel.indicator as keyof typeof PRICE_INDICATOR] : null;
+  const priceInd = priceIntel ? PRICE_INDICATOR_KEYS[priceIntel.indicator as keyof typeof PRICE_INDICATOR_KEYS] : null;
 
   return (
     <SubPageShell noContentPad>
       <SEOHead
-        title={`${listing.title} — ${listing.price != null && listing.price_type !== "free" ? formatPrice(listing.price, listing.currency || "EUR") : "Gratuit"} | Annonces Easy-Locs`}
+        title={`${listing.title} — ${listing.price != null && listing.price_type !== "free" ? formatPrice(listing.price, listing.currency || "EUR") : t("page.annonces.free")} | ${t("page.annonces.detail.seo_suffix")}`}
         description={listing.description?.slice(0, 160) || listing.title}
         canonical={`${window.location.origin}/annonces/${listing.slug || listing.id}`}
         ogImage={photos[0]}
@@ -304,7 +306,7 @@ export default function AnnonceDetail() {
 
             {listing.status === "sold" && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <div className="bg-white text-black text-sm font-extrabold px-6 py-2 rounded-full -rotate-12 shadow-xl">VENDU</div>
+                <div className="bg-white text-black text-sm font-extrabold px-6 py-2 rounded-full -rotate-12 shadow-xl">{t("page.annonces.detail.sold_badge")}</div>
               </div>
             )}
           </motion.div>
@@ -326,7 +328,7 @@ export default function AnnonceDetail() {
 
         {catInfo && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Link to="/annonces" className="hover:underline hover:text-foreground transition-colors">Annonces</Link>
+            <Link to="/annonces" className="hover:underline hover:text-foreground transition-colors">{t("page.annonces.detail.breadcrumb_annonces")}</Link>
             <ChevRight className="h-3 w-3" />
             <Link to={`/annonces/recherche?cat=${catInfo.category.key}`} className="hover:underline hover:text-foreground transition-colors">{catInfo.category.emoji} {catInfo.category.label}</Link>
             <ChevRight className="h-3 w-3" />
@@ -339,24 +341,24 @@ export default function AnnonceDetail() {
           <div className="flex items-center gap-2.5 flex-wrap">
             {listing.price != null && listing.price_type !== "on_demand" ? (
               <span className="text-2xl font-black text-primary">
-                {listing.price_type === "free" ? "Gratuit" : formatPrice(listing.price, listing.currency || "EUR")}
+                {listing.price_type === "free" ? t("page.annonces.free") : formatPrice(listing.price, listing.currency || "EUR")}
               </span>
             ) : (
-              <span className="text-base font-semibold text-muted-foreground">Prix sur demande</span>
+              <span className="text-base font-semibold text-muted-foreground">{t("page.annonces.on_demand")}</span>
             )}
             {priceTypeLabel && listing.price_type !== "fixed" && (
               <Badge variant="outline" className="text-xs font-semibold">{priceTypeLabel.emoji} {priceTypeLabel.label}</Badge>
             )}
-            {condition && (
-              <span className={`text-xs font-bold px-3 py-1 rounded-full ${condition.color}`}>{condition.label}</span>
+            {conditionInfo && (
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${conditionInfo.color}`}>{t(conditionInfo.key)}</span>
             )}
           </div>
 
           {priceInd && priceIntel && (
             <div className={`flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl ${priceInd.bg}`}>
               <span className="text-base">{priceInd.emoji}</span>
-              <span className={priceInd.color}>{priceInd.label}</span>
-              <span className="text-muted-foreground font-normal">· moy. {formatPrice(priceIntel.avgPrice, listing.currency || "EUR")} ({priceIntel.count} annonces)</span>
+              <span className={priceInd.color}>{t(priceInd.key)}</span>
+              <span className="text-muted-foreground font-normal">· {t("page.annonces.detail.avg_price")} {formatPrice(priceIntel.avgPrice, listing.currency || "EUR")} ({priceIntel.count} {t("page.annonces.detail.listings_count")})</span>
             </div>
           )}
 
@@ -367,9 +369,9 @@ export default function AnnonceDetail() {
                 {listing.city}{listing.quartier ? `, ${listing.quartier}` : ""}
               </span>
             )}
-            {distanceKm != null && <span className="text-primary/80 font-medium">à {distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm}km`}</span>}
-            {listing.created_at && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeSince(listing.created_at)}</span>}
-            {listing.view_count > 0 && <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{listing.view_count} vues</span>}
+            {distanceKm != null && <span className="text-primary/80 font-medium">{distanceKm < 1 ? `${Math.round(distanceKm * 1000)}m` : `${distanceKm}km`}</span>}
+            {listing.created_at && <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeSince(listing.created_at, t)}</span>}
+            {listing.view_count > 0 && <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{listing.view_count} {t("page.annonces.detail.views")}</span>}
           </div>
         </div>
 
@@ -381,7 +383,7 @@ export default function AnnonceDetail() {
             <div>
               <p className="text-sm font-semibold">{deliveryLabel.label}</p>
               <p className="text-[11px] text-muted-foreground">
-                {listing.delivery_option === "hand" ? "Rencontre en personne" : listing.delivery_option === "ship" ? "Envoi par courrier" : "En personne ou envoi"}
+                {listing.delivery_option === "hand" ? t("page.annonces.detail.delivery_hand") : listing.delivery_option === "ship" ? t("page.annonces.detail.delivery_ship") : t("page.annonces.detail.delivery_both")}
               </p>
             </div>
           </div>
@@ -389,12 +391,12 @@ export default function AnnonceDetail() {
 
         {attrEntries.length > 0 && (
           <div className="space-y-2.5">
-            <h2 className="text-sm font-bold">Caractéristiques</h2>
+            <h2 className="text-sm font-bold">{t("page.annonces.detail.characteristics")}</h2>
             <div className="grid grid-cols-2 gap-2">
               {attrEntries.map(([key, value]) => (
                 <div key={key} className="bg-muted/30 rounded-xl px-3.5 py-2.5 border border-border/20">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{key.replace(/_/g, " ")}</p>
-                  <p className="text-sm font-semibold mt-0.5">{typeof value === "boolean" ? (value ? "Oui" : "Non") : String(value)}</p>
+                  <p className="text-sm font-semibold mt-0.5">{typeof value === "boolean" ? (value ? t("page.annonces.detail.yes") : t("page.annonces.detail.no")) : String(value)}</p>
                 </div>
               ))}
             </div>
@@ -403,13 +405,13 @@ export default function AnnonceDetail() {
 
         {listing.description && (
           <div className="space-y-2">
-            <h2 className="text-sm font-bold">Description</h2>
+            <h2 className="text-sm font-bold">{t("page.annonces.detail.description")}</h2>
             <p className={`text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ${!showFullDesc && listing.description.length > 300 ? "line-clamp-5" : ""}`}>
               {listing.description}
             </p>
             {listing.description.length > 300 && (
               <button onClick={() => setShowFullDesc(!showFullDesc)} className="text-xs text-primary font-semibold">
-                {showFullDesc ? "Voir moins" : "Voir plus"}
+                {showFullDesc ? t("page.annonces.detail.see_less") : t("page.annonces.detail.see_more")}
               </button>
             )}
           </div>
@@ -422,14 +424,14 @@ export default function AnnonceDetail() {
                 {(provider.display_name || "V")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold">{provider.display_name || "Vendeur"}</p>
+                <p className="text-sm font-bold">{provider.display_name || t("page.annonces.detail.seller")}</p>
                 <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                   {provider.is_verified && <span className="text-blue-500 flex items-center gap-0.5 font-medium"><CheckCircle className="h-3 w-3" /> Pro</span>}
                   {provider.trust_level && (() => {
                     const badge = getTrustBadge(provider.trust_level as TrustLevel);
                     return <span className={`flex items-center gap-0.5 font-medium ${badge.color}`}>{badge.emoji} {badge.label}</span>;
                   })()}
-                  {provider.created_at && <span>Membre depuis {new Date(provider.created_at).toLocaleDateString("fr-FR", { month: "short", year: "numeric" })}</span>}
+                  {provider.created_at && <span>{t("page.annonces.detail.member_since")} {new Date(provider.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}</span>}
                 </div>
               </div>
               <ChevRight className="h-4 w-4 text-muted-foreground" />
@@ -441,15 +443,15 @@ export default function AnnonceDetail() {
           <div className="flex items-center gap-3 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
             <CheckCircle className="h-5 w-5 text-emerald-600" />
             <div>
-              <p className="text-sm font-bold text-emerald-600">Article vendu</p>
-              <p className="text-[11px] text-emerald-600/70">Cette annonce n'est plus disponible</p>
+              <p className="text-sm font-bold text-emerald-600">{t("page.annonces.detail.item_sold")}</p>
+              <p className="text-[11px] text-emerald-600/70">{t("page.annonces.detail.listing_unavailable")}</p>
             </div>
           </div>
         )}
 
         <button onClick={() => setShowSafetyTips(s => !s)} className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full">
           <Shield className="h-4 w-4 text-blue-500" />
-          <span className="font-medium">Conseils de sécurité</span>
+          <span className="font-medium">{t("page.annonces.detail.safety_tips")}</span>
           <ChevRight className={`h-3 w-3 ml-auto transition-transform ${showSafetyTips ? "rotate-90" : ""}`} />
         </button>
 
@@ -463,11 +465,11 @@ export default function AnnonceDetail() {
             >
               <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-4 space-y-2.5">
                 {[
-                  "Privilégiez les rencontres dans des lieux publics",
-                  "Vérifiez l'article avant de payer",
-                  "Utilisez le paiement QR intégré pour une transaction sécurisée",
-                  "Ne communiquez jamais vos données bancaires",
-                  "Méfiez-vous des prix trop bas",
+                  t("page.annonces.detail.safety_tip_1"),
+                  t("page.annonces.detail.safety_tip_2"),
+                  t("page.annonces.detail.safety_tip_3"),
+                  t("page.annonces.detail.safety_tip_4"),
+                  t("page.annonces.detail.safety_tip_5"),
                 ].map((tip, i) => (
                   <div key={i} className="flex items-start gap-2">
                     <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
@@ -481,13 +483,13 @@ export default function AnnonceDetail() {
 
         <div className="flex items-center gap-2">
           <button onClick={() => setShowReport(true)} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-red-500 transition-colors">
-            <Flag className="h-3.5 w-3.5" /> Signaler
+            <Flag className="h-3.5 w-3.5" /> {t("page.annonces.detail.report")}
           </button>
         </div>
 
         {similar.length > 0 && (
           <div className="space-y-3">
-            <h2 className="text-sm font-bold">Annonces similaires</h2>
+            <h2 className="text-sm font-bold">{t("page.annonces.detail.similar_listings")}</h2>
             <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
               {similar.map((s) => (
                 <div key={s.id} className="shrink-0 w-44">
@@ -513,13 +515,13 @@ export default function AnnonceDetail() {
                   onClick={() => navigate(`/orbit`)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold hover:bg-muted/50 transition-colors active:scale-[0.98]"
                 >
-                  <MessageCircle className="h-4 w-4" /> Contacter
+                  <MessageCircle className="h-4 w-4" /> {t("page.annonces.detail.contact")}
                 </button>
                 <button
                   onClick={handleShowQrPayment}
                   className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/25 active:scale-[0.98]"
                 >
-                  <QrCode className="h-4 w-4" /> Payer par QR
+                  <QrCode className="h-4 w-4" /> {t("page.annonces.detail.pay_qr")}
                 </button>
               </>
             ) : (
@@ -528,13 +530,13 @@ export default function AnnonceDetail() {
                   onClick={() => navigate(`/orbit`)}
                   className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-bold hover:bg-muted/50 transition-colors active:scale-[0.98]"
                 >
-                  <MessageCircle className="h-4 w-4" /> Contacter
+                  <MessageCircle className="h-4 w-4" /> {t("page.annonces.detail.contact")}
                 </button>
                 <button
                   onClick={() => setShowOffer(true)}
                   className="flex-1 flex items-center justify-center gap-1.5 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground py-3 rounded-xl text-sm font-bold shadow-lg shadow-primary/25 active:scale-[0.98]"
                 >
-                  <HandCoins className="h-4 w-4" /> Faire une offre
+                  <HandCoins className="h-4 w-4" /> {t("page.annonces.detail.make_offer")}
                 </button>
               </>
             )}
@@ -572,7 +574,7 @@ export default function AnnonceDetail() {
               listingTitle={listing.title}
               listingPhoto={photos[0]}
               sellerId={listing.user_id}
-              sellerName={provider?.display_name || "Vendeur"}
+              sellerName={provider?.display_name || t("page.annonces.detail.seller")}
               amount={acceptedOffer.counter_amount ?? acceptedOffer.amount}
               currency={listing.currency || "EUR"}
               offerId={acceptedOffer.id}
@@ -582,13 +584,13 @@ export default function AnnonceDetail() {
                 onClick={() => navigate("/pay/scan")}
                 className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-primary-foreground py-3 rounded-xl text-sm font-bold shadow-lg active:scale-[0.98]"
               >
-                <QrCode className="h-4 w-4" /> Scanner moi-même
+                <QrCode className="h-4 w-4" /> {t("page.annonces.detail.scan_myself")}
               </button>
               <button
                 onClick={() => setShowQrPayment(false)}
                 className="flex-1 py-3 bg-muted rounded-xl text-sm font-bold active:scale-[0.98]"
               >
-                Fermer
+                {t("page.annonces.detail.close")}
               </button>
             </div>
           </motion.div>
