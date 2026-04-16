@@ -274,7 +274,7 @@ export default defineConfig(({ mode }) => ({
     }),
   ].filter(Boolean),
   optimizeDeps: {
-    entries: ["src/**/*.{ts,tsx}", "!storybook-static/**"],
+    entries: ["src/**/*.{ts,tsx}", "!storybook-static/**", "!src/**/*.test.{ts,tsx}", "!src/**/*.spec.{ts,tsx}"],
     include: [
       "react",
       "react/jsx-runtime",
@@ -308,7 +308,10 @@ export default defineConfig(({ mode }) => ({
       "@capacitor/splash-screen",
       "@capacitor/status-bar",
       "@nicepkg/capacitor-nfc",
+      "capacitor-nfc",
       "tesseract.js",
+      "@segment/analytics-next",
+      "livekit-client",
     ],
   },
   resolve: {
@@ -358,6 +361,9 @@ export default defineConfig(({ mode }) => ({
         "@capacitor/splash-screen",
         "@capacitor/status-bar",
         "@nicepkg/capacitor-nfc",
+        "capacitor-nfc",
+        "@segment/analytics-next",
+        "livekit-client",
       ],
       output: {
         manualChunks(id) {

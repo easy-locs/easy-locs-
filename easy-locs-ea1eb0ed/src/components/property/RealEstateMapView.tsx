@@ -72,88 +72,64 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
 
     const validProps = properties.filter(p => p.address.geoPoint?.lat && p.address.geoPoint?.lng);
 
-      validProps.forEach((p) => {
-        const lat = p.address.geoPoint!.lat;
-        const lng = p.address.geoPoint!.lng;
-        const color = TYPE_COLORS[p.listingType] || "#6b7280";
-        const priceStr = p.price >= 1000000
-          ? \`\${(p.price / 1000000).toFixed(1)}M\`
-          : \`\${(p.price / 1000).toFixed(0)}K\`;
+    validProps.forEach((p) => {
+      const lat = p.address.geoPoint!.lat;
+      const lng = p.address.geoPoint!.lng;
+      const color = TYPE_COLORS[p.listingType] || "#6b7280";
+      const priceStr = p.price >= 1000000
+        ? `${(p.price / 1000000).toFixed(1)}M`
+        : `${(p.price / 1000).toFixed(0)}K`;
 
-        const icon = L.divIcon({
-          className: "custom-property-marker",
-          html: \`<div style="
-            background: \${color};
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            border: 2px solid white;
-            cursor: pointer;
-          ">\${esc(p.currency)} \${esc(priceStr)}</div>\`,
-          iconSize: [0, 0],
-          iconAnchor: [40, 15],
-        });
-
-        const marker = L.marker([lat, lng], { icon }).addTo(map);
-
-        const container = document.createElement("div");
-        container.style.cssText = "width:200px;font-family:system-ui,sans-serif;";
-
-        const realMediaUrls = (p.mediaIds || []).filter(id => id.startsWith("http") || id.startsWith("/"));
-        const coverUrl = realMediaUrls.length > 0 ? realMediaUrls[0] : bannerCover(\`buy_\${p.propertyType}\`);
-        const img = document.createElement("img");
-        img.src = coverUrl;
-        img.alt = "";
-        img.style.cssText = "width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;";
-        img.onerror = () => { img.style.display = "none"; };
-        container.appendChild(img);
-
-        const h3 = document.createElement("h3");
-        h3.textContent = p.title;
-        h3.style.cssText = "font-size:13px;font-weight:700;margin:0 0 4px 0;";
-        container.appendChild(h3);
-
-        const loc = document.createElement("p");
-        loc.textContent = [p.address.district, p.address.city].filter(Boolean).join(", ");
-        loc.style.cssText = "font-size:11px;color:#666;margin:0 0 4px 0;";
-        container.appendChild(loc);
-
-        const details = document.createElement("div");
-        details.style.cssText = "display:flex;gap:8px;font-size:11px;color:#888;margin-bottom:6px;";
-        if (p.bedrooms) { const s = document.createElement("span"); s.textContent = \`\${p.bedrooms} bed\`; details.appendChild(s); }
-        if (p.bathrooms) { const s = document.createElement("span"); s.textContent = \`\${p.bathrooms} bath\`; details.appendChild(s); }
-        if (p.area) { const s = document.createElement("span"); s.textContent = \`\${p.area} \${p.areaUnit}\`; details.appendChild(s); }
-        container.appendChild(details);
-
-        const priceEl = document.createElement("p");
-        priceEl.textContent = \`\${p.currency} \${p.price.toLocaleString()}\`;
-        priceEl.style.cssText = \`font-size:14px;font-weight:800;color:\${color};margin:0 0 6px 0;\`;
-        container.appendChild(priceEl);
-
-        if (onSelectProperty) {
-          const btn = document.createElement("button");
-          btn.textContent = "View Details →";
-          btn.style.cssText = \`width:100%;padding:6px;border:none;border-radius:6px;background:\${color};color:white;font-size:12px;font-weight:600;cursor:pointer;\`;
-          btn.addEventListener("click", () => onSelectProperty(p.id));
-          container.appendChild(btn);
-        }
-
-        marker.bindPopup(container, { maxWidth: 220 });
-        marker.on("click", () => {
-          marker.openPopup();
-        });
+      const icon = L.divIcon({
+        className: "custom-property-marker",
+        html: `<div style="background: ${color}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 2px solid white; cursor: pointer;">${esc(p.currency)} ${esc(priceStr)}</div>`,
+        iconSize: [0, 0],
+        iconAnchor: [40, 15],
       });
 
-      const propId = p.id;
-      const btn = document.createElement("button");
-      btn.textContent = "View Details \u2192";
-      btn.style.cssText = `width:100%;padding:6px;border:none;border-radius:6px;background:${color};color:white;font-size:12px;font-weight:600;cursor:pointer;`;
-      btn.addEventListener("click", () => onSelectRef.current?.(propId));
-      container.appendChild(btn);
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+      const container = document.createElement("div");
+      container.style.cssText = "width:200px;font-family:system-ui,sans-serif;";
+
+      const realMediaUrls = (p.mediaIds || []).filter(id => id.startsWith("http") || id.startsWith("/"));
+      const coverUrl = realMediaUrls.length > 0 ? realMediaUrls[0] : bannerCover(`buy_${p.propertyType}`);
+      const img = document.createElement("img");
+      img.src = coverUrl;
+      img.alt = "";
+      img.style.cssText = "width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;";
+      img.onerror = () => { img.style.display = "none"; };
+      container.appendChild(img);
+
+      const h3 = document.createElement("h3");
+      h3.textContent = p.title;
+      h3.style.cssText = "font-size:13px;font-weight:700;margin:0 0 4px 0;";
+      container.appendChild(h3);
+
+      const loc = document.createElement("p");
+      loc.textContent = [p.address.district, p.address.city].filter(Boolean).join(", ");
+      loc.style.cssText = "font-size:11px;color:#666;margin:0 0 4px 0;";
+      container.appendChild(loc);
+
+      const details = document.createElement("div");
+      details.style.cssText = "display:flex;gap:8px;font-size:11px;color:#888;margin-bottom:6px;";
+      if (p.bedrooms) { const s = document.createElement("span"); s.textContent = `${p.bedrooms} bed`; details.appendChild(s); }
+      if (p.bathrooms) { const s = document.createElement("span"); s.textContent = `${p.bathrooms} bath`; details.appendChild(s); }
+      if (p.area) { const s = document.createElement("span"); s.textContent = `${p.area} ${p.areaUnit}`; details.appendChild(s); }
+      container.appendChild(details);
+
+      const priceEl = document.createElement("p");
+      priceEl.textContent = `${p.currency} ${p.price.toLocaleString()}`;
+      priceEl.style.cssText = `font-size:14px;font-weight:800;color:${color};margin:0 0 6px 0;`;
+      container.appendChild(priceEl);
+
+      if (onSelectProperty) {
+        const btn = document.createElement("button");
+        btn.textContent = "View Details \u2192";
+        btn.style.cssText = `width:100%;padding:6px;border:none;border-radius:6px;background:${color};color:white;font-size:12px;font-weight:600;cursor:pointer;`;
+        btn.addEventListener("click", () => onSelectRef.current?.(p.id));
+        container.appendChild(btn);
+      }
 
       marker.bindPopup(container, { maxWidth: 220 });
       marker.on("click", () => { marker.openPopup(); });
@@ -168,6 +144,7 @@ export function RealEstateMapView({ properties, onSelectProperty }: Props) {
     } else if (validProps.length === 1) {
       map.setView([validProps[0].address.geoPoint!.lat, validProps[0].address.geoPoint!.lng], 14);
     }
+  }, [properties]);
 
   if (mapError) {
     return (

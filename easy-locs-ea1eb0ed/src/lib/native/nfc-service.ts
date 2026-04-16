@@ -34,7 +34,7 @@ export async function isNFCAvailable(): Promise<boolean> {
   if ("NDEFReader" in window) return true;
 
   try {
-    const { NFC } = await import("capacitor-nfc");
+    const { NFC } = await import(/* @vite-ignore */ "capacitor-nfc");
     const result = await NFC.isEnabled();
     return result.isEnabled;
   } catch (err) {
@@ -52,7 +52,7 @@ export async function startNFCScanning(): Promise<void> {
   }
 
   try {
-    const { NFC } = await import("capacitor-nfc");
+    const { NFC } = await import(/* @vite-ignore */ "capacitor-nfc");
 
     await NFC.addListener("nfcTagScanned", (event: Record<string, Record<string, unknown>>) => {
       const tag: NFCTag = {
@@ -111,7 +111,7 @@ export async function stopNFCScanning(): Promise<void> {
   if (!scanning) return;
 
   try {
-    const { NFC } = await import("capacitor-nfc");
+    const { NFC } = await import(/* @vite-ignore */ "capacitor-nfc");
     await NFC.stopScanSession();
   } catch (err) {
     console.debug("[nfc] stopScanSession unavailable:", err instanceof Error ? err.message : err);
@@ -190,7 +190,7 @@ export async function writeNFCTag(records: NFCRecord[]): Promise<boolean> {
   }
 
   try {
-    const { NFC } = await import("capacitor-nfc");
+    const { NFC } = await import(/* @vite-ignore */ "capacitor-nfc");
     await NFC.write({
       records: records.map((r) => ({
         type: r.type,

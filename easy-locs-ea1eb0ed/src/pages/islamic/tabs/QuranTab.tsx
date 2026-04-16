@@ -1846,8 +1846,8 @@ export default function QuranTab() {
                 </div>
                 <p className="text-[10px] text-muted-foreground">{s.versesCount} {t("islamic.quran.verses")} · {s.revelationType}</p>
               </div>
-            );
-          })}
+            </button>
+          ))}
         </div>
       )}
     </div>
