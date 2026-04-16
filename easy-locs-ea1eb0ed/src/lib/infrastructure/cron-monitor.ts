@@ -49,6 +49,8 @@ const KNOWN_CRON_JOBS = [
   { name: "cache-manager-refresh", schedule: "*/5 * * * *", description: "Server-side cache refresh" },
   { name: "backup-storage-nightly", schedule: "0 3 * * *", description: "Nightly storage manifest backup" },
   { name: "external-health-check", schedule: "* * * * *", description: "External public health check" },
+  { name: "integration-health-cron", schedule: "*/5 * * * *", description: "Automated integration health checks (Plaid, LiveKit, Meilisearch)" },
+  { name: "prune-integration-health-log", schedule: "0 2 * * 0", description: "Prune integration health logs older than 90 days" },
 ] as const;
 
 export async function getCronJobStatuses(): Promise<CronJobStatus[]> {
