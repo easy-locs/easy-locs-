@@ -413,7 +413,25 @@ export default function MapErrorDashboardWidget() {
                 </thead>
                 <tbody>
                   {sortedBreakdown.map((row) => (
-                    <tr key={row.component} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                    <tr
+                      key={row.component}
+                      onClick={() => setComponent(component === row.component ? "all" : row.component)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setComponent(component === row.component ? "all" : row.component);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-pressed={component === row.component}
+                      className={`border-b border-border/50 cursor-pointer transition-colors ${
+                        component === row.component
+                          ? "bg-accent/15 hover:bg-accent/20"
+                          : "hover:bg-muted/50"
+                      }`}
+                      title={component === row.component ? "Click to clear filter" : `Filter dashboard by ${row.component}`}
+                    >
                       <td className="px-3 py-2 font-medium text-foreground">{row.component}</td>
                       <td className="px-3 py-2 text-foreground">{row.totalErrors}</td>
                       <td className="px-3 py-2">
