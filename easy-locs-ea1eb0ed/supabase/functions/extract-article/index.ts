@@ -471,29 +471,34 @@ Deno.serve(async (req) => {
   if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {
     const metricsKey = Deno.env.get("CACHE_METRICS_KEY");
     const providedKey = reqUrl.searchParams.get("key") || req.headers.get("x-metrics-key");
+    const keyAuth = metricsKey && providedKey === metricsKey;
 
-    const authHeader = req.headers.get("Authorization");
-    let isAdmin = false;
-    if (authHeader?.startsWith("Bearer ")) {
-      try {
-        const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-          global: { headers: { Authorization: authHeader } },
-        });
-        const { data: { user } } = await sb.auth.getUser();
-        if (user) {
-          const { data: roleData } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!)
-            .rpc("has_role", { _user_id: user.id, _role: "admin" });
-          isAdmin = !!roleData;
+    let jwtAuth = false;
+    if (!keyAuth) {
+      const authHeader = req.headers.get("Authorization");
+      if (authHeader?.startsWith("Bearer ")) {
+        try {
+          const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+            global: { headers: { Authorization: authHeader } },
+          });
+          const { data: { user } } = await sb.auth.getUser();
+          if (user) {
+            const { data: roleData } = await createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!)
+              .rpc("has_role", { _user_id: user.id, _role: "admin" });
+            jwtAuth = !!roleData;
+          }
+        } catch {
+          // JWT auth failed, fall through to rejection
         }
-      } catch {}
+      }
     }
 
-    if (!isAdmin && (!metricsKey || providedKey !== metricsKey)) {
+    if (!keyAuth && !jwtAuth) {
       return new Response(
         JSON.stringify({
           error: "Forbidden",
-          message: !metricsKey
-            ? "CACHE_METRICS_KEY is not configured — metrics endpoint is disabled"
+          message: !metricsKey && !jwtAuth
+            ? "CACHE_METRICS_KEY is not configured and no admin session — metrics endpoint is disabled"
             : "Invalid metrics key or insufficient permissions",
         }),
         {
@@ -503,7 +508,7 @@ Deno.serve(async (req) => {
       );
     }
     const snapshot = getCacheMetricsSnapshot();
-    logger.info("cache_metrics_requested", snapshot);
+    logger.info("cache_metrics_requested", { ...snapshot, authMethod: keyAuth ? "key" : "jwt" });
     return new Response(JSON.stringify(snapshot), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

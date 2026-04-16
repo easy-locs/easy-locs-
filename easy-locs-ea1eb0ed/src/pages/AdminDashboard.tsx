@@ -10,6 +10,7 @@ const HealthDashboard = lazy(() => import("@/components/admin/HealthDashboard"))
 const CronJobHistoryWidget = lazy(() => import("@/components/admin/CronJobHistoryWidget"));
 const PrayerCronHealthWidget = lazy(() => import("@/components/admin/PrayerCronHealthWidget"));
 const MapErrorTrendsWidget = lazy(() => import("@/components/dashboard/MapErrorTrendsWidget"));
+const CacheMetricsWidget = lazy(() => import("@/components/dashboard/CacheMetricsWidget"));
 const OrgMemberManager = lazy(() => import("@/components/admin/OrgMemberManager"));
 const ModerationPanel = lazy(() => import("@/components/admin/ModerationPanel"));
 const WorkflowExecutionPanel = lazy(() => import("@/components/admin/WorkflowExecutionPanel").then(m => ({ default: m.WorkflowExecutionPanel })));
@@ -437,6 +438,11 @@ const AdminDashboard = () => {
                 <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading map error trends…</div>}>
                   <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
                     <MapErrorTrendsWidget />
+                  </div>
+                </Suspense>
+                <Suspense fallback={<div className="text-center py-10 text-muted-foreground">Loading cache metrics…</div>}>
+                  <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
+                    <CacheMetricsWidget />
                   </div>
                 </Suspense>
                 <Suspense fallback={<div className="text-center py-20 text-muted-foreground">Loading health dashboard…</div>}>
