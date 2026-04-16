@@ -271,7 +271,7 @@ export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const { data, error } = await db("cron_execution_log")
     .select("*")
-    .in("job_name", ["prayer-push-cron", "prayer-push-reconcile"])
+    .in("job_name", ["prayer-push-cron", "prayer-push-reconcile", "cron-response-reconcile"])
     .gte("started_at", cutoff)
     .order("started_at", { ascending: false });
 
