@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/services/db";
 
 export interface TTSOptions {
   text: string;
@@ -10,13 +10,13 @@ export interface TTSOptions {
 let currentAudio: HTMLAudioElement | null = null;
 
 export async function generateSpeech(options: TTSOptions): Promise<Blob> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   if (!session?.access_token) {
     throw new Error("Authentication required for TTS");
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const response = await fetch(`${supabaseUrl}/functions/v1/voice-tts`, {
+  const dbUrl = import.meta.env.VITE_SUPABASE_URL;
+  const response = await fetch(`${dbUrl}/functions/v1/voice-tts`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

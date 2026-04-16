@@ -1,4 +1,4 @@
-import { supabase } from "@/lib/supabase";
+import { db } from "@/services/db";
 
 export interface DeepgramConfig {
   model?: string;
@@ -20,13 +20,13 @@ type ErrorCallback = (error: Error) => void;
 const DEEPGRAM_WS_URL = "wss://api.deepgram.com/v1/listen";
 
 async function fetchTemporaryToken(): Promise<string> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   if (!session?.access_token) {
     throw new Error("Authentication required for STT");
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const response = await fetch(`${supabaseUrl}/functions/v1/voice-stt-token`, {
+  const dbUrl = import.meta.env.VITE_SUPABASE_URL;
+  const response = await fetch(`${dbUrl}/functions/v1/voice-stt-token`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

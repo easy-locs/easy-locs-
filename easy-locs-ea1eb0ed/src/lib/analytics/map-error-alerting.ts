@@ -95,7 +95,7 @@ function fireAlert(threshold: AlertThreshold, count: number): void {
 
 async function persistAlert(threshold: AlertThreshold, count: number): Promise<void> {
   try {
-    const { supabase } = await import("@/lib/supabase");
+    const { db: supabase } = await import("@/services/db");
     await supabase.from("map_error_alert_log").insert({
       alert_type: threshold.id,
       threshold: threshold.maxErrors,
