@@ -3,6 +3,7 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { checkAdminRole, fetchAdminStats } from "@/repositories/admin.repository";
 import { Users, CreditCard, TrendingUp, Shield, Activity, AlertTriangle, Building2, FileText, BarChart3, Calendar, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
@@ -191,6 +192,42 @@ const AdminDashboard = () => {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Autonomous Execution Layer (task #710) — clearly expose the
+            Command & Control surface and the Review Queue so admins can reach
+            live execution-task visibility from the main admin dashboard. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <Link
+            to="/admin/command-control"
+            className="group rounded-xl border border-border/50 bg-card p-4 shadow-card hover:border-accent/60 transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Autonomy</p>
+                <h3 className="text-base font-semibold text-foreground mt-1">Command &amp; Control</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Live execution tasks, agents, approvals &amp; system health
+                </p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-accent shrink-0 mt-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </div>
+          </Link>
+          <Link
+            to="/admin/review-queue"
+            className="group rounded-xl border border-border/50 bg-card p-4 shadow-card hover:border-accent/60 transition-colors"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">Moderation</p>
+                <h3 className="text-base font-semibold text-foreground mt-1">Review Queue</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Approve, reject or escalate items via the safe execution pipeline
+                </p>
+              </div>
+              <ArrowUpRight className="h-4 w-4 text-accent shrink-0 mt-1 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </div>
+          </Link>
         </div>
 
         {loading ? (

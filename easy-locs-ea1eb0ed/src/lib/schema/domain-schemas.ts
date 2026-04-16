@@ -110,6 +110,7 @@ export const DOMAIN_TABLE_MAP: Record<DomainSchema, readonly string[]> = {
     "engine_supervisor",
     "engine_run_logs",
     "worker_health_snapshots",
+    "execution_tasks",
   ],
   analytics: [
     "user_radar_events",

@@ -69,4 +69,42 @@ export const dashboardRepo = {
       body: { target, payload },
     });
   },
+
+  /**
+   * Autonomous Execution Layer (task #710) — admin-visible task feed.
+   * Reads system.execution_tasks via the schema-scoped client. RLS already
+   * restricts SELECT to admins, so non-admin callers naturally get an empty
+   * list. Filters are optional and are applied server-side when provided.
+   */
+  async fetchExecutionTasks(opts?: {
+    status?: string;
+    riskLevel?: string;
+    limit?: number;
+  }) {
+    const limit = opts?.limit ?? 50;
+    let query = domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, domain, risk_level, status, requested_by, blocked_reason, approved_by, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (opts?.status) query = query.eq("status", opts.status);
+    if (opts?.riskLevel) query = query.eq("risk_level", opts.riskLevel);
+
+    const { data, error } = await query;
+    if (error) throw new Error(`fetchExecutionTasks failed: ${error.message}`);
+    return data ?? [];
+  },
+
+  async countExecutionTasks(filters: { status?: string; riskLevel?: string }) {
+    let query = domainDb.system
+      .from("execution_tasks")
+      .select("id", { count: "exact", head: true });
+    if (filters.status) query = query.eq("status", filters.status);
+    if (filters.riskLevel) query = query.eq("risk_level", filters.riskLevel);
+    const { count } = await query;
+    return count ?? 0;
+  },
 };
