@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
@@ -35,6 +35,10 @@ Deno.serve(async (req) => {
       });
     }
     const userId = user.id;
+
+    const userRl = await checkUserRateLimit(userId, "generate-seo");
+    if (!userRl.allowed) return rateLimitResponse(userRl);
+
     const { data: membership } = await supabase
       .from("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
     if (!membership) {
