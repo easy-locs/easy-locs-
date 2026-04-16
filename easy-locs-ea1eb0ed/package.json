@@ -12,6 +12,7 @@
     "build:analyze": "vite build && echo 'Bundle report: dist/bundle-report.html'",
     "check:bundle": "npx tsx scripts/check-bundle-size.ts",
     "check:budget": "npx tsx scripts/check-budget.ts",
+    "bundle:gate": "npx tsx scripts/bundle-size-gate.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
