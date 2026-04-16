@@ -1,9 +1,3 @@
-/**
- * Prefetch Engine — Intelligent preloading of conversations and media.
- * Loads data before the user needs it based on usage patterns.
- * Enhanced with predictive preloading from navigation pattern analysis.
- */
-
 import { connectionManager } from "@/lib/network/connection-manager";
 import { getNetworkProfile } from "@/lib/network/network-adapter";
 import { navigationPredictor } from "@/lib/performance/predictive-preloader";
@@ -18,9 +12,27 @@ interface PrefetchTask {
   ttlMs: number;
 }
 
+interface NavigationTransition {
+  from: string;
+  to: string;
+  timestamp: number;
+}
+
+interface RouteTransitionProbability {
+  route: string;
+  probability: number;
+  count: number;
+}
+
+const TRANSITION_STORAGE_KEY = "el_nav_transitions";
+const MAX_STORED_TRANSITIONS = 50;
+const PREFETCH_PROBABILITY_THRESHOLD = 0.3;
+
 class PrefetchEngine {
   private tasks = new Map<string, PrefetchTask>();
   private running = false;
+  private routeModules = new Map<string, () => Promise<unknown>>();
+  private prefetchedRoutes = new Set<string>();
 
   register(key: string, fn: PrefetchFn, opts?: { priority?: number; ttlMs?: number }): void {
     this.tasks.set(key, {
@@ -34,6 +46,131 @@ class PrefetchEngine {
 
   unregister(key: string): void {
     this.tasks.delete(key);
+  }
+
+  registerRouteModule(route: string, loader: () => Promise<unknown>): void {
+    this.routeModules.set(route, loader);
+  }
+
+  recordNavigation(from: string, to: string): void {
+    const transition: NavigationTransition = {
+      from: this.normalizePath(from),
+      to: this.normalizePath(to),
+      timestamp: Date.now(),
+    };
+
+    try {
+      const stored = this.getStoredTransitions();
+      stored.push(transition);
+      if (stored.length > MAX_STORED_TRANSITIONS) {
+        stored.splice(0, stored.length - MAX_STORED_TRANSITIONS);
+      }
+      sessionStorage.setItem(TRANSITION_STORAGE_KEY, JSON.stringify(stored));
+    } catch {}
+
+    this.predictAndPrefetch(transition.to);
+  }
+
+  getTransitionProbabilities(fromRoute: string): RouteTransitionProbability[] {
+    const normalized = this.normalizePath(fromRoute);
+    const transitions = this.getStoredTransitions();
+
+    const fromTransitions = transitions.filter((t) => t.from === normalized);
+    if (fromTransitions.length === 0) return [];
+
+    const counts = new Map<string, number>();
+    for (const t of fromTransitions) {
+      counts.set(t.to, (counts.get(t.to) ?? 0) + 1);
+    }
+
+    const total = fromTransitions.length;
+    const probabilities: RouteTransitionProbability[] = [];
+
+    for (const [route, count] of counts) {
+      probabilities.push({
+        route,
+        probability: count / total,
+        count,
+      });
+    }
+
+    return probabilities.sort((a, b) => b.probability - a.probability);
+  }
+
+  private async predictAndPrefetch(currentRoute: string): Promise<void> {
+    if (!this.isConnectionSuitable()) return;
+
+    const probabilities = this.getTransitionProbabilities(currentRoute);
+    const toPrefetch = probabilities.filter(
+      (p) =>
+        p.probability >= PREFETCH_PROBABILITY_THRESHOLD &&
+        !this.prefetchedRoutes.has(p.route),
+    );
+
+    if (toPrefetch.length === 0) return;
+
+    const idle =
+      typeof requestIdleCallback !== "undefined"
+        ? (fn: () => void) => requestIdleCallback(fn, { timeout: 3000 })
+        : (fn: () => void) => setTimeout(fn, 100);
+
+    idle(() => {
+      for (const target of toPrefetch) {
+        const loader = this.findRouteLoader(target.route);
+        if (loader) {
+          loader()
+            .then(() => {
+              this.prefetchedRoutes.add(target.route);
+            })
+            .catch(() => {});
+        }
+      }
+    });
+  }
+
+  private findRouteLoader(route: string): (() => Promise<unknown>) | null {
+    if (this.routeModules.has(route)) {
+      return this.routeModules.get(route)!;
+    }
+
+    for (const [pattern, loader] of this.routeModules) {
+      if (route.startsWith(pattern)) {
+        return loader;
+      }
+    }
+
+    return null;
+  }
+
+  private isConnectionSuitable(): boolean {
+    if (!connectionManager.isOnline()) return false;
+
+    const nav = navigator as Navigator & {
+      connection?: { effectiveType?: string; saveData?: boolean };
+    };
+    if (nav.connection?.saveData) return false;
+    const effectiveType = nav.connection?.effectiveType;
+    if (effectiveType === "slow-2g" || effectiveType === "2g") return false;
+
+    return true;
+  }
+
+  private normalizePath(path: string): string {
+    return path
+      .replace(/\/[0-9a-f-]{36}/g, "/:id")
+      .replace(/\/\d+/g, "/:id")
+      .replace(/\?.*$/, "")
+      .replace(/\/$/, "") || "/";
+  }
+
+  private getStoredTransitions(): NavigationTransition[] {
+    try {
+      const raw = sessionStorage.getItem(TRANSITION_STORAGE_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw) as NavigationTransition[];
+    } catch {
+      return [];
+    }
   }
 
   async run(): Promise<void> {
@@ -130,6 +267,22 @@ class PrefetchEngine {
         .order("created_at", { ascending: false })
         .limit(30);
     } catch {}
+  }
+
+  clearPrefetchCache(): void {
+    this.prefetchedRoutes.clear();
+  }
+
+  getStats(): {
+    registeredTasks: number;
+    prefetchedRoutes: number;
+    storedTransitions: number;
+  } {
+    return {
+      registeredTasks: this.tasks.size,
+      prefetchedRoutes: this.prefetchedRoutes.size,
+      storedTransitions: this.getStoredTransitions().length,
+    };
   }
 }
 

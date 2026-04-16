@@ -4,6 +4,7 @@ import type { RadarResultItem, RadarVertical } from "@/lib/radar/radar-result-it
 import { mapPointsToResultItems } from "./radarResultMapper";
 import type { RadarScoringContext } from "@/lib/radar/radar-score";
 import type { RadarFilterValues } from "@/lib/radar/radar-filter-schemas";
+import type { SearchWorkerAPI } from "@/workers/search.worker";
 
 export interface RadarSearchRequest {
   query?: string;
@@ -28,6 +29,50 @@ export interface RadarSearchResponse {
 }
 
 let searchCounter = 0;
+let poolRef: typeof import("@/workers/pool-manager") | null = null;
+let poolInitAttempted = false;
+
+async function getPool() {
+  if (poolRef) return poolRef;
+  if (poolInitAttempted) return null;
+  poolInitAttempted = true;
+  try {
+    poolRef = await import("@/workers/pool-manager");
+    return poolRef;
+  } catch {
+    return null;
+  }
+}
+
+async function workerSearch(
+  items: RadarResultItem[],
+  query: string,
+): Promise<RadarResultItem[] | null> {
+  const pool = await getPool();
+  if (!pool) return null;
+
+  try {
+    const docs = items.map(i => ({
+      id: i.id ?? i.title,
+      title: i.title,
+      description: i.address ?? "",
+      category: i.category ?? "",
+      tags: [i.subcategory ?? ""].filter(Boolean),
+    }));
+
+    const matchedIds = await pool.workerPool.execute<SearchWorkerAPI, Set<string>>(
+      "search",
+      async (proxy) => {
+        await proxy.buildIndex(docs);
+        const results = await proxy.search(query, items.length);
+        return new Set(results.map(r => r.id));
+      },
+    );
+    return items.filter(i => matchedIds.has(i.id ?? i.title));
+  } catch {
+    return null;
+  }
+}
 
 export async function radarSearch(req: RadarSearchRequest): Promise<RadarSearchResponse> {
   const t0 = performance.now();
@@ -57,13 +102,18 @@ export async function radarSearch(req: RadarSearchRequest): Promise<RadarSearchR
   }
 
   if (req.query && req.query.trim().length > 0) {
-    const q = req.query.toLowerCase();
-    items = items.filter(i =>
-      i.title.toLowerCase().includes(q) ||
-      (i.category || "").toLowerCase().includes(q) ||
-      (i.subcategory || "").toLowerCase().includes(q) ||
-      (i.address || "").toLowerCase().includes(q)
-    );
+    const workerResult = await workerSearch(items, req.query);
+    if (workerResult) {
+      items = workerResult;
+    } else {
+      const q = req.query.toLowerCase();
+      items = items.filter(i =>
+        i.title.toLowerCase().includes(q) ||
+        (i.category || "").toLowerCase().includes(q) ||
+        (i.subcategory || "").toLowerCase().includes(q) ||
+        (i.address || "").toLowerCase().includes(q)
+      );
+    }
   }
 
   if (req.filters) {

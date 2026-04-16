@@ -6,6 +6,50 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
 
+## Frontend Speed Engine (Phase 1B)
+
+### Web Worker Pool (`src/workers/`)
+- **pool-manager.ts**: Manages typed Web Workers with round-robin/least-busy assignment. Auto-spawns up to `hardwareConcurrency - 1` workers per type, auto-shrinks idle pools after 30s.
+- **crypto.worker.ts**: AES-GCM encrypt/decrypt, key generation, SHA-256 hashing, PBKDF2 key derivation — all off-thread via Comlink.
+- **search.worker.ts**: Client-side search index with tokenization, prefix/fuzzy matching, relevance scoring — off-thread via Comlink.
+- **normalization.worker.ts**: Listing normalization, address formatting, phone normalization, currency conversion — off-thread via Comlink.
+- **analytics-batch.worker.ts**: Analytics event batching with configurable batch size (20) and flush interval (10s) — off-thread via Comlink.
+
+### Cross-Tab Sync (`src/workers/cross-tab-sync.ts`, `cross-tab-client.ts`)
+- SharedWorker multiplexes state across browser tabs via BroadcastChannel
+- Syncs: Orbit messages, wallet balance, notification counts
+- Client auto-connects on boot, heartbeats every 15s, cleans stale tabs after 60s
+
+### Partytown (Third-Party Script Isolation)
+- Configured in `vite.config.ts` via `@builder.io/partytown` plugin
+- `index.html` has Partytown config with forward rules for `dataLayer.push`, `posthog.*`
+- Reverse proxy configured for PostHog, Firebase analytics domains
+
+### Predictive Prefetch Engine (`src/lib/performance/prefetch-engine.ts`)
+- Tracks last 50 navigation transitions in sessionStorage
+- Computes transition probabilities per route
+- Preloads routes with >30% probability during idle
+- Connection-aware: skips on slow-2g/2g/saveData
+
+### Segment CDP (`src/lib/analytics/segment.ts`)
+- `@segment/analytics-next` SDK with lazy init via `initSegment()`
+- Unified track/identify/page/group/reset APIs
+- `segmentTrackWithContext()` auto-enriches events with viewport, path, version
+- Env var: `VITE_SEGMENT_WRITE_KEY`
+
+### Performance Budget Enforcer (Per-Pillar)
+- Dashboard: 300KB, Radar: 350KB, Orbit: 300KB, Wallet: 250KB, Me: 200KB
+- CI script: `npm run check:budget` — runs `scripts/check-budget.ts`
+- Build-time enforcement via `performanceBudgetPlugin` in `vite.config.ts`
+
+### Resource Hints (`index.html`)
+- preconnect/dns-prefetch for: Supabase, Mapbox, Stripe, Firebase, PostHog, Segment, Sentry CDN domains
+
+### React 19 Streaming
+- `useTransition` + `useRef` imports available for pillar navigation
+- Per-pillar skeleton components (`PillarSkeleton`) for dashboard/radar/orbit/wallet/me
+- `NavigationTracker` component records navigation patterns for predictive prefetch
+
 ## Visual Design System (Apple/Tesla Premium v4)
 - **Design Philosophy**: Minimalist, Apple/Tesla-inspired — solid backgrounds over blur, clean hierarchy, 3 shadow levels max
 - **CSS**: `index.css` ~1600 lines — single `:root` token block, no duplicates, clean RTL/dark/scrollbar rules. Purged unused ds-*, glass-card, page-empty-state, stats-grid, action-card-grid, card-small/medium/large/listing/carousel classes

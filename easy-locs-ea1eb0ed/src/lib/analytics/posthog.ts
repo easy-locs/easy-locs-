@@ -12,6 +12,11 @@ export function initPostHog() {
   if (started) return;
   if (!isCategoryAllowed("analytics")) return;
 
+  if ((window as Record<string, unknown>).__POSTHOG_KEY__) {
+    started = true;
+    return;
+  }
+
   const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
   const host = import.meta.env.VITE_POSTHOG_HOST as string | undefined;
   if (!key || !host) return;
@@ -32,6 +37,10 @@ export function identifyActor(
   props?: Record<string, string | number | boolean | null>,
 ) {
   posthog.identify(actorId, props);
+
+  import("./segment").then(({ segmentIdentify }) => {
+    segmentIdentify(actorId, props ?? undefined);
+  }).catch(() => {});
 }
 
 export function captureEvent(event: string, props?: Record<string, unknown>) {
@@ -40,6 +49,10 @@ export function captureEvent(event: string, props?: Record<string, unknown>) {
 
 export function resetPostHog() {
   posthog.reset();
+
+  import("./segment").then(({ segmentReset }) => {
+    segmentReset();
+  }).catch(() => {});
 }
 
 export { posthog };

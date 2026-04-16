@@ -3,7 +3,8 @@
 // ═══════════════════════════════════════════════════════════════════
 
 // ── React & routing ──
-import { Suspense, lazy, useState, useEffect, memo } from "react";
+import { Suspense, lazy, useState, useEffect, useRef, useTransition, memo, createContext, useContext } from "react";
+import type { ReactNode } from "react";
 import { Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
@@ -55,7 +56,128 @@ function RouteLoadingSkeleton() {
   );
 }
 
-function AppLockGuardShell({ children }: { children: React.ReactNode }) {
+function PillarSkeleton({ pillar }: { pillar: "dashboard" | "radar" | "orbit" | "wallet" | "me" }) {
+  const skeletons: Record<string, ReactNode> = {
+    dashboard: (
+      <div className="flex flex-col gap-4 p-4 animate-pulse">
+        <div className="h-8 w-40 rounded-lg skeleton-premium" />
+        <div className="grid grid-cols-2 gap-3">
+          <div className="h-24 rounded-xl skeleton-premium" />
+          <div className="h-24 rounded-xl skeleton-premium" />
+        </div>
+        <div className="h-48 w-full rounded-2xl skeleton-premium" />
+        <div className="h-32 w-full rounded-2xl skeleton-premium" />
+      </div>
+    ),
+    radar: (
+      <div className="flex flex-col gap-4 p-4 animate-pulse">
+        <div className="h-10 w-full rounded-xl skeleton-premium" />
+        <div className="h-48 w-full rounded-2xl skeleton-premium" />
+        <div className="flex gap-3">
+          <div className="h-28 w-28 rounded-xl skeleton-premium flex-shrink-0" />
+          <div className="h-28 w-28 rounded-xl skeleton-premium flex-shrink-0" />
+          <div className="h-28 w-28 rounded-xl skeleton-premium flex-shrink-0" />
+        </div>
+      </div>
+    ),
+    orbit: (
+      <div className="flex flex-col gap-3 p-4 animate-pulse">
+        <div className="h-8 w-32 rounded-lg skeleton-premium" />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full skeleton-premium" />
+            <div className="flex-1">
+              <div className="h-4 w-32 rounded skeleton-premium mb-2" />
+              <div className="h-3 w-48 rounded skeleton-premium" />
+            </div>
+          </div>
+        ))}
+      </div>
+    ),
+    wallet: (
+      <div className="flex flex-col gap-4 p-4 animate-pulse">
+        <div className="h-32 w-full rounded-2xl skeleton-premium" />
+        <div className="flex gap-3 justify-center">
+          <div className="h-12 w-20 rounded-xl skeleton-premium" />
+          <div className="h-12 w-20 rounded-xl skeleton-premium" />
+          <div className="h-12 w-20 rounded-xl skeleton-premium" />
+        </div>
+        <div className="h-40 w-full rounded-2xl skeleton-premium" />
+      </div>
+    ),
+    me: (
+      <div className="flex flex-col gap-4 p-4 animate-pulse">
+        <div className="flex items-center gap-4">
+          <div className="h-16 w-16 rounded-full skeleton-premium" />
+          <div>
+            <div className="h-5 w-32 rounded skeleton-premium mb-2" />
+            <div className="h-3 w-24 rounded skeleton-premium" />
+          </div>
+        </div>
+        <div className="h-24 w-full rounded-2xl skeleton-premium" />
+        <div className="h-24 w-full rounded-2xl skeleton-premium" />
+      </div>
+    ),
+  };
+  return <>{skeletons[pillar] ?? <RouteLoadingSkeleton />}</>;
+}
+
+function NavigationTracker() {
+  const location = useLocation();
+  const prevPathRef = useRef(location.pathname);
+
+  useEffect(() => {
+    const from = prevPathRef.current;
+    const to = location.pathname;
+    if (from !== to) {
+      import("@/lib/performance/prefetch-engine").then(({ prefetchEngine }) => {
+        prefetchEngine.recordNavigation(from, to);
+      }).catch(() => {});
+      prevPathRef.current = to;
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
+const TransitionLocationContext = createContext<ReturnType<typeof useLocation> | null>(null);
+
+export function useTransitionLocation() {
+  const ctx = useContext(TransitionLocationContext);
+  return ctx ?? undefined;
+}
+
+function TransitionRouter({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  const [isPending, startTransition] = useTransition();
+  const [displayLocation, setDisplayLocation] = useState(location);
+
+  useEffect(() => {
+    if (location.key !== displayLocation.key) {
+      startTransition(() => {
+        setDisplayLocation(location);
+      });
+    }
+  }, [location.key, displayLocation.key]);
+
+  return (
+    <TransitionLocationContext.Provider value={displayLocation}>
+      <div
+        style={{ opacity: isPending ? 0.85 : 1, transition: "opacity 150ms ease" }}
+        data-transition-pending={isPending || undefined}
+      >
+        {children}
+      </div>
+    </TransitionLocationContext.Provider>
+  );
+}
+
+function TransitionRoutes({ children }: { children: ReactNode }) {
+  const loc = useTransitionLocation();
+  return <Routes location={loc}>{children}</Routes>;
+}
+
+function AppLockGuardShell({ children }: { children: ReactNode }) {
   return (
     <Suspense fallback={<>{children}</>}>
       <LazyAppLockGuard>{children}</LazyAppLockGuard>
@@ -70,13 +192,13 @@ const LazyDeferredServices = lazy(async () => {
     import("@/payments/UnifiedPaymentSystem"),
   ]);
   return {
-    default: ({ children }: { children: React.ReactNode }) => (
+    default: ({ children }: { children: ReactNode }) => (
       <CallProvider><UnifiedPaymentProvider>{children}</UnifiedPaymentProvider></CallProvider>
     ),
   };
 });
 
-function DeferredServicesProvider({ children }: { children: React.ReactNode }) {
+function DeferredServicesProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   useEffect(() => {
     const id = safeIdleCallback(() => setReady(true), { timeout: 1500 });
@@ -399,8 +521,30 @@ safeIdleCallback(() => {
 safeIdleCallback(() => {
   import("@/lib/super-app-bridge").then((m) => m.installSuperAppBridge()).catch(() => {});
 }, { timeout: 10000 });
+safeIdleCallback(() => {
+  import("@/lib/analytics/segment").then((m) => m.initSegment()).catch(() => {});
+}, { timeout: 3000 });
+safeIdleCallback(() => {
+  import("@/workers/cross-tab-client").then(({ crossTabClient }) => {
+    crossTabClient.connect();
+  }).catch(() => {});
+}, { timeout: 4000 });
+safeIdleCallback(() => {
+  import("@/lib/performance/prefetch-engine").then(({ prefetchEngine }) => {
+    prefetchEngine.registerRouteModule("/dashboard", () => import("@/pages/Dashboard"));
+    prefetchEngine.registerRouteModule("/explore", () => import("@/pages/ExplorePage"));
+    prefetchEngine.registerRouteModule("/orbit", () => import("@/pages/CommunicationCenter"));
+    prefetchEngine.registerRouteModule("/wallet", () => import("@/pages/WalletHubPage"));
+    prefetchEngine.registerRouteModule("/me", () => import("@/pages/MeCommandCenter"));
+    prefetchEngine.registerRouteModule("/food", () => import("@/pages/food/FoodTypePage"));
+    prefetchEngine.registerRouteModule("/taxi", () => import("@/pages/mobility/MobilityTaxiPage"));
+    prefetchEngine.registerRouteModule("/stay", () => import("@/pages/travel/TravelStayHub"));
+    prefetchEngine.registerRouteModule("/services", () => import("@/pages/LocalServices"));
+    prefetchEngine.registerRouteModule("/home", () => import("@/pages/Index"));
+  }).catch(() => {});
+}, { timeout: 6000 });
 
-function CoreProviders({ children }: { children: React.ReactNode }) {
+function CoreProviders({ children }: { children: ReactNode }) {
   return (
     <LazyMotion features={domAnimation} strict={false}>
       <GlobalErrorBoundary>
@@ -431,14 +575,16 @@ const App = () => (
         <IntentNavigateProvider />
       </Suspense>
       <DeferredBootGuards />
+      <NavigationTracker />
       <Suspense fallback={null}>
         <SmartCoreTracker />
         <SentryRouteTracker />
         <AnalyticsRouteTracker />
       </Suspense>
-      <PillarSuspenseBoundary>
+      <Suspense fallback={<RouteLoadingSkeleton />}>
+        <TransitionRouter>
         <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
-          <Routes>
+          <TransitionRoutes>
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  AUTH                                          */}
@@ -460,7 +606,7 @@ const App = () => (
                   <Route path="/landing" element={<FeatureErrorBoundary featureName="Dashboard"><Index /></FeatureErrorBoundary>} />
                   <Route path="/home" element={<FeatureErrorBoundary featureName="Dashboard"><MarketplaceHomeRouter /></FeatureErrorBoundary>} />
                   <Route path="/pricing" element={<PricingScrollRedirect />} />
-                  <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Dashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><Dashboard /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/property/:id" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyDetailHub /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/dashboard/create-listing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CreateListing /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -540,7 +686,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 2 · RADAR (Discover · Browse · Move)   */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/radar" element={<FeatureErrorBoundary featureName="Radar"><HyperRadarPage /></FeatureErrorBoundary>} />
+                  <Route path="/radar" element={<FeatureErrorBoundary featureName="Radar"><Suspense fallback={<PillarSkeleton pillar="radar" />}><HyperRadarPage /></Suspense></FeatureErrorBoundary>} />
                   <Route path="/map" element={<Navigate to="/radar" replace />} />
                   <Route path="/discover" element={<Navigate to="/radar" replace />} />
                   <Route path="/search" element={<Navigate to="/radar" replace />} />
@@ -658,7 +804,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 3 · ORBIT (Messaging · Contacts)       */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><Suspense fallback={<PillarSkeleton pillar="orbit" />}><CommunicationCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/:conversationId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/contacts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitContactsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAddContactPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -667,7 +813,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 4 · WALLET (Pay · Orders · Checkout)   */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Suspense fallback={<PillarSkeleton pillar="wallet" />}><WalletHubPage /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/hub" element={<Navigate to="/wallet" replace />} />
                   <Route path="/wallet/top-up" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTopUpPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/wallet/transfer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransferPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -706,7 +852,7 @@ const App = () => (
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 5 · ME (Profile · Settings · Tools)    */}
                   {/* ═══════════════════════════════════════════════ */}
-                  <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MeCommandCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Suspense fallback={<PillarSkeleton pillar="me" />}><MeCommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/edit-profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><EditProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/spending-insights" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSpendingInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/me/address-book" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAddressBookPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -1025,9 +1171,10 @@ const App = () => (
                   <Route path="/seo/*" element={<SEOCatchAll />} />
                   <Route path="*" element={<AppNotFoundPage />} />
 
-            </Routes>
+            </TransitionRoutes>
           </SwipeableMain>
-        </PillarSuspenseBoundary>
+        </TransitionRouter>
+        </Suspense>
         <Suspense fallback={null}><MainBottomNav /></Suspense>
         <Suspense fallback={null}>
           <SmartInstallBanner />
