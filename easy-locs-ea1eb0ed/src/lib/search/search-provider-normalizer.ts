@@ -36,7 +36,7 @@ export function normalizeProviderResult(np: NormalizedPlace): SearchCandidate {
     city: np.city ?? undefined,
     district: np.area ?? undefined,
     place_type: "address",
-    provider: "mapbox",
+    provider: "nominatim",
     popularity_score: 0,
     confidence_score: 0.6,
   };

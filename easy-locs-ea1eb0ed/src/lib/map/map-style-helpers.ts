@@ -29,7 +29,7 @@ export function statusToColor(status?: string | null): string {
   return (STATUS_COLORS as Record<string, string>)[status ?? ""] ?? STATUS_COLORS.fallback;
 }
 
-export function kindColorExpression(): mapboxgl.Expression {
+export function kindColorExpression(): any {
   return [
     "match",
     ["get", "kind"],

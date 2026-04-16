@@ -1,10 +1,3 @@
-export const MAPBOX_ACCESS_TOKEN: string =
-  import.meta.env.VITE_MAPBOX_TOKEN ?? "";
-
-export function hasMapboxToken(): boolean {
-  return MAPBOX_ACCESS_TOKEN.length > 0;
-}
-
 export function isWebGLSupported(): boolean {
   try {
     const canvas = document.createElement("canvas");
@@ -18,12 +11,19 @@ export function isWebGLSupported(): boolean {
   }
 }
 
-export function getMapboxTokenError(): string | null {
-  if (!MAPBOX_ACCESS_TOKEN) {
-    return "Mapbox token not configured. Set VITE_MAPBOX_TOKEN in your .env file.";
-  }
+export function getMapTokenError(): string | null {
   if (typeof document !== "undefined" && !isWebGLSupported()) {
-    return "WebGL is not supported by your browser. Mapbox maps require WebGL.";
+    return "WebGL is not supported by your browser. Maps require WebGL.";
   }
   return null;
+}
+
+export const MAPBOX_ACCESS_TOKEN = "";
+
+export function hasMapboxToken(): boolean {
+  return true;
+}
+
+export function getMapboxTokenError(): string | null {
+  return getMapTokenError();
 }

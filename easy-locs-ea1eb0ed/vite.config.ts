@@ -162,7 +162,6 @@ function performanceBudgetPlugin(): Plugin {
 export default defineConfig(({ mode }) => ({
   define: {
     __BUILD_TIMESTAMP__: JSON.stringify(Date.now().toString()),
-    'import.meta.env.VITE_MAPBOX_TOKEN': JSON.stringify(process.env.VITE_MAPBOX_TOKEN ?? ""),
   },
   server: {
     host: "::",
@@ -296,7 +295,7 @@ export default defineConfig(({ mode }) => ({
       "date-fns",
     ],
     exclude: [
-      "mapbox-gl",
+      "maplibre-gl",
       "three",
       "jspdf",
       "html2canvas",
@@ -369,7 +368,7 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";
             if (id.includes("leaflet")) return "vendor-leaflet";
-            if (id.includes("mapbox-gl")) return "vendor-mapbox";
+            if (id.includes("maplibre-gl")) return "vendor-maplibre";
             if (id.includes("html2canvas")) return "vendor-html2canvas";
             if (id.includes("jsqr") || id.includes("html5-qrcode")) return "vendor-qr";
             if (id.includes("react-markdown")) return "vendor-markdown";

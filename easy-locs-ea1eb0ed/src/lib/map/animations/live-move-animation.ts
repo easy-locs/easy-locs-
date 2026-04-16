@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapAnimationModule } from "../engine/types";
 
 type Position = { id: string; lng: number; lat: number };

@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { haptic } from "@/lib/haptics";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 interface LocationData {
   type: "current" | "live" | "place";
@@ -42,21 +41,19 @@ interface ReverseGeoResult {
 async function reverseGeocode(lat: number, lng: number): Promise<ReverseGeoResult> {
   try {
     const res = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_ACCESS_TOKEN}&types=poi,address&limit=1`,
-      { signal: AbortSignal.timeout(5000) }
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { signal: AbortSignal.timeout(5000), headers: { "Accept-Language": "en" } }
     );
     const data = await res.json();
-    const feature = data.features?.[0];
-    if (!feature) return { label: "📍 My location", address: "" };
+    if (!data || data.error) return { label: "📍 My location", address: "" };
 
-    const placeName = feature.place_name || "";
-    const textLabel = feature.text || placeName.split(",")[0] || "📍 My location";
-    const poiCategory = feature.properties?.category || "";
-    const building = poiCategory ? textLabel : undefined;
+    const addr = data.address || {};
+    const textLabel = data.name || addr.building || addr.amenity || addr.road || data.display_name?.split(",")[0] || "📍 My location";
+    const building = addr.building || addr.amenity || undefined;
 
     return {
       label: textLabel,
-      address: placeName,
+      address: data.display_name || "",
       building,
     };
   } catch {
@@ -168,18 +165,18 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
     if (!placeSearch.trim()) return;
     setSearching(true);
     try {
-      const proximity = currentPos ? `&proximity=${currentPos.lng},${currentPos.lat}` : "";
+      const viewbox = currentPos ? `&viewbox=${currentPos.lng - 0.1},${currentPos.lat - 0.1},${currentPos.lng + 0.1},${currentPos.lat + 0.1}&bounded=0` : "";
       const res = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(placeSearch)}.json?access_token=${MAPBOX_ACCESS_TOKEN}&limit=5${proximity}`,
-        { signal: AbortSignal.timeout(5000) }
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(placeSearch)}&limit=5&addressdetails=1${viewbox}`,
+        { signal: AbortSignal.timeout(5000), headers: { "Accept-Language": "en" } }
       );
       const data = await res.json();
       setSearchResults(
-        (data.features || []).map((f: any) => ({
-          name: f.text || f.place_name?.split(",")[0] || f.place_name,
-          lat: f.center[1],
-          lng: f.center[0],
-          address: f.place_name || "",
+        (data || []).map((f: any) => ({
+          name: f.name || f.display_name?.split(",")[0] || f.display_name,
+          lat: parseFloat(f.lat),
+          lng: parseFloat(f.lon),
+          address: f.display_name || "",
         }))
       );
     } catch {
@@ -240,28 +237,7 @@ export default function ChatLocationPicker({ open, onClose, onSend }: Props) {
           height: 160,
           border: "1px solid hsl(var(--border) / 0.1)",
         }}>
-          {currentPos && MAPBOX_ACCESS_TOKEN?.trim() ? (
-            <>
-              <img
-                src={`https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/pin-s+3b82f6(${currentPos.lng},${currentPos.lat})/${currentPos.lng},${currentPos.lat},15,0/400x160@2x?access_token=${MAPBOX_ACCESS_TOKEN}`}
-                alt="Your location"
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = "none";
-                  const fallback = target.nextElementSibling as HTMLElement | null;
-                  if (fallback) fallback.style.display = "flex";
-                }}
-              />
-              <div className="w-full h-full flex-col items-center justify-center gap-2" style={{ background: "hsl(var(--card))", display: "none" }}>
-                <MapPin className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
-                <span className="text-xs font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>
-                  {currentPos.lat.toFixed(6)}, {currentPos.lng.toFixed(6)}
-                </span>
-              </div>
-            </>
-          ) : currentPos ? (
+          {currentPos ? (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2" style={{ background: "hsl(var(--card))" }}>
               <MapPin className="h-6 w-6" style={{ color: "hsl(var(--primary))" }} />
               <span className="text-xs font-mono" style={{ color: "hsl(var(--muted-foreground))" }}>

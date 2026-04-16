@@ -935,7 +935,7 @@ button:active:not(:disabled),
    ══════════════════════════════════════════════════ */
 
 /* Unified premium popup — single source for presence-styles + easy-locs-markers */
-.mapboxgl-popup-content {
+.maplibregl-popup-content {
   background: rgba(11, 18, 32, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -944,28 +944,28 @@ button:active:not(:disabled),
   padding: 0;
   box-shadow: 0 12px 48px rgba(0,0,0,0.55);
 }
-.mapboxgl-popup-tip {
+.maplibregl-popup-tip {
   border-top-color: rgba(11, 18, 32, 0.95);
 }
 
-.cm-popup-premium .mapboxgl-popup-content {
+.cm-popup-premium .maplibregl-popup-content {
   background: transparent;
   border: none;
   box-shadow: none;
   padding: 0;
   border-radius: 0;
 }
-.cm-popup-premium .mapboxgl-popup-tip {
+.cm-popup-premium .maplibregl-popup-tip {
   display: none;
 }
-.cm-popup-premium .mapboxgl-popup-close-button {
+.cm-popup-premium .maplibregl-popup-close-button {
   color: rgba(255,255,255,0.4);
   font-size: 14px;
   padding: 2px 6px;
   z-index: 2;
 }
 
-.radar-pin-popup .mapboxgl-popup-content {
+.radar-pin-popup .maplibregl-popup-content {
   background: hsl(var(--card));
   color: hsl(var(--foreground));
   border: 1px solid hsl(var(--border) / 0.3);
@@ -975,10 +975,10 @@ button:active:not(:disabled),
   font-family: 'Plus Jakarta Sans', sans-serif;
   overflow: hidden;
 }
-.radar-pin-popup .mapboxgl-popup-tip {
+.radar-pin-popup .maplibregl-popup-tip {
   border-top-color: hsl(var(--card));
 }
-.radar-pin-popup .mapboxgl-popup-close-button {
+.radar-pin-popup .maplibregl-popup-close-button {
   color: hsl(var(--muted-foreground));
   font-size: 16px;
   padding: 4px 8px;

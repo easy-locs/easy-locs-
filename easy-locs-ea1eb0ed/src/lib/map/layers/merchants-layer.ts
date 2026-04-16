@@ -1,4 +1,4 @@
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapLayerModule } from "../engine/types";
 import { VERTICAL_COLORS } from "../superMapLayers";
 
@@ -51,7 +51,7 @@ export const merchantsLayer: MapLayerModule = {
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-size": 14, "text-allow-overlap": true,
         },
         paint: { "text-color": "#ffffff" },
@@ -90,7 +90,7 @@ export const merchantsLayer: MapLayerModule = {
   },
 
   update(map, features: GeoJSON.Feature[]) {
-    const src = map.getSource(SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (src) src.setData({ type: "FeatureCollection", features });
   },
 

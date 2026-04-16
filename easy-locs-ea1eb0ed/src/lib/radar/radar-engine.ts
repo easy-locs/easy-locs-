@@ -2,7 +2,7 @@
  * Radar Engine — Core computation for nearby drivers, distance, ETA
  * + Mapbox weather radar layers, stations, particles, animations.
  */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 // ── Re-exports for backward compatibility ──
 export { haversineKm, formatETA, formatDistance, proximityBadge } from "@/lib/geo/distance";
@@ -115,7 +115,7 @@ export async function loadRadarFrames() {
   }
 }
 
-export function addRadarLayer(map: mapboxgl.Map) {
+export function addRadarLayer(map: maplibregl.Map) {
   if (!radarFrames.length) return;
   if (map.getSource("radar")) return;
 
@@ -140,11 +140,11 @@ export function addRadarLayer(map: mapboxgl.Map) {
 // RADAR ANIMATION (SMOOTH)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function startRadarAnimation(map: mapboxgl.Map) {
+export function startRadarAnimation(map: maplibregl.Map) {
   setInterval(() => {
     if (!radarFrames.length) return;
     frameIndex = (frameIndex + 1) % radarFrames.length;
-    const source = map.getSource("radar") as mapboxgl.RasterTileSource;
+    const source = map.getSource("radar") as maplibregl.RasterTileSource;
     if (!source) return;
     (source as any).tiles = [radarFrames[frameIndex]];
     map.triggerRepaint();
@@ -155,7 +155,7 @@ export function startRadarAnimation(map: mapboxgl.Map) {
 // STATIONS (PULSE EFFECT)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function addStations(map: mapboxgl.Map, data: any[]) {
+export function addStations(map: maplibregl.Map, data: any[]) {
   if (map.getSource("stations")) return;
 
   map.addSource("stations", {
@@ -182,7 +182,7 @@ export function addStations(map: mapboxgl.Map, data: any[]) {
 // PULSE ANIMATION (SNAP EFFECT)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function animateStations(map: mapboxgl.Map) {
+export function animateStations(map: maplibregl.Map) {
   let t = 0;
   function loop() {
     t += 0.05;
@@ -199,7 +199,7 @@ export function animateStations(map: mapboxgl.Map) {
 // PARTICLES (LIGHTWEIGHT)
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function addParticles(map: mapboxgl.Map) {
+export function addParticles(map: maplibregl.Map) {
   if (!map.getSource("stations") || map.getLayer("weather_particles")) return;
 
   map.addLayer({
@@ -230,7 +230,7 @@ export function autoQualityAdjust() {
 // MASTER INIT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export async function initRadar(map: mapboxgl.Map, stations: any[]) {
+export async function initRadar(map: maplibregl.Map, stations: any[]) {
   await loadRadarFrames();
   addRadarLayer(map);
   addStations(map, stations);

@@ -2,7 +2,7 @@
  * radar-layer-manager — Atomic unit: manage map layer visibility and ordering.
  * Single responsibility: layer toggle, ordering, opacity management.
  */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 
 export interface LayerConfig {
   id: string;
@@ -24,12 +24,12 @@ export function getLayerConfigs(): LayerConfig[] {
   return [...LAYER_CONFIGS];
 }
 
-export function toggleLayer(map: mapboxgl.Map, layerId: string, visible: boolean) {
+export function toggleLayer(map: maplibregl.Map, layerId: string, visible: boolean) {
   if (!map.getLayer(layerId)) return;
   map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
 }
 
-export function setLayerOpacity(map: mapboxgl.Map, layerId: string, opacity: number) {
+export function setLayerOpacity(map: maplibregl.Map, layerId: string, opacity: number) {
   if (!map.getLayer(layerId)) return;
   const layer = map.getLayer(layerId);
   if (!layer) return;
@@ -38,7 +38,7 @@ export function setLayerOpacity(map: mapboxgl.Map, layerId: string, opacity: num
   map.setPaintProperty(layerId, prop, opacity);
 }
 
-export function applyLayerOrder(map: mapboxgl.Map) {
+export function applyLayerOrder(map: maplibregl.Map) {
   const sorted = [...LAYER_CONFIGS].sort((a, b) => a.zIndex - b.zIndex);
   for (let i = 1; i < sorted.length; i++) {
     const prev = sorted[i - 1].id;

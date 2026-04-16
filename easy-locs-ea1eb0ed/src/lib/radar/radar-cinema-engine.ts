@@ -2,7 +2,7 @@
  * Radar Cinema Engine — Cinematic weather radar with animated drivers,
  * rain canvas overlay, timeline playback, fog, and smart camera.
  */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { DRIVER_STATUS_COLORS, RADAR_INTENSITY_COLORS } from "@/config/colors";
 
@@ -57,7 +57,7 @@ type RainDrop = {
 };
 
 type RadarCinemaState = {
-  map: mapboxgl.Map;
+  map: maplibregl.Map;
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D | null;
   animationFrame?: number;
@@ -66,20 +66,20 @@ type RadarCinemaState = {
   timelineIndex: number;
   timelinePlaying: boolean;
   timelineTimer?: number;
-  popup?: mapboxgl.Popup | null;
-  stationClickHandler?: (e: mapboxgl.MapLayerMouseEvent) => void;
+  popup?: maplibregl.Popup | null;
+  stationClickHandler?: (e: maplibregl.MapLayerMouseEvent) => void;
   stationEnterHandler?: () => void;
   stationLeaveHandler?: () => void;
   resizeHandler?: () => void;
 };
 
-const CINEMA_STATE = new WeakMap<mapboxgl.Map, RadarCinemaState>();
+const CINEMA_STATE = new WeakMap<maplibregl.Map, RadarCinemaState>();
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // HELPERS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function getOrCreateState(map: mapboxgl.Map): RadarCinemaState {
+function getOrCreateState(map: maplibregl.Map): RadarCinemaState {
   const existing = CINEMA_STATE.get(map);
   if (existing) return existing;
   const state: RadarCinemaState = {
@@ -125,11 +125,11 @@ function stationRadius(intensity = 0.3) {
   return 5 + intensity * 10;
 }
 
-function safeRemoveLayer(map: mapboxgl.Map, id: string) {
+function safeRemoveLayer(map: maplibregl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
 }
 
-function safeRemoveSource(map: mapboxgl.Map, id: string) {
+function safeRemoveSource(map: maplibregl.Map, id: string) {
   if (map.getSource(id)) map.removeSource(id);
 }
 
@@ -171,7 +171,7 @@ function buildDriverTrailFeatures(drivers: CinemaDriverFrame[]): GeoJSON.Feature
   });
 }
 
-export function upsertCinemaDrivers(map: mapboxgl.Map, drivers: CinemaDriverFrame[]) {
+export function upsertCinemaDrivers(map: maplibregl.Map, drivers: CinemaDriverFrame[]) {
   safeRemoveLayer(map, "cinema-driver-trails");
   safeRemoveLayer(map, "cinema-drivers");
   safeRemoveSource(map, "cinema-driver-trails-source");
@@ -214,9 +214,9 @@ export function upsertCinemaDrivers(map: mapboxgl.Map, drivers: CinemaDriverFram
   });
 }
 
-export function updateCinemaDrivers(map: mapboxgl.Map, drivers: CinemaDriverFrame[]) {
-  const pointSource = map.getSource("cinema-drivers-source") as mapboxgl.GeoJSONSource | undefined;
-  const trailSource = map.getSource("cinema-driver-trails-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateCinemaDrivers(map: maplibregl.Map, drivers: CinemaDriverFrame[]) {
+  const pointSource = map.getSource("cinema-drivers-source") as maplibregl.GeoJSONSource | undefined;
+  const trailSource = map.getSource("cinema-driver-trails-source") as maplibregl.GeoJSONSource | undefined;
   if (pointSource) pointSource.setData(fc(buildDriverFeatures(drivers)));
   if (trailSource) trailSource.setData(fc(buildDriverTrailFeatures(drivers)));
 }
@@ -243,7 +243,7 @@ function buildStationFeatures(stations: WeatherStationLive[]): GeoJSON.Feature[]
   }));
 }
 
-export function upsertCinemaStations(map: mapboxgl.Map, stations: WeatherStationLive[]) {
+export function upsertCinemaStations(map: maplibregl.Map, stations: WeatherStationLive[]) {
   safeRemoveLayer(map, "cinema-stations-pulse");
   safeRemoveLayer(map, "cinema-stations-core");
   safeRemoveSource(map, "cinema-stations-source");
@@ -284,7 +284,7 @@ export function upsertCinemaStations(map: mapboxgl.Map, stations: WeatherStation
   });
 }
 
-export function attachStationPopups(map: mapboxgl.Map) {
+export function attachStationPopups(map: maplibregl.Map) {
   const state = getOrCreateState(map);
 
   if (state.stationClickHandler) {
@@ -297,7 +297,7 @@ export function attachStationPopups(map: mapboxgl.Map) {
     map.off("mouseleave", "cinema-stations-core", state.stationLeaveHandler);
   }
 
-  state.stationClickHandler = (e: mapboxgl.MapLayerMouseEvent) => {
+  state.stationClickHandler = (e: maplibregl.MapLayerMouseEvent) => {
     const feature = e.features?.[0];
     if (!feature || feature.geometry.type !== "Point") return;
     const props = feature.properties ?? {};
@@ -341,7 +341,7 @@ export function attachStationPopups(map: mapboxgl.Map) {
   map.on("mouseleave", "cinema-stations-core", state.stationLeaveHandler);
 }
 
-export function animateCinemaStations(map: mapboxgl.Map) {
+export function animateCinemaStations(map: maplibregl.Map) {
   const state = getOrCreateState(map);
   let t = 0;
   if (state.stationPulseFrame) cancelAnimationFrame(state.stationPulseFrame);
@@ -361,7 +361,7 @@ export function animateCinemaStations(map: mapboxgl.Map) {
 // NIGHT CITY HALO + FOG
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function addNightHalo(map: mapboxgl.Map) {
+export function addNightHalo(map: maplibregl.Map) {
   if (map.getLayer("cinema-night-halo")) return;
   map.addLayer({
     id: "cinema-night-halo",
@@ -373,7 +373,7 @@ export function addNightHalo(map: mapboxgl.Map) {
   });
 }
 
-export function addFogCinema(map: mapboxgl.Map) {
+export function addFogCinema(map: maplibregl.Map) {
   try {
     map.setFog({
       color: "rgb(8,18,38)",
@@ -391,7 +391,7 @@ export function addFogCinema(map: mapboxgl.Map) {
 // RAIN GPU-LIKE CANVAS OVERLAY
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function createRainCanvas(map: mapboxgl.Map) {
+function createRainCanvas(map: maplibregl.Map) {
   const state = getOrCreateState(map);
   const container = map.getContainer();
   if (state.canvas) return state.canvas;
@@ -409,7 +409,7 @@ function createRainCanvas(map: mapboxgl.Map) {
   return canvas;
 }
 
-function resizeRainCanvas(map: mapboxgl.Map) {
+function resizeRainCanvas(map: maplibregl.Map) {
   const state = getOrCreateState(map);
   const canvas = state.canvas;
   if (!canvas) return;
@@ -427,7 +427,7 @@ function resizeRainCanvas(map: mapboxgl.Map) {
   }
 }
 
-function seedRain(map: mapboxgl.Map, density = 160) {
+function seedRain(map: maplibregl.Map, density = 160) {
   const state = getOrCreateState(map);
   const container = map.getContainer();
   state.rainDrops = Array.from({ length: density }, () => ({
@@ -440,7 +440,7 @@ function seedRain(map: mapboxgl.Map, density = 160) {
   }));
 }
 
-export function enableRainCinema(map: mapboxgl.Map, density = 160) {
+export function enableRainCinema(map: maplibregl.Map, density = 160) {
   const state = getOrCreateState(map);
   createRainCanvas(map);
   resizeRainCanvas(map);
@@ -487,7 +487,7 @@ export function enableRainCinema(map: mapboxgl.Map, density = 160) {
 // TIMELINE WEATHER
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function startRadarTimeline(map: mapboxgl.Map, timeline: RadarTimelineFrame[] = []) {
+export function startRadarTimeline(map: maplibregl.Map, timeline: RadarTimelineFrame[] = []) {
   const state = getOrCreateState(map);
   if (!timeline.length) return;
   if (state.timelineTimer) window.clearInterval(state.timelineTimer);
@@ -500,11 +500,11 @@ export function startRadarTimeline(map: mapboxgl.Map, timeline: RadarTimelineFra
   }, 2200);
 }
 
-export function playRadarTimeline(map: mapboxgl.Map) {
+export function playRadarTimeline(map: maplibregl.Map) {
   getOrCreateState(map).timelinePlaying = true;
 }
 
-export function pauseRadarTimeline(map: mapboxgl.Map) {
+export function pauseRadarTimeline(map: maplibregl.Map) {
   getOrCreateState(map).timelinePlaying = false;
 }
 
@@ -512,7 +512,7 @@ export function pauseRadarTimeline(map: mapboxgl.Map) {
 // SMART CAMERA
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function focusCinemaOnDrivers(map: mapboxgl.Map, drivers: CinemaDriverFrame[]) {
+export function focusCinemaOnDrivers(map: maplibregl.Map, drivers: CinemaDriverFrame[]) {
   if (!drivers.length) return;
   const gl = getMapboxgl();
   if (!gl) return;
@@ -524,7 +524,7 @@ export function focusCinemaOnDrivers(map: mapboxgl.Map, drivers: CinemaDriverFra
   map.fitBounds(bounds, { padding: 90, duration: 1400, pitch: 58, bearing: -18, maxZoom: 15.5 });
 }
 
-export function focusCinemaOnStations(map: mapboxgl.Map, stations: WeatherStationLive[]) {
+export function focusCinemaOnStations(map: maplibregl.Map, stations: WeatherStationLive[]) {
   if (!stations.length) return;
   const gl = getMapboxgl();
   if (!gl) return;
@@ -537,7 +537,7 @@ export function focusCinemaOnStations(map: mapboxgl.Map, stations: WeatherStatio
 // MASTER INIT
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function initRadarCinema(map: mapboxgl.Map, options: RadarCinemaOptions = {}) {
+export function initRadarCinema(map: maplibregl.Map, options: RadarCinemaOptions = {}) {
   addFogCinema(map);
   if (options.nightMode !== false) addNightHalo(map);
   upsertCinemaStations(map, options.weatherStations ?? []);
@@ -563,7 +563,7 @@ export function initRadarCinema(map: mapboxgl.Map, options: RadarCinemaOptions =
 // CLEANUP
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function destroyRadarCinema(map: mapboxgl.Map) {
+export function destroyRadarCinema(map: maplibregl.Map) {
   const state = getOrCreateState(map);
   if (state.animationFrame) cancelAnimationFrame(state.animationFrame);
   if (state.stationPulseFrame) cancelAnimationFrame(state.stationPulseFrame);

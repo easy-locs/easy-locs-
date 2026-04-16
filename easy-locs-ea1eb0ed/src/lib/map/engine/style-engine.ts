@@ -1,15 +1,11 @@
-/**
- * StyleEngine — Injectable map style management.
- * Handles day/night, premium, density, event modes.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapStylePreset, MapDensityMode } from "./types";
 
 const STYLE_URLS: Record<MapStylePreset, string> = {
-  dark: "mapbox://styles/mapbox/dark-v11",
-  light: "mapbox://styles/mapbox/light-v11",
-  satellite: "mapbox://styles/mapbox/satellite-streets-v12",
-  premium: "mapbox://styles/mapbox/dark-v11", // custom overlay on dark
+  dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  satellite: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+  premium: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
 };
 
 let currentPreset: MapStylePreset = "dark";
@@ -35,7 +31,6 @@ export function setDensity(density: MapDensityMode) {
   currentDensity = density;
 }
 
-/** Cluster radius based on density */
 export function getClusterRadius(): number {
   switch (currentDensity) {
     case "low": return 80;
@@ -44,21 +39,19 @@ export function getClusterRadius(): number {
   }
 }
 
-/** Auto-detect day/night based on local time */
 export function getAutoPreset(): MapStylePreset {
   const hour = new Date().getHours();
   return hour >= 6 && hour < 19 ? "light" : "dark";
 }
 
-/** Apply fog for premium depth effect */
-export function applyPremiumFog(map: mapboxgl.Map) {
+export function applyPremiumFog(map: maplibregl.Map) {
   try {
-    map.setFog({
+    (map as any).setFog?.({
       color: "hsl(220, 20%, 10%)",
       "high-color": "hsl(220, 30%, 18%)",
       "horizon-blend": 0.08,
       "space-color": "hsl(220, 30%, 5%)",
       "star-intensity": 0.15,
-    } as any);
+    });
   } catch {}
 }

@@ -21,9 +21,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 
 const navy = "hsl(226 24% 14%)";
 const goldHex = "#EAB308";
@@ -359,8 +358,8 @@ function VolumeChart({
 
 function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSummary[]; onSelect: (d: string) => void; t: (key: string) => string }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
   const maxTx = Math.max(...summaries.map(s => s.transactionCount), 1);
@@ -369,14 +368,12 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
     if (!mapContainerRef.current || mapRef.current) return;
 
     let cancelled = false;
-    loadMapbox().then(mapboxgl => {
+    loadMapbox().then(maplibregl => {
       if (cancelled || !mapContainerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-      if (!mapboxgl.accessToken) { setMapError(true); return; }
 
-      const map = new mapboxgl.Map({
+      const map = new maplibregl.Map({
         container: mapContainerRef.current,
-        style: "mapbox://styles/mapbox/dark-v11",
+        style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
         center: [55.27, 25.20],
         zoom: 10.5,
         attributionControl: false,
@@ -432,7 +429,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
       el.title = `${s.district}: ${s.transactionCount} ${t("dld.tx_label")} — AED ${formatAED(s.avgPricePerSqft)}${t("dld.per_sqft")}`;
       el.addEventListener("click", () => onSelect(s.district));
 
-      const marker = new mapboxgl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el })
         .setLngLat([s.lng, s.lat])
         .addTo(map);
       markersRef.current.push(marker);

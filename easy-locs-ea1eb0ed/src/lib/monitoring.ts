@@ -256,7 +256,7 @@ export function initMonitoring() {
     "api.openstreetmap.org",
     "tile.openstreetmap.org",
     "maps.googleapis.com",
-    "api.mapbox.com",
+    "basemaps.cartocdn.com",
     "api.open-meteo.com",
     "api.rainviewer.com",
     "tilecache.rainviewer.com",

@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { tc } from "@/lib/i18n-canonical";
 import type { RideLiveRoute } from "@/lib/mobility/ride-live-route-engine";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
 import { MapPin } from "lucide-react";
@@ -14,9 +14,9 @@ interface Props {
 
 export function RideLiveMapCard({ route }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const pickupMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const driverMarkerRef = useRef<mapboxgl.Marker | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const pickupMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const driverMarkerRef = useRef<maplibregl.Marker | null>(null);
   const readyRef = useRef(false);
   const { mapError, handleMapError } = useMapErrorHandler("RideLiveMapCard");
 
@@ -36,14 +36,13 @@ export function RideLiveMapCard({ route }: Props) {
 
     let cancelled = false;
 
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [pickupLng, pickupLat],
           zoom: 13,
           attributionControl: false,
@@ -51,7 +50,7 @@ export function RideLiveMapCard({ route }: Props) {
 
         mapRef.current = map;
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
             handleMapError("Mapbox token is invalid or expired.", { lat: pickupLat, lng: pickupLng, zoom: 13 });
@@ -61,7 +60,7 @@ export function RideLiveMapCard({ route }: Props) {
         map.on("load", () => {
           if (cancelled) return;
           readyRef.current = true;
-          updateMap(map, mapboxgl);
+          updateMap(map, maplibregl);
         });
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to initialize map";
@@ -88,7 +87,7 @@ export function RideLiveMapCard({ route }: Props) {
     };
   }, []);
 
-  function updateMap(map: mapboxgl.Map, gl: typeof import("mapbox-gl").default) {
+  function updateMap(map: maplibregl.Map, gl: typeof import("maplibre-gl").default) {
     if (pickupMarkerRef.current) {
       pickupMarkerRef.current.setLngLat([pickupLng, pickupLat]);
     } else {
@@ -116,7 +115,7 @@ export function RideLiveMapCard({ route }: Props) {
     }
 
     if (route?.routeGeometry && map.isStyleLoaded()) {
-      const src = map.getSource("ride-route") as mapboxgl.GeoJSONSource | undefined;
+      const src = map.getSource("ride-route") as maplibregl.GeoJSONSource | undefined;
       if (src) {
         src.setData({ type: "Feature", properties: {}, geometry: route.routeGeometry });
       } else {
@@ -139,7 +138,7 @@ export function RideLiveMapCard({ route }: Props) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !readyRef.current) return;
-    import("mapbox-gl").then((gl) => {
+    import("maplibre-gl").then((gl) => {
       updateMap(map, gl.default);
     });
   }, [route?.hasLiveDriver, route?.routeGeometry, driverLat, driverLng, pickupLat, pickupLng]);

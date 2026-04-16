@@ -1,7 +1,4 @@
-/**
- * glow-animation — Breathing glow for sponsored/highlighted entities.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapAnimationModule } from "../engine/types";
 
 export function createGlowAnimation(): MapAnimationModule {

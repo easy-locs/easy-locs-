@@ -1,8 +1,4 @@
-/**
- * AnimationRegistry — Central registry for injectable map animations.
- * Each animation is a standalone module: start/stop/attach to any layer.
- */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import type { MapAnimationModule } from "./types";
 
 class AnimationRegistryImpl {
@@ -12,7 +8,7 @@ class AnimationRegistryImpl {
     this.animations.set(anim.id, anim);
   }
 
-  start(map: mapboxgl.Map, animId: string, targetLayerIds: string[]) {
+  start(map: maplibregl.Map, animId: string, targetLayerIds: string[]) {
     const anim = this.animations.get(animId);
     if (anim && !anim.active) {
       anim.start(map, targetLayerIds);

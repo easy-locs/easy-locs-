@@ -1,12 +1,11 @@
 /**
- * UnifiedMap — Premium Mapbox-powered discovery map.
+ * UnifiedMap — Premium MapLibre-powered discovery map.
  * Features: native clustering, rich pins with badges, radius circle, heatmap overlay.
  */
 import { useEffect, useRef, useCallback, memo, useState } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import type { GeoEntity } from "@/lib/geo/geoEntityAdapter";
-import { MAPBOX_ACCESS_TOKEN } from "@/lib/mapbox/config";
 import DiscoveryHeatmapLayer from "@/components/map/DiscoveryHeatmapLayer";
 import { CloudRain, CloudSun, MapPin } from "lucide-react";
 import { useLiveWeatherStation } from "@/hooks/useLiveWeatherStation";
@@ -100,7 +99,7 @@ interface UnifiedMapProps {
   showWeatherLayer?: boolean;
   hideWeatherBadge?: boolean;
   onMapMove?: (center: { lat: number; lng: number }) => void;
-  onMapReady?: (map: mapboxgl.Map) => void;
+  onMapReady?: (map: maplibregl.Map) => void;
 }
 
 /** Build rich popup HTML */
@@ -151,9 +150,9 @@ export default memo(function UnifiedMap({
   onMapReady,
 }: UnifiedMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const userMarkerRef = useRef<mapboxgl.Marker | null>(null);
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const entitiesRef = useRef(entities);
   entitiesRef.current = entities;
@@ -192,10 +191,6 @@ export default memo(function UnifiedMap({
     if (!containerRef.current) return;
     let cancelled = false;
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      setMapError("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
-      return;
-    }
 
     try {
       const testCanvas = document.createElement("canvas");
@@ -203,16 +198,15 @@ export default memo(function UnifiedMap({
       if (!gl) { setMapError("3D rendering not supported in this browser"); return; }
     } catch { setMapError("3D rendering not supported"); return; }
 
-    let map: mapboxgl.Map;
+    let map: maplibregl.Map;
 
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        map = new mapboxgl.Map({
+        map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: mapCenter,
           zoom,
           attributionControl: false,
@@ -229,11 +223,6 @@ export default memo(function UnifiedMap({
     map.on("error", (e: any) => {
       const msg = e?.error?.message || "";
       const msgLower = msg.toLowerCase();
-      if (msgLower.includes("access token") || msgLower.includes("unauthorized") || msgLower.includes("401") || msgLower.includes("not authorized")) {
-        console.warn("[UnifiedMap] Mapbox auth error:", msg);
-        setMapError("Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN configuration.");
-        return;
-      }
       if (msgLower.includes("webgl") || msgLower.includes("context")) {
         console.warn("[UnifiedMap] Runtime map error:", msg);
         setMapError(msg || "Map unavailable");
@@ -347,7 +336,7 @@ export default memo(function UnifiedMap({
         filter: ["has", "point_count"],
         layout: {
           "text-field": ["get", "point_count_abbreviated"],
-          "text-font": ["DIN Offc Pro Bold", "Arial Unicode MS Bold"],
+          "text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
           "text-size": 14,
           "text-allow-overlap": true,
         },
@@ -412,12 +401,11 @@ export default memo(function UnifiedMap({
         const features = map.queryRenderedFeatures(e.point, { layers: [CLUSTER_LAYER] });
         if (!features.length) return;
         const clusterId = features[0].properties?.cluster_id;
-        const src = map.getSource(CLUSTER_SOURCE) as mapboxgl.GeoJSONSource;
-        src.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
-          if (err) return;
+        const src = map.getSource(CLUSTER_SOURCE) as maplibregl.GeoJSONSource;
+        (src.getClusterExpansionZoom(clusterId) as Promise<number>).then((zoomLevel) => {
           const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
           map.easeTo({ center: coords, zoom: zoomLevel ?? 14, duration: 400 });
-        });
+        }).catch(() => {});
       });
 
       map.on("click", UNCLUSTERED_LAYER, (e) => {
@@ -435,7 +423,7 @@ export default memo(function UnifiedMap({
         if (!f) return;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         popupRef.current?.remove();
-        popupRef.current = new mapboxgl.Popup({
+        popupRef.current = new maplibregl.Popup({
           closeButton: false,
           closeOnClick: false,
           offset: 16,
@@ -458,7 +446,7 @@ export default memo(function UnifiedMap({
         if (!f) return;
         const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
         popupRef.current?.remove();
-        popupRef.current = new mapboxgl.Popup({
+        popupRef.current = new maplibregl.Popup({
           closeButton: true,
           offset: 16,
           className: "radar-pin-popup",
@@ -476,12 +464,11 @@ export default memo(function UnifiedMap({
         const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
         if (!features.length) return;
         const clusterId = features[0].properties?.cluster_id;
-        const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource;
-        src.getClusterExpansionZoom(clusterId, (err, zoomLevel) => {
-          if (err) return;
+        const src = map.getSource(STATION_SOURCE) as maplibregl.GeoJSONSource;
+        (src.getClusterExpansionZoom(clusterId) as Promise<number>).then((zoomLevel) => {
           const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
           map.easeTo({ center: coords, zoom: zoomLevel ?? 14, duration: 350 });
-        });
+        }).catch(() => {});
       });
 
       const pulse = () => {
@@ -528,7 +515,7 @@ export default memo(function UnifiedMap({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const src = map.getSource(CLUSTER_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(CLUSTER_SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
 
     if (showHeatmap) {
@@ -575,7 +562,7 @@ export default memo(function UnifiedMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
-    const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(STATION_SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
     src.setData(buildStationGeoJSON(entities));
   }, [entities, mapReady]);
@@ -612,7 +599,7 @@ export default memo(function UnifiedMap({
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const src = map.getSource(RADIUS_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+    const src = map.getSource(RADIUS_SOURCE) as maplibregl.GeoJSONSource | undefined;
     if (!src) return;
 
     if (!radiusKm || !userLat || !userLng || radiusKm > 50) {
@@ -653,7 +640,7 @@ export default memo(function UnifiedMap({
     const isSunny = !weather.isRaining && !isSnow && !isFog && !isCloudy && code !== null && code <= 1;
 
     if (weather.isRaining) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(94, 134, 190, 0.22)",
         "high-color": "rgba(18, 35, 58, 0.20)",
         "horizon-blend": 0.18,
@@ -665,7 +652,7 @@ export default memo(function UnifiedMap({
     }
 
     if (isSnow) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(180, 200, 230, 0.18)",
         "high-color": "rgba(140, 160, 200, 0.12)",
         "horizon-blend": 0.15,
@@ -677,7 +664,7 @@ export default memo(function UnifiedMap({
     }
 
     if (isFog) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(180, 190, 205, 0.25)",
         "high-color": "rgba(160, 170, 190, 0.15)",
         "horizon-blend": 0.25,
@@ -689,7 +676,7 @@ export default memo(function UnifiedMap({
     }
 
     if (isNight) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(8, 12, 25, 0.12)",
         "high-color": "rgba(5, 8, 18, 0.08)",
         "horizon-blend": 0.1,
@@ -701,7 +688,7 @@ export default memo(function UnifiedMap({
     }
 
     if (isSunny) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(255, 240, 200, 0.06)",
         "high-color": "rgba(255, 220, 160, 0.04)",
         "horizon-blend": 0.06,
@@ -713,7 +700,7 @@ export default memo(function UnifiedMap({
     }
 
     if (isCloudy) {
-      map.setFog({
+      (map as any).setFog?.({
         color: "rgba(140, 150, 170, 0.1)",
         "high-color": "rgba(120, 130, 155, 0.06)",
         "horizon-blend": 0.12,
@@ -741,7 +728,7 @@ export default memo(function UnifiedMap({
 
     const visible = radarOverlay !== "off" || weather.isRaining;
     const layer = map.getLayer(RAIN_LAYER);
-    const source = map.getSource(RAIN_SOURCE) as (mapboxgl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
+    const source = map.getSource(RAIN_SOURCE) as (maplibregl.Source & { setTiles?: (tiles: string[]) => void }) | undefined;
 
     if (layer) {
       map.setLayoutProperty(RAIN_LAYER, "visibility", visible ? "visible" : "none");

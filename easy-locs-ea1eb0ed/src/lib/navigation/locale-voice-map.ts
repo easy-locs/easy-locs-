@@ -63,16 +63,20 @@ export function getVoiceBCP47(locale: string): string {
   return FALLBACK_LANG;
 }
 
-export function getMapboxLanguage(locale: string): string {
+export function getMapLanguage(locale: string): string {
   const base = normalizeLocale(locale);
-  const MAPBOX_SUPPORTED = new Set([
+  const SUPPORTED = new Set([
     "ar", "bg", "bn", "cs", "da", "de", "el", "en", "es", "et", "fa",
     "fi", "fr", "he", "hi", "hr", "hu", "id", "it", "ja", "ko", "lt",
     "lv", "nl", "nb", "pl", "pt", "ro", "ru", "sk", "sl", "sv", "sw",
     "th", "tr", "uk", "vi", "yo", "zh",
   ]);
-  if (MAPBOX_SUPPORTED.has(base)) return base;
+  if (SUPPORTED.has(base)) return base;
   return "en";
+}
+
+export function getMapboxLanguage(locale: string): string {
+  return getMapLanguage(locale);
 }
 
 export function findBestVoice(locale: string): SpeechSynthesisVoice | null {

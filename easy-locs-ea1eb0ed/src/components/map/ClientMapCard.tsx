@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useLocationStore } from "@/stores/locationStore";
 import { Navigation, Maximize2, MapPin } from "lucide-react";
@@ -36,7 +36,7 @@ export default memo(function ClientMapCard({
 }: ClientMapCardProps) {
   const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const userLoc = useLocationStore((s) => s.currentLocation);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("ClientMapCard");
 
@@ -59,26 +59,20 @@ export default memo(function ClientMapCard({
     let cancelled = false;
     clearMapError();
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      handleMapError("Map not configured", { lat: storeLat, lng: storeLng, zoom: 15 });
-      return;
-    }
-
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [storeLng, storeLat],
           zoom: 15,
           attributionControl: false,
           interactive: false,
         });
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = (e.error?.message || String(e.error ?? "")).toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
             handleMapError("Mapbox token is invalid or expired.", { lat: storeLat, lng: storeLng, zoom: 15 });
@@ -90,14 +84,14 @@ export default memo(function ClientMapCard({
           const storeEl = document.createElement("div");
           storeEl.style.cssText = "width:32px;height:32px;border-radius:50%;background:hsl(var(--primary));border:3px solid white;box-shadow:0 2px 12px rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;font-size:16px;";
           storeEl.textContent = "📍";
-          new mapboxgl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
+          new maplibregl.Marker(storeEl).setLngLat([storeLng, storeLat]).addTo(map);
 
           if (userLoc) {
             const userEl = document.createElement("div");
             userEl.style.cssText = "width:14px;height:14px;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 10px rgba(59,130,246,0.5);";
-            new mapboxgl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
+            new maplibregl.Marker(userEl).setLngLat([userLoc.lng, userLoc.lat]).addTo(map);
 
-            const bounds = new mapboxgl.LngLatBounds();
+            const bounds = new maplibregl.LngLatBounds();
             bounds.extend([storeLng, storeLat]);
             bounds.extend([userLoc.lng, userLoc.lat]);
             map.fitBounds(bounds, { padding: 40, maxZoom: 15 });

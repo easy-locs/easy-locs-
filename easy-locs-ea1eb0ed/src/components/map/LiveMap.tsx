@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapboxTokenError } from "@/lib/mapbox/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
@@ -30,8 +30,8 @@ export default function LiveMap({
   showRoute = true,
 }: LiveMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const mapRef = useRef<maplibregl.Map | null>(null);
+  const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -73,22 +73,14 @@ export default function LiveMap({
 
     setMapError(null);
 
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      const msg = "Mapbox access token is not configured.";
-      trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "token", lat: center[0], lng: center[1], zoom });
-      setMapError(msg);
-      setIsRetrying(false);
-      return;
-    }
 
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelledRef.current || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: "mapbox://styles/mapbox/dark-v11",
+          style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
           center: [center[1], center[0]],
           zoom,
           attributionControl: false,
@@ -96,7 +88,7 @@ export default function LiveMap({
 
         mapRef.current = map;
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string } }) => {
+        map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const rawMsg = e.error?.message || String(e.error ?? "");
           const msg = rawMsg.toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
@@ -174,7 +166,7 @@ export default function LiveMap({
       };
 
       if (map.getSource(sourceId)) {
-        (map.getSource(sourceId) as mapboxgl.GeoJSONSource).setData(routeData);
+        (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(routeData);
       } else {
         map.addSource(sourceId, { type: "geojson", data: routeData });
         if (!map.getLayer("live-route-line")) {

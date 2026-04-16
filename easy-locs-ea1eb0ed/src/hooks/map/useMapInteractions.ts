@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
 import { SOURCES, LAYERS } from "@/lib/map/superMapLayers";
 import {
@@ -33,11 +33,11 @@ interface UseMapInteractionsOpts {
 }
 
 export function useMapInteractions(
-  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapRef: React.RefObject<maplibregl.Map | null>,
   ready: boolean,
   opts: UseMapInteractionsOpts
 ) {
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
+  const popupRef = useRef<maplibregl.Popup | null>(null);
   const onSelectRef = useRef(opts.onSelectEntity);
   onSelectRef.current = opts.onSelectEntity;
   const onZoneClickRef = useRef(opts.onZoneClick);
@@ -51,20 +51,19 @@ export function useMapInteractions(
     const gl = getMapboxgl();
     if (!gl) return;
 
-    const onClusterClick = (e: mapboxgl.MapMouseEvent) => {
+    const onClusterClick = (e: maplibregl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [LAYERS.PLACES_CLUSTER] });
       if (!features.length) return;
       const clusterId = features[0].properties?.cluster_id;
-      const src = map.getSource(SOURCES.PLACES) as mapboxgl.GeoJSONSource | undefined;
+      const src = map.getSource(SOURCES.PLACES) as maplibregl.GeoJSONSource | undefined;
       if (!src) return;
-      src.getClusterExpansionZoom(clusterId, (err, z) => {
-        if (err) return;
+      src.getClusterExpansionZoom(clusterId).then((z) => {
         const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
         map.easeTo({ center: coords, zoom: z ?? 14, duration: 400 });
-      });
+      }).catch(() => {});
     };
 
-    const onPointClick = (e: mapboxgl.MapMouseEvent) => {
+    const onPointClick = (e: maplibregl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [LAYERS.PLACES_POINT] });
       if (!features.length) return;
       const entityId = features[0].properties?.entityId;
@@ -72,7 +71,7 @@ export function useMapInteractions(
       if (entity) onSelectRef.current?.(entity);
     };
 
-    const onPointEnter = (e: mapboxgl.MapLayerMouseEvent) => {
+    const onPointEnter = (e: maplibregl.MapLayerMouseEvent) => {
       map.getCanvas().style.cursor = "pointer";
       const f = e.features?.[0];
       if (!f) return;
@@ -86,7 +85,7 @@ export function useMapInteractions(
       popupRef.current?.remove();
     };
 
-    const onPointTouch = (e: mapboxgl.MapLayerMouseEvent) => {
+    const onPointTouch = (e: maplibregl.MapLayerMouseEvent) => {
       const f = e.features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
@@ -95,7 +94,7 @@ export function useMapInteractions(
         .setLngLat(coords).setHTML(buildPopupHTML(f.properties ?? {})).addTo(map);
     };
 
-    const onMobilityClick = (e: mapboxgl.MapLayerMouseEvent) => {
+    const onMobilityClick = (e: maplibregl.MapLayerMouseEvent) => {
       const f = e.features?.[0];
       if (!f) return;
       const coords = (f.geometry as GeoJSON.Point).coordinates.slice() as [number, number];
@@ -106,7 +105,7 @@ export function useMapInteractions(
         .addTo(map);
     };
 
-    const onMapClick = (e: mapboxgl.MapMouseEvent) => {
+    const onMapClick = (e: maplibregl.MapMouseEvent) => {
       const pinFeatures = map.queryRenderedFeatures(e.point, {
         layers: [LAYERS.PLACES_POINT, LAYERS.PLACES_CLUSTER, LAYERS.MOBILITY_POINT],
       });
@@ -114,20 +113,19 @@ export function useMapInteractions(
       onZoneClickRef.current?.(e.lngLat.lat, e.lngLat.lng);
     };
 
-    const onStationClusterClick = (e: mapboxgl.MapMouseEvent) => {
+    const onStationClusterClick = (e: maplibregl.MapMouseEvent) => {
       const features = map.queryRenderedFeatures(e.point, { layers: [STATION_CLUSTER_LAYER] });
       if (!features.length) return;
       const clusterId = features[0].properties?.cluster_id;
-      const src = map.getSource(STATION_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+      const src = map.getSource(STATION_SOURCE) as maplibregl.GeoJSONSource | undefined;
       if (!src) return;
-      src.getClusterExpansionZoom(clusterId, (err, z) => {
-        if (err) return;
+      src.getClusterExpansionZoom(clusterId).then((z) => {
         const coords = (features[0].geometry as GeoJSON.Point).coordinates as [number, number];
         map.easeTo({ center: coords, zoom: z ?? 14, duration: 350 });
-      });
+      }).catch(() => {});
     };
 
-    const onStationPointClick = (e: mapboxgl.MapLayerMouseEvent) => {
+    const onStationPointClick = (e: maplibregl.MapLayerMouseEvent) => {
       const feature = e.features?.[0];
       if (!feature) return;
       const entityId = feature.properties?.entityId;

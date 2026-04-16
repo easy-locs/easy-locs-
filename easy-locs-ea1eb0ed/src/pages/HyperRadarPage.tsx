@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useDeferredValue, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useRadarResults } from "@/hooks/useRadarResults";
@@ -162,7 +162,7 @@ export default function HyperRadarPage() {
   const lastSearchCenter = useRef<{ lat: number; lng: number } | null>(null);
   const [radarAlerts, setRadarAlerts] = useState<RadarDecision[]>([]);
   const [showLayerPanel, setShowLayerPanel] = useState(false);
-  const [mapboxMap, setMapboxMap] = useState<mapboxgl.Map | null>(null);
+  const [mapboxMap, setMapboxMap] = useState<maplibregl.Map | null>(null);
 
   useEffect(() => {
     if (selectedEntity) {

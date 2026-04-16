@@ -2,7 +2,7 @@
  * Radar Snap Elite — Premium station rings, driver shadows,
  * lightning flashes, adaptive labels, and live side panel.
  */
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { RADAR_INTENSITY_COLORS as RADAR_INTENSITY, DRIVER_STATUS_COLORS as DRIVER_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -33,7 +33,7 @@ export type SnapEliteDriver = {
 };
 
 type SnapEliteState = {
-  map: mapboxgl.Map;
+  map: maplibregl.Map;
   lightning: { active: boolean; opacity: number };
   sidePanel?: HTMLElement | null;
   labelZoomBound?: boolean;
@@ -41,13 +41,13 @@ type SnapEliteState = {
   pulseFrame?: number;
 };
 
-const SNAP_ELITE = new WeakMap<mapboxgl.Map, SnapEliteState>();
+const SNAP_ELITE = new WeakMap<maplibregl.Map, SnapEliteState>();
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // HELPERS
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function getState(map: mapboxgl.Map): SnapEliteState {
+function getState(map: maplibregl.Map): SnapEliteState {
   const existing = SNAP_ELITE.get(map);
   if (existing) return existing;
   const state: SnapEliteState = {
@@ -60,11 +60,11 @@ function getState(map: mapboxgl.Map): SnapEliteState {
   return state;
 }
 
-function safeRemoveLayer(map: mapboxgl.Map, id: string) {
+function safeRemoveLayer(map: maplibregl.Map, id: string) {
   if (map.getLayer(id)) map.removeLayer(id);
 }
 
-function safeRemoveSource(map: mapboxgl.Map, id: string) {
+function safeRemoveSource(map: maplibregl.Map, id: string) {
   if (map.getSource(id)) map.removeSource(id);
 }
 
@@ -136,7 +136,7 @@ function buildDriverFeatures(drivers: SnapEliteDriver[]): GeoJSON.Feature[] {
 // STATIONS ELITE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function upsertSnapEliteStations(map: mapboxgl.Map, stations: SnapEliteStation[]) {
+export function upsertSnapEliteStations(map: maplibregl.Map, stations: SnapEliteStation[]) {
   safeRemoveLayer(map, "snap-elite-stations-ring-2");
   safeRemoveLayer(map, "snap-elite-stations-ring-1");
   safeRemoveLayer(map, "snap-elite-stations-core");
@@ -211,8 +211,8 @@ export function upsertSnapEliteStations(map: mapboxgl.Map, stations: SnapEliteSt
   });
 }
 
-export function updateSnapEliteStations(map: mapboxgl.Map, stations: SnapEliteStation[]) {
-  const source = map.getSource("snap-elite-stations-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateSnapEliteStations(map: maplibregl.Map, stations: SnapEliteStation[]) {
+  const source = map.getSource("snap-elite-stations-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildStationFeatures(stations)));
 }
 
@@ -220,7 +220,7 @@ export function updateSnapEliteStations(map: mapboxgl.Map, stations: SnapEliteSt
 // DRIVERS ELITE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function upsertSnapEliteDrivers(map: mapboxgl.Map, drivers: SnapEliteDriver[]) {
+export function upsertSnapEliteDrivers(map: maplibregl.Map, drivers: SnapEliteDriver[]) {
   safeRemoveLayer(map, "snap-elite-drivers-shadow");
   safeRemoveLayer(map, "snap-elite-drivers-core");
   safeRemoveLayer(map, "snap-elite-drivers-labels");
@@ -274,8 +274,8 @@ export function upsertSnapEliteDrivers(map: mapboxgl.Map, drivers: SnapEliteDriv
   });
 }
 
-export function updateSnapEliteDrivers(map: mapboxgl.Map, drivers: SnapEliteDriver[]) {
-  const source = map.getSource("snap-elite-drivers-source") as mapboxgl.GeoJSONSource | undefined;
+export function updateSnapEliteDrivers(map: maplibregl.Map, drivers: SnapEliteDriver[]) {
+  const source = map.getSource("snap-elite-drivers-source") as maplibregl.GeoJSONSource | undefined;
   if (source) source.setData(featureCollection(buildDriverFeatures(drivers)));
 }
 
@@ -283,7 +283,7 @@ export function updateSnapEliteDrivers(map: mapboxgl.Map, drivers: SnapEliteDriv
 // LIGHTNING / STORM FLASH
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-function ensureLightningOverlay(map: mapboxgl.Map) {
+function ensureLightningOverlay(map: maplibregl.Map) {
   const container = map.getContainer();
   let node = container.querySelector(".snap-elite-lightning") as HTMLDivElement | null;
   if (!node) {
@@ -301,7 +301,7 @@ function ensureLightningOverlay(map: mapboxgl.Map) {
   return node;
 }
 
-export function triggerSnapLightning(map: mapboxgl.Map, flashes = 2) {
+export function triggerSnapLightning(map: maplibregl.Map, flashes = 2) {
   const overlay = ensureLightningOverlay(map);
   let count = 0;
   const flash = () => {
@@ -317,7 +317,7 @@ export function triggerSnapLightning(map: mapboxgl.Map, flashes = 2) {
   flash();
 }
 
-export function autoStormLightning(map: mapboxgl.Map, stations: SnapEliteStation[]) {
+export function autoStormLightning(map: maplibregl.Map, stations: SnapEliteStation[]) {
   const strongest = Math.max(...stations.map((s) => s.intensity ?? 0), 0);
   if (strongest >= 0.85 && Math.random() > 0.72) {
     triggerSnapLightning(map, 1 + Math.floor(Math.random() * 2));
@@ -344,7 +344,7 @@ function buildStationCard(s: SnapEliteStation) {
   `;
 }
 
-export function renderSnapEliteSidePanel(map: mapboxgl.Map, stations: SnapEliteStation[]) {
+export function renderSnapEliteSidePanel(map: maplibregl.Map, stations: SnapEliteStation[]) {
   const state = getState(map);
   const container = map.getContainer();
 
@@ -377,11 +377,11 @@ export function renderSnapEliteSidePanel(map: mapboxgl.Map, stations: SnapEliteS
 // CINEMA ZOOM FEEL
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function applySnapEliteCameraFeel(map: mapboxgl.Map) {
+export function applySnapEliteCameraFeel(map: maplibregl.Map) {
   map.easeTo({ pitch: 58, bearing: -18, duration: 1600, essential: true });
 }
 
-export function smartSnapZoom(map: mapboxgl.Map, mode: "city" | "district" | "street") {
+export function smartSnapZoom(map: maplibregl.Map, mode: "city" | "district" | "street") {
   if (mode === "city") {
     map.easeTo({ zoom: 9.8, pitch: 44, bearing: -12, duration: 1300 });
   } else if (mode === "district") {
@@ -395,7 +395,7 @@ export function smartSnapZoom(map: mapboxgl.Map, mode: "city" | "district" | "st
 // PULSE ANIMATION
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function animateSnapElitePulse(map: mapboxgl.Map) {
+export function animateSnapElitePulse(map: maplibregl.Map) {
   const state = getState(map);
   let t = 0;
 
@@ -421,7 +421,7 @@ export function animateSnapElitePulse(map: mapboxgl.Map) {
 // LABEL ADAPTIVE MODE
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function bindSnapEliteAdaptiveLabels(map: mapboxgl.Map) {
+export function bindSnapEliteAdaptiveLabels(map: maplibregl.Map) {
   const state = getState(map);
   if (state.labelZoomBound) return;
 
@@ -446,7 +446,7 @@ export function bindSnapEliteAdaptiveLabels(map: mapboxgl.Map) {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export function initSnapElite(
-  map: mapboxgl.Map,
+  map: maplibregl.Map,
   payload: {
     stations: SnapEliteStation[];
     drivers: SnapEliteDriver[];
@@ -473,7 +473,7 @@ export function initSnapElite(
 // CLEANUP
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export function destroySnapElite(map: mapboxgl.Map) {
+export function destroySnapElite(map: maplibregl.Map) {
   const state = getState(map);
   if (state.pulseFrame) cancelAnimationFrame(state.pulseFrame);
   if (state.labelZoomHandler) {

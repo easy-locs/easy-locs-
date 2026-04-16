@@ -3,12 +3,12 @@
  * Zero UI. Pure animation orchestration.
  */
 import { useEffect, useRef } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { AnimationRegistry } from "@/lib/map/engine/animation-registry";
 import type { MapScreenPreset } from "@/lib/map/presets/map-screen-presets";
 
 export function useMapAnimations(
-  mapRef: React.RefObject<mapboxgl.Map | null>,
+  mapRef: React.RefObject<maplibregl.Map | null>,
   ready: boolean,
   preset: MapScreenPreset
 ) {

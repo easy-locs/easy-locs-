@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type mapboxgl from "mapbox-gl";
+import type maplibregl from "maplibre-gl";
 import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { MAPBOX_ACCESS_TOKEN, getMapboxTokenError } from "@/lib/mapbox/config";
+import { getMapTokenError } from "@/lib/mapbox/config";
 import { applyPremiumFog } from "@/lib/map/engine/style-engine";
 import { trackMapError } from "@/lib/analytics/map-error-analytics";
 
-let mapInstance: mapboxgl.Map | null = null;
+const DEFAULT_STYLE = "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json";
 
-export function getMapInstance(): mapboxgl.Map | null {
+let mapInstance: maplibregl.Map | null = null;
+
+export function getMapInstance(): maplibregl.Map | null {
   return mapInstance;
 }
 
-export function setMapInstance(map: mapboxgl.Map | null) {
+export function setMapInstance(map: maplibregl.Map | null) {
   mapInstance = map;
 }
 
@@ -20,14 +22,14 @@ interface UseMapCoreOptions {
   centerLat: number;
   zoom: number;
   style?: string;
-  onReady?: (map: mapboxgl.Map) => void;
+  onReady?: (map: maplibregl.Map) => void;
 }
 
 export function useMapCore(
   containerRef: React.RefObject<HTMLDivElement | null>,
   options: UseMapCoreOptions
 ) {
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const mapRef = useRef<maplibregl.Map | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
@@ -50,23 +52,15 @@ export function useMapCore(
     cleanup();
     cancelledRef.current = false;
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
-      trackMapError({ component: "useMapCore", errorMessage: tokenError, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+      trackMapError({ component: "useMapCore", errorMessage: tokenError, errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
       setError(tokenError);
       setIsRetrying(false);
       return;
     }
 
     setError(null);
-
-    if (!MAPBOX_ACCESS_TOKEN?.trim()) {
-      const msg = "Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.";
-      trackMapError({ component: "useMapCore", errorMessage: msg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
-      setError(msg);
-      setIsRetrying(false);
-      return;
-    }
 
     try {
       const testCanvas = document.createElement("canvas");
@@ -86,14 +80,13 @@ export function useMapCore(
       return;
     }
 
-    loadMapbox().then((mapboxgl) => {
+    loadMapbox().then((maplibregl) => {
       if (cancelledRef.current || !containerRef.current) return;
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
       try {
-        const map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
           container: containerRef.current,
-          style: options.style || "mapbox://styles/mapbox/dark-v11",
+          style: options.style || DEFAULT_STYLE,
           center: [options.centerLng, options.centerLat],
           zoom: options.zoom,
           attributionControl: false,
@@ -104,30 +97,18 @@ export function useMapCore(
         setMapInstance(map);
         (globalThis as Record<string, unknown>).__superMapInstance = map;
 
-        map.on("error", (e: mapboxgl.ErrorEvent & { error?: { message?: string; status?: number } }) => {
-          const msg = e.error?.message || String(e.error ?? "");
-          const msgLower = msg.toLowerCase();
-          if (
-            msgLower.includes("access token") ||
-            msgLower.includes("unauthorized") ||
-            msgLower.includes("401") ||
-            msgLower.includes("403") ||
-            msgLower.includes("not authorized")
-          ) {
-            console.warn("[useMapCore] Mapbox auth error:", msg);
-            const errorMsg = "Mapbox access token is invalid or expired. Please check your VITE_MAPBOX_TOKEN.";
-            trackMapError({ component: "useMapCore", errorMessage: errorMsg, errorType: "token", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
-            setError(errorMsg);
-            setIsRetrying(false);
-            return;
-          }
-          if (msgLower.includes("webgl") || msgLower.includes("context")) {
-            console.warn("[useMapCore] Runtime map error:", msg);
-            trackMapError({ component: "useMapCore", errorMessage: msg || "Map unavailable", errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
-            setError(msg || "Map unavailable");
-            setIsRetrying(false);
-          } else if (msg) {
-            trackMapError({ component: "useMapCore", errorMessage: msg, lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+        map.on("error", (e: any) => {
+          const msg = e.error?.message || e.message || String(e.error ?? "");
+          if (msg) {
+            const msgLower = msg.toLowerCase();
+            if (msgLower.includes("webgl") || msgLower.includes("context")) {
+              console.warn("[useMapCore] Runtime map error:", msg);
+              trackMapError({ component: "useMapCore", errorMessage: msg || "Map unavailable", errorType: "webgl", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+              setError(msg || "Map unavailable");
+              setIsRetrying(false);
+            } else {
+              trackMapError({ component: "useMapCore", errorMessage: msg, lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
+            }
           }
         });
 
@@ -148,7 +129,7 @@ export function useMapCore(
     }).catch((err: unknown) => {
       if (!cancelledRef.current) {
         const msg = err instanceof Error ? err.message : "Failed to load map library";
-        console.warn("[useMapCore] Failed to load Mapbox GL:", msg);
+        console.warn("[useMapCore] Failed to load MapLibre GL:", msg);
         trackMapError({ component: "useMapCore", errorMessage: msg || "Failed to load map library", errorType: "network", lat: options.centerLat, lng: options.centerLng, zoom: options.zoom });
         setError(msg || "Failed to load map library");
         setIsRetrying(false);
