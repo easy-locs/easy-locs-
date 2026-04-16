@@ -555,7 +555,16 @@ export default function QuranTab() {
     await refreshAllOfflineState();
 
     if (bulkCancelledRef.current) {
-      toast.info(`Téléchargement annulé — ${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""}`);
+      let cancelMsg = `Téléchargement annulé — ${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""}`;
+      if (failed > 0) {
+        const failedNames = failedNums.map(n => QURAN_SURAHS.find(s => s.number === n)?.nameFr ?? `S${n}`);
+        const maxShow = 3;
+        const namesList = failedNames.length <= maxShow
+          ? failedNames.join(", ")
+          : `${failedNames.slice(0, maxShow).join(", ")} +${failedNames.length - maxShow}`;
+        cancelMsg += ` · ${failed} échouée${failed !== 1 ? "s" : ""} : ${namesList}`;
+      }
+      toast.info(cancelMsg);
     } else if (failed === 0) {
       toast.success(`${completed} sourate${completed !== 1 ? "s" : ""} téléchargée${completed !== 1 ? "s" : ""} pour hors-ligne`);
     } else {
