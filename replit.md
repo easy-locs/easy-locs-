@@ -1600,9 +1600,12 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - Synchronous `scoreRecommendations()` fallback preserved
 
 ### Bank Linking — Plaid (`src/services/plaid.service.ts`, `src/components/payments/BankLinking.tsx`)
-- Link token creation, public token exchange, ACH transfers
+- Link token creation, public token exchange, ACH transfers via `plaid-link-token` edge function
 - Income verification via edge function
 - UI: account cards, balance display, inline top-up with amount input
+- Accounts stored in `plaid_items` table with AES-GCM encrypted access tokens
+- Supabase secrets: `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`, `PLAID_ENCRYPTION_KEY`
+- Setup: `./scripts/setup-integrations.sh set-plaid`
 
 ### E-Signatures (`src/services/e-signature.service.ts`, `src/components/payments/ESignatureFlow.tsx`)
 - Signing envelope creation (landlord + tenant parties)
@@ -1620,7 +1623,11 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - `useLiveKitRoom` hook: connect/disconnect, mute/camera/screen share toggles, recording
 - `createLiveKitConnection()` and `connectToRoom()` with graceful fallback to raw WebRTC
 - Adaptive streaming, dynacast, multi-participant support
-- Env var: `VITE_LIVEKIT_WS_URL`
+- Edge function: `livekit-room-token` (create_room, join_room, start_recording, stop_recording)
+- Server uses LiveKit's Twirp API for room management, HMAC-SHA256 JWT for auth tokens
+- Supabase secrets: `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_URL`
+- Frontend env var: `VITE_LIVEKIT_WS_URL` (WebSocket URL, e.g. `wss://project.livekit.cloud`)
+- Setup: `./scripts/setup-integrations.sh set-livekit`
 
 ### BNPL Checkout (`src/components/payments/BnplCheckout.tsx`)
 - Eligibility check, installment count selector (3/6/12)
@@ -1633,10 +1640,14 @@ DLD REST API -> Edge Function (fetch + normalize) -> Supabase DB -> Edge Functio
 - Coverage details accordion with line items
 
 ### Search Resolver Upgrade (`src/lib/search-engine/search-resolver.ts`)
-- Meilisearch primary via `meilisearch-query` edge function
+- Meilisearch primary via `search-meilisearch` / `marketplace-router` edge functions
 - Faceted filters (vertical, subcategory, city)
 - Sort: price_asc/desc, rating, newest
 - Graceful fallback: Meilisearch → search-global FTS → client-side
+- Bulk sync via `sync-meilisearch` edge function (shops, products, properties, services, profiles)
+- Supabase secrets: `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`
+- Setup: `./scripts/setup-integrations.sh set-meili`
+- Post-deploy sync: `supabase functions invoke sync-meilisearch --body '{}'`
 
 ### i18n Expansion (`src/lib/i18n-data/translations-super-app.ts`)
 - New feature keys for esign, OCR, bank, video, BNPL in 6 languages (en, fr, ar, es, pt, tr)

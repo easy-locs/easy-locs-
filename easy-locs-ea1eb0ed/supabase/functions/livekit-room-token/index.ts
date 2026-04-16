@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
-import { generateRoomToken, createRoom, getLiveKitUrl } from "../_shared/livekit-client.ts";
+import { generateRoomToken, createRoom, getLiveKitWsUrl } from "../_shared/livekit-client.ts";
 import { arcjetProtect, shieldMiddleware, arcjetDenyResponse } from "../_shared/arcjet-shield.ts";
 
 const corsHeaders = {
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
       return jsonResponse({
         room,
         token,
-        livekitUrl: getLiveKitUrl(),
+        livekitUrl: getLiveKitWsUrl(),
       });
     }
 
@@ -92,11 +92,32 @@ Deno.serve(async (req) => {
 
       return jsonResponse({
         token,
-        livekitUrl: getLiveKitUrl(),
+        livekitUrl: getLiveKitWsUrl(),
       });
     }
 
-    return jsonResponse({ error: "Unknown action. Use create_room or join_room." }, 400);
+    if (action === "start_recording") {
+      const recorderToken = await generateRoomToken({
+        roomName,
+        participantIdentity: `recorder-${authCheck.userId}`,
+        participantName: "Recorder",
+        isRecorder: true,
+        canPublish: false,
+        canSubscribe: true,
+      });
+
+      return jsonResponse({
+        token: recorderToken,
+        livekitUrl: getLiveKitWsUrl(),
+        recording: true,
+      });
+    }
+
+    if (action === "stop_recording") {
+      return jsonResponse({ recording: false });
+    }
+
+    return jsonResponse({ error: "Unknown action. Use create_room, join_room, start_recording, or stop_recording." }, 400);
   } catch (err) {
     console.error("[livekit-room-token]", err);
     return jsonResponse(

@@ -39,11 +39,11 @@ export async function createLiveKitConnection(options: {
   userName?: string;
 }): Promise<{ room: any; token: string } | null> {
   try {
-    const { data, error } = await db.functions.invoke("livekit-token", {
+    const { data, error } = await db.functions.invoke("livekit-room-token", {
       body: {
-        user_id: options.userId,
-        room_name: options.roomName,
-        user_name: options.userName,
+        action: "join_room",
+        roomName: options.roomName,
+        participantName: options.userName || options.userId,
       },
     });
     if (error) throw error;
@@ -67,7 +67,12 @@ export async function createLiveKitConnection(options: {
       },
     });
 
-    const wsUrl = import.meta.env.VITE_LIVEKIT_WS_URL || "wss://livekit.example.com";
+    const rawUrl = data?.livekitUrl || import.meta.env.VITE_LIVEKIT_WS_URL;
+    if (!rawUrl) {
+      console.warn("[webrtc] No LiveKit WebSocket URL configured (VITE_LIVEKIT_WS_URL)");
+      return null;
+    }
+    const wsUrl = rawUrl.replace(/^https:\/\//, "wss://").replace(/^http:\/\//, "ws://");
     await room.connect(wsUrl, token);
     return { room, token };
   } catch (err) {

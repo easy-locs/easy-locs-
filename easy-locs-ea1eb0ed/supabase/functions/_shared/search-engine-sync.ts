@@ -26,7 +26,7 @@ interface MeilisearchConfig {
 }
 
 function getMeilisearchConfig(): MeilisearchConfig | null {
-  const host = Deno.env.get("MEILISEARCH_HOST");
+  const host = Deno.env.get("MEILISEARCH_URL") ?? Deno.env.get("MEILISEARCH_HOST");
   const apiKey = Deno.env.get("MEILISEARCH_API_KEY");
   if (!host || !apiKey) return null;
   return { host, apiKey, indexName: "unified_search" };
