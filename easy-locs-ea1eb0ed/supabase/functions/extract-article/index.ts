@@ -9,7 +9,7 @@ import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-metrics-key",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -470,8 +470,18 @@ Deno.serve(async (req) => {
 
   if (req.method === "GET" && reqUrl.pathname.endsWith("/metrics")) {
     const metricsKey = Deno.env.get("CACHE_METRICS_KEY");
-    const providedKey = reqUrl.searchParams.get("key") || req.headers.get("x-metrics-key");
+    // Prefer X-Metrics-Key header over query param to avoid leaking secrets in logs/URLs.
+    // Query param kept for backwards compatibility but should be migrated away from.
+    const headerKey = req.headers.get("x-metrics-key");
+    const queryKey = reqUrl.searchParams.get("key");
+    const providedKey = headerKey || queryKey;
     const keyAuth = metricsKey && providedKey === metricsKey;
+    const keySource = headerKey ? "header" : queryKey ? "query" : null;
+    if (keySource === "query") {
+      logger.warn("metrics_key_via_query_deprecated", {
+        message: "Passing metrics key as ?key= query param is deprecated. Use the X-Metrics-Key header instead.",
+      });
+    }
 
     let jwtAuth = false;
     if (!keyAuth) {
@@ -508,7 +518,7 @@ Deno.serve(async (req) => {
       );
     }
     const snapshot = getCacheMetricsSnapshot();
-    logger.info("cache_metrics_requested", { ...snapshot, authMethod: keyAuth ? "key" : "jwt" });
+    logger.info("cache_metrics_requested", { ...snapshot, authMethod: keyAuth ? `key:${keySource}` : "jwt" });
     return new Response(JSON.stringify(snapshot), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
