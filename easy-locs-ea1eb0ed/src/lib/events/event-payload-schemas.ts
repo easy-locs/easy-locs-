@@ -308,6 +308,15 @@ export interface ColonCanonicalEventMap {
   "story:closed": StoryCanonicalPayload;
   "intent:save_entity": StoryCanonicalPayload;
   "intent:share_entity": StoryCanonicalPayload;
+  "support:session_created": Record<string, unknown>;
+  "support:ai_classification": Record<string, unknown>;
+  "support:shop_transfer_initiated": Record<string, unknown>;
+  "support:shop_transfer_timeout": Record<string, unknown>;
+  "support:escalation_triggered": Record<string, unknown>;
+  "support:ticket_created": Record<string, unknown>;
+  "support:session_resolved": Record<string, unknown>;
+  "support:payment_anomaly_detected": Record<string, unknown>;
+  "support:agents_started": Record<string, unknown>;
 }
 
 export type ColonCanonicalEventName = keyof ColonCanonicalEventMap;

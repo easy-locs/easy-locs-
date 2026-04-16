@@ -342,7 +342,7 @@ const {
   DemandHeatmapPage,
 
   // Orbit (Pillar 3)
-  CommunicationCenter, OrbitContactsPage, OrbitIdentityPage, OrbitAddContactPage,
+  CommunicationCenter, OrbitContactsPage, OrbitIdentityPage, OrbitAddContactPage, OrbitAISupportPage,
 
   // Wallet (Pillar 4)
   WalletHubPage, WalletTopUpPage, WalletTransferPage, WalletRequestPage, WalletTransactionDetailPage,
@@ -823,6 +823,7 @@ const App = () => (
                   <Route path="/orbit/contacts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitContactsPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAddContactPage /></FeatureErrorBoundary></ProtectedRoute>} />
                   <Route path="/orbit/identity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitIdentityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+                  <Route path="/orbit/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAISupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
                   {/* ═══════════════════════════════════════════════ */}
                   {/*  PILLAR 4 · WALLET (Pay · Orders · Checkout)   */}
