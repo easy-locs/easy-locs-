@@ -159,9 +159,31 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
+
+function stampServiceWorkerPlugin(version: string): Plugin {
+  return {
+    name: "stamp-firebase-sw-version",
+    apply: "build",
+    closeBundle() {
+      try {
+        const outDir = path.resolve(__dirname, "dist");
+        const swPath = path.join(outDir, "firebase-messaging-sw.js");
+        if (!fs.existsSync(swPath)) return;
+        const original = fs.readFileSync(swPath, "utf8");
+        const banner = `// build-version: ${version}\nself.__APP_BUILD_VERSION__ = ${JSON.stringify(version)};\n`;
+        const cleaned = original.replace(/^\/\/ build-version: .*\nself\.__APP_BUILD_VERSION__ = .*;\n/, "");
+        fs.writeFileSync(swPath, banner + cleaned);
+      } catch (err) {
+        console.warn("[stamp-firebase-sw-version] failed:", err);
+      }
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => ({
   define: {
-    __BUILD_TIMESTAMP__: JSON.stringify(Date.now().toString()),
+    __BUILD_TIMESTAMP__: JSON.stringify(BUILD_VERSION),
   },
   server: {
     host: "::",
@@ -191,6 +213,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: false,
       workbox: {
+        cacheId: `easylocs-${BUILD_VERSION}`,
         globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         cleanupOutdatedCaches: true,
@@ -200,7 +223,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
             handler: "NetworkFirst",
             options: {
-              cacheName: "html-shell",
+              cacheName: `html-shell-${BUILD_VERSION}`,
               networkTimeoutSeconds: 4,
               expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 },
             },
@@ -209,7 +232,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
             handler: "StaleWhileRevalidate",
             options: {
-              cacheName: "supabase-api-swr",
+              cacheName: `supabase-api-swr-${BUILD_VERSION}`,
               expiration: { maxEntries: 200, maxAgeSeconds: 60 * 10 },
               plugins: [
                 {
@@ -232,7 +255,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /^https:\/\/.*\.supabase\.co\/(auth|realtime|storage)\/.*/i,
             handler: "NetworkFirst",
             options: {
-              cacheName: "supabase-critical-cache",
+              cacheName: `supabase-critical-cache-${BUILD_VERSION}`,
               expiration: { maxEntries: 50, maxAgeSeconds: 60 * 2 },
               networkTimeoutSeconds: 8,
             },
@@ -266,6 +289,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
       },
     }),
+    stampServiceWorkerPlugin(BUILD_VERSION),
     mode === "production" && performanceBudgetPlugin(),
     mode === "production" && viteCompression({
       algorithm: "brotliCompress",
