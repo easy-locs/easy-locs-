@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
-import { MapPin } from "lucide-react";
-import { trackMapError } from "@/lib/analytics/map-error-analytics";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { Navigation } from "lucide-react";
 
 interface MapPoint {
   lat: number;
@@ -33,9 +34,8 @@ export default function LiveMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [mapReady, setMapReady] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isRetrying, setIsRetrying] = useState(false);
+  const { mapError, handleMapError, clearMapError } = useMapErrorHandler("LiveMap");
+  const retry = useMapRetry();
   const cancelledRef = useRef(false);
 
   const cleanupMap = useCallback(() => {
@@ -47,14 +47,14 @@ export default function LiveMap({
     setMapReady(false);
   }, []);
 
-  const retry = useCallback(() => {
-    setIsRetrying(true);
-    setRetryCount((c) => c + 1);
-  }, []);
+  const handleRetry = useCallback(() => {
+    clearMapError();
+    retry.triggerRetry();
+  }, [clearMapError, retry]);
 
   const { isOffline } = useNetworkRecovery({
     enabled: !!mapError,
-    onReconnect: retry,
+    onReconnect: handleRetry,
   });
 
   useEffect(() => {
@@ -62,19 +62,15 @@ export default function LiveMap({
 
     cleanupMap();
     cancelledRef.current = false;
+    clearMapError();
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
-      trackMapError({ component: "LiveMap", errorMessage: tokenError, errorType: "token", lat: center[0], lng: center[1], zoom });
-      setMapError(tokenError);
-      setIsRetrying(false);
+      handleMapError(tokenError, { lat: center[0], lng: center[1], zoom });
       return;
     }
 
-    setMapError(null);
-
-
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelledRef.current || !containerRef.current) return;
 
       try {
@@ -92,33 +88,25 @@ export default function LiveMap({
           const rawMsg = e.error?.message || String(e.error ?? "");
           const msg = rawMsg.toLowerCase();
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token") || msg.includes("unauthorized")) {
-            const errorMsg = "Mapbox access token is invalid or expired.";
-            trackMapError({ component: "LiveMap", errorMessage: errorMsg, errorType: "token", lat: center[0], lng: center[1], zoom });
-            setMapError(errorMsg);
-            setIsRetrying(false);
+            handleMapError("Map access token is invalid or expired.", { lat: center[0], lng: center[1], zoom });
           } else if (rawMsg) {
-            trackMapError({ component: "LiveMap", errorMessage: rawMsg, lat: center[0], lng: center[1], zoom });
+            handleMapError(rawMsg, { lat: center[0], lng: center[1], zoom });
           }
         });
 
         map.on("load", () => {
           if (!cancelledRef.current) {
             setMapReady(true);
-            setIsRetrying(false);
           }
         });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : "Map initialization failed";
-        trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "init_failure", lat: center[0], lng: center[1], zoom });
-        setMapError(msg);
-        setIsRetrying(false);
+        handleMapError(msg, { errorType: "init_failure", lat: center[0], lng: center[1], zoom });
       }
     }).catch((err: unknown) => {
       if (!cancelledRef.current) {
         const msg = err instanceof Error ? err.message : "Failed to load map";
-        trackMapError({ component: "LiveMap", errorMessage: msg, errorType: "network", lat: center[0], lng: center[1], zoom });
-        setMapError(msg);
-        setIsRetrying(false);
+        handleMapError(msg, { errorType: "network", lat: center[0], lng: center[1], zoom });
       }
     });
 
@@ -126,12 +114,12 @@ export default function LiveMap({
       cancelledRef.current = true;
       cleanupMap();
     };
-  }, [retryCount]);
+  }, [retry.retryKey]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady || !points.length) return;
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
 
     markersRef.current.forEach((m) => m.remove());
@@ -199,17 +187,23 @@ export default function LiveMap({
         />
         <MapErrorFallback
           message={mapError}
+          title="Live map unavailable"
+          icon={Navigation}
           className="absolute inset-0"
-          onRetry={retry}
+          onRetry={handleRetry}
           isOffline={isOffline}
-          isRetrying={isRetrying}
+          isOnCooldown={retry.isOnCooldown}
+          cooldownRemaining={retry.cooldownRemaining}
+          retryCount={retry.retryCount}
+          maxRetries={retry.maxRetries}
+          exhausted={retry.exhausted}
         />
       </div>
     );
   }
 
   return (
-    <MapErrorBoundary fallbackHeight={400}>
+    <MapErrorBoundary fallbackHeight={400} fallbackTitle="Live map unavailable" fallbackIcon={Navigation}>
       <div
         ref={containerRef}
         className={`w-full h-[400px] rounded-xl overflow-hidden border border-border ${className}`}

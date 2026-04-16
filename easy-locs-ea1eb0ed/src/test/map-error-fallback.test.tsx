@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, cleanup } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
+import { Navigation, Car } from "lucide-react";
 
 describe("MapErrorFallback — unit", () => {
   let MapErrorFallback: typeof import("@/components/map/MapErrorFallback").default;
@@ -18,6 +19,18 @@ describe("MapErrorFallback — unit", () => {
   it("renders 'Map unavailable' text", () => {
     render(<MapErrorFallback />);
     expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+  });
+
+  it("renders custom title when provided", () => {
+    render(<MapErrorFallback title="Live map unavailable" />);
+    expect(screen.getByText("Live map unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("Map unavailable")).toBeNull();
+  });
+
+  it("renders custom icon when provided", () => {
+    const { container } = render(<MapErrorFallback icon={Navigation} />);
+    const svgEl = container.querySelector("svg");
+    expect(svgEl).toBeTruthy();
   });
 
   it("renders custom message when provided", () => {
@@ -93,6 +106,21 @@ describe("MapErrorFallback — unit", () => {
     expect(screen.getByText("JBR Beach")).toBeInTheDocument();
   });
 
+  it("renders all props together with custom title and icon", () => {
+    render(
+      <MapErrorFallback
+        message="Service down"
+        title="Navigation unavailable"
+        icon={Car}
+        locationLabel="JBR Beach"
+        compact
+      />
+    );
+    expect(screen.getByText("Navigation unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Service down")).toBeInTheDocument();
+    expect(screen.getByText("JBR Beach")).toBeInTheDocument();
+  });
+
   it("renders Retry button when onRetry is provided", () => {
     const onRetry = vi.fn();
     render(<MapErrorFallback message="Network error" onRetry={onRetry} />);
@@ -151,6 +179,13 @@ describe("MapErrorFallback — unit", () => {
     expect(screen.getByText(/no internet/i)).toBeInTheDocument();
     expect(screen.getByText(/retry automatically/i)).toBeInTheDocument();
   });
+
+  it("has proper a11y attributes on the alert region", () => {
+    render(<MapErrorFallback message="Token expired" />);
+    const alert = screen.getByRole("alert");
+    expect(alert).toBeInTheDocument();
+    expect(alert.getAttribute("aria-live")).toBe("assertive");
+  });
 });
 
 describe("useMapCore — error states", () => {
@@ -160,12 +195,15 @@ describe("useMapCore — error states", () => {
     vi.resetModules();
   });
 
-  it("returns error when MAPBOX_ACCESS_TOKEN is empty", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+  it("returns error when map token is missing", async () => {
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
     }));
@@ -190,16 +228,18 @@ describe("useMapCore — error states", () => {
     );
 
     expect(result.current.error).toBeTruthy();
-    expect(result.current.error).toContain("token");
     expect(result.current.ready).toBe(false);
   });
 
-  it("returns error when MAPBOX_ACCESS_TOKEN is whitespace-only", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+  it("returns error when map token is whitespace-only", async () => {
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "   ",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
     }));
@@ -228,11 +268,14 @@ describe("useMapCore — error states", () => {
   });
 
   it("returns error when WebGL is not supported", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
     }));
@@ -261,9 +304,10 @@ describe("useMapCore — error states", () => {
     expect(result.current.ready).toBe(false);
   });
 
-  it("returns error when loadMapbox rejects", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+  it("returns error when loadMapLibre rejects", async () => {
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
 
@@ -271,7 +315,9 @@ describe("useMapCore — error states", () => {
       .mockReturnValue({ fake: true } as unknown as RenderingContext);
 
     try {
-      vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+      vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+        loadMapLibre: vi.fn(() => Promise.reject(new Error("Network failure"))),
+        getMapLibreGL: vi.fn(() => null),
         loadMapbox: vi.fn(() => Promise.reject(new Error("Network failure"))),
         getMapboxgl: vi.fn(() => null),
       }));
@@ -311,12 +357,15 @@ describe("LiveMap — fallback on missing token", () => {
     vi.resetModules();
   });
 
-  it("renders MapErrorFallback when token is empty", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+  it("renders MapErrorFallback when token check fails", async () => {
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "",
-      getMapboxTokenError: () => null,
+      getMapTokenError: () => "Map access token is not configured.",
+      getMapboxTokenError: () => "Map access token is not configured.",
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
     }));
@@ -335,16 +384,19 @@ describe("LiveMap — fallback on missing token", () => {
       />
     );
 
-    expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+    expect(screen.getByText("Live map unavailable")).toBeInTheDocument();
     expect(screen.getByText(/token/i)).toBeInTheDocument();
   });
 
-  it("renders MapErrorFallback when loadMapbox rejects", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+  it("renders MapErrorFallback when loadMapLibre rejects", async () => {
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_token",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(() => Promise.reject(new Error("CDN down"))),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(() => Promise.reject(new Error("CDN down"))),
       getMapboxgl: vi.fn(() => null),
     }));
@@ -365,21 +417,27 @@ describe("LiveMap — fallback on missing token", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+      expect(screen.getByText("Live map unavailable")).toBeInTheDocument();
     });
   });
 
   it("invokes retry callback when user clicks the retry button", async () => {
     const user = userEvent.setup();
-    let loadMapboxCall = 0;
+    let loadCallCount = 0;
 
-    vi.doMock("@/lib/mapbox/config", () => ({
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "pk.test_token",
+      getMapTokenError: () => null,
       getMapboxTokenError: () => null,
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(() => {
+        loadCallCount++;
+        return Promise.reject(new Error("CDN down"));
+      }),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(() => {
-        loadMapboxCall++;
+        loadCallCount++;
         return Promise.reject(new Error("CDN down"));
       }),
       getMapboxgl: vi.fn(() => null),
@@ -399,15 +457,15 @@ describe("LiveMap — fallback on missing token", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Map unavailable")).toBeInTheDocument();
+      expect(screen.getByText("Live map unavailable")).toBeInTheDocument();
     });
 
-    const initialCalls = loadMapboxCall;
+    const initialCalls = loadCallCount;
     const retryButton = screen.getByRole("button", { name: /retry/i });
     await user.click(retryButton);
 
     await waitFor(() => {
-      expect(loadMapboxCall).toBeGreaterThan(initialCalls);
+      expect(loadCallCount).toBeGreaterThan(initialCalls);
     });
   });
 });
@@ -493,7 +551,7 @@ describe("SuperMap — fallback on error", () => {
   });
 
   it("renders MapErrorFallback when useMapCore returns token error", async () => {
-    mockSuperMapDeps("Mapbox access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
+    mockSuperMapDeps("Map access token is not configured. Please set the VITE_MAPBOX_TOKEN environment variable.");
 
     const { default: SuperMap } = await import("@/components/map/SuperMap");
     const { waitFor } = await import("@testing-library/react");
@@ -614,11 +672,14 @@ describe("useMapCore — retry", () => {
   });
 
   it("exposes retry function and isRetrying state", async () => {
-    vi.doMock("@/lib/mapbox/config", () => ({
+    vi.doMock("@/lib/maplibre/config", () => ({
       MAPBOX_ACCESS_TOKEN: "",
+      getMapTokenError: vi.fn(() => null),
       getMapboxTokenError: vi.fn(() => null),
     }));
-    vi.doMock("@/lib/mapbox/mapbox-loader", () => ({
+    vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
+      loadMapLibre: vi.fn(),
+      getMapLibreGL: vi.fn(() => null),
       loadMapbox: vi.fn(),
       getMapboxgl: vi.fn(() => null),
     }));

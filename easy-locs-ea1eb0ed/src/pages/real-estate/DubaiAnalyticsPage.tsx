@@ -22,7 +22,8 @@ import {
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 
 const navy = "hsl(226 24% 14%)";
 const goldHex = "#EAB308";
@@ -368,7 +369,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
     if (!mapContainerRef.current || mapRef.current) return;
 
     let cancelled = false;
-    loadMapbox().then(maplibregl => {
+    loadMapLibre().then(maplibregl => {
       if (cancelled || !mapContainerRef.current) return;
 
       const map = new maplibregl.Map({
@@ -404,7 +405,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
   useEffect(() => {
     if (!mapLoaded || !mapRef.current) return;
     const map = mapRef.current;
-    const mapboxgl = getMapboxgl();
+    const mapboxgl = getMapLibreGL();
     if (!mapboxgl) return;
 
     markersRef.current.forEach(m => m.remove());
@@ -441,6 +442,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
   }
 
   return (
+    <MapErrorBoundary fallbackHeight={280} fallbackTitle="District heatmap unavailable" fallbackIcon={MapPin}>
     <div className="mt-4 rounded-xl overflow-hidden" style={{ background: navy, border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="p-3">
         <p className="text-[11px] text-white/50 font-medium mb-2 uppercase tracking-wider">{t("dld.heatmap_title")}</p>
@@ -454,6 +456,7 @@ function DistrictHeatmap({ summaries, onSelect, t }: { summaries: DLDDistrictSum
         <span className="text-[9px] text-white/40">{t("dld.heatmap_high")}</span>
       </div>
     </div>
+    </MapErrorBoundary>
   );
 }
 

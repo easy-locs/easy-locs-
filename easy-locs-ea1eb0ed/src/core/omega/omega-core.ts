@@ -6,6 +6,7 @@ import { predictionEngine } from "./prediction/prediction-engine";
 import { businessOpportunityEngine } from "./business-opportunity/business-opportunity-engine";
 import { incidentResponseEngine } from "./incident-response/incident-response-engine";
 import { registerNewEngine, requestEngineRunApproval, reportEngineRunSuccess, reportEngineRunError } from "@/core/command-center";
+import { installOmegaBusBridge } from "./knowledge-graph/omega-bus-bridge";
 import type {
   OmegaEngineStatus,
   OmegaIntelligenceReport,
@@ -93,14 +94,20 @@ class OmegaCore {
 
     if (import.meta.env.DEV) this.seedKnowledgeGraph();
 
+    this._busBridgeUnsub = installOmegaBusBridge();
+
     this.phase = "running";
     this.lastRunAt = Date.now();
-    structuredLogger.info("system", "omega_boot_complete", "All 10 engines booted | Phase: RUNNING");
+    structuredLogger.info("system", "omega_boot_complete", "All 10 engines booted | Phase: RUNNING | Bus bridge: active");
 
     this.startIntelligenceLoop();
   }
 
   async shutdown(): Promise<void> {
+    if (this._busBridgeUnsub) {
+      this._busBridgeUnsub();
+      this._busBridgeUnsub = null;
+    }
     if (this.loopInterval) {
       clearInterval(this.loopInterval);
       this.loopInterval = null;
@@ -114,6 +121,7 @@ class OmegaCore {
     structuredLogger.info("system", "omega_shutdown", "Shutdown complete");
   }
 
+  private _busBridgeUnsub: (() => void) | null = null;
   private seeded = false;
 
   private seedKnowledgeGraph(): void {

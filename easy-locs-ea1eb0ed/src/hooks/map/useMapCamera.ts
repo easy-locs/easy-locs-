@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type maplibregl from "maplibre-gl";
-import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 import { useLocationStore } from "@/stores/locationStore";
 
@@ -16,7 +16,7 @@ export function useMapCamera(
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready || entities.length === 0) return;
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
     const bounds = new gl.LngLatBounds();
     if (userLat && userLng) bounds.extend([userLng, userLat]);

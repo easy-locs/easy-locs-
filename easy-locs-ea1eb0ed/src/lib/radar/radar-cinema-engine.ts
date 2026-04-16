@@ -3,7 +3,7 @@
  * rain canvas overlay, timeline playback, fog, and smart camera.
  */
 import type maplibregl from "maplibre-gl";
-import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { DRIVER_STATUS_COLORS, RADAR_INTENSITY_COLORS } from "@/config/colors";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -308,7 +308,7 @@ export function attachStationPopups(map: maplibregl.Map) {
       state.popup = null;
     }
 
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
     state.popup = new gl.Popup({
       closeButton: false,
@@ -514,7 +514,7 @@ export function pauseRadarTimeline(map: maplibregl.Map) {
 
 export function focusCinemaOnDrivers(map: maplibregl.Map, drivers: CinemaDriverFrame[]) {
   if (!drivers.length) return;
-  const gl = getMapboxgl();
+  const gl = getMapLibreGL();
   if (!gl) return;
   const bounds = new gl.LngLatBounds();
   drivers.forEach((d) => {
@@ -526,7 +526,7 @@ export function focusCinemaOnDrivers(map: maplibregl.Map, drivers: CinemaDriverF
 
 export function focusCinemaOnStations(map: maplibregl.Map, stations: WeatherStationLive[]) {
   if (!stations.length) return;
-  const gl = getMapboxgl();
+  const gl = getMapLibreGL();
   if (!gl) return;
   const bounds = new gl.LngLatBounds();
   stations.forEach((s) => bounds.extend(s.coords));

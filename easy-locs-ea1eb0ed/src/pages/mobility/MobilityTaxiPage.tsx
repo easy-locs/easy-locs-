@@ -14,7 +14,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { MobilityLiveMap } from "@/components/mobility/MobilityLiveMap";
 import TaxiBottomSheet, { type TaxiSnapPoint } from "@/components/mobility/TaxiBottomSheet";
-import { preloadMapbox } from "@/lib/mapbox/mapbox-loader";
+import { preloadMapLibre } from "@/lib/maplibre/maplibre-loader";
 
 export default function MobilityTaxiPage() {
   useUiEngine("mobility-mobilitytaxipage");
@@ -30,7 +30,7 @@ export default function MobilityTaxiPage() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  useEffect(() => { preloadMapbox(); }, []);
+  useEffect(() => { preloadMapLibre(); }, []);
   useEffect(() => { hydrateMyJobs(); }, []);
   useEffect(() => () => { reset(); }, []);
 

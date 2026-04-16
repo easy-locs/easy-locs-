@@ -1,10 +1,13 @@
 import { useEffect, useRef } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
-import { MapPin } from "lucide-react";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
+import { Navigation } from "lucide-react";
 
 interface RideLiveMapProps {
   driver?: { lat: number; lng: number } | null;
@@ -20,24 +23,40 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
   const pickupMarkerRef = useRef<maplibregl.Marker | null>(null);
   const dropoffMarkerRef = useRef<maplibregl.Marker | null>(null);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("RideLiveMap");
+  const retry = useMapRetry();
   const readyRef = useRef(false);
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetry,
+  });
 
   const lat = pickup?.lat ?? driver?.lat ?? 25.2048;
   const lng = pickup?.lng ?? driver?.lng ?? 55.2708;
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    readyRef.current = false;
+    clearMapError();
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
       handleMapError(tokenError, { lat, lng, zoom: 13 });
       return;
     }
 
     let cancelled = false;
-    clearMapError();
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -54,7 +73,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
         map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
           const msg = e.error?.message || String(e.error ?? "");
           if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-            handleMapError("Mapbox token is invalid or expired.", { lat, lng, zoom: 13 });
+            handleMapError("Map token is invalid or expired.", { lat, lng, zoom: 13 });
           }
         });
 
@@ -68,7 +87,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
       }
     }).catch((err) => {
       if (!cancelled) {
-        const msg = err instanceof Error ? err.message : "Failed to load Mapbox";
+        const msg = err instanceof Error ? err.message : "Failed to load map";
         handleMapError(msg, { lat, lng, zoom: 13 });
       }
     });
@@ -87,7 +106,7 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
       }
       readyRef.current = false;
     };
-  }, []);
+  }, [retry.retryKey]);
 
   function updateMarkersAndRoute(map: maplibregl.Map, gl: typeof import("maplibre-gl").default) {
     const bounds = new gl.LngLatBounds();
@@ -182,16 +201,25 @@ export function RideLiveMap({ driver, pickup, dropoff, routeGeometry }: RideLive
       <div className="h-80 rounded-xl overflow-hidden border border-border relative">
         <MapErrorFallback
           message={mapError}
+          title="Ride map unavailable"
+          icon={Navigation}
           lat={lat}
           lng={lng}
           className="absolute inset-0"
+          onRetry={handleRetry}
+          isOffline={isOffline}
+          isOnCooldown={retry.isOnCooldown}
+          cooldownRemaining={retry.cooldownRemaining}
+          retryCount={retry.retryCount}
+          maxRetries={retry.maxRetries}
+          exhausted={retry.exhausted}
         />
       </div>
     );
   }
 
   return (
-    <MapErrorBoundary fallbackHeight="20rem">
+    <MapErrorBoundary fallbackHeight="20rem" fallbackTitle="Ride map unavailable" fallbackIcon={Navigation}>
       <div className="h-80 rounded-xl overflow-hidden border border-border relative">
         <div ref={containerRef} className="absolute inset-0" />
       </div>

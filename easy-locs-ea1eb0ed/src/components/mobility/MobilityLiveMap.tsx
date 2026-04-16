@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import type maplibreglModule from "maplibre-gl";
-import { loadMapbox } from "@/lib/mapbox/mapbox-loader";
+import { loadMapLibre } from "@/lib/maplibre/maplibre-loader";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
+import MapErrorFallback from "@/components/map/MapErrorFallback";
+import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
+import { Car } from "lucide-react";
 
 type MapboxGL = typeof maplibreglModule;
 
@@ -126,8 +132,20 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
     },
   }), [pickupLat, pickupLng, dropoffLat, dropoffLng, driverLat, driverLng, bottomPadding]);
 
-  const [mapError, setMapError] = useState(false);
+  const { mapError: mapErrorMsg, handleMapError, clearMapError } = useMapErrorHandler("MobilityLiveMap");
+  const mapError = !!mapErrorMsg;
   const [mapLoading, setMapLoading] = useState(true);
+  const retry = useMapRetry();
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: mapError,
+    onReconnect: handleRetry,
+  });
 
   const injectStyles = useCallback(() => {
     if (document.getElementById("taxi-map-styles")) return;
@@ -142,16 +160,23 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
   }, [injectStyles]);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current) return;
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+    mapReadyRef.current = false;
+    clearMapError();
+    setMapLoading(true);
     let cancelled = false;
 
     try {
       const canvas = document.createElement("canvas");
       const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-      if (!gl) { setMapError(true); setMapLoading(false); return; }
-    } catch { setMapError(true); setMapLoading(false); return; }
+      if (!gl) { handleMapError("WebGL is not supported in this browser.", { lat: centerLat, lng: centerLng, zoom: 13 }); setMapLoading(false); return; }
+    } catch { handleMapError("WebGL check failed.", { lat: centerLat, lng: centerLng, zoom: 13 }); setMapLoading(false); return; }
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
       mapboxglRef.current = maplibregl;
 
@@ -165,8 +190,9 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
           attributionControl: false,
           interactive: true,
         });
-      } catch {
-        setMapError(true);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to initialize map";
+        handleMapError(msg, { lat: centerLat, lng: centerLng, zoom: 13 });
         setMapLoading(false);
         return;
       }
@@ -176,7 +202,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
       map.on("error", (e) => {
         const msg = ((e.error?.message as string) ?? "").toLowerCase();
         if (msg.includes("access token") || msg.includes("unauthorized") || msg.includes("401")) {
-          setMapError(true);
+          handleMapError("Map token is invalid or expired.", { lat: centerLat, lng: centerLng, zoom: 13 });
           setMapLoading(false);
         }
       });
@@ -186,9 +212,12 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
         setMapLoading(false);
         mapReadyRef.current = true;
       });
-    }).catch(() => {
-      setMapError(true);
-      setMapLoading(false);
+    }).catch((err) => {
+      if (!cancelled) {
+        const msg = err instanceof Error ? err.message : "Failed to load map";
+        handleMapError(msg, { lat: centerLat, lng: centerLng, zoom: 13 });
+        setMapLoading(false);
+      }
     });
 
     return () => {
@@ -208,7 +237,7 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
         mapRef.current = null;
       }
     };
-  }, []);
+  }, [retry.retryKey]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -477,16 +506,25 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
 
   if (fullScreen) {
     return (
+      <MapErrorBoundary fallbackHeight="100%" fallbackTitle="Mobility map unavailable" fallbackIcon={Car}>
       <div
         className="absolute inset-0 w-full h-full"
         style={{ background: "hsl(220, 15%, 10%)" }}
       >
         {mapError ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-            <span className="text-2xl mb-2">📍</span>
-            <p className="text-sm font-semibold text-foreground">Live Map</p>
-            <p className="text-xs text-muted-foreground">Riders are being tracked in your area</p>
-          </div>
+          <MapErrorFallback
+            message={mapErrorMsg ?? undefined}
+            title="Mobility map unavailable"
+            icon={Car}
+            className="absolute inset-0"
+            onRetry={handleRetry}
+            isOffline={isOffline}
+            isOnCooldown={retry.isOnCooldown}
+            cooldownRemaining={retry.cooldownRemaining}
+            retryCount={retry.retryCount}
+            maxRetries={retry.maxRetries}
+            exhausted={retry.exhausted}
+          />
         ) : (
           <>
             {mapLoading && (
@@ -502,20 +540,31 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
           </>
         )}
       </div>
+      </MapErrorBoundary>
     );
   }
 
   return (
+    <MapErrorBoundary fallbackHeight={180} fallbackTitle="Mobility map unavailable" fallbackIcon={Car}>
     <div
       className={cn("relative rounded-2xl border border-border/30 overflow-hidden", className)}
       style={{ minHeight: 180, background: "hsl(220, 15%, 10%)" }}
     >
       {mapError ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-          <span className="text-2xl mb-2">📍</span>
-          <p className="text-sm font-semibold text-foreground">Live Map</p>
-          <p className="text-xs text-muted-foreground">Riders are being tracked in your area</p>
-        </div>
+        <MapErrorFallback
+          message={mapErrorMsg ?? undefined}
+          title="Mobility map unavailable"
+          icon={Car}
+          compact
+          className="absolute inset-0"
+          onRetry={handleRetry}
+          isOffline={isOffline}
+          isOnCooldown={retry.isOnCooldown}
+          cooldownRemaining={retry.cooldownRemaining}
+          retryCount={retry.retryCount}
+          maxRetries={retry.maxRetries}
+          exhausted={retry.exhausted}
+        />
       ) : (
         <>
           {mapLoading && (
@@ -543,5 +592,6 @@ export const MobilityLiveMap = forwardRef<MobilityLiveMapHandle, MobilityLiveMap
         </div>
       </div>
     </div>
+    </MapErrorBoundary>
   );
 });

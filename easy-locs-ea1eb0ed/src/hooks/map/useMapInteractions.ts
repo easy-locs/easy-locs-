@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type maplibregl from "maplibre-gl";
-import { getMapboxgl } from "@/lib/mapbox/mapbox-loader";
+import { getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
 import { SOURCES, LAYERS } from "@/lib/map/superMapLayers";
 import {
   STATION_CLUSTER_LAYER,
@@ -48,7 +48,7 @@ export function useMapInteractions(
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
 
     const onClusterClick = (e: maplibregl.MapMouseEvent) => {

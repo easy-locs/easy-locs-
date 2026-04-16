@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef, useState, useCallback } from "react";
 import type maplibregl from "maplibre-gl";
-import { loadMapbox, getMapboxgl } from "@/lib/mapbox/mapbox-loader";
-import { getMapboxTokenError } from "@/lib/mapbox/config";
+import { loadMapLibre, getMapLibreGL } from "@/lib/maplibre/maplibre-loader";
+import { getMapTokenError } from "@/lib/maplibre/config";
 import { useInAppNavigation, type TransportMode } from "@/stores/useInAppNavigation";
 import { useGeoStore } from "@/lib/geo/geo-store";
 import { getDirections, type DirectionsStep } from "@/lib/location/geocode";
@@ -10,8 +10,11 @@ import { useI18nStore } from "@/domains/i18n/i18n.store";
 import * as voiceEngine from "@/lib/navigation/navigation-voice-engine";
 import * as instructionTrigger from "@/lib/navigation/instruction-trigger";
 import { X, Navigation, Locate, Car, Footprints, Bike, Volume2, VolumeX, Square } from "lucide-react";
+import { MapErrorBoundary } from "@/components/map/MapErrorBoundary";
 import MapErrorFallback from "@/components/map/MapErrorFallback";
 import { useMapErrorHandler } from "@/hooks/useMapErrorHandler";
+import { useMapRetry } from "@/hooks/map/useMapRetry";
+import { useNetworkRecovery } from "@/hooks/map/useNetworkRecovery";
 
 const MODE_ICONS: Record<TransportMode, typeof Car> = {
   driving: Car,
@@ -31,6 +34,17 @@ function InAppNavigationViewInner() {
   const [routeInfo, setRouteInfo] = useState<{ distanceKm: number; etaMinutes: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const { mapError, handleMapError, clearMapError } = useMapErrorHandler("InAppNavigationView");
+  const retry = useMapRetry();
+
+  const handleRetry = () => {
+    clearMapError();
+    retry.triggerRetry();
+  };
+
+  const { isOffline } = useNetworkRecovery({
+    enabled: !!mapError,
+    onReconnect: handleRetry,
+  });
   const [muted, setMuted] = useState(() => voiceEngine.isMuted());
   const fetchIdRef = useRef(0);
   const routeHashRef = useRef<string | null>(null);
@@ -206,7 +220,7 @@ function InAppNavigationViewInner() {
 
       if (coords.length > 0) {
         const navState = useInAppNavigation.getState();
-        const gl = getMapboxgl();
+        const gl = getMapLibreGL();
         if (!navState.isNavigating && gl) {
           const bounds = new gl.LngLatBounds();
           coords.forEach((c) => bounds.extend(c));
@@ -225,7 +239,7 @@ function InAppNavigationViewInner() {
     if (!open || lat == null || lng == null) return;
     if (!containerRef.current) return;
 
-    const tokenError = getMapboxTokenError();
+    const tokenError = getMapTokenError();
     if (tokenError) {
       handleMapError(tokenError, { lat, lng, zoom: 14 });
       return;
@@ -243,7 +257,7 @@ function InAppNavigationViewInner() {
 
     clearMapError();
 
-    loadMapbox().then((maplibregl) => {
+    loadMapLibre().then((maplibregl) => {
       if (cancelled || !containerRef.current) return;
 
       try {
@@ -260,7 +274,7 @@ function InAppNavigationViewInner() {
       map.on("error", (e: maplibregl.ErrorEvent & { error?: { message?: string } }) => {
         const msg = e.error?.message || String(e.error ?? "");
         if (msg.includes("401") || msg.includes("403") || msg.includes("access token")) {
-          handleMapError("Mapbox token is invalid or expired.", { lat, lng, zoom: 14 });
+          handleMapError("Map token is invalid or expired.", { lat, lng, zoom: 14 });
         }
       });
 
@@ -364,7 +378,7 @@ function InAppNavigationViewInner() {
     if (!open || !mapRef.current || lat == null || lng == null || !userPoint) return;
     const map = mapRef.current;
 
-    const gl = getMapboxgl();
+    const gl = getMapLibreGL();
     if (!gl) return;
     if (!userMarkerRef.current) {
       const userEl = document.createElement("div");
@@ -392,7 +406,7 @@ function InAppNavigationViewInner() {
         duration: 500,
       });
     } else {
-      const gl2 = getMapboxgl();
+      const gl2 = getMapLibreGL();
       if (gl2) {
         const bounds = new gl2.LngLatBounds();
         bounds.extend([lng, lat]);
@@ -438,7 +452,7 @@ function InAppNavigationViewInner() {
       const segSrc = map.getSource("nav-current-segment") as maplibregl.GeoJSONSource | undefined;
       if (segSrc) segSrc.setData({ type: "FeatureCollection", features: [] });
     }
-    const gl3 = getMapboxgl();
+    const gl3 = getMapLibreGL();
     if (mapRef.current && lat != null && lng != null && gl3) {
       const bounds = new gl3.LngLatBounds();
       bounds.extend([lng, lat]);
@@ -464,9 +478,23 @@ function InAppNavigationViewInner() {
   return (
     <div className="fixed inset-0 z-fullscreen flex flex-col" style={{ background: "hsl(var(--background))" }}>
       {mapError ? (
-        <MapErrorFallback message={mapError} className="flex-1" />
+        <MapErrorFallback
+          message={mapError}
+          title="Navigation map unavailable"
+          icon={Navigation}
+          className="flex-1"
+          onRetry={handleRetry}
+          isOffline={isOffline}
+          isOnCooldown={retry.isOnCooldown}
+          cooldownRemaining={retry.cooldownRemaining}
+          retryCount={retry.retryCount}
+          maxRetries={retry.maxRetries}
+          exhausted={retry.exhausted}
+        />
       ) : (
-        <div ref={containerRef} className="flex-1" />
+        <MapErrorBoundary fallbackTitle="Navigation map unavailable" fallbackIcon={Navigation}>
+          <div ref={containerRef} className="flex-1" />
+        </MapErrorBoundary>
       )}
 
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-3" style={{ background: "linear-gradient(to bottom, hsl(var(--background) / 0.95), transparent)" }}>
