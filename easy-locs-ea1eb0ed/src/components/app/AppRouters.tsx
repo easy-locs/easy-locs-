@@ -2,7 +2,7 @@
  * AppRouters — Extracted route-level decision components from App.tsx.
  * Single responsibility: root-level routing logic (/, /home).
  */
-import { Suspense, useEffect, useState, lazy } from "react";
+import { useEffect, useState, lazy } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import SharedPageLoader from "@/components/brand/PageLoader";
@@ -49,10 +49,10 @@ export function HomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader dark={!user} />;
-  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
+  if (!user) return <Index />;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
-  return <Suspense fallback={null}><Dashboard /></Suspense>;
+  return <Dashboard />;
 }
 
 /** Route "/home" → Dashboard (authenticated) or Index (guest) */
@@ -60,8 +60,8 @@ export function MarketplaceHomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader dark={!user} />;
-  if (!user) return <Suspense fallback={null}><Index /></Suspense>;
+  if (!user) return <Index />;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
-  return <Suspense fallback={null}><Dashboard /></Suspense>;
+  return <Dashboard />;
 }
