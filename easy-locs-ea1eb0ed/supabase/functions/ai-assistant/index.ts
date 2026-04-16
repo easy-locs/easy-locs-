@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
@@ -126,6 +126,11 @@ Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
         });
       }
       userId = user.id;
+    }
+
+    if (userId !== "service_role") {
+      const userRl = await checkUserRateLimit(userId, "ai-assistant");
+      if (!userRl.allowed) return rateLimitResponse(userRl);
     }
 
     if (!Deno.env.get("OPENAI_API_KEY")) {

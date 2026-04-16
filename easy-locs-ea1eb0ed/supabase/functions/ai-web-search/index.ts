@@ -1,5 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
+import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { openaiChat } from "../_shared/openai-client.ts";
 
 const corsHeaders = {
@@ -181,7 +181,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const rlResult = await checkServerRateLimit(req, "ai-web-search", { maxRequests: 30, windowSeconds: 60 });
+    const rlResult = await checkServerRateLimit(req, "ai-web-search");
     if (!rlResult.allowed) return rateLimitResponse(rlResult);
 
     const authHeader = req.headers.get("Authorization");
@@ -207,6 +207,9 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const userRl = await checkUserRateLimit(user.id, "ai-web-search");
+    if (!userRl.allowed) return rateLimitResponse(userRl);
 
     if (!Deno.env.get("OPENAI_API_KEY")) {
       return new Response(JSON.stringify({ error: "AI not configured" }), {
