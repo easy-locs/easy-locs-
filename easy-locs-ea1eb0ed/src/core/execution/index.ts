@@ -8,6 +8,7 @@
  */
 
 export * from "./risk-classification";
+export * from "./allowed-domains";
 export * from "./types";
 export { ValidationEngine, validationEngine } from "./validation-engine";
 export { TaskDispatcher, taskDispatcher } from "./task-dispatcher";
