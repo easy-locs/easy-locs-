@@ -431,6 +431,8 @@ export const ExecutionProofPage = safeLazy(() => import("@/pages/admin/Execution
 export const AdminReviewQueuePage = safeLazy(() => import("@/pages/AdminReviewQueuePage"), "AdminReviewQueuePage");
 export const AdminUiEnginePage = safeLazy(() => import("@/pages/admin/AdminUiEnginePage"), "AdminUiEnginePage");
 export const AdminMarketplaceOpsPage = safeLazy(() => import("@/pages/admin/AdminMarketplaceOpsPage"), "AdminMarketplaceOpsPage");
+export const AdminWiringHealthPage = safeLazy(() => import("@/pages/admin/AdminWiringHealthPage"), "AdminWiringHealthPage");
+export const RewardsHubPage = safeLazy(() => import("@/pages/RewardsHubPage"), "RewardsHubPage");
 export const AdminOpsDashboardPage = safeLazy(() => import("@/pages/admin/AdminOpsDashboardPage"), "AdminOpsDashboardPage");
 export const AdminPipelinePage = safeLazy(() => import("@/pages/admin/AdminPipelinePage"), "AdminPipelinePage");
 export const AdminEnginesDashboardPage = safeLazy(() => import("@/pages/admin/AdminEnginesDashboardPage"), "AdminEnginesDashboardPage");
