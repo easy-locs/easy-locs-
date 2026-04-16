@@ -84,8 +84,30 @@ const CATALOG: RecommendationItem[] = [
 
 const RECENCY_DECAY_MS = 7 * 24 * 60 * 60 * 1000;
 
-export function sanitizeScore(value: number, fallback = 0): number {
-  if (!Number.isFinite(value)) return fallback;
+let _sanitizationWarningCount = 0;
+
+export function getSanitizationWarningCount(): number {
+  return _sanitizationWarningCount;
+}
+
+export function resetSanitizationWarningCount(): void {
+  _sanitizationWarningCount = 0;
+}
+
+export function sanitizeScore(value: number, fallback = 0, itemId?: string, source?: string): number {
+  if (!Number.isFinite(value)) {
+    _sanitizationWarningCount++;
+    const itemLabel = itemId ?? "unknown";
+    const sourceLabel = source ?? "unknown";
+    const kind = Number.isNaN(value) ? "NaN" : `${value}`;
+    console.warn(
+      `[recommendation-engine] sanitizeScore: non-finite value (${kind}) replaced with fallback ${fallback} | item="${itemLabel}" source="${sourceLabel}"`,
+    );
+    reportHealth("recommendation-engine", "degraded", undefined,
+      `sanitizeScore: non-finite value (${kind}) for item="${itemLabel}" source="${sourceLabel}"`,
+    );
+    return fallback;
+  }
   return value;
 }
 
@@ -247,28 +269,28 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
 
     const pgScore = pgvectorScoreMap.get(item.id);
     if (pgScore != null && pgScore > 0) {
-      score += sanitizeScore(pgScore * 45);
+      score += sanitizeScore(pgScore * 45, 0, item.id, "pgvector-similarity");
       if (pgScore > 0.7) reasons.push("Matches your interests");
       else if (pgScore > 0.4) reasons.push("Similar to what you like");
     } else if (userVector) {
       const embedding = itemEmbeddings.get(item.id);
       if (embedding) {
         const sim = cosineSimilarity(userVector, embedding);
-        score += sanitizeScore(sim * 40);
+        score += sanitizeScore(sim * 40, 0, item.id, "cosine-similarity");
         if (sim > 0.5) reasons.push("Matches your interests");
       }
     }
 
     const cfScore = collaborativeScores.get(item.id) || 0;
     if (cfScore > 0) {
-      score += sanitizeScore(cfScore * 20);
+      score += sanitizeScore(cfScore * 20, 0, item.id, "collaborative-filter");
       reasons.push("Users like you enjoyed this");
     }
 
     if (item.vertical) {
       const ctxBoost = contextBoosts.get(item.vertical) || 0;
       if (ctxBoost > 0) {
-        score += sanitizeScore(ctxBoost * 30);
+        score += sanitizeScore(ctxBoost * 30, 0, item.id, "contextual-boost");
         if (contextFactors.weather === "rainy") reasons.push("Great for rainy days");
         else if (contextFactors.weather === "hot") reasons.push("Perfect for hot weather");
         else reasons.push(`Trending ${contextFactors.timeOfDay}`);
@@ -293,17 +315,17 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
         ctx.location.lng,
         15,
       );
-      score += sanitizeScore(geoBoost * 15);
+      score += sanitizeScore(geoBoost * 15, 0, item.id, "geo-proximity");
       if (geoBoost > 0.7) reasons.push("Very close to you");
       else if (geoBoost > 0) reasons.push("Available near you");
     }
 
-    const recencyDecay = sanitizeScore(computeRecencyDecay(Date.now() - Math.random() * 86400000 * 3), 1);
+    const recencyDecay = sanitizeScore(computeRecencyDecay(Date.now() - Math.random() * 86400000 * 3), 1, item.id, "recency-decay");
     score *= 0.85 + 0.15 * recencyDecay;
 
     score += Math.random() * 3;
 
-    score = sanitizeScore(score, 30);
+    score = sanitizeScore(score, 30, item.id, "final-score");
 
     return {
       ...item,
@@ -364,21 +386,21 @@ export function scoreRecommendations(ctx: UserContext): RecommendationItem[] {
       const embedding = itemEmbeddings.get(item.id);
       if (embedding) {
         const sim = cosineSimilarity(userVector, embedding);
-        score += sanitizeScore(sim * 40);
+        score += sanitizeScore(sim * 40, 0, item.id, "cosine-similarity");
         if (sim > 0.5) reasons.push("Matches your interests");
       }
     }
 
     const cfScore = collaborativeScores.get(item.id) || 0;
     if (cfScore > 0) {
-      score += sanitizeScore(cfScore * 20);
+      score += sanitizeScore(cfScore * 20, 0, item.id, "collaborative-filter");
       reasons.push("Users like you enjoyed this");
     }
 
     if (item.vertical) {
       const ctxBoost = contextBoosts.get(item.vertical) || 0;
       if (ctxBoost > 0) {
-        score += sanitizeScore(ctxBoost * 30);
+        score += sanitizeScore(ctxBoost * 30, 0, item.id, "contextual-boost");
         reasons.push(`Trending ${contextFactors.timeOfDay}`);
       }
     }
@@ -401,17 +423,17 @@ export function scoreRecommendations(ctx: UserContext): RecommendationItem[] {
         ctx.location.lng,
         15,
       );
-      score += sanitizeScore(geoBoost * 15);
+      score += sanitizeScore(geoBoost * 15, 0, item.id, "geo-proximity");
       if (geoBoost > 0.7) reasons.push("Very close to you");
       else if (geoBoost > 0) reasons.push("Available near you");
     }
 
-    const recencyDecay = sanitizeScore(computeRecencyDecay(Date.now() - Math.random() * 86400000 * 3), 1);
+    const recencyDecay = sanitizeScore(computeRecencyDecay(Date.now() - Math.random() * 86400000 * 3), 1, item.id, "recency-decay");
     score *= 0.85 + 0.15 * recencyDecay;
 
     score += Math.random() * 3;
 
-    score = sanitizeScore(score, 30);
+    score = sanitizeScore(score, 30, item.id, "final-score");
 
     return {
       ...item,
