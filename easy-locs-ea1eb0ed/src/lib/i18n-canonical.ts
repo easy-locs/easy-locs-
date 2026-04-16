@@ -1,20 +1,14 @@
 /**
- * i18n-canonical.ts — SINGLE SOURCE OF TRUTH for all app translations.
+ * i18n-canonical.ts — Canonical translation dictionaries for all app domains.
  * Merges discovery, navigation, orbit, commerce, wallet, settings, common UI.
  * 45 languages supported. Fallback to EN for locales without explicit translations.
+ * Locale list sourced from i18n-locales.ts (single source of truth).
  * 
  * Usage: import { tc, useAppLocale } from "@/lib/i18n-canonical";
  */
 
-export const APP_LOCALES = [
-  "fr", "en", "es", "de", "pt", "it", "nl", "ar", "he", "fa",
-  "tr", "pl", "ro", "cs", "sv", "da", "fi", "nb", "el", "hu",
-  "bg", "hr", "sk", "sl", "et", "lv", "lt", "uk", "ru", "ja", "zh",
-  "hi", "bn", "sw", "th", "vi", "id", "ms", "ko", "tl", "ur",
-  "am", "ha", "yo", "wo",
-] as const;
-
-export type AppLocale = typeof APP_LOCALES[number];
+export { APP_LOCALES, type AppLocale } from "./i18n-locales";
+import { APP_LOCALES, type AppLocale } from "./i18n-locales";
 
 const RTL_LOCALES: ReadonlySet<string> = new Set<AppLocale>(["ar", "he", "fa", "ur"]);
 
