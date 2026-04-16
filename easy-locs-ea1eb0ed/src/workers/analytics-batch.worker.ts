@@ -1,83 +1,110 @@
-import { exposeWorkerMethods } from "./worker-rpc";
+import * as Comlink from "comlink";
 
 export interface AnalyticsEvent {
   name: string;
-  properties: Record<string, unknown>;
+  properties?: Record<string, unknown>;
   timestamp: number;
   userId?: string;
   sessionId?: string;
 }
 
-export interface BatchRequest {
+export interface BatchedPayload {
   events: AnalyticsEvent[];
+  batchId: string;
+  batchedAt: number;
+  count: number;
 }
 
-export interface BatchResult {
-  processedCount: number;
-  batches: AnalyticsEvent[][];
-  deduplicatedCount: number;
+export interface AnalyticsBatchWorkerAPI {
+  enqueue(event: AnalyticsEvent): Promise<BatchedPayload | null>;
+  flush(): Promise<BatchedPayload | null>;
+  setBatchSize(size: number): Promise<void>;
+  setFlushInterval(ms: number): Promise<void>;
+  setTimedFlushCallback(cb: (payload: BatchedPayload) => void): Promise<void>;
+  getPendingCount(): Promise<number>;
+  clear(): Promise<void>;
 }
 
-const MAX_BATCH_SIZE = 25;
+let queue: AnalyticsEvent[] = [];
+let batchSize = 20;
+let flushIntervalMs = 10_000;
+let flushTimer: ReturnType<typeof setTimeout> | null = null;
+let batchCounter = 0;
 
-function deduplicateEvents(events: AnalyticsEvent[]): AnalyticsEvent[] {
-  const seen = new Set<string>();
-  const deduped: AnalyticsEvent[] = [];
-
-  for (const event of events) {
-    const key = `${event.name}:${event.userId ?? "anon"}:${Math.floor(event.timestamp / 1000)}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    deduped.push(event);
-  }
-
-  return deduped;
-}
-
-function batchEvents(request: BatchRequest): BatchResult {
-  const deduped = deduplicateEvents(request.events);
-  const batches: AnalyticsEvent[][] = [];
-
-  for (let i = 0; i < deduped.length; i += MAX_BATCH_SIZE) {
-    batches.push(deduped.slice(i, i + MAX_BATCH_SIZE));
-  }
-
+function createBatchPayload(events: AnalyticsEvent[]): BatchedPayload {
+  batchCounter++;
   return {
-    processedCount: deduped.length,
-    batches,
-    deduplicatedCount: request.events.length - deduped.length,
+    events,
+    batchId: `batch_${Date.now()}_${batchCounter}`,
+    batchedAt: Date.now(),
+    count: events.length,
   };
 }
 
-export interface AggregateRequest {
-  events: AnalyticsEvent[];
-  groupBy: "name" | "userId";
-}
+let onTimedFlush: ((payload: BatchedPayload) => void) | null = null;
 
-export interface AggregateResult {
-  groups: Record<string, { count: number; lastTimestamp: number }>;
-}
-
-function aggregateEvents(request: AggregateRequest): AggregateResult {
-  const groups: Record<string, { count: number; lastTimestamp: number }> = {};
-
-  for (const event of request.events) {
-    const key = request.groupBy === "name" ? event.name : (event.userId ?? "anon");
-    if (!groups[key]) {
-      groups[key] = { count: 0, lastTimestamp: 0 };
+function scheduleFlush(): void {
+  if (flushTimer) return;
+  flushTimer = setTimeout(() => {
+    flushTimer = null;
+    if (queue.length > 0) {
+      const payload = createBatchPayload(queue.splice(0));
+      if (onTimedFlush) {
+        onTimedFlush(payload);
+      } else {
+        self.postMessage({ type: "timed_flush", payload });
+      }
     }
-    groups[key].count++;
-    groups[key].lastTimestamp = Math.max(groups[key].lastTimestamp, event.timestamp);
-  }
-
-  return { groups };
+  }, flushIntervalMs);
 }
 
-const workerMethods = {
-  batch: batchEvents,
-  aggregate: aggregateEvents,
+const api: AnalyticsBatchWorkerAPI = {
+  async enqueue(event) {
+    queue.push({
+      ...event,
+      timestamp: event.timestamp || Date.now(),
+    });
+
+    if (queue.length >= batchSize) {
+      return createBatchPayload(queue.splice(0));
+    }
+
+    scheduleFlush();
+    return null;
+  },
+
+  async flush() {
+    if (flushTimer) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+    if (queue.length === 0) return null;
+    return createBatchPayload(queue.splice(0));
+  },
+
+  async setBatchSize(size) {
+    batchSize = Math.max(1, size);
+  },
+
+  async setFlushInterval(ms) {
+    flushIntervalMs = Math.max(1000, ms);
+  },
+
+  async setTimedFlushCallback(cb) {
+    onTimedFlush = cb;
+  },
+
+  async getPendingCount() {
+    return queue.length;
+  },
+
+  async clear() {
+    queue = [];
+    if (flushTimer) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+  },
 };
 
-export type AnalyticsBatchWorkerMethods = typeof workerMethods;
-
-exposeWorkerMethods(workerMethods);
+Comlink.expose(api);

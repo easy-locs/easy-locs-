@@ -2,9 +2,11 @@
  * UAE Auto Shop Import Pipeline — ENRICHED
  * SOURCE → PARSE → NORMALIZE → TAXONOMY → GEO → DEDUP → SCORE → ENRICH → CREATE
  * NO activation messages. NO merchant contact. Import only.
+ * Normalization step offloaded to normalization.worker via Web Worker pool.
  */
 import { db } from "@/services/db";
 import { resolveVerticalFromSubcategory } from "@/lib/taxonomy/subcategory-vertical-map";
+import type { NormalizationWorkerAPI } from "@/workers/normalization.worker";
 
 // ─── Types ───
 export interface RawShopInput {
@@ -516,6 +518,24 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
   await ingestRaw(batchId, config.source_type, items);
 
   let totalCompleteness = 0;
+
+  try {
+    const { workerPool } = await import("@/workers/pool-manager");
+    const phonesToNormalize = items.map(i => i.phone).filter((p): p is string => !!p);
+    if (phonesToNormalize.length > 0) {
+      const defaultCode = config.country === "AE" ? "+971" : "+33";
+      const normalizedPhones = await workerPool.execute<NormalizationWorkerAPI, string[]>(
+        "normalization",
+        (proxy) => proxy.normalizePhoneNumbers(phonesToNormalize, defaultCode),
+      );
+      let phoneIdx = 0;
+      for (const item of items) {
+        if (item.phone) {
+          item.phone = normalizedPhones[phoneIdx++] ?? item.phone;
+        }
+      }
+    }
+  } catch {}
 
   for (const item of items) {
     try {

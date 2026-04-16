@@ -14,6 +14,7 @@ import { seoValidatePlugin } from "./vite-plugin-seo-validate";
 import { VitePWA } from "vite-plugin-pwa";
 import { visualizer } from "rollup-plugin-visualizer";
 import viteCompression from "vite-plugin-compression";
+import { partytownVite } from "@builder.io/partytown/utils";
 
 function repairDiagPlugin(): Plugin {
   return {
@@ -174,6 +175,9 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    partytownVite({
+      dest: path.resolve(__dirname, "dist", "~partytown"),
+    }),
 
     mode === "development" && repairDiagPlugin(),
     cacheControlPlugin(),
@@ -371,7 +375,9 @@ export default defineConfig(({ mode }) => ({
             if (id.includes("react-markdown")) return "vendor-markdown";
             if (id.includes("tesseract")) return "vendor-ocr";
             if (id.includes("posthog")) return "vendor-analytics";
+            if (id.includes("@segment")) return "vendor-analytics";
             if (id.includes("@sentry")) return "vendor-sentry";
+            if (id.includes("comlink")) return "vendor-utils";
             if (id.includes("framer-motion")) return "vendor-motion";
             if (id.includes("@supabase")) return "vendor-supabase";
             if (id.includes("@radix-ui")) return "vendor-radix";

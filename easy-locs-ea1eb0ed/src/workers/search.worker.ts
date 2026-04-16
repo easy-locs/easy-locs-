@@ -1,104 +1,125 @@
-import { exposeWorkerMethods } from "./worker-rpc";
+import * as Comlink from "comlink";
 
-export interface SearchItem {
+export interface SearchResult {
+  id: string;
+  score: number;
+  highlights: string[];
+}
+
+export interface SearchDocument {
   id: string;
   title: string;
   description?: string;
   tags?: string[];
   category?: string;
-  score?: number;
 }
 
-export interface SearchRequest {
-  items: SearchItem[];
-  query: string;
-  limit?: number;
-  filters?: { category?: string; tags?: string[] };
+export interface SearchWorkerAPI {
+  buildIndex(documents: SearchDocument[]): Promise<number>;
+  search(query: string, limit?: number): Promise<SearchResult[]>;
+  addDocument(doc: SearchDocument): Promise<void>;
+  removeDocument(id: string): Promise<void>;
+  clearIndex(): Promise<void>;
+  getIndexSize(): Promise<number>;
 }
 
-export interface SearchResult {
+interface IndexEntry {
   id: string;
-  title: string;
-  score: number;
-  matchedFields: string[];
+  tokens: string[];
+  tokenSet: Set<string>;
+  original: SearchDocument;
 }
 
-function normalizeText(text: string): string {
+let index: IndexEntry[] = [];
+
+function tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .trim();
+    .split(/[\s\-_.,;:!?'"()\[\]{}\/\\]+/)
+    .filter((t) => t.length > 1);
 }
 
-function tokenize(text: string): string[] {
-  return normalizeText(text).split(/\s+/).filter(Boolean);
+function buildEntry(doc: SearchDocument): IndexEntry {
+  const parts = [doc.title, doc.description ?? "", ...(doc.tags ?? []), doc.category ?? ""];
+  const tokens = parts.flatMap(tokenize);
+  return { id: doc.id, tokens, tokenSet: new Set(tokens), original: doc };
 }
 
-function computeScore(item: SearchItem, queryTokens: string[]): { score: number; matchedFields: string[] } {
+function scoreMatch(entry: IndexEntry, queryTokens: string[]): number {
   let score = 0;
-  const matchedFields: string[] = [];
-  const titleNorm = normalizeText(item.title);
-  const descNorm = item.description ? normalizeText(item.description) : "";
-  const tagsNorm = item.tags?.map(normalizeText) ?? [];
-
-  for (const token of queryTokens) {
-    if (titleNorm.includes(token)) {
-      score += titleNorm === token ? 100 : titleNorm.startsWith(token) ? 80 : 60;
-      if (!matchedFields.includes("title")) matchedFields.push("title");
-    }
-    if (descNorm.includes(token)) {
-      score += 30;
-      if (!matchedFields.includes("description")) matchedFields.push("description");
-    }
-    for (const tag of tagsNorm) {
-      if (tag.includes(token)) {
-        score += 40;
-        if (!matchedFields.includes("tags")) matchedFields.push("tags");
-        break;
+  for (const qt of queryTokens) {
+    if (entry.tokenSet.has(qt)) {
+      score += 10;
+    } else {
+      for (const et of entry.tokens) {
+        if (et.startsWith(qt)) {
+          score += 5;
+          break;
+        } else if (et.includes(qt)) {
+          score += 2;
+          break;
+        }
       }
     }
   }
-
-  if (item.score != null) {
-    score += item.score * 0.1;
-  }
-
-  return { score, matchedFields };
+  return score;
 }
 
-function searchIndex(request: SearchRequest): SearchResult[] {
-  const { items, query, limit = 50, filters } = request;
-  const queryTokens = tokenize(query);
-  if (queryTokens.length === 0) return [];
-
-  let candidates = items;
-  if (filters?.category) {
-    candidates = candidates.filter((i) => i.category === filters.category);
-  }
-  if (filters?.tags?.length) {
-    const filterTags = new Set(filters.tags.map(normalizeText));
-    candidates = candidates.filter(
-      (i) => i.tags?.some((t) => filterTags.has(normalizeText(t))),
-    );
-  }
-
-  const results: SearchResult[] = [];
-  for (const item of candidates) {
-    const { score, matchedFields } = computeScore(item, queryTokens);
-    if (score > 0) {
-      results.push({ id: item.id, title: item.title, score, matchedFields });
+function extractHighlights(doc: SearchDocument, queryTokens: string[]): string[] {
+  const highlights: string[] = [];
+  const text = [doc.title, doc.description ?? ""].join(" ");
+  for (const qt of queryTokens) {
+    const idx = text.toLowerCase().indexOf(qt);
+    if (idx !== -1) {
+      const start = Math.max(0, idx - 20);
+      const end = Math.min(text.length, idx + qt.length + 20);
+      highlights.push(text.slice(start, end));
     }
   }
-
-  results.sort((a, b) => b.score - a.score);
-  return results.slice(0, limit);
+  return highlights.slice(0, 3);
 }
 
-const workerMethods = {
-  search: searchIndex,
+const api: SearchWorkerAPI = {
+  async buildIndex(documents) {
+    index = documents.map(buildEntry);
+    return index.length;
+  },
+
+  async search(query, limit = 20) {
+    const queryTokens = tokenize(query);
+    if (queryTokens.length === 0) return [];
+
+    const scored = index
+      .map((entry) => ({
+        id: entry.id,
+        score: scoreMatch(entry, queryTokens),
+        highlights: extractHighlights(entry.original, queryTokens),
+      }))
+      .filter((r) => r.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+
+    return scored;
+  },
+
+  async addDocument(doc) {
+    index = index.filter((e) => e.id !== doc.id);
+    index.push(buildEntry(doc));
+  },
+
+  async removeDocument(id) {
+    index = index.filter((e) => e.id !== id);
+  },
+
+  async clearIndex() {
+    index = [];
+  },
+
+  async getIndexSize() {
+    return index.length;
+  },
 };
 
-export type SearchWorkerMethods = typeof workerMethods;
-
-exposeWorkerMethods(workerMethods);
+Comlink.expose(api);
