@@ -1,0 +1,64 @@
+=== identity-router /verify-otp (router-mediated, invalid OTP) ===
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:37:45 GMT
+content-type: application/json
+cf-ray: 9ed70509fc5441c9-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a8-6241-7950-9781-420c2796fe43
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=V3vZrrefwkmLmi2q9SbaMwLU6LKn8U_GT0atzvmgYhU-1776382665-1.0.1.1-DRikifEveQw5U9GiKVLBuQ.vmHp5F8hc34wOKdT5gx9U..N7k1xuYN8IOaUVOVXkAOAluVv1qdKv0OVaJAV3zaQNaiO.Abk7OFqTYp2u3.U; path=/; expires=Fri, 17-Apr-26 00:07:45 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+
+=== identity-router /verify-otp (missing phone+email, 400) ===
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:37:46 GMT
+content-type: application/json
+cf-ray: 9ed7050cbd8a4565-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a8-63f9-7202-b1dd-7db3e78ea7f9
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=TsrRNYDc9UoT_I6EZA.yoQRU7ZfVRpu9JxxDNsTKfAg-1776382666-1.0.1.1-Jy8KHbAWr9uxDTfeh1EQNIfPHt6.FnyxfG4qRR1t0riEUnxCUvvaYwDgQUzlU08QrmTzLjrAg92pIB3dfiLmD8XRAQ1WcIsHLYTpD3c6IQA; path=/; expires=Fri, 17-Apr-26 00:07:46 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+
+=== identity-router OPTIONS ===
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:37:46 GMT
+content-type: application/json
+cf-ray: 9ed7050f5f214664-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a8-65a0-7fa8-8f12-655f493d8ab3
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=lSZ9qGib.1FGtvZaX0gQwU6tqMiuXdAwlgTbxMo7R9w-1776382666-1.0.1.1-4doFzgGlDiiRmRgSi1hI_SsEp83mSVgnirE2J.Ph0PILvVKne9XWTfCOgmtXSLPOs2D1GVGeK7YrD4GrJk9I1EbNIc0dklJUljvIqxTKc04; path=/; expires=Fri, 17-Apr-26 00:07:46 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+

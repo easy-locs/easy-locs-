@@ -1,0 +1,46 @@
+=== send-otp probe (configuration check) ===
+HTTP/2 200 
+date: Thu, 16 Apr 2026 23:34:11 GMT
+content-type: application/json
+cf-ray: 9ed6ffc7fd8547ba-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-1903-7661-956d-9f788533fa32
+x-deno-execution-id: 3198fbda-8361-484a-aceb-c73d2f3d0ebc
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=6gSTyTBwUH7VQF92Ucy3Sa5Ez7SHuXHjazW9bHy.Yew-1776382451-1.0.1.1-2FAy0IoJ63pyQfOH8FJStJm650159I1hoFhgnKOoUBKML6ThkYF6sP_YRHTnOulEqRopxoURtmeNwozDbs_yqNNV6AqOjM7Ma5_BX.CvyXA; path=/; expires=Fri, 17-Apr-26 00:04:11 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"configured":false,"channels":[],"sms":false,"whatsapp":false}
+
+=== send-otp missing phone (400) ===
+HTTP/2 400 
+date: Thu, 16 Apr 2026 23:34:12 GMT
+content-type: application/json
+cf-ray: 9ed6ffd0ff0fd8f9-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version
+access-control-allow-methods: POST, OPTIONS
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98a5-1ea0-7c20-b977-878af942def6
+x-deno-execution-id: 7972f541-eb4c-453f-96e1-2d8aa544a7b3
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=NfhyBvSG71FYogn952TL6CfITTvHVbfPaLzd07Uq1x0-1776382452-1.0.1.1-qt3J.dQk5x1JXCjF9csoW.G96qhLEO2Qj38VrpeTIC1XFBveYGLmXDHXB.ap0hHkUN86b76r3LpRXqxDHBpFKIIN0H7OFG0HEIdu0F70HNU; path=/; expires=Fri, 17-Apr-26 00:04:12 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"error":"phone required"}
+

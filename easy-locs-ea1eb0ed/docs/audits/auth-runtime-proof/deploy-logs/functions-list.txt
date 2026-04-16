@@ -1,0 +1,5 @@
+=== send-otp deploy ===
+   ID                                   | NAME                     | SLUG                     | STATUS | VERSION | UPDATED_AT (UTC)    
+   f4982011-b42b-4550-b130-e22970b3f1b9 | send-otp                 | send-otp                 | ACTIVE | 1       | 2026-04-16 23:33:13 
+   2fe3d038-3a5e-498a-a7c7-456b950a3ced | verify-otp               | verify-otp               | ACTIVE | 1       | 2026-04-16 23:33:16 
+   7ed63de4-a10a-422b-b21b-6fc8491036c1 | auth-callback            | auth-callback            | ACTIVE | 1       | 2026-04-16 23:33:43 
