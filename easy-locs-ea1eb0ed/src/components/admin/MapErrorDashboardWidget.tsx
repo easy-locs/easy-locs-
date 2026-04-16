@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import {
   AlertTriangle, Map, RefreshCw, Activity, Shield, Clock, Filter, Radio, Timer,
-  ArrowUpDown, ArrowUp, ArrowDown, LayoutList,
+  ArrowUpDown, ArrowUp, ArrowDown, LayoutList, X,
 } from "lucide-react";
 import {
   useMapErrorDashboard,
@@ -287,6 +287,21 @@ export default function MapErrorDashboardWidget() {
             <CardTitle className="flex items-center gap-2 text-base">
               <Activity className="h-4 w-4 text-accent" />
               Errors / Minute Over Time
+              {component !== "all" && (
+                <Badge
+                  variant="secondary"
+                  className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
+                  onClick={() => setComponent("all")}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setComponent("all"); } }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Clear filter: ${component}`}
+                >
+                  <Filter className="h-3 w-3" />
+                  {component}
+                  <X className="h-3 w-3" />
+                </Badge>
+              )}
             </CardTitle>
             <div className="flex items-center gap-2">
               <Filter className="h-3.5 w-3.5 text-muted-foreground" />
@@ -484,6 +499,21 @@ export default function MapErrorDashboardWidget() {
             Alert History
             {alerts.length > 0 && (
               <Badge variant="secondary" className="text-xs">{alerts.length}</Badge>
+            )}
+            {component !== "all" && (
+              <Badge
+                variant="secondary"
+                className="text-xs font-normal cursor-pointer hover:bg-destructive/15 transition-colors inline-flex items-center gap-1"
+                onClick={() => setComponent("all")}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setComponent("all"); } }}
+                tabIndex={0}
+                role="button"
+                aria-label={`Clear filter: ${component}`}
+              >
+                <Filter className="h-3 w-3" />
+                {component}
+                <X className="h-3 w-3" />
+              </Badge>
             )}
           </CardTitle>
         </CardHeader>
