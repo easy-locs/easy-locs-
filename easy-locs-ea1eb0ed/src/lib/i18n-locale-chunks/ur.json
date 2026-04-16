@@ -1,0 +1,21 @@
+{
+  "nav.dashboard": "ڈیش بورڈ",
+  "nav.properties": "جائیدادیں",
+  "nav.tenants": "کرایہ دار",
+  "nav.documents": "دستاویزات",
+  "nav.payments": "ادائیگیاں",
+  "nav.settings": "ترتیبات",
+  "common.save": "محفوظ کریں",
+  "common.cancel": "منسوخ",
+  "common.delete": "حذف کریں",
+  "common.edit": "ترمیم",
+  "common.add": "شامل کریں",
+  "common.search": "تلاش",
+  "common.back": "واپس",
+  "common.loading": "لوڈ ہو رہا ہے...",
+  "common.no_data": "کوئی ڈیٹا نہیں",
+  "common.error": "خرابی",
+  "common.retry": "دوبارہ کوشش کریں",
+  "error.network": "کنکشن کا مسئلہ۔ دوبارہ کوشش کریں۔",
+  "error.unknown": "ایک خرابی پیش آئی۔ دوبارہ کوشش کریں۔"
+}
