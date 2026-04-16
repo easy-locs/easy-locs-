@@ -33,6 +33,7 @@ const CRON_JOBS: CronJob[] = [
   { name: "backup-storage-nightly", function_name: "backup-storage", schedule_seconds: 86400, tier: "high" },
   { name: "sentinel-server", function_name: "sentinel-server", schedule_seconds: 60, tier: "critical" },
   { name: "omega-server-loop", function_name: "omega-server-loop", schedule_seconds: 300, tier: "critical" },
+  { name: "execution-loop", function_name: "execution-loop", schedule_seconds: 30, body: { batch_size: 10 }, tier: "critical" },
   { name: "sentinel-server-guards", function_name: "sentinel-server-guards", schedule_seconds: 300, tier: "critical" },
   { name: "command-center-api-health", function_name: "command-center-api", schedule_seconds: 300, body: { action: "status" }, tier: "high" },
   { name: "dld-data-sync", function_name: "dld-sync-cron", schedule_seconds: 2592000, body: { mode: "full" }, tier: "medium" },
