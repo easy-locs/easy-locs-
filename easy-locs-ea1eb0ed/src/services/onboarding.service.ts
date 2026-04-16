@@ -22,7 +22,7 @@ export async function submitTaxiDriverProvider(params: {
   zone: { city: string; maxRadiusKm: number; preferredZones: string[] };
   vehiclePhotos: string[];
   vehicle: { type: string; brand: string; model: string; plateNumber: string; seats: number };
-}) {
+}): Promise<void> {
   const { userId, personal, profilePhoto, zone, vehiclePhotos, vehicle } = params;
 
   const base = buildProviderBase(userId, "taxi_driver", personal.fullName, {
@@ -44,9 +44,12 @@ export async function submitTaxiDriverProvider(params: {
     address_line1: zone.city,
   };
 
-  await upsertProviderRecord(payload);
+  const providerResult = await upsertProviderRecord(payload);
+  if (!providerResult) {
+    throw new Error("Failed to create taxi driver provider record");
+  }
 
-  await db.from("rider_profiles").upsert({
+  const { error: riderError } = await db.from("rider_profiles").upsert({
     user_id: userId,
     full_name: personal.fullName,
     phone: personal.phone,
@@ -60,6 +63,10 @@ export async function submitTaxiDriverProvider(params: {
     is_online: false,
     is_available: false,
   }, { onConflict: "user_id" });
+
+  if (riderError) {
+    throw new Error(`Failed to create rider profile: ${riderError.message}`);
+  }
 }
 
 export async function submitServiceProvider(params: {
@@ -116,7 +123,10 @@ export async function submitServiceProvider(params: {
     tags: [category, subCategory].filter(Boolean),
   };
 
-  await upsertProviderRecord(payload);
+  const providerResult = await upsertProviderRecord(payload);
+  if (!providerResult) {
+    throw new Error("Failed to create service provider record");
+  }
 }
 
 interface RoomType {
@@ -189,9 +199,12 @@ export async function submitHotelProvider(params: {
     operating_hours: {},
   };
 
-  await upsertProviderRecord(payload);
+  const providerResult = await upsertProviderRecord(payload);
+  if (!providerResult) {
+    throw new Error("Failed to create hotel provider record");
+  }
 
-  const { data: hotelData } = await db
+  const { data: hotelData, error: hotelError } = await db
     .from("hotels")
     .insert({
       name: info.name,
@@ -210,6 +223,10 @@ export async function submitHotelProvider(params: {
     })
     .select("id")
     .single();
+
+  if (hotelError) {
+    throw new Error(`Failed to create hotel record: ${hotelError.message}`);
+  }
 
   if (hotelData?.id) {
     for (const room of rooms) {

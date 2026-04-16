@@ -154,7 +154,7 @@ interface Props {
 
 function NewsDashboardSectionInner({ country = "FR", city }: Props) {
   const navigate = useNavigate();
-  const { items, loading, error, lastRefreshedAt, isStale, source, refresh, forceRetry } = useNewsData(country, city);
+  const { items, loading, error, lastRefreshedAt, isStale, source, refresh, forceRetry, degraded, degradedReason } = useNewsData(country, city);
   const displayItems = items.slice(0, MAX_DASHBOARD_ITEMS);
 
   return (
@@ -184,6 +184,13 @@ function NewsDashboardSectionInner({ country = "FR", city }: Props) {
         <p className="text-[9px] text-muted-foreground mb-1.5">
           Mis à jour {formatLastUpdated(lastRefreshedAt)}
         </p>
+      )}
+
+      {degraded && (
+        <div className="flex items-center gap-2 px-3 py-2 mb-2 rounded-lg text-[10px] text-amber-600 bg-amber-500/10 border border-amber-500/20">
+          <RefreshCw size={10} className="shrink-0" />
+          <span>{degradedReason || "News sources are temporarily unavailable. Showing cached content."}</span>
+        </div>
       )}
 
       <div className="space-y-2">

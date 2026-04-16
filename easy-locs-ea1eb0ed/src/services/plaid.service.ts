@@ -108,24 +108,36 @@ export async function exchangePublicToken(
   return { ok: true, accounts };
 }
 
-export async function getLinkedAccounts(): Promise<LinkedBankAccount[]> {
+export interface LinkedAccountsResult {
+  accounts: LinkedBankAccount[];
+  errors: Array<{ itemId: string; error: string }>;
+}
+
+export async function getLinkedAccounts(): Promise<LinkedAccountsResult> {
   const userId = await getCurrentUserId();
-  if (!userId) return [];
+  if (!userId) return { accounts: [], errors: [{ itemId: "auth", error: "Not authenticated" }] };
 
   const { data, error } = await db.from("plaid_items")
     .select("item_id, created_at")
     .eq("user_id", userId);
 
-  if (error || !data?.length) return [];
+  if (error) return { accounts: [], errors: [{ itemId: "db", error: error.message }] };
+  if (!data?.length) return { accounts: [], errors: [] };
 
   const allAccounts: LinkedBankAccount[] = [];
+  const errors: Array<{ itemId: string; error: string }> = [];
 
   for (const item of data) {
     try {
       const { data: accountsData, error: accountsError } = await db.functions.invoke("plaid-link-token", {
         body: { action: "get_accounts", itemId: item.item_id },
       });
-      if (accountsError || !accountsData?.accounts) continue;
+      if (accountsError || !accountsData?.accounts) {
+        const errMsg = accountsError?.message ?? "No accounts returned";
+        console.warn(`[plaid] Failed to fetch accounts for item ${item.item_id}:`, errMsg);
+        errors.push({ itemId: item.item_id, error: errMsg });
+        continue;
+      }
 
       const accounts: LinkedBankAccount[] = accountsData.accounts.map((a: Record<string, unknown>) => {
         const balances = (a.balances ?? {}) as Record<string, unknown>;
@@ -144,12 +156,15 @@ export async function getLinkedAccounts(): Promise<LinkedBankAccount[]> {
         };
       });
       allAccounts.push(...accounts);
-    } catch {
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "unknown";
+      console.warn(`[plaid] Error fetching accounts for item ${item.item_id}:`, errMsg);
+      errors.push({ itemId: item.item_id, error: errMsg });
       continue;
     }
   }
 
-  return allAccounts;
+  return { accounts: allAccounts, errors };
 }
 
 export async function unlinkAccount(accountId: string): Promise<{ ok: boolean; error?: string }> {
@@ -207,13 +222,13 @@ export async function initiateAchTransfer(
 
 export async function verifyIncome(): Promise<IncomeVerificationResult> {
   const userId = await getCurrentUserId();
-  if (!userId) return { verified: false, confidence: "low" };
+  if (!userId) throw new Error("Not authenticated");
 
   const { data, error } = await db.functions.invoke("plaid-link-token", {
     body: { action: "verify_income" },
   });
   if (error) {
-    return { verified: false, confidence: "low" };
+    throw new Error("Income verification failed. Please ensure your bank account is linked and try again.");
   }
   return {
     verified: true,
@@ -223,6 +238,6 @@ export async function verifyIncome(): Promise<IncomeVerificationResult> {
   };
 }
 
-export async function refreshAccountBalances(): Promise<LinkedBankAccount[]> {
+export async function refreshAccountBalances(): Promise<LinkedAccountsResult> {
   return getLinkedAccounts();
 }

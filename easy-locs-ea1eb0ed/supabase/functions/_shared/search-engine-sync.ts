@@ -128,7 +128,7 @@ export async function configureMeilisearchIndex(): Promise<void> {
     `/indexes/${config.indexName}/settings`,
     "PATCH",
     {
-      searchableAttributes: ["title", "subtitle", "category", "city", "vertical"],
+      searchableAttributes: ["title", "subtitle", "category", "city", "vertical", "type"],
       filterableAttributes: ["type", "city", "vertical", "category", "rating", "price", "is_open"],
       sortableAttributes: ["rating", "price", "updated_at"],
       typoTolerance: {
@@ -142,7 +142,7 @@ export async function configureMeilisearchIndex(): Promise<void> {
 }
 
 export async function syncFromPostgres(
-  entityType: "shop" | "product" | "property" | "service" | "profile",
+  entityType: "shop" | "product" | "property" | "service" | "profile" | "food_menu",
   batchSize = 500,
 ): Promise<number> {
   if (!isMeilisearchAvailable()) return 0;
@@ -298,6 +298,30 @@ async function fetchBatch(
         is_open: null,
         vertical: null,
         category: r.role as string | null,
+        updated_at: String(r.updated_at ?? new Date().toISOString()),
+      }));
+    }
+    case "food_menu": {
+      const { data } = await supabase
+        .from("food_items")
+        .select("id, name, description, price, currency, category, image_url, restaurant_id, updated_at")
+        .range(offset, offset + limit - 1);
+      return (data ?? []).map((r: Record<string, unknown>) => ({
+        id: `food:${r.id}`,
+        type: "food_menu",
+        title: String(r.name ?? ""),
+        subtitle: String(r.description ?? r.category ?? ""),
+        image_url: r.image_url as string | null,
+        rating: null,
+        price: r.price as number | null,
+        currency: (r.currency ?? "AED") as string,
+        city: null,
+        lat: null,
+        lng: null,
+        slug: null,
+        is_open: null,
+        vertical: "food",
+        category: r.category as string | null,
         updated_at: String(r.updated_at ?? new Date().toISOString()),
       }));
     }

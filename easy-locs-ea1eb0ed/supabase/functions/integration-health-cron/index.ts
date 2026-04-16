@@ -4,6 +4,7 @@ import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { checkPlaidHealth } from "../_shared/plaid-health.ts";
 import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
 import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
+import { checkAllNewsHealth } from "../_shared/news-health.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,7 +51,7 @@ Deno.serve(async (req) => {
   try {
     const startTime = Date.now();
 
-    const [plaid, livekit, meilisearch] = await Promise.all([
+    const [plaid, livekit, meilisearch, newsApis] = await Promise.all([
       checkPlaidHealth(),
       checkLiveKitHealth(),
       (async () => {
@@ -61,13 +62,15 @@ Deno.serve(async (req) => {
         if (!health) return { status: "error" as const, error: "Meilisearch unreachable", latencyMs };
         return { status: "ok" as const, version: health.version, latencyMs };
       })(),
+      checkAllNewsHealth(),
     ]);
 
-    const services = { plaid, livekit, meilisearch };
-    const statuses = Object.values(services).map((s) => s.status);
-    const hasError = statuses.some((s) => s === "error");
-    const hasNotConfigured = statuses.some((s) => s === "not_configured");
-    const overall = hasError ? "degraded" : hasNotConfigured ? "partial" : "ok";
+    const services = { plaid, livekit, meilisearch, news_apis: newsApis };
+    const coreStatuses = [plaid.status, livekit.status, meilisearch.status, newsApis.status];
+    const hasError = coreStatuses.some((s) => s === "error");
+    const hasPartial = coreStatuses.some((s) => s === "partial");
+    const hasNotConfigured = coreStatuses.some((s) => s === "not_configured");
+    const overall = hasError || hasPartial ? "degraded" : hasNotConfigured ? "partial" : "ok";
     const totalLatencyMs = Date.now() - startTime;
 
     const { error: insertErr } = await supabase
@@ -81,6 +84,8 @@ Deno.serve(async (req) => {
         livekit_latency_ms: (livekit as Record<string, unknown>).latencyMs ?? null,
         meilisearch_status: meilisearch.status,
         meilisearch_latency_ms: (meilisearch as Record<string, unknown>).latencyMs ?? null,
+        news_apis_status: newsApis.status,
+        news_apis_latency_ms: (newsApis as Record<string, unknown>).latencyMs ?? null,
         total_latency_ms: totalLatencyMs,
       });
 
@@ -89,7 +94,7 @@ Deno.serve(async (req) => {
     }
 
     console.log(
-      `[integration-health-cron] status=${overall} plaid=${plaid.status} livekit=${livekit.status} meilisearch=${meilisearch.status} latency=${totalLatencyMs}ms`,
+      `[integration-health-cron] status=${overall} plaid=${plaid.status} livekit=${livekit.status} meilisearch=${meilisearch.status} news=${newsApis.status} latency=${totalLatencyMs}ms`,
     );
 
     return new Response(

@@ -7,7 +7,14 @@ import { fetchFirecrawlUsageLogs } from "@/repositories/admin-ops.repository";
 
 type Period = "day" | "week" | "month";
 
-const COST_PER_CALL = 0.002;
+const COST_PER_CALL = (() => {
+  const envVal = import.meta.env.VITE_FIRECRAWL_COST_PER_CALL;
+  if (envVal) {
+    const parsed = parseFloat(envVal);
+    if (!isNaN(parsed) && parsed >= 0) return parsed;
+  }
+  return 0.002;
+})();
 
 function groupByPeriod(
   logs: { user_id: string; success: boolean; text_length: number; created_at: string }[],

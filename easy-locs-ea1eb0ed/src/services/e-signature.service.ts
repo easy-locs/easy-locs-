@@ -193,18 +193,26 @@ export async function getMyEnvelopes(): Promise<SigningEnvelope[]> {
   if (!userId) return [];
 
   try {
-    const { data: fnData } = await db.functions.invoke("esign-create-envelope", {
+    const { data: fnData, error: fnError } = await db.functions.invoke("esign-create-envelope", {
       body: { action: "get_envelope_status", userId },
     });
-    if (fnData?.envelopes) return fnData.envelopes;
-  } catch {
-    // fall through to DB query
+    if (!fnError && fnData?.envelopes) return fnData.envelopes;
+    if (fnError) {
+      console.warn("[e-signature] Edge function failed, falling back to database query:", fnError.message ?? fnError);
+    }
+  } catch (err) {
+    console.warn("[e-signature] Edge function unavailable, falling back to database query:", err instanceof Error ? err.message : "unknown");
   }
 
-  const { data } = await db
+  const { data, error } = await db
     .from("signature_envelopes")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(`Failed to fetch signing envelopes: ${error.message}`);
+  }
 
   return (data ?? []).map((row: unknown) => rowToEnvelope(row as EnvelopeRow));
 }

@@ -14,6 +14,8 @@ interface CachedNewsData {
   fetchedAt: number;
   source: string;
   contentHash: string;
+  degraded?: boolean;
+  degradedReason?: string;
 }
 
 function serviceLog(step: string, data?: Record<string, unknown>): void {
@@ -113,24 +115,51 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
   try {
     bootProviders();
 
-    const timeoutPromise = new Promise<null>(resolve => setTimeout(() => resolve(null), INITIAL_TIMEOUT_MS));
+    interface FetchResult {
+      items: CanonicalGlobalFeedItem[];
+      partialFailure?: boolean;
+      failureReason?: string;
+    }
+
     const useMultiSource = isMultiSourceAvailable();
-    const fetchFn = useMultiSource ? fetchMultiSourceNews : fetchNews;
-    const fetchPromise = fetchFn(_country, _city).then(items => items).catch(err => {
-      serviceLog("fetch_error", { error: err instanceof Error ? err.message : "unknown", multiSource: useMultiSource });
-      return [] as CanonicalGlobalFeedItem[];
-    });
+    const fetchPromise = (async (): Promise<FetchResult> => {
+      try {
+        if (useMultiSource) {
+          const result = await fetchMultiSourceNews(_country, _city);
+          const hasIssues = result.errors.length > 0;
+          if (hasIssues) {
+            const issueNames = result.errors.map(e => `${e.source}: ${e.error}`).join("; ");
+            serviceLog("multi_source_partial_failure", {
+              errors: result.errors,
+              sourcesSucceeded: result.sourcesSucceeded,
+              sourcesFailed: result.sourcesFailed,
+            });
+            return {
+              items: result.items,
+              partialFailure: true,
+              failureReason: `News source issues: ${issueNames}`,
+            };
+          }
+          return { items: result.items };
+        }
+        return { items: await fetchNews(_country, _city) };
+      } catch (err) {
+        serviceLog("fetch_error", { error: err instanceof Error ? err.message : "unknown", multiSource: useMultiSource });
+        return { items: [], partialFailure: true, failureReason: err instanceof Error ? err.message : "unknown" };
+      }
+    })();
 
-    const items = await Promise.race([fetchPromise, timeoutPromise]);
+    const timeoutPromise = new Promise<null>(resolve => setTimeout(() => resolve(null), INITIAL_TIMEOUT_MS));
+    const fetchResult = await Promise.race([fetchPromise, timeoutPromise]);
 
-    if (items === null) {
+    if (fetchResult === null) {
       serviceLog("fetch_timeout", { timeoutMs: INITIAL_TIMEOUT_MS, country: _country });
 
-      fetchPromise.then(laterItems => {
-        if (laterItems && laterItems.length > 0) {
-          const lateSource = laterItems[0]?.sourceId === "fallback_static" ? "fallback" : "live";
-          serviceLog("late_fetch_arrived", { itemCount: laterItems.length, source: lateSource });
-          updateCache(laterItems, lateSource);
+      fetchPromise.then(laterResult => {
+        if (laterResult && laterResult.items.length > 0) {
+          const lateSource = laterResult.items[0]?.sourceId === "fallback_static" ? "fallback" : "live";
+          serviceLog("late_fetch_arrived", { itemCount: laterResult.items.length, source: lateSource });
+          updateCache(laterResult.items, lateSource, true, laterResult.partialFailure, laterResult.failureReason);
         }
       });
 
@@ -140,10 +169,12 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
       }
 
       const fallback = getFallbackNews(_country);
-      updateCache(fallback, "fallback");
+      updateCache(fallback, "fallback", true, true, "All news sources timed out");
       serviceLog("timeout_using_fallback", { itemCount: fallback.length });
       return _cachedNews;
     }
+
+    const items = fetchResult.items;
 
     if (items.length > 0) {
       const newHash = computeContentHash(items);
@@ -151,17 +182,19 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
       const isNewContent = newHash !== oldHash;
 
       const source = items[0]?.sourceId === "fallback_static" ? "fallback" : "live";
+      const isDegraded = source === "fallback" || !!fetchResult.partialFailure;
+      const degradedReason = fetchResult.failureReason ?? (source === "fallback" ? "Using static fallback data" : undefined);
 
-      updateCache(items, source, isNewContent);
+      updateCache(items, source, isNewContent, isDegraded, degradedReason);
       _consecutiveFailures = 0;
-      serviceLog("refresh_success", { itemCount: items.length, source, isNewContent, hash: newHash });
+      serviceLog("refresh_success", { itemCount: items.length, source, isNewContent, hash: newHash, degraded: isDegraded });
     } else {
       _consecutiveFailures++;
       serviceLog("refresh_empty", { consecutiveFailures: _consecutiveFailures });
 
       if (!_cachedNews || _cachedNews.items.length === 0) {
         const fallback = getFallbackNews(_country);
-        updateCache(fallback, "fallback");
+        updateCache(fallback, "fallback", true, true, "All news sources returned empty results");
         serviceLog("empty_result_using_fallback", { itemCount: fallback.length });
       }
     }
@@ -169,11 +202,12 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
     return _cachedNews;
   } catch (err) {
     _consecutiveFailures++;
-    serviceLog("refresh_error", { error: err instanceof Error ? err.message : "unknown", consecutiveFailures: _consecutiveFailures });
+    const errMsg = err instanceof Error ? err.message : "unknown";
+    serviceLog("refresh_error", { error: errMsg, consecutiveFailures: _consecutiveFailures });
 
     if (!_cachedNews || _cachedNews.items.length === 0) {
       const fallback = getFallbackNews(_country);
-      updateCache(fallback, "fallback");
+      updateCache(fallback, "fallback", true, true, `News fetch failed: ${errMsg}`);
     }
 
     return _cachedNews;
@@ -182,7 +216,13 @@ export async function refreshNewsData(force: boolean = false): Promise<CachedNew
   }
 }
 
-function updateCache(items: CanonicalGlobalFeedItem[], source: string, isNewContent: boolean = true): void {
+function updateCache(
+  items: CanonicalGlobalFeedItem[],
+  source: string,
+  isNewContent: boolean = true,
+  degraded: boolean = false,
+  degradedReason?: string,
+): void {
   const newHash = computeContentHash(items);
   _cachedNews = {
     items,
@@ -190,6 +230,8 @@ function updateCache(items: CanonicalGlobalFeedItem[], source: string, isNewCont
     city: _city,
     fetchedAt: isNewContent ? Date.now() : (_cachedNews?.fetchedAt ?? Date.now()),
     source,
+    degraded,
+    degradedReason,
     contentHash: newHash,
   };
   saveToLocalStorage(_cachedNews);

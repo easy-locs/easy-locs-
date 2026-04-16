@@ -1,4 +1,4 @@
-const MEILISEARCH_URL = () => Deno.env.get("MEILISEARCH_URL") ?? "http://localhost:7700";
+const MEILISEARCH_URL = () => Deno.env.get("MEILISEARCH_URL") ?? "";
 const MEILISEARCH_API_KEY = () => Deno.env.get("MEILISEARCH_API_KEY") ?? "";
 
 interface MeilisearchDocument {
@@ -31,7 +31,11 @@ async function meiliRequest(
   path: string,
   body?: unknown
 ): Promise<Response> {
-  const url = `${MEILISEARCH_URL()}${path}`;
+  const baseUrl = MEILISEARCH_URL();
+  if (!baseUrl) {
+    throw new Error("MEILISEARCH_URL is not configured. Set the MEILISEARCH_URL environment variable.");
+  }
+  const url = `${baseUrl}${path}`;
   const apiKey = MEILISEARCH_API_KEY();
 
   const headers: Record<string, string> = {
@@ -121,4 +125,15 @@ export async function meiliGetTask(taskUid: number): Promise<Record<string, unkn
 
 export function isMeilisearchAvailable(): boolean {
   return !!Deno.env.get("MEILISEARCH_URL");
+}
+
+export async function checkMeilisearchHealth(): Promise<{ status: string; version?: string } | null> {
+  if (!isMeilisearchAvailable()) return null;
+  try {
+    const resp = await meiliRequest("GET", "/health");
+    if (resp.ok) return resp.json();
+    return null;
+  } catch {
+    return null;
+  }
 }

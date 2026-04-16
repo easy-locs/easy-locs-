@@ -15,12 +15,42 @@ Easy-Locs is a world-class super-app built around 5 intelligently connected pill
 - **Experiment Lab** (admin page `/admin/experiment-lab`) — A/B testing dashboard, variant analysis, chi-squared significance, lifecycle management
 - **API Factory** (`scripts/api-doc-generator.ts`, `scripts/sdk-generator.ts`, page `/developer-portal/docs`) — Auto-generated OpenAPI spec, TypeScript SDK, webhook catalog
 - **Architecture Lab** (admin page `/admin/architecture-lab`) — Import boundary audit, domain ownership map, architecture grade, historical trends
-- **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch connectivity monitoring with per-service status, latency, error details, and historical uptime/latency trend charts (24h/7d/30d) backed by `analytics.integration_health_log` table
-- **Integration Health Monitor** (edge function `integration-health-monitor`, scheduled every 5 min via cron dispatcher) — Checks Plaid, LiveKit, Meilisearch health; sends in-app + email notifications to all admins when any integration reports an error; hourly deduplication prevents alert spam
+- **Integrations Lab** (admin page `/admin/integration-health`) — Plaid, LiveKit, Meilisearch, News APIs connectivity monitoring with per-service status, latency, error details, and historical uptime/latency trend charts (24h/7d/30d) backed by `analytics.integration_health_log` table
+- **Integration Health Monitor** (edge function `integration-health-monitor`, scheduled every 5 min via cron dispatcher) — Checks Plaid, LiveKit, Meilisearch, GNews, NewsData health; sends in-app + email notifications to all admins when any integration reports an error; hourly deduplication prevents alert spam
 - **Integration Health Log Retention** (edge function `cleanup-integration-health-logs`, daily via cron dispatcher) — Purges `analytics.integration_health_log` rows older than 90 days (configurable via `retention_days` body param) to bound storage growth
 - **Lab Hub** (admin page `/admin/lab-hub`) — Central hub linking all 9 labs with health indicators and Factory Score
 
 Built with React + Vite + TypeScript, backed by Supabase. Property management, marketplace, communication, digital wallet, and service discovery — unified under one roof.
+
+## Layer 8 — Live Integrations (Task #575)
+All integrations connected to real backends with zero mock dependencies in production:
+
+### Integration Connections
+- **Plaid**: Banking API connected via `plaid-link-token` edge function. Account linking, token exchange, ACH transfers, income verification. Env vars: `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV`
+- **LiveKit**: Real-time voice/video via `livekit-room-token` edge function. JWT token generation, room management, recording. Env vars: `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `LIVEKIT_URL`
+- **Meilisearch**: Full-text search across shops, products, properties, services, profiles, and food menus. Env vars: `MEILISEARCH_URL`, `MEILISEARCH_API_KEY`
+- **News APIs**: Multi-source aggregation (Google News RSS, GNews, NewsData.io). Env vars: `VITE_GNEWS_API_KEY`, `VITE_NEWSDATA_API_KEY`
+
+### BNPL Full Lifecycle
+States: `created → approved → active → completed | overdue | defaulted`. Functions: `createBnplPlan`, `approveBnplPlan`, `activateBnplPlan`, `payInstallment`, `markOverdueInstallments`.
+
+### E-Signature Persistence
+Envelopes stored in `signature_envelopes` with webhook-driven updates via `esign-webhook` edge function. Status tracking: `draft → pending → signed | declined | expired`.
+
+### Health Checks
+- `integration-health-cron`: Checks Plaid, LiveKit, Meilisearch, GNews, NewsData every 5 min
+- `health-check`: Reports config status for all integrations (Plaid, LiveKit, Meilisearch, News, Stripe)
+- `_shared/news-health.ts`: GNews and NewsData health check helpers
+
+### Explicit Error Handling
+All integration failures produce explicit error messages (no silent fallbacks). News sources log failures with provider names. Plaid account fetch errors are logged per-item. E-signature falls back to DB with warning logs.
+
+### Shared Utilities
+- **Size Estimation**: `src/lib/shared/size-estimation.ts` — `estimateObjectSize()`, `estimateStringSize()`, `estimateListItemSize()`, `formatBytes()` for reuse across virtualized lists and memory management
+- **Firecrawl Cost**: Configurable via `VITE_FIRECRAWL_COST_PER_CALL` env var (default: 0.002)
+
+### Meilisearch Indexes
+`shops`, `products`, `properties`, `services`, `profiles`, `food_menus` — all synced via `sync-meilisearch-cron` with queue processing and incremental sync.
 
 ## DLD API Integration (Task #530)
 The market intelligence page connects to the live Dubai Land Department (DLD) REST API for real-time transaction data.

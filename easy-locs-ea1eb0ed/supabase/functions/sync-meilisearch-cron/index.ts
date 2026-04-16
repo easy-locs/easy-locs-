@@ -114,6 +114,24 @@ const INDEX_CONFIGS: Record<string, {
       type: "profile",
     }),
   },
+  food_menus: {
+    table: "food_items",
+    select: "id, name, description, price, currency, category, image_url, restaurant_id, updated_at",
+    filterableAttributes: ["category", "price", "restaurant_id"],
+    sortableAttributes: ["price", "name"],
+    searchableAttributes: ["name", "description", "category"],
+    mapFn: (r) => ({
+      id: r.id,
+      name: r.name,
+      description: r.description,
+      price: r.price,
+      currency: r.currency ?? "AED",
+      category: r.category,
+      image_url: r.image_url,
+      restaurant_id: r.restaurant_id,
+      type: "food_menu",
+    }),
+  },
 };
 
 const ENTITY_TO_INDEX: Record<string, string> = {
@@ -122,6 +140,7 @@ const ENTITY_TO_INDEX: Record<string, string> = {
   property: "properties",
   service: "services",
   profile: "profiles",
+  food_menu: "food_menus",
 };
 
 interface QueueItem {

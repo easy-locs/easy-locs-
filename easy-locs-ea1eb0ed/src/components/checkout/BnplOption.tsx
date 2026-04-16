@@ -118,7 +118,7 @@ export default function BnplOption({
                   className="flex items-center justify-between text-xs"
                 >
                   <span className="text-muted-foreground">
-                    {i === 0 ? "Today" : date.toLocaleDateString()}
+                    {date.toLocaleDateString()}
                   </span>
                   <span className="font-medium">
                     {currency === "USD" ? "$" : currency}{" "}
@@ -133,8 +133,8 @@ export default function BnplOption({
         <div className="flex items-start gap-1.5">
           <Info className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-[10px] text-muted-foreground leading-relaxed">
-            No interest or hidden fees. First payment is due today. Remaining
-            installments are charged monthly.
+            No interest or hidden fees. All installments are charged monthly
+            starting 30 days after activation.
           </p>
         </div>
       </CardContent>
