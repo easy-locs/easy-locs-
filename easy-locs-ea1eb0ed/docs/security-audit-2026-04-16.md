@@ -171,3 +171,60 @@ Les vraies actions prioritaires sont :
 3. Durcissement léger XSS sur 6 `innerHTML`.
 
 Aucune suppression/nettoyage de code n'est nécessaire.
+
+---
+
+# Security Audit — 2026-04-16
+
+## Summary
+- Before patch: 27 vulnerabilities (1 critical, 15 high, 8 moderate, 3 low)
+- After `npm audit fix`: 19 vulnerabilities (0 critical, 9 high, 7 moderate, 3 low)
+- Net fix: critical eliminated, 8 vulnerabilities resolved via non-breaking patch bumps
+
+## Fixed (non-breaking `npm audit fix`)
+Resolved automatically via patch/minor bumps in `package-lock.json`:
+- jspdf HTML injection (critical) — patched
+- lodash template RCE — patched
+- tar symlink traversal — patched
+- @xmldom/xmldom XML injection — patched
+- Several transitive minimatch/path-to-regexp ReDoS issues — patched
+- yaml stack overflow — patched
+
+Build verified: `npm run build` passes after the fix.
+
+## Remaining (require breaking major bumps — triaged, scheduled)
+These cannot be resolved without `npm audit fix --force` and major-version
+upgrades. They have been triaged as follows:
+
+### Scheduled for a dedicated upgrade task
+1. **@vercel/node 2.x → 3.x** (fixes undici, path-to-regexp, minimatch, ajv, smol-toml)
+   - Direct dep. Major bump changes Node runtime API surface for serverless
+     handlers in `api/` and `lambda-handlers/`. Requires regression testing of
+     all Vercel functions. Schedule as separate task.
+2. **workbox-build 6.x → 7.x** (fixes serialize-javascript RCE in build-only path)
+   - Build-time only, not shipped to clients. Low runtime risk. Schedule with
+     PWA/service-worker revalidation task.
+3. **vite 5.x → 7.x + vitest** (fixes esbuild dev-server request issue)
+   - Dev/test-only. Not exploitable in production builds. Schedule as part of
+     the toolchain upgrade (requires Vite plugin compatibility review:
+     `vite-plugin-feeds`, `vite-plugin-indexnow`, `vite-plugin-og-images`,
+     `vite-plugin-prerender`, `vite-plugin-seo-validate`, `vite-plugin-sitemap`).
+4. **jsdom 22 → 29** (fixes @tootallnate/once low-severity issue)
+   - Test-only dep. Low severity (CVSS 3.3). Accept until next test-stack refresh.
+
+### Accepted (dev/test-only, not exposed to end users)
+- esbuild dev server issue (vite/vitest): only affects local development
+- @tootallnate/once: reachable only through jsdom in tests
+
+### Not accepted / must upgrade
+- undici, path-to-regexp, minimatch (high severity) reach production via
+  `@vercel/node`. Upgrading `@vercel/node` to 3.x is the fix and is scheduled
+  per item (1) above.
+
+## Commands
+```
+cd easy-locs-ea1eb0ed
+npm audit fix          # applied — non-breaking
+npm audit              # 19 remaining, all require --force
+npm run build          # passes
+```
