@@ -10,6 +10,10 @@ import {
   computeDistrictSummaries,
   computeMarketKPIs,
   computeMonthlyTrends,
+  computeBuildingHistory,
+  computeComparableSales,
+  computeMarketSummary,
+  getBuildingsForDistrict,
 } from "@/data/fallback-dld-transactions";
 import { db } from "./db";
 
@@ -222,7 +226,65 @@ export const dldAnalyticsService = {
   },
 
   getAvailablePeriods(): string[] {
-    // DEMO FALLBACK — returns periods from static seed data
     return [...new Set(FALLBACK_DLD_TRANSACTIONS.map(t => t.transactionDate.slice(0, 7)))].sort();
+  },
+
+  async getBuildingHistory(buildingName: string): Promise<DLDTransaction[]> {
+    const remote = await fetchFromEdgeFunction<DLDTransaction[]>("dld-analytics/building-history", {
+      building: buildingName,
+    });
+    if (remote) return remote;
+
+    return computeBuildingHistory(FALLBACK_DLD_TRANSACTIONS, buildingName);
+  },
+
+  async getComparableSales(
+    district: string,
+    propertyType?: string,
+    bedrooms?: number,
+    limit: number = 20
+  ): Promise<{ comparables: DLDTransaction[]; medianPricePerSqft: number }> {
+    const remote = await fetchFromEdgeFunction<{ comparables: DLDTransaction[]; medianPricePerSqft: number }>(
+      "dld-analytics/comparables",
+      { district, type: propertyType, bedrooms, limit }
+    );
+    if (remote) return remote;
+
+    return computeComparableSales(FALLBACK_DLD_TRANSACTIONS, district, propertyType, bedrooms, limit);
+  },
+
+  async getMarketSummary(): Promise<{
+    avgPricePerSqft: number;
+    totalVolume: number;
+    transactionCount: number;
+    volumeTrend: number;
+    hottestDistrict: string;
+  }> {
+    const remote = await fetchFromEdgeFunction<{
+      avgPricePerSqft: number;
+      totalVolume: number;
+      transactionCount: number;
+      volumeTrend: number;
+      hottestDistrict: string;
+    }>("dld-analytics/summary", {});
+    if (remote) return remote;
+
+    return computeMarketSummary(FALLBACK_DLD_TRANSACTIONS);
+  },
+
+  getBuildingsForDistrict(district: string): string[] {
+    return getBuildingsForDistrict(district);
+  },
+
+  getAllBuildings(): string[] {
+    return [...new Set(FALLBACK_DLD_TRANSACTIONS.filter(t => t.buildingName).map(t => t.buildingName!))].sort();
+  },
+
+  async getBuildingsLive(district?: string): Promise<{ name: string; district: string }[] | null> {
+    const remote = await fetchFromEdgeFunction<{ name: string; district: string }[]>(
+      "dld-analytics/buildings",
+      { district }
+    );
+    return remote;
   },
 };

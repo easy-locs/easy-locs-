@@ -48,6 +48,24 @@ const DISTRICTS: { name: string; lat: number; lng: number }[] = [
   { name: "International City", lat: 25.1567, lng: 55.4067 },
 ];
 
+const DISTRICT_BUILDINGS: Record<string, string[]> = {
+  "Dubai Marina": ["Marina Gate Tower 1", "Marina Gate Tower 2", "Damac Heights", "Princess Tower", "Cayan Tower", "Marina Pinnacle", "Silverene Tower", "Botanica Tower", "Escan Tower", "Bay Central", "The Torch", "Ocean Heights", "Elite Residence"],
+  "Downtown Dubai": ["Burj Khalifa Residences", "The Address Downtown", "Boulevard Point", "Forte Tower", "The Lofts East", "The Lofts West", "Standpoint Tower A", "Standpoint Tower B", "Claren Tower 1", "Claren Tower 2", "Act One Tower", "Opera Grand"],
+  "Business Bay": ["Executive Tower H", "Executive Tower J", "Paramount Tower", "Bay Gate Tower", "The Opus", "Noora Tower", "Merano Tower", "West Wharf", "Capital Bay Tower A", "Capital Bay Tower B", "Sol Bay", "Avanti Tower"],
+  "Palm Jumeirah": ["Atlantis The Royal Residences", "One Palm", "FIVE Palm Residences", "Tiara Residences", "Oceana Pacific", "Oceana Atlantic", "Shoreline Apartments 1", "Shoreline Apartments 5", "Fairmont Palm Residences", "Golden Mile 2", "Golden Mile 10", "Al Haseer"],
+  "JVC": ["Bloom Heights A", "Bloom Heights B", "Belgravia Heights 1", "Belgravia Heights 2", "Manhattan Tower", "Sydney Tower", "Pantheon Elysee", "Le Grand Chateau", "Oxford Residence", "District 10 Tower", "Seasons Community", "Park View Residences"],
+  "JLT": ["Lakeside Tower A", "Lakeside Tower B", "Saba Tower 1", "Saba Tower 2", "Bonnington Tower", "Gold Tower", "Platinum Tower A", "Concorde Tower", "Al Seef Tower 2", "Lake Terrace Tower", "Green Lakes Tower 1", "Jumeirah Bay X1"],
+  "Dubai Hills": ["Park Heights 1", "Park Heights 2", "Collective Tower 1", "Collective Tower 2", "Acacia Villas", "Maple Townhouses", "Golf Suites", "Elora Residences", "Park Ridge Tower", "Glendale Tower", "Mulberry Park", "Park Point"],
+  "Arabian Ranches": ["Al Reem Community", "Savanna Villas", "Palmera Villas", "Alma Residences", "Rosa Villas", "Mirador La Coleccion", "Al Mahra Residences", "Hattan Villas", "Saheel Villas", "Samara Villas", "Yasmin Community", "Aseel Residences"],
+  "DIFC": ["Index Tower", "Central Park Tower", "Sky Gardens", "Park Towers A", "Park Towers B", "Limestone House", "Burj Daman", "Emirates Financial Tower 1", "Emirates Financial Tower 2", "Gate Village 4", "DIFC Suites", "Liberty House"],
+  "Jumeirah Beach Residence": ["Rimal Tower 1", "Rimal Tower 4", "Shams Tower 1", "Shams Tower 4", "Bahar Tower 1", "Murjan Tower 1", "Sadaf Tower 2", "Amwaj Tower 4", "Al Fattan Tower", "JBR Walk Residence", "Marina Terrace Tower"],
+  "Dubai Creek Harbour": ["Creek Rise Tower 1", "Creek Rise Tower 2", "Harbour Gate Tower 1", "Harbour Gate Tower 2", "Creek Edge Tower A", "Creek Edge Tower B", "The Cove Tower 1", "The Cove Tower 2", "Creek Vista Heights", "Vida Creek Harbour", "Breeze Creek"],
+  "MBR City": ["Hartland Greens Tower 1", "Hartland Greens Tower 2", "Wilton Terraces 1", "Wilton Terraces 2", "Hartland Waves", "Sobha Creek Vistas", "Azizi Riviera 1", "Azizi Riviera 5", "District One Villas", "Crystal Residences", "Parkside Views"],
+  "Damac Hills": ["Golf Vita Tower A", "Golf Vita Tower B", "Carson Tower A", "Carson Tower B", "Loreto Tower A", "Loreto Tower B", "Bellavista Tower 1", "Bellavista Tower 2", "Radisson Hotel Apts", "Akoya Oxygen Villas", "Pelham Residences"],
+  "Al Barsha": ["Al Barsha Business Tower", "Elite Business Center", "Al Barsha Heights A", "Al Barsha Heights B", "Arjan Towers 1", "Arjan Towers 2", "Mudon Views 1", "Mudon Views 2", "Royal Residence 1", "Tecom Tower A", "Barsha Villas"],
+  "International City": ["England Cluster X1", "France Cluster Y1", "Italy Cluster Z1", "Spain Cluster W1", "China Cluster A1", "Russia Cluster B1", "Persia Cluster C1", "Morocco Cluster D1", "Greece Cluster E1", "CBD Tower 1", "Trafalgar Tower"],
+};
+
 const PROPERTY_TYPES: ("apartment" | "villa" | "townhouse" | "penthouse" | "office" | "land")[] = [
   "apartment", "villa", "townhouse", "penthouse", "office", "land",
 ];
@@ -121,7 +139,10 @@ function generateTransactions(): DLDTransaction[] {
           currency: "AED",
           areaSqft,
           pricePerSqft,
-          buildingName: propType !== "land" ? `${district.name} Tower ${Math.floor(rng() * 20) + 1}` : undefined,
+          buildingName: propType !== "land" ? (() => {
+            const buildings = DISTRICT_BUILDINGS[district.name];
+            return buildings ? buildings[Math.floor(rng() * buildings.length)] : `${district.name} Tower ${Math.floor(rng() * 20) + 1}`;
+          })() : undefined,
           bedrooms,
           isFreehold: rng() < 0.8,
           buyerNationality: ["IN", "GB", "RU", "PK", "AE", "CN", "EG", "FR", "US", "DE"][Math.floor(rng() * 10)],
@@ -134,6 +155,73 @@ function generateTransactions(): DLDTransaction[] {
 }
 
 export const FALLBACK_DLD_TRANSACTIONS = generateTransactions();
+
+export { DISTRICT_BUILDINGS };
+
+export function getBuildingsForDistrict(district: string): string[] {
+  const txs = FALLBACK_DLD_TRANSACTIONS.filter(t => t.district === district && t.buildingName);
+  return [...new Set(txs.map(t => t.buildingName!))].sort();
+}
+
+export function computeBuildingHistory(transactions: DLDTransaction[], buildingName: string): DLDTransaction[] {
+  return transactions
+    .filter(t => t.buildingName === buildingName && t.transactionType === "sale")
+    .sort((a, b) => a.transactionDate.localeCompare(b.transactionDate));
+}
+
+export function computeComparableSales(
+  transactions: DLDTransaction[],
+  district: string,
+  propertyType?: string,
+  bedrooms?: number,
+  limit: number = 20
+): { comparables: DLDTransaction[]; medianPricePerSqft: number } {
+  let filtered = transactions.filter(t => t.district === district && t.transactionType === "sale");
+  if (propertyType) filtered = filtered.filter(t => t.propertyType === propertyType);
+  if (bedrooms !== undefined) filtered = filtered.filter(t => t.bedrooms === bedrooms);
+  const sorted = filtered.sort((a, b) => b.transactionDate.localeCompare(a.transactionDate)).slice(0, limit);
+  const prices = sorted.map(t => t.pricePerSqft).sort((a, b) => a - b);
+  const medianPricePerSqft = prices.length > 0
+    ? prices[Math.floor(prices.length / 2)]
+    : 0;
+  return { comparables: sorted, medianPricePerSqft };
+}
+
+export function computeMarketSummary(transactions: DLDTransaction[]): {
+  avgPricePerSqft: number;
+  totalVolume: number;
+  transactionCount: number;
+  volumeTrend: number;
+  hottestDistrict: string;
+} {
+  const allDates = transactions.map(t => t.transactionDate).sort();
+  const latestDate = allDates.length > 0 ? allDates[allDates.length - 1] : new Date().toISOString().slice(0, 10);
+  const now = latestDate.slice(0, 7);
+  const nowDate = new Date(now + "-01");
+  nowDate.setMonth(nowDate.getMonth() - 1);
+  const prev = nowDate.toISOString().slice(0, 7);
+  const currentTx = transactions.filter(t => t.transactionDate.startsWith(now));
+  const prevTx = transactions.filter(t => t.transactionDate.startsWith(prev));
+
+  const avgPricePerSqft = currentTx.length > 0
+    ? Math.round(currentTx.reduce((s, t) => s + t.pricePerSqft, 0) / currentTx.length)
+    : 0;
+  const totalVolume = currentTx.reduce((s, t) => s + t.amount, 0);
+  const prevVolume = prevTx.reduce((s, t) => s + t.amount, 0);
+  const volumeTrend = prevVolume > 0 ? Math.round(((totalVolume - prevVolume) / prevVolume) * 100) : 0;
+
+  const districtCount = new Map<string, number>();
+  for (const t of currentTx) {
+    districtCount.set(t.district, (districtCount.get(t.district) || 0) + 1);
+  }
+  let hottestDistrict = "Dubai Marina";
+  let maxCount = 0;
+  for (const [d, c] of districtCount) {
+    if (c > maxCount) { maxCount = c; hottestDistrict = d; }
+  }
+
+  return { avgPricePerSqft, totalVolume, transactionCount: currentTx.length, volumeTrend, hottestDistrict };
+}
 
 export function computeDistrictSummaries(
   transactions: DLDTransaction[],

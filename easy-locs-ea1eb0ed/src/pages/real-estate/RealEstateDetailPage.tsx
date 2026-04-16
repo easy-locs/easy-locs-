@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
 import { realEstatePropertyService, realEstateViewingService, realEstateDocumentService } from "@/services/real-estate.service";
+import { db } from "@/services/db";
 import { scoreProperty } from "@/domains/real-estate/quality-gates";
 import { getCountryRules } from "@/domains/real-estate/country-rules";
 import type { Property } from "@/domains/real-estate/canonical-types";
@@ -9,7 +10,7 @@ import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import {
   ArrowLeft, Heart, Share2, MapPin, Bed, Bath, Maximize,
-  Phone, MessageCircle, Calendar, ChevronRight, Shield, Star,
+  Phone, MessageCircle, Calendar, ChevronRight, Shield, Star, BarChart3,
 } from "lucide-react";
 import { InvestmentEstimator } from "@/components/property/InvestmentEstimator";
 import { PropertyGallery } from "@/components/property/PropertyGallery";
@@ -24,6 +25,7 @@ export default function RealEstateDetailPage() {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const [property, setProperty] = useState<Property | null>(null);
+  const [buildingName, setBuildingName] = useState<string | undefined>();
   const [documentCount, setDocumentCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [showContactSheet, setShowContactSheet] = useState(false);
@@ -37,6 +39,11 @@ export default function RealEstateDetailPage() {
           realEstateDocumentService.fetchByEntity("property", p.id)
             .then(docs => setDocumentCount(docs.length))
             .catch(() => setDocumentCount(0));
+          if (p.buildingId) {
+            db("buildings").select("name").eq("id", p.buildingId).single()
+              .then(({ data }) => { if (data?.name) setBuildingName(data.name); })
+              .catch(() => {});
+          }
         }
       })
       .catch(() => setProperty(null))
@@ -202,6 +209,43 @@ export default function RealEstateDetailPage() {
         <div className="mb-5">
           <InvestmentEstimator property={property} />
         </div>
+
+        {property.address.city === "Dubai" && (
+          <button
+            onClick={() => {
+              const params = new URLSearchParams();
+              if (property.address.district) params.set("district", property.address.district);
+              if (buildingName) params.set("building", buildingName);
+              if (property.propertyType) params.set("type", property.propertyType);
+              if (property.bedrooms !== undefined && property.bedrooms !== null) params.set("bedrooms", String(property.bedrooms));
+              if (property.area) {
+                const sqft = property.areaUnit === "sqm" ? Math.round(property.area * 10.764) : property.area;
+                const ppsqft = sqft > 0 ? Math.round(property.price / sqft) : undefined;
+                if (ppsqft) params.set("subjectPrice", String(ppsqft));
+              }
+              navigate(`/real-estate/dubai-analytics?${params.toString()}`);
+            }}
+            className="w-full flex items-center gap-3 p-4 rounded-xl mb-5 transition-transform active:scale-[0.98]"
+            style={{
+              background: `linear-gradient(135deg, ${navy} 0%, hsl(226 24% 20%) 100%)`,
+              border: "1px solid rgba(234,179,8,0.2)",
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(234,179,8,0.15)" }}
+            >
+              <BarChart3 size={18} color="#EAB308" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-[13px] font-bold text-white">Market Intelligence</p>
+              <p className="text-[10px] text-white/50">
+                See how this listing compares to recent sales in {property.address.district || "this area"}
+              </p>
+            </div>
+            <ChevronRight size={16} color="#EAB308" />
+          </button>
+        )}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-4 z-20 bg-card border-t border-border">
