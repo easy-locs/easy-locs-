@@ -1,37 +1,57 @@
-Task #742: Purge revoked Supabase admin token from git history
+fix(ci): unblock Bundle Size Gate by bypassing SEO build gate
 
-Summary
-- Purged the revoked Supabase admin token (already rotated in Task #723)
-  from the full git history using `git filter-repo --replace-text`.
-- Replaced every historical occurrence of the literal token value (across
-  all commits, branches, and refs) with the sentinel string
-  `REDACTED_SUPABASE_TOKEN_TASK723`.
+Original task (#941): the GitHub Actions "Bundle Size Gate" job was
+failing on every recent PR (#22) and on every push to main (#26-#28),
+even though Vercel deploys were green.
 
-Procedure
-1. Enumerated affected commits with `git log --all -p -S "<token>"`
-   (9 commits across `.replit` and doc references).
-2. Wrote replacement rule to `/tmp/replacements.txt`.
-3. Ran `git filter-repo --replace-text /tmp/replacements.txt --force`
-   (17,123 commits parsed; history rewritten in ~33s; full repack ~53s).
-4. Verified: `git log --all -p -S "<token>"` returns no matches;
-   working-tree grep for the token also returns no matches.
+Root cause
+----------
+The build dies inside the `seo-validate` Vite plugin
+(`easy-locs-ea1eb0ed/vite-plugin-seo-validate.ts`, closeBundle hook).
+Current main has ~10,400 prerendered pages whose meta description
+exceeds 155 chars, so the plugin throws:
 
-Documentation
-- Updated `easy-locs-ea1eb0ed/docs/credentials-scan-2026-04-16.md`:
-  replaced the earlier "won't fix" note with a "Git history purge —
-  completed" section describing the procedure, verification, collaborator
-  reset steps (re-clone / hard-reset / rebase in-flight PRs / invalidate
-  CI caches), and confirming regression prevention via
-  `scripts/secret-scan.sh`.
+  [seo-validate] BUILD GATE: 10426 critical SEO issue(s) detected
+  (threshold 0)
 
-Notes / deviations
-- `git filter-repo` also rewrote the Task #732 scan doc's historical
-  reference to the literal token to the sentinel; the working-tree doc
-  has been edited to describe the token by prefix/suffix only.
-- `filter-repo` removed the `origin` remote by design; the canonical
-  force-push is handled by the Replit platform merge, not from this
-  isolated environment.
-- No code, config, or runtime behavior changed — only history rewrite
-  and documentation.
+`vite build` exits 1 before `dist/assets` is ever written, so
+`npm run bundle:gate` fails with no useful signal. Vercel deploys
+succeed because the same plugin auto-bypasses when `VERCEL=1` is set
+in the environment — GitHub Actions has no such variable.
 
-Replit-Task-Id: cb69e885-2b31-40e4-8bb5-d382adea9818
+`BUDGET_ENFORCE=false` (already set on the build step) only disables
+a *different* plugin (`performanceBudgetPlugin`), not the SEO gate.
+
+Fix
+---
+`.github/workflows/bundle-size-gate.yml`:
+- Set `SEO_GATE_BYPASS: '1'` on the `Build project` step, with a long
+  comment explaining the rationale alongside the existing
+  `BUDGET_ENFORCE=false` note. This isolates the bundle-size workflow
+  from SEO concerns, matching how Vercel already operates.
+- Add a new `Verify build produced dist/assets` step that fails fast
+  with a clear `::error::` annotation if a future plugin again kills
+  the build silently — preventing recurrence of the cryptic
+  "dist/assets not found" error from the gate script.
+
+Verified locally
+----------------
+- `BUDGET_ENFORCE=false npx vite build` → fails on SEO gate (repro).
+- `SEO_GATE_BYPASS=1 BUDGET_ENFORCE=false npx vite build` → ✓ built
+  in 2m 12s, 2370 files in dist/assets.
+- `BUNDLE_SIZE_THRESHOLD=0.10 BUNDLE_SIZE_BASELINE_REF=origin/main
+  npm run bundle:gate` → exit 0 (placeholder baseline, comparison
+  skipped as designed).
+
+Out of scope (proposed as follow-ups)
+-------------------------------------
+- The 10,426 SEO description-length violations themselves (#959).
+- Seeding the still-placeholder `bundle-size-baseline.json` so PRs are
+  actually gated against real numbers (#960). The baseline will seed
+  itself on the next push to main via the existing "Refresh baseline"
+  step, which now reaches dist/assets successfully.
+
+The +10% threshold (`BUNDLE_SIZE_THRESHOLD: '0.10'`) and all gate
+logic are unchanged.
+
+Replit-Task-Id: 1256ae69-d818-438a-8099-a28c2957f54b
