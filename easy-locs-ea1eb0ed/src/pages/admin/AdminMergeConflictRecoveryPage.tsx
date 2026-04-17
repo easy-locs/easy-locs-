@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren } from "lucide-react";
+import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren, Bell } from "lucide-react";
 import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
 import {
+  fetchMergeConflictRecoveryAlertLog,
   fetchMergeConflictRecoveryEvents,
   loadMergeConflictAlertThreshold,
+  type MergeConflictRecoveryAlertLogEntry,
   MAX_THRESHOLD_WINDOW_MINUTES,
   type MergeConflictAlertThreshold,
   MIN_THRESHOLD_COUNT,
@@ -79,6 +81,13 @@ export default function AdminMergeConflictRecoveryPage() {
     for (const d of summary.perDay) if (d.count > max) max = d.count;
     return max;
   }, [summary.perDay]);
+
+  const alertLogQuery = useQuery({
+    queryKey: ["admin-merge-conflict-recovery-alert-log"],
+    queryFn: () => fetchMergeConflictRecoveryAlertLog(20),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   const queryClient = useQueryClient();
   const thresholdQuery = useQuery({
@@ -205,6 +214,14 @@ export default function AdminMergeConflictRecoveryPage() {
               isSaving={thresholdMutation.isPending}
               bursts={fileBursts}
               alertingFiles={alertingFiles}
+            />
+
+            <RecentAlertLogCard
+              isLoading={alertLogQuery.isLoading}
+              isFetching={alertLogQuery.isFetching}
+              error={alertLogQuery.error}
+              entries={alertLogQuery.data ?? []}
+              onRefresh={() => alertLogQuery.refetch()}
             />
 
             <Card>
@@ -714,6 +731,147 @@ function SpikeDetectionCard({
 // `supabase/functions/_shared/execution/builders/merge-conflict-storm-alerts.ts`.
 // The dashboard only renders threshold + proximity now, which means ops
 // gets paged whether or not anyone has this page open.
+
+interface RecentAlertLogCardProps {
+  isLoading: boolean;
+  isFetching: boolean;
+  error: unknown;
+  entries: ReadonlyArray<MergeConflictRecoveryAlertLogEntry>;
+  onRefresh: () => void;
+}
+
+const ALERT_TYPE_PREFIX = "merge_conflict_recovery.";
+
+function formatAlertKind(alertType: string): string {
+  const tail = alertType.startsWith(ALERT_TYPE_PREFIX)
+    ? alertType.slice(ALERT_TYPE_PREFIX.length)
+    : alertType;
+  return tail.replace(/_/g, " ");
+}
+
+function statusBadgeVariant(
+  status: string,
+): "default" | "destructive" | "secondary" | "outline" {
+  switch (status) {
+    case "sent":
+      return "default";
+    case "throttled":
+      return "secondary";
+    case "flood_suppressed":
+      return "outline";
+    case "failed":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
+
+function severityBadgeVariant(
+  severity: string,
+): "default" | "destructive" | "secondary" | "outline" {
+  switch (severity) {
+    case "critical":
+    case "high":
+      return "destructive";
+    case "medium":
+      return "secondary";
+    case "low":
+      return "outline";
+    default:
+      return "secondary";
+  }
+}
+
+function RecentAlertLogCard({
+  isLoading,
+  isFetching,
+  error,
+  entries,
+  onRefresh,
+}: RecentAlertLogCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center justify-between gap-2">
+          <span className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-muted-foreground" />
+            Recent merge-conflict alerts ({entries.length})
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRefresh}
+            disabled={isFetching}
+            className="gap-2"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </Button>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <div className="px-6 py-6 text-sm text-destructive flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              Failed to load alert log: {(error as Error).message}
+            </span>
+          </div>
+        ) : entries.length === 0 ? (
+          <p className="px-6 py-8 text-sm text-muted-foreground text-center">
+            No merge-conflict alerts have fired recently.
+          </p>
+        ) : (
+          <ul className="divide-y">
+            {entries.map((entry) => (
+              <li
+                key={entry.id}
+                className="px-4 py-3 flex items-start justify-between gap-4 hover:bg-muted/40"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center flex-wrap gap-2 text-xs">
+                    <span className="text-muted-foreground tabular-nums">
+                      {new Date(entry.createdAt).toLocaleString()}
+                    </span>
+                    <Badge
+                      variant={severityBadgeVariant(entry.severity)}
+                      className="text-[10px]"
+                    >
+                      {entry.severity}
+                    </Badge>
+                    <Badge
+                      variant={statusBadgeVariant(entry.status)}
+                      className="text-[10px]"
+                    >
+                      {entry.status}
+                    </Badge>
+                    <span className="text-muted-foreground capitalize">
+                      {formatAlertKind(entry.alertType)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm font-medium truncate">
+                    {entry.title}
+                  </p>
+                  {entry.message && (
+                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                      {entry.message}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function Metric({ title, value }: { title: string; value: string }) {
   return (
