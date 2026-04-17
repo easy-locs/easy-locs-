@@ -1,4 +1,15 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+/**
+ * Dashboard · Command Center
+ *
+ * Track 3 (#843): mutations are now ALWAYS expressed as an execution-task
+ * dispatch (`trigger-github` Edge Function → `system.dispatch_execution_task`).
+ * This page no longer writes to `public.agent_tasks`. It reads its task list
+ * directly from `system.execution_tasks` (admin RLS already in place; the
+ * companion migration `20260428000000_command_center_execution_tasks.sql`
+ * adds a per-requester read policy + realtime publication entry so this
+ * page can subscribe to live status updates).
+ */
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -13,16 +24,57 @@ import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
-type AgentTaskRow = Database["public"]["Tables"]["agent_tasks"]["Row"];
-type AgentTaskInsert = Database["public"]["Tables"]["agent_tasks"]["Insert"];
+// ── Execution-task row (system.execution_tasks) — only the columns this
+// page actually reads. Avoids leaking the entire wide row type.
+//
+// NOTE: `system.execution_tasks` carries TWO writer-path-specific JSONB
+// + error columns:
+//   • Orchestrator V2 (LB1) writes `execution_result` + `error_code`.
+//   • The GitHub runner callback (`execution-runner-callback`) still
+//     writes the legacy `result` + `error` columns inherited from the
+//     agent_tasks era (see migration 20260418500000_execution_tasks_v2.sql,
+//     which kept both shapes during the transition window).
+// We therefore read BOTH and the projection in `projectTask()` prefers the
+// V2 columns and falls back to the legacy ones — so SMOKE_NOOP runs
+// dispatched via trigger-github surface their logs/conclusion correctly.
+export interface ExecutionTaskRow {
+  id: string;
+  type: string;
+  status: string;
+  payload: Record<string, unknown> | null;
+  execution_result: Record<string, unknown> | null;
+  result: Record<string, unknown> | null;
+  external_run_url: string | null;
+  blocked_reason: string | null;
+  error_code: string | null;
+  error: string | null;
+  requested_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 type TaskStatus = "queued" | "running" | "success" | "error";
 
-function taskStatus(raw: string): TaskStatus {
-  if (raw === "queued" || raw === "running" || raw === "success" || raw === "error") return raw;
-  return "queued";
+/** Map system.execution_tasks status → 4-zone UI status. */
+export function uiStatus(raw: string): TaskStatus {
+  switch (raw) {
+    case "draft":
+    case "queued":
+    case "approved":
+      return "queued";
+    case "running":
+    case "pending_review":
+    case "rolling_back":
+      return "running";
+    case "succeeded":
+    case "rolled_back":
+      return "success";
+    default:
+      // failed | blocked | rejected | cancelled | rollback_failed | …
+      return "error";
+  }
 }
 
 const STATUS_META: Record<TaskStatus, {
@@ -31,14 +83,14 @@ const STATUS_META: Record<TaskStatus, {
   color: string;
   bg: string;
 }> = {
-  queued:  { label: "Queued",  Icon: Clock,       color: "text-amber-400",   bg: "bg-amber-400/10" },
+  queued:  { label: "Queued",  Icon: Clock,        color: "text-amber-400",   bg: "bg-amber-400/10" },
   running: { label: "Running", Icon: Loader2,      color: "text-blue-400",    bg: "bg-blue-400/10"  },
   success: { label: "Success", Icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-400/10"},
   error:   { label: "Error",   Icon: XCircle,      color: "text-red-400",     bg: "bg-red-400/10"   },
 };
 
 function StatusBadge({ status }: { status: string }) {
-  const s = taskStatus(status);
+  const s = uiStatus(status);
   const { label, Icon, color, bg } = STATUS_META[s];
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${color} ${bg}`}>
@@ -62,6 +114,81 @@ function ConclusionBadge({ conclusion }: { conclusion: string | null }) {
   };
   const m = map[conclusion] ?? { label: conclusion, color: "text-muted-foreground" };
   return <span className={`text-xs font-mono font-semibold ${m.color}`}>{m.label}</span>;
+}
+
+// ── Projection helpers — surface execution_tasks payload/result fields in
+// a stable shape so the JSX below doesn't have to introspect the JSONB.
+interface TaskView {
+  id: string;
+  prompt: string;
+  status: string;
+  github_run_url: string | null;
+  github_run_id: string | null;
+  github_workflow_name: string | null;
+  github_branch: string | null;
+  github_conclusion: string | null;
+  logs: string | null;
+  result: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function asString(v: unknown): string | null {
+  return typeof v === "string" && v.length > 0 ? v : null;
+}
+
+export function projectTask(row: ExecutionTaskRow): TaskView {
+  const payload = (row.payload ?? {}) as Record<string, unknown>;
+  // Prefer the V2 column written by the orchestrator; fall back to the
+  // legacy `result` column written by execution-runner-callback for
+  // GitHub-runner tasks. Either may be null.
+  const v2 = (row.execution_result ?? {}) as Record<string, unknown>;
+  const legacy = (row.result ?? {}) as Record<string, unknown>;
+  const merged: Record<string, unknown> = { ...legacy, ...v2 };
+  const output = (merged.output ?? {}) as Record<string, unknown>;
+
+  // Run-id parsed from external_run_url tail when present
+  // (e.g. https://github.com/owner/repo/actions/runs/1234567 → 1234567).
+  const runUrl = row.external_run_url ?? asString(output.external_run_url);
+  let runId: string | null = null;
+  if (runUrl) {
+    const m = runUrl.match(/\/runs\/(\d+)/);
+    if (m) runId = m[1];
+  }
+
+  // Logs: the GitHub runner callback writes `logs: string[]` directly on
+  // the legacy `result` column; the orchestrator's adapters typically
+  // surface text on `output.text` / `output.output_text`. Coalesce.
+  const logsArr = Array.isArray(merged.logs) ? merged.logs as unknown[] : [];
+  const logs = logsArr.length > 0 ? logsArr.map(String).join("\n") : null;
+  const errMsg = asString(merged.errorMessage)
+    ?? asString(merged.error)
+    ?? row.error
+    ?? row.blocked_reason
+    ?? row.error_code;
+
+  // The github runner callback writes `github_status` on the legacy
+  // `result` column; the orchestrator's github runner adapter writes it
+  // under `execution_result.output.github_status`.
+  const conclusion = asString(output.github_status)
+    ?? asString(merged.github_status);
+
+  return {
+    id: row.id,
+    prompt: asString(payload.prompt) ?? asString(payload.label) ?? row.type,
+    status: row.status,
+    github_run_url: runUrl,
+    github_run_id: runId,
+    github_workflow_name: asString(output.workflow_file)
+      ?? asString(payload.workflow)
+      ?? "execution-runner.yml",
+    github_branch: asString(output.ref) ?? asString(payload.ref) ?? "main",
+    github_conclusion: conclusion,
+    logs: logs ?? errMsg,
+    result: asString(output.output_text) ?? asString(merged.output_text) ?? null,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
 }
 
 function formatDuration(created: string, updated: string): string {
@@ -104,9 +231,9 @@ export default function DashboardCommandCenter() {
 
   const [prompt, setPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [tasks, setTasks] = useState<AgentTaskRow[]>([]);
+  const [tasks, setTasks] = useState<ExecutionTaskRow[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
-  const [selectedTask, setSelectedTask] = useState<AgentTaskRow | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const channelRef = useRef<RealtimeChannel | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -115,7 +242,17 @@ export default function DashboardCommandCenter() {
 
   useAutosizeTextarea(textareaRef, prompt);
 
-  const applyTaskUpdate = useCallback((row: AgentTaskRow) => {
+  const selectedRow = useMemo(
+    () => tasks.find((t) => t.id === selectedId) ?? null,
+    [tasks, selectedId],
+  );
+  const selectedTask = useMemo(
+    () => (selectedRow ? projectTask(selectedRow) : null),
+    [selectedRow],
+  );
+  const taskViews = useMemo(() => tasks.map(projectTask), [tasks]);
+
+  const applyTaskUpdate = useCallback((row: ExecutionTaskRow) => {
     setTasks((prev) => {
       const idx = prev.findIndex((t) => t.id === row.id);
       if (idx >= 0) {
@@ -125,62 +262,62 @@ export default function DashboardCommandCenter() {
       }
       return [row, ...prev];
     });
-    setSelectedTask((prev) => (prev?.id === row.id ? row : prev));
   }, []);
 
   const loadTasks = useCallback(async () => {
     if (!uid) return;
-    const { data } = await supabase
-      .from("agent_tasks")
-      .select("*")
-      .eq("user_id", uid)
+    // System schema. Reads are gated by:
+    //  - execution_tasks_read_admin (admins see all)
+    //  - execution_tasks_select_own_requester (owners see their own)
+    const { data, error } = await supabase
+      .schema("system" as never)
+      .from("execution_tasks" as never)
+      .select(
+        "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
+      )
+      .eq("requested_by", uid)
       .order("created_at", { ascending: false })
       .limit(50);
-    if (data) {
-      setTasks(data);
-      setSelectedTask((prev) => {
-        if (!prev && data.length > 0) return data[0];
-        if (prev) return data.find((t) => t.id === prev.id) ?? prev;
-        return prev;
-      });
+    if (error) {
+      toast.error(`Failed to load tasks: ${error.message}`);
+      setTasksLoading(false);
+      return;
     }
+    const rows = (data ?? []) as unknown as ExecutionTaskRow[];
+    setTasks(rows);
+    setSelectedId((prev) => prev ?? rows[0]?.id ?? null);
     setTasksLoading(false);
   }, [uid]);
 
-  const refreshSelectedFromGitHub = useCallback(async () => {
-    if (!selectedTask?.id || !uid) return;
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData?.session?.access_token;
-    if (!token) return;
-
-    try {
-      const { data } = await supabase.functions.invoke(
-        "trigger-github",
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "x-task-id": selectedTask.id,
-          },
-        },
-      );
-      const refreshed = (data as { task?: AgentTaskRow } | null)?.task;
-      if (refreshed) applyTaskUpdate(refreshed);
-    } catch {
-    }
-  }, [selectedTask?.id, uid, applyTaskUpdate]);
+  const refreshSelectedFromDb = useCallback(async () => {
+    if (!selectedId) return;
+    const { data } = await supabase
+      .schema("system" as never)
+      .from("execution_tasks" as never)
+      .select(
+        "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
+      )
+      .eq("id", selectedId)
+      .maybeSingle();
+    if (data) applyTaskUpdate(data as unknown as ExecutionTaskRow);
+  }, [selectedId, applyTaskUpdate]);
 
   useEffect(() => {
     if (!uid) return;
     loadTasks();
 
     const channel = supabase
-      .channel(`agent_tasks:${uid}`)
-      .on<AgentTaskRow>(
+      .channel(`exec_tasks:${uid}`)
+      .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "agent_tasks", filter: `user_id=eq.${uid}` },
+        {
+          event: "*",
+          schema: "system",
+          table: "execution_tasks",
+          filter: `requested_by=eq.${uid}`,
+        },
         (payload) => {
-          const row = payload.new as AgentTaskRow;
+          const row = payload.new as ExecutionTaskRow | null;
           if (!row?.id) return;
           applyTaskUpdate(row);
         },
@@ -189,16 +326,16 @@ export default function DashboardCommandCenter() {
 
     channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
-  }, [uid, applyTaskUpdate]);
+  }, [uid, loadTasks, applyTaskUpdate]);
 
   useEffect(() => {
     if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-    if (!selectedTask || !ACTIVE_STATUSES.includes(taskStatus(selectedTask.status))) return;
-    pollTimerRef.current = setInterval(refreshSelectedFromGitHub, POLL_INTERVAL_MS);
+    if (!selectedTask || !ACTIVE_STATUSES.includes(uiStatus(selectedTask.status))) return;
+    pollTimerRef.current = setInterval(refreshSelectedFromDb, POLL_INTERVAL_MS);
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
-  }, [selectedTask?.id, selectedTask?.status, refreshSelectedFromGitHub]);
+  }, [selectedTask, refreshSelectedFromDb]);
 
   useEffect(() => {
     logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,28 +346,40 @@ export default function DashboardCommandCenter() {
     setSubmitting(true);
 
     try {
-      const insert: AgentTaskInsert = { user_id: uid, prompt: prompt.trim(), status: "queued" };
-      const { data: inserted, error: insertErr } = await supabase
-        .from("agent_tasks")
-        .insert(insert)
-        .select()
-        .single();
+      // Track 3 (#843): the only sanctioned path is the dispatch RPC.
+      // The trigger-github Edge Function admin-gates the call, embeds the
+      // prompt in the payload, and inserts a row into system.execution_tasks
+      // via system.dispatch_execution_task.
+      const { data, error } = await supabase.functions.invoke<{
+        task_id?: string;
+        status?: string;
+        error?: string;
+      }>("trigger-github", { body: { prompt: prompt.trim() } });
 
-      if (insertErr || !inserted) {
-        toast.error(`Failed to create task: ${insertErr?.message ?? "unknown error"}`);
+      if (error || data?.error || !data?.task_id) {
+        const msg = data?.error ?? error?.message ?? "unknown dispatch error";
+        toast.error(`Dispatch failed: ${msg}`);
         setSubmitting(false);
         return;
       }
 
-      setTasks((prev) => [inserted, ...prev]);
-      setSelectedTask(inserted);
-      setPrompt("");
+      // Fetch the freshly dispatched row so it appears immediately even
+      // before the realtime channel delivers the INSERT event.
+      const { data: row } = await supabase
+        .schema("system" as never)
+        .from("execution_tasks" as never)
+        .select(
+          "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
+        )
+        .eq("id", data.task_id)
+        .maybeSingle();
+      if (row) {
+        applyTaskUpdate(row as unknown as ExecutionTaskRow);
+        setSelectedId(data.task_id);
+      }
 
-      // GitHub dispatch is being migrated to the canonical execution path
-      // (system.dispatch_execution_task → github.WORKFLOW_DISPATCH adapter).
-      // Until F1-F3 of the migration land, the prompt is journaled to
-      // agent_tasks (queued) and the 4-zone UI renders normally.
-      toast.success("Task queued (journaled)");
+      setPrompt("");
+      toast.success(`Task dispatched · ${data.status ?? "queued"}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Unexpected error");
     } finally {
@@ -325,14 +474,14 @@ export default function DashboardCommandCenter() {
                     <Skeleton className="h-3 w-1/3" />
                   </div>
                 ))}
-                {!tasksLoading && tasks.length === 0 && (
+                {!tasksLoading && taskViews.length === 0 && (
                   <div className="py-12 text-center flex flex-col items-center gap-2">
                     <Terminal className="w-8 h-8 text-muted-foreground/30" />
                     <p className="text-xs text-muted-foreground">No tasks yet.<br />Submit a prompt above.</p>
                   </div>
                 )}
                 <AnimatePresence initial={false}>
-                  {tasks.map((task) => (
+                  {taskViews.map((task) => (
                     <motion.button
                       key={task.id}
                       layout
@@ -340,9 +489,9 @@ export default function DashboardCommandCenter() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
                       transition={{ duration: 0.18 }}
-                      onClick={() => setSelectedTask(task)}
+                      onClick={() => setSelectedId(task.id)}
                       className={`w-full text-left p-3 rounded-xl transition-colors group ${
-                        selectedTask?.id === task.id
+                        selectedId === task.id
                           ? "bg-primary/10 border border-primary/30"
                           : "hover:bg-muted/60 border border-transparent"
                       }`}
@@ -374,7 +523,7 @@ export default function DashboardCommandCenter() {
                 <Button
                   variant="ghost" size="icon"
                   className="w-7 h-7"
-                  onClick={refreshSelectedFromGitHub}
+                  onClick={refreshSelectedFromDb}
                   aria-label="Refresh GitHub run status"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
@@ -395,7 +544,7 @@ export default function DashboardCommandCenter() {
                     {selectedTask.github_conclusion && (
                       <ConclusionBadge conclusion={selectedTask.github_conclusion} />
                     )}
-                    {taskStatus(selectedTask.status) === "running" && !selectedTask.github_conclusion && (
+                    {uiStatus(selectedTask.status) === "running" && !selectedTask.github_conclusion && (
                       <span className="text-xs text-muted-foreground animate-pulse">in progress…</span>
                     )}
                   </div>
@@ -409,7 +558,7 @@ export default function DashboardCommandCenter() {
                         Run ID
                       </dt>
                       <dd className="font-mono text-foreground truncate">
-                        {selectedTask.github_run_id ? String(selectedTask.github_run_id) : "—"}
+                        {selectedTask.github_run_id ?? "—"}
                       </dd>
                     </div>
 
@@ -435,7 +584,7 @@ export default function DashboardCommandCenter() {
                         Duration
                       </dt>
                       <dd className="font-mono text-foreground">
-                        {taskStatus(selectedTask.status) === "queued"
+                        {uiStatus(selectedTask.status) === "queued"
                           ? "—"
                           : formatDuration(selectedTask.created_at, selectedTask.updated_at)}
                       </dd>
@@ -475,13 +624,13 @@ export default function DashboardCommandCenter() {
                     </>
                   )}
 
-                  {!selectedTask.github_run_url && taskStatus(selectedTask.status) !== "queued" && (
+                  {!selectedTask.github_run_url && uiStatus(selectedTask.status) !== "queued" && (
                     <p className="text-xs text-muted-foreground italic">
                       Run URL will appear once the workflow is detected.
                     </p>
                   )}
 
-                  {taskStatus(selectedTask.status) === "error" && (
+                  {uiStatus(selectedTask.status) === "error" && (
                     <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-500/10 border border-red-500/20">
                       <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
                       <p className="text-xs text-red-400 break-words">
@@ -520,7 +669,7 @@ export default function DashboardCommandCenter() {
               )}
               {selectedTask && !(selectedTask.logs ?? selectedTask.result) && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-center p-4">
-                  {ACTIVE_STATUSES.includes(taskStatus(selectedTask.status))
+                  {ACTIVE_STATUSES.includes(uiStatus(selectedTask.status))
                     ? (
                       <>
                         <Loader2 className="w-6 h-6 text-primary animate-spin" />
@@ -537,10 +686,10 @@ export default function DashboardCommandCenter() {
               )}
               {selectedTask && (selectedTask.result ?? selectedTask.logs) && (
                 <ScrollArea className="absolute inset-0">
-                  <pre className="p-4 text-[11px] font-mono leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">
+                  <pre className="p-4 text-xs font-mono text-foreground whitespace-pre-wrap break-words">
                     {selectedTask.result ?? selectedTask.logs}
+                    <div ref={logsEndRef} />
                   </pre>
-                  <div ref={logsEndRef} />
                 </ScrollArea>
               )}
             </div>
