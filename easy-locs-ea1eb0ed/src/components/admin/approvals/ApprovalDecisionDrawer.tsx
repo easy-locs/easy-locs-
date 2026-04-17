@@ -146,29 +146,61 @@ export function ApprovalDecisionDrawer({
         risk_level: string;
         status: string;
         payload: unknown;
+        previous_state?: unknown;
         result: unknown;
         blocked_reason?: string | null;
       })
     | null
     | undefined;
 
-  const diffKind = useMemo(() => {
+  /**
+   * Diff sourcing contract (L5):
+   *   • baseline (before)   = `execution_tasks.previous_state`
+   *   • proposal (after)    = `intent_payload` — i.e. `payload.intent_payload`
+   *                            when present, otherwise the whole `payload`.
+   *   • diff_kind / unified_diff = read from the intent_payload itself so
+   *     future build agents can ship code patches via
+   *     `intent_payload.diff_kind === 'text'` + `intent_payload.unified_diff`.
+   * Falls back to legacy `payload.before/after/proposed` shapes so older
+   * tasks still render without a re-emit.
+   */
+  const intentPayload = useMemo<Record<string, unknown> | undefined>(() => {
     const p = task?.payload as Record<string, unknown> | undefined;
-    return (p?.diff_kind as string) === "text" ? "text" : "json";
+    if (!p) return undefined;
+    const nested = p.intent_payload as Record<string, unknown> | undefined;
+    return nested ?? p;
   }, [task]);
 
+  const diffKind = useMemo(() => {
+    const ip = intentPayload;
+    const legacy = task?.payload as Record<string, unknown> | undefined;
+    const kind = (ip?.diff_kind as string) ?? (legacy?.diff_kind as string);
+    return kind === "text" ? "text" : "json";
+  }, [intentPayload, task]);
+
   const before = useMemo(() => {
-    const p = task?.payload as Record<string, unknown> | undefined;
-    return p?.before;
+    if (task?.previous_state !== undefined && task.previous_state !== null) {
+      return task.previous_state;
+    }
+    const legacy = task?.payload as Record<string, unknown> | undefined;
+    return legacy?.before;
   }, [task]);
+
   const after = useMemo(() => {
-    const p = task?.payload as Record<string, unknown> | undefined;
-    return p?.after ?? p?.proposed ?? p;
-  }, [task]);
+    const ip = intentPayload;
+    const legacy = task?.payload as Record<string, unknown> | undefined;
+    return ip ?? legacy?.after ?? legacy?.proposed ?? legacy;
+  }, [intentPayload, task]);
+
   const unifiedDiff = useMemo(() => {
-    const p = task?.payload as Record<string, unknown> | undefined;
-    return (p?.unified_diff as string) ?? "";
-  }, [task]);
+    const ip = intentPayload;
+    const legacy = task?.payload as Record<string, unknown> | undefined;
+    return (
+      (ip?.unified_diff as string) ??
+      (legacy?.unified_diff as string) ??
+      ""
+    );
+  }, [intentPayload, task]);
 
   const submit = (decision: DecisionKind) => {
     if (!taskId) return;
@@ -194,9 +226,7 @@ export function ApprovalDecisionDrawer({
                 <Badge variant="outline">{task.domain}</Badge>
                 <Badge
                   variant={
-                    task.risk_level === "critical" || task.risk_level === "high"
-                      ? "destructive"
-                      : "secondary"
+                    task.risk_level === "CRITICAL" ? "destructive" : "secondary"
                   }
                 >
                   {task.risk_level}
