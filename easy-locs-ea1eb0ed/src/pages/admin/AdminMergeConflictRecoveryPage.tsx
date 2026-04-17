@@ -12,7 +12,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren } from "lucide-react";
+import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren, Bell } from "lucide-react";
 import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
 import {
+  fetchMergeConflictRecoveryAlertLog,
   fetchMergeConflictRecoveryEvents,
   loadMergeConflictAlertThreshold,
   loadMergeConflictRecoveryAlertThresholds,
@@ -85,6 +86,13 @@ export default function AdminMergeConflictRecoveryPage() {
     for (const d of summary.perDay) if (d.count > max) max = d.count;
     return max;
   }, [summary.perDay]);
+
+  const alertLogQuery = useQuery({
+    queryKey: ["admin-merge-conflict-recovery-alert-log"],
+    queryFn: () => fetchMergeConflictRecoveryAlertLog(20),
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
 
   const queryClient = useQueryClient();
   const thresholdQuery = useQuery({
