@@ -11,7 +11,7 @@ const {
   AdminDriverMonitorPage, AdminEnginesDashboardPage, AdminExperimentLabPage, AdminFinanceSummaryPage,
   AdminFirecrawlUsagePage, AdminFraudDetectionPage, AdminGrowthOpsPage, AdminIntegrationHealthPage,
   AdminKycReviewPage, AdminLabHubPage, AdminMapErrorDashboardPage, AdminMarketplaceOpsPage,
-  AdminMasterControlPage, AdminApprovalsPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
+  AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
   AdminNotificationLabPage, AdminNotificationOpsPage, AdminOpsDashboardPage, AdminOrderWatchPage,
   AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage,
   AdminQualityOpsPage, AdminRealtimeControlPage, AdminRefundQueuePage, AdminReleaseHistoryPage,
@@ -69,6 +69,8 @@ export function AdminRoutes() {
       <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantApprovalQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
       {/* L5 Sovereign Agent Control · cross-agent approvals inbox (#812). Behind SuperAdminGate so reviewer set stays small. */}
       <Route path="/admin/approvals" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminApprovalsPage /></FeatureErrorBoundary></SuperAdminGate>} />
+      {/* L4 Sovereign Agent Control · /admin/agents cockpit (#813). Reads v_agents_overview + v_agent_health, writes via system.set_agent_status RPC. */}
+      <Route path="/admin/agents" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminAgentsPage /></FeatureErrorBoundary></SuperAdminGate>} />
       <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/seed-tools" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSeedToolsPage /></FeatureErrorBoundary></ProtectedRoute>} />
