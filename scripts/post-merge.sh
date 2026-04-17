@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Install git hooks + canonical identity so every commit auto-pushes to GitHub
+# (Replit → GitHub → Vercel pipeline, see replit.md "Auto Pipeline").
+bash "$(dirname "$0")/install-git-hooks.sh" || \
+  echo "⚠️  install-git-hooks failed — auto-push to GitHub may not fire."
+
+# Push the just-merged commit(s) to GitHub immediately so Vercel redeploys.
+bash "$(dirname "$0")/auto-push-github.sh" || \
+  echo "⚠️  auto-push-github failed — run manually: bash scripts/auto-push-github.sh"
+
 # Run a fast secret scan on every merge to catch newly committed credentials.
 # Failure here does NOT block the merge (already merged), but surfaces loudly
 # in the post-merge log so the next agent/run can rotate immediately.

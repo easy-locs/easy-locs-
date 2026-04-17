@@ -1,5 +1,26 @@
 # Easy-Locs Super-App v3
 
+## Auto Pipeline: Replit → GitHub → Vercel (Task #802)
+Every commit made in this Replit workspace is automatically pushed to GitHub
+(`https://github.com/easy-locs/easy-locs-.git`), which triggers Vercel to
+redeploy `easy-locs.com`.
+
+- **Git identity**: `jstarbuzz <jstarbuzz@gmail.com>` (set globally + locally so
+  GitHub/Vercel accept the commits — the old `…@users.noreply.replit.com` email
+  was rejected by Vercel and broke deploys).
+- **Auto-push**: a `post-commit` Git hook runs `scripts/auto-push-github.sh` in
+  the background after every commit. The script (a) rewrites any unpushed
+  commit whose author is the Replit noreply email to the canonical
+  `jstarbuzz@gmail.com` identity (covers platform-generated checkpoint commits
+  produced when a task merges) and (b) pushes the current branch to `origin`.
+- **Manual fallback**: if the hook fails or you want to force a push, run
+  `bash scripts/auto-push-github.sh` from the workspace root. Logs are written
+  to `/tmp/auto-push-github.log`.
+- **Verification**: after a push, check Vercel — the deployment for the new
+  commit should reach **Ready** within a couple of minutes and `easy-locs.com`
+  (including `/admin/super-dashboard` and `/admin/master-control`) reflects the
+  latest commit.
+
 ## Overview
 Easy-Locs is a world-class super-app built around 5 intelligently connected pillars:
 **Dashboard · Radar · Orbit · Wallet · Me**
