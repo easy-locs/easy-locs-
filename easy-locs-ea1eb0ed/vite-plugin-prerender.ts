@@ -16,6 +16,7 @@
 
 import type { Plugin } from "vite";
 import * as fs from "node:fs";
+import * as fsp from "node:fs/promises";
 import * as path from "node:path";
 import {
   BUILD_SERVICE_CATEGORIES, BUILD_ACTIVITY_TYPES, BUILD_COUNTRIES,
@@ -1395,29 +1396,40 @@ export function prerenderPlugin(): Plugin {
         let generated = 0;
         let skipped = 0;
         const errors: string[] = [];
+        const mkdirCache = new Set<string>();
+        const ensureDir = async (dir: string) => {
+          if (mkdirCache.has(dir)) return;
+          await fsp.mkdir(dir, { recursive: true });
+          mkdirCache.add(dir);
+        };
 
-        for (const route of routes) {
-          if (route.htmlFile === "index.html") {
-            // Root route — inject into the existing index.html
-            const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
-            fs.writeFileSync(indexPath, html, "utf-8");
-            generated++;
-            continue;
+        const CONCURRENCY = 32;
+        let cursor = 0;
+        const workers = Array.from({ length: CONCURRENCY }, async () => {
+          while (true) {
+            const i = cursor++;
+            if (i >= routes.length) return;
+            const route = routes[i];
+            if (route.htmlFile === "index.html") {
+              const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
+              await fsp.writeFile(indexPath, html, "utf-8");
+              generated++;
+              continue;
+            }
+            const outPath = path.resolve(distDir, route.htmlFile);
+            const outDir = path.dirname(outPath);
+            try {
+              await ensureDir(outDir);
+              const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
+              await fsp.writeFile(outPath, html, "utf-8");
+              generated++;
+            } catch (err) {
+              errors.push(`${route.urlPath}: ${err}`);
+              skipped++;
+            }
           }
-
-          const outPath = path.resolve(distDir, route.htmlFile);
-          const outDir = path.dirname(outPath);
-
-          try {
-            fs.mkdirSync(outDir, { recursive: true });
-            const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
-            fs.writeFileSync(outPath, html, "utf-8");
-            generated++;
-          } catch (err) {
-            errors.push(`${route.urlPath}: ${err}`);
-            skipped++;
-          }
-        }
+        });
+        await Promise.all(workers);
 
         if (errors.length > 0) {
           console.warn(`[prerender] ${errors.length} routes failed:\n${errors.slice(0, 5).join("\n")}`);

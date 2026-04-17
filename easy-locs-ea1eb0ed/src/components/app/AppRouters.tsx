@@ -6,8 +6,7 @@ import { Suspense, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import SharedPageLoader from "@/components/brand/PageLoader";
-import Index from "@/pages/Index";
-import { Dashboard } from "@/app/app-route-registry";
+import { Index, Dashboard } from "@/app/app-route-registry";
 
 const PageLoader = ({ dark }: { dark?: boolean }) => <SharedPageLoader dark={dark} />;
 
@@ -29,7 +28,7 @@ export function HomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader dark={!user} />;
-  if (!user) return <Index />;
+  if (!user) return <Suspense fallback={<PageLoader dark />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
@@ -40,7 +39,7 @@ export function MarketplaceHomeRouter() {
   const { user, loading, profileLoaded, emailVerified } = useAuth();
   const ready = useProfileTimeout(profileLoaded, user?.id);
   if (loading) return <PageLoader dark={!user} />;
-  if (!user) return <Index />;
+  if (!user) return <Suspense fallback={<PageLoader dark />}><Index /></Suspense>;
   if (!ready) return <PageLoader />;
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;

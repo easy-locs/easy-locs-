@@ -1,4 +1,5 @@
 import { db } from "@/services/db";
+import { initSentry } from "@/lib/analytics/sentry";
 
 export type CookieCategory = "necessary" | "analytics" | "marketing";
 
@@ -76,9 +77,7 @@ function enableAnalytics(): void {
     import("@/lib/analytics/posthog").then(({ initPostHog }) => {
       initPostHog();
     }).catch((err) => console.warn("[consent] PostHog init failed:", err));
-    import("@/lib/analytics/sentry").then(({ initSentry }) => {
-      initSentry();
-    }).catch((err) => console.warn("[consent] Sentry init failed:", err));
+    try { initSentry(); } catch (err) { console.warn("[consent] Sentry init failed:", err); }
   } catch (err) {
     console.warn("[consent] enableAnalytics failed:", err);
   }
