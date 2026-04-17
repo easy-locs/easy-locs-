@@ -397,4 +397,18 @@ export function measureRender(componentName: string, durationMs: number) {
   }
 }
 
+/**
+ * Health probe for the Sentry integration registry. Reports OK when a DSN is
+ * configured and the boot- or post-mount init has run; reports a clear reason
+ * otherwise so the admin diagnostics page can flag the silent no-op case.
+ */
+export function getSentryHealth(): { ok: boolean; reason?: string } {
+  const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined;
+  if (!dsn) return { ok: false, reason: "VITE_SENTRY_DSN is not set" };
+  if (!_bootInitialized && !_initialized) {
+    return { ok: false, reason: "Sentry SDK has not been initialised yet" };
+  }
+  return { ok: true };
+}
+
 export { Sentry };

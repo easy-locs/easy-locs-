@@ -30,3 +30,20 @@ export async function getAwsHealthReport(): Promise<AwsHealthReport> {
     };
   }
 }
+
+/**
+ * Lightweight client-side AWS health probe used by the integrations registry.
+ * The real reachability check lives in the `aws-health-check` edge function
+ * (see `getAwsHealthReport`) — this probe just answers "is the AWS region
+ * configured at all?" so we can flag the silent "no creds" case without
+ * making a round-trip on every diagnostics render. AWS region is required
+ * in dev: missing region also throws at boot via `validateIntegrationsBoot`.
+ */
+export function getAwsClientHealth(): { ok: boolean; reason?: string } {
+  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const region = env?.VITE_AWS_REGION;
+  if (!region) {
+    return { ok: false, reason: "VITE_AWS_REGION is not set" };
+  }
+  return { ok: true };
+}

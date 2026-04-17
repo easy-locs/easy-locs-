@@ -120,3 +120,35 @@ export function validateMapBoot(): void {
     );
   });
 }
+
+/**
+ * Health probe for the MapLibre integration. The default style is a public
+ * CartoCDN URL with no token requirement, so the probe just verifies WebGL
+ * support and that the configured style URL is well-formed.
+ */
+export function getMaplibreHealth(): { ok: boolean; reason?: string } {
+  if (typeof document !== "undefined" && !isWebGLSupported()) {
+    return { ok: false, reason: "WebGL is not supported by this browser" };
+  }
+  const styleUrl = getMapStyleUrl("dark");
+  if (!/^https?:\/\//i.test(styleUrl)) {
+    return { ok: false, reason: `Configured map style URL is invalid: ${styleUrl}` };
+  }
+  return { ok: true };
+}
+
+/**
+ * Health probe for the Mapbox integration. A Mapbox token is required when
+ * deployed (used by premium styles and geocoding); the registry enforces
+ * this in dev so a missing token throws at boot instead of silently falling
+ * back to the public CartoCDN style at runtime.
+ */
+export function getMapboxHealth(): { ok: boolean; reason?: string } {
+  if (!hasMapboxToken()) {
+    return { ok: false, reason: "VITE_MAPBOX_TOKEN is not set" };
+  }
+  if (MAPBOX_ACCESS_TOKEN.length < 20) {
+    return { ok: false, reason: "VITE_MAPBOX_TOKEN looks malformed" };
+  }
+  return { ok: true };
+}
