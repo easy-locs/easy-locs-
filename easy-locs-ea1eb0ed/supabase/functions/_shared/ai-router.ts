@@ -9,10 +9,12 @@
  * fallback chain is therefore a single configuration change visible in
  * the agent inspector — no code edit required.
  *
- * The legacy `aiRoute()` / `aiRouteAndParse()` entry points are retained
- * unchanged for callers that have not yet migrated through the
- * adapter; they internally delegate to the new path with an env-derived
- * default config and are marked `@deprecated`.
+ * LB Closeout #845 — the legacy `aiRoute()` / `aiRouteAndParse()`
+ * env-only entry points have been RETIRED. Every chat completion must
+ * now go through `dispatchAiCompletion` (or, for the rare in-process
+ * consumer, `aiRouteForAgent` with a registry-resolved config). The
+ * static guard in `lb1-track2-migration.contract.test.ts` keeps the
+ * bypass from creeping back in.
  */
 
 import {
@@ -21,7 +23,6 @@ import {
   buildInteraction,
   DEFAULT_OPENAI_MODEL,
   DEFAULT_OPENAI_TIMEOUT_MS,
-  envDefaultChatConfig,
   readApiKey,
 } from "./execution/adapters/ai/router-config.ts";
 import type { AiInteractionRecord } from "./execution/adapters/ai/types.ts";
@@ -51,9 +52,9 @@ export interface AIRouterOptions {
   /** @deprecated LB1 follow-up 4 (#837) — provider selection is now driven
    *  exclusively by `metadata.router.primary` + `fallbacks` on the
    *  registered AI agent. This field is ACCEPTED for source compatibility
-   *  but IGNORED at runtime (including by the legacy `aiRoute()` wrapper).
-   *  Callers that need to pin a provider must register a separate agent
-   *  with the desired primary in `metadata.router`. */
+   *  but IGNORED at runtime. Callers that need to pin a provider must
+   *  register a separate agent with the desired primary in
+   *  `metadata.router`. */
   preferredProvider?: "openai" | "anthropic" | "auto";
 }
 
@@ -222,14 +223,10 @@ function transformAnthropicStreamToOpenAI(input: ReadableStream<Uint8Array>): Re
   });
 }
 
-function normalizeAnthropicResponse(data: Record<string, unknown>): {
-  choices: Array<{ message: { role: string; content: string } }>;
-} {
-  const content = (data.content as Array<{ type: string; text: string }>)?.[0]?.text ?? "";
-  return {
-    choices: [{ message: { role: "assistant", content } }],
-  };
-}
+// LB Closeout #845 — `normalizeAnthropicResponse` was the legacy adapter
+// used only by the now-retired `aiRouteAndParse()`. `parseChatResponse`
+// below is the canonical provider-aware parser; everything else routes
+// through it (or through `dispatchAiCompletion`).
 
 /**
  * Provider-aware non-stream chat parser. Normalises Anthropic's
@@ -453,54 +450,16 @@ export function finaliseInteraction(
   };
 }
 
-// ── Legacy env-only entry points ──────────────────────────────────────────
-// These are retained for callers that haven't migrated through
-// `dispatchExecutionTask`. They internally call the registry-aware path
-// with a config built from environment variables, so the inner provider
-// plumbing is identical for both.
-
-/**
- * @deprecated Use `dispatchExecutionTask({ domain: "ai", taskType: "AI_COMPLETION", ... })`
- * so the call goes through the registered AI agent. This function exists only
- * for backwards compatibility with callers that have not migrated yet.
- */
-export async function aiRoute(options: AIRouterOptions): Promise<AIRouterResult> {
-  const config = envDefaultChatConfig();
-  const { response, provider, fallbackUsed } = await aiRouteForAgent({
-    config,
-    options,
-    feature: "legacy.aiRoute",
-  });
-  return { response, provider, fallbackUsed };
-}
-
-/**
- * @deprecated See `aiRoute` — this wrapper is kept only for legacy callers.
- */
-export async function aiRouteAndParse(options: AIRouterOptions): Promise<{
-  content: string;
-  provider: "openai" | "anthropic";
-  fallbackUsed: boolean;
-}> {
-  const { response, provider, fallbackUsed } = await aiRoute(options);
-
-  if (!response.ok) {
-    const errText = await response.text();
-    throw new Error(`AI ${provider} error [${response.status}]: ${errText}`);
-  }
-
-  const data = await response.json();
-
-  let content: string;
-  if (provider === "anthropic") {
-    const normalized = normalizeAnthropicResponse(data);
-    content = normalized.choices[0]?.message?.content ?? "";
-  } else {
-    content = data.choices?.[0]?.message?.content ?? "";
-  }
-
-  return { content, provider, fallbackUsed };
-}
+// ── Retired env-only entry points ─────────────────────────────────────────
+// LB Closeout #845 — `aiRoute()` and `aiRouteAndParse()` were the last
+// env-only wrappers around the router. Every caller has been migrated to
+// `dispatchAiCompletion` (registry-governed, audited via `ai_interactions`,
+// quota- and approval-enforced) or, for in-process consumers that already
+// hold a config, `aiRouteForAgent`. The exports have been removed so that
+// `import { aiRoute } from "_shared/ai-router.ts"` is now a hard compile
+// error — the static guard in `lb1-track2-migration.contract.test.ts`
+// pins this in source, and `lb-closeout-845-aiRoute-retired.test.ts`
+// asserts the symbols themselves no longer appear in the module text.
 
 // LB Closeout #852 — the legacy `openaiChat` shim has been retired. Every
 // chat completion must now go through `dispatchAiCompletion` (or, for the
