@@ -277,6 +277,7 @@ export const CustomerShareCartPage = safeLazy(() => import("@/pages/customer/Cus
 //  PILLAR 5 · ME (Profile · Settings · Merchant · Driver · Customer)
 // ═══════════════════════════════════════════════════════════════════
 export const MeCommandCenter = safeLazy(() => import("@/pages/MeCommandCenter"), "MeCommandCenter");
+export const DashboardCommandCenter = safeLazy(() => import("@/pages/DashboardCommandCenter"), "DashboardCommandCenter");
 export const FavoritesPage = safeLazy(() => import("@/pages/FavoritesPage"), "FavoritesPage");
 export const NotificationCenterPage = safeLazy(() => import("@/pages/notifications/NotificationCenterPage"), "NotificationCenterPage");
 export const Install = safeLazy(() => import("@/pages/Install"), "Install");

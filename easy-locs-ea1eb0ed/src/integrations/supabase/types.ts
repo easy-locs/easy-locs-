@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_tasks: {
+        Row: {
+          created_at: string
+          github_branch: string | null
+          github_conclusion: string | null
+          github_run_id: number | null
+          github_run_url: string | null
+          github_workflow_name: string | null
+          id: string
+          logs: string | null
+          prompt: string
+          result: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          github_branch?: string | null
+          github_conclusion?: string | null
+          github_run_id?: number | null
+          github_run_url?: string | null
+          github_workflow_name?: string | null
+          id?: string
+          logs?: string | null
+          prompt: string
+          status?: string
+          result?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          github_branch?: string | null
+          github_conclusion?: string | null
+          github_run_id?: number | null
+          github_run_url?: string | null
+          github_workflow_name?: string | null
+          id?: string
+          logs?: string | null
+          prompt?: string
+          result?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       abandoned_cart_events: {
         Row: {
           cart_id: string
@@ -537,6 +585,62 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: []
+      }
+      agent_tasks: {
+        Row: {
+          id: string
+          user_id: string
+          prompt: string
+          status: string
+          github_run_id: number | null
+          github_run_url: string | null
+          github_conclusion: string | null
+          github_branch: string | null
+          github_workflow_name: string | null
+          result: string | null
+          logs: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          prompt: string
+          status?: string
+          github_run_id?: number | null
+          github_run_url?: string | null
+          github_conclusion?: string | null
+          github_branch?: string | null
+          github_workflow_name?: string | null
+          result?: string | null
+          logs?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          prompt?: string
+          status?: string
+          github_run_id?: number | null
+          github_run_url?: string | null
+          github_conclusion?: string | null
+          github_branch?: string | null
+          github_workflow_name?: string | null
+          result?: string | null
+          logs?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_tasks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ai_category_suggestions: {
         Row: {
