@@ -41,7 +41,10 @@ import { TaskVerificationService } from "../_shared/execution/verification-servi
 import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/marketplace/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
-import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
+import {
+  SupabaseTaskRepository,
+  createSupabaseDefaultSnapshotter,
+} from "../_shared/execution/persistence.ts";
 import type { ExecutionEventSink, CanonicalExecutionEvent } from "../_shared/execution/canonical-events.ts";
 import {
   createHeartbeatEmitter,
@@ -369,6 +372,12 @@ async function getOrchestratorV2(): Promise<ExecutionOrchestratorV2> {
     // L2 — heartbeat is started lazily by getHeartbeat() and shared across
     // every orchestrator run on this worker.
     heartbeat: getHeartbeat(),
+    // L3 (#811) — kind-agnostic pre-execute entity snapshot. Resolves
+    // task.entity_type='<schema>.<table>' + task.entity_id to a `SELECT *`
+    // against the canonical domain-schema table, so adapters without an
+    // explicit `snapshotProvider` still get true pre-mutation row state
+    // captured into `previous_state`.
+    defaultSnapshotter: createSupabaseDefaultSnapshotter(sb),
   });
   return _orchestrator;
 }

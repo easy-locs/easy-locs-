@@ -116,3 +116,60 @@ export class SupabaseTaskRepository implements TaskRepository {
   }
 
 }
+
+/**
+ * L3 (#811) — Default pre-execute entity snapshotter. Returns a function
+ * suitable for `OrchestratorDeps.defaultSnapshotter`. The convention is
+ * that `task.entity_type` carries `<schema>.<table>` (matching the
+ * domain-schema architecture introduced in migration #56) and
+ * `task.entity_id` is the row PK. Both must be present for a snapshot to
+ * be attempted. Any missing component, or a row-not-found, returns
+ * `null` — the orchestrator falls back to the structural identity
+ * envelope which still provides actionable rollback context.
+ *
+ * The snapshot is intentionally a `SELECT *` — the orchestrator stores
+ * the full row in `previous_state` so an adapter's rollback handler (or
+ * a generic `restoreSnapshot` helper) can restore the row by spreading
+ * the stored columns back over an `UPDATE`. RLS is bypassed because the
+ * execution-loop runs under the service-role JWT.
+ */
+export function createSupabaseDefaultSnapshotter(
+  sb: SupabaseClient,
+): (task: ExecutionTask) => Promise<Record<string, unknown> | null> {
+  return async (task) => {
+    const entityType = task.entity_type;
+    const entityId = task.entity_id;
+    if (!entityType || !entityId) return null;
+    const dot = entityType.indexOf(".");
+    if (dot <= 0 || dot === entityType.length - 1) return null;
+    const schema = entityType.slice(0, dot);
+    const table = entityType.slice(dot + 1);
+    // Belt-and-braces: refuse anything that isn't a plain identifier so we
+    // never end up interpolating something exotic into the PostgREST path.
+    const ident = /^[a-z_][a-z0-9_]*$/i;
+    if (!ident.test(schema) || !ident.test(table)) return null;
+    try {
+      const { data, error } = await sb
+        .schema(schema)
+        // deno-lint-ignore no-explicit-any
+        .from(table as any)
+        .select("*")
+        .eq("id", entityId)
+        .maybeSingle();
+      if (error) {
+        console.warn(
+          `[default-snapshotter] ${schema}.${table}#${entityId} select error:`,
+          error.message,
+        );
+        return null;
+      }
+      return (data as Record<string, unknown> | null) ?? null;
+    } catch (e) {
+      console.warn(
+        "[default-snapshotter] threw:",
+        e instanceof Error ? e.message : String(e),
+      );
+      return null;
+    }
+  };
+}
