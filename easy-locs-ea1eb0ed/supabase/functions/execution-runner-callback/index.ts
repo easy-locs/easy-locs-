@@ -20,6 +20,7 @@
  */
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { handlePreMergeDriftRequest } from "../_shared/execution/drift-detector.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +28,30 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-runner-token",
 };
 
-type RunnerStatus = "RUNNING" | "SUCCESS" | "FAILED";
+type RunnerStatus = "RUNNING" | "SUCCESS" | "FAILED" | "PRE_MERGE";
+
+/**
+ * LC7 (#874) — pre-merge drift check payload. The GitHub Actions runner
+ * (LC4 builder) MUST POST this BEFORE opening / merging the PR. The
+ * callback enforces the drift detector and either:
+ *   - returns 200 { proceed: true } when no hard overlap is found, OR
+ *   - returns 409 { proceed: false, drift_report } AND transitions the
+ *     execution_tasks row to status=blocked, blocked_reason=BLOCKED_BY_DRIFT.
+ *
+ * The runner is read-only on GitHub; it sends the diff it computed
+ * locally (`current_branch` + `current_changes`) and the list of
+ * `compared_against` branches with their changes. The callback never
+ * opens its own connection to api.github.com — strict read-only
+ * invariant of the LC7 brief.
+ */
+interface PreMergePayload {
+  current_branch: string;
+  current_changes: Array<{ file: string; startLine: number; endLine: number }>;
+  others: Array<{
+    ref: string;
+    changes: Array<{ file: string; startLine: number; endLine: number }>;
+  }>;
+}
 
 interface CallbackBody {
   task_id: string;
@@ -36,6 +60,8 @@ interface CallbackBody {
   external_run_url?: string | null;
   error?: string | null;
   logs?: string[] | null;
+  /** LC7 — populated only when status === "PRE_MERGE". */
+  pre_merge?: PreMergePayload | null;
 }
 
 /**
@@ -87,11 +113,14 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  if (!["RUNNING", "SUCCESS", "FAILED"].includes(status)) {
-    return new Response(JSON.stringify({ error: "status must be RUNNING | SUCCESS | FAILED" }), {
-      status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  if (!["RUNNING", "SUCCESS", "FAILED", "PRE_MERGE"].includes(status)) {
+    return new Response(
+      JSON.stringify({ error: "status must be RUNNING | SUCCESS | FAILED | PRE_MERGE" }),
+      {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
   }
 
   // ── Authenticate callback ─────────────────────────────────────────────
@@ -142,6 +171,44 @@ Deno.serve(async (req: Request) => {
   if (!safeEqual(rawToken, storedHmac)) {
     return new Response(JSON.stringify({ error: "Invalid runner token" }), {
       status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ── LC7 (#874) — pre-merge drift gate ─────────────────────────────────
+  // Builder calls back with status="PRE_MERGE" BEFORE opening / merging
+  // its PR. We run the pure overlap algorithm against the diff the runner
+  // computed and either (a) green-light the merge, or (b) transition the
+  // task to BLOCKED_BY_DRIFT and tell the runner to abort. This is the
+  // single enforcement choke-point: even if a future builder forgets to
+  // call the helper directly, it MUST hit this callback to obtain
+  // permission to proceed (the runner has no other path back to the
+  // orchestrator), so the merge gate is enforced server-side.
+  if (status === "PRE_MERGE") {
+    const result = await handlePreMergeDriftRequest(sb, task_id, body.pre_merge ?? null);
+    if (result.httpStatus === 409 && result.report) {
+      try {
+        await sb.from("engine_run_logs").insert({
+          engine_name: "execution-runner-callback",
+          category: "github-runner-pre_merge_blocked",
+          status: "warn",
+          started_at: new Date().toISOString(),
+          finished_at: new Date().toISOString(),
+          duration_ms: 0,
+          effect_summary: `Pre-merge drift blocked task=${task_id} branch=${result.report.current_branch} overlaps=${result.report.overlaps.length}`,
+          metadata_json: {
+            task_id,
+            github_status: "PRE_MERGE_BLOCKED",
+            severity: result.report.severity,
+            overlap_count: result.report.overlaps.length,
+          },
+        });
+      } catch {
+        // best-effort audit
+      }
+    }
+    return new Response(JSON.stringify(result.body), {
+      status: result.httpStatus,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
