@@ -21,6 +21,9 @@ import { createCodeEditVerifier } from "./code-edit-verifier.ts";
 import { MemoryFs, type SandboxFs } from "./sandbox.ts";
 import { createDenoWorkerWorkspaceProvider } from "./worker-sandbox.ts";
 import { CODE_DOMAIN, CODE_TASK_TYPES } from "./types.ts";
+// LC6 (#877) — dev-verifier rejects code.edit when build/test/typecheck fail.
+import { createDevVerifier } from "../../verifiers/dev-verifier.ts";
+import { composeVerifiers } from "../../verifiers/compose-verifiers.ts";
 
 export interface CodeEditBootstrapOverrides {
   /** Inject a workspace provider; default returns an empty MemoryFs. */
@@ -139,8 +142,20 @@ export async function bootstrapCodeEditAdapter(
   const workspaces = overrides.workspaces ?? defaultWorkspaceProvider(env);
   const agentQuotas = overrides.agentQuotas ?? createSupabaseAgentQuotaProvider(sb);
 
+  // LC6: dev-verifier first (build/test/typecheck), then LC1 shape verifier.
+  // Composition is required because the registry binds exactly one verifier
+  // per (domain, taskType); fail-fast ordering matches the registration list.
   globalVerifierRegistry.register(
-    createCodeEditVerifier(),
+    composeVerifiers([
+      // LC6 (#877): strict mode. Real `code.edit` runs MUST emit all
+      // three canonical dev signals (build/test/typecheck); missing
+      // signals are treated as a verification failure so a task can
+      // never ratify without build/test/typecheck evidence. Tests that
+      // don't model the full pipeline should use an adapter stub that
+      // emits the signals (see lc6-bootstrap-wiring.integration).
+      createDevVerifier({ taskType: CODE_TASK_TYPES.EDIT, requireAll: true }),
+      createCodeEditVerifier(),
+    ], { domain: CODE_DOMAIN, taskType: CODE_TASK_TYPES.EDIT }),
     { overwrite: true },
   );
   globalAdapterRegistry.register(

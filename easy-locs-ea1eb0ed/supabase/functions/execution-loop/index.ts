@@ -45,6 +45,13 @@ import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/boot
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
 import { bootstrapDeployPreviewAdapters } from "../_shared/execution/adapters/deploy/preview/bootstrap.ts";
 import { bootstrapDeployProdAdapters } from "../_shared/execution/adapters/deploy/prod/bootstrap.ts";
+// LC6 (#877) — post-settlement auto-rollback dispatcher for deploy.prod.
+import {
+  createSupabaseRollbackDispatcher,
+  createSupabaseSettledFetcher,
+  runAndReconcileDeployProdTask,
+} from "../_shared/execution/adapters/deploy/prod/lc6-glue.ts";
+import { createGithubRevertClientFromEnv } from "../_shared/execution/rollback/github-client.ts";
 // LC1 (#871) — code.edit primitive used by Level-C build agents.
 import { bootstrapCodeEditAdapter } from "../_shared/execution/adapters/code/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
@@ -328,7 +335,17 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       await bootstrapBuildAdapters(sb);
       await bootstrapTestAdapters(sb);
       await bootstrapDeployPreviewAdapters(sb);
-      await bootstrapDeployProdAdapters(sb);
+      // LC6 (#877): pass a real GitHub revert client when the runner
+      // secrets are present. Without them LC6 stays off and the
+      // adapter keeps its LC2 default (`rollback_strategy="none"`).
+      const githubRevert = createGithubRevertClientFromEnv(Deno.env);
+      if (!githubRevert) {
+        console.warn(
+          "[execution-loop] LC6 disabled: GITHUB_RUNNER_PAT/GITHUB_RUNNER_REPO missing; " +
+            "deploy.prod auto-rollback will not fire until secrets are provisioned.",
+        );
+      }
+      await bootstrapDeployProdAdapters(sb, githubRevert ? { github: githubRevert } : {});
       // LC1 (#871): code.edit primitive for Level-C build agents.
       await bootstrapCodeEditAdapter(sb);
     })().catch((e) => {
@@ -621,7 +638,77 @@ async function processTask(
   if (globalAdapterRegistry.has(task.domain, task.type)) {
     _inFlight++;
     try {
-      const out = await (await getOrchestratorV2()).run(task.id);
+      const orchestrator = await getOrchestratorV2();
+      // LC6 (#877): only wrap `run()` with post-settlement auto-rollback
+      // reconcile for actual `deploy.prod` rows. Every other V2 task
+      // (code.edit, build, test, deploy.prod.rollback itself, etc.)
+      // goes through the plain orchestrator path — this keeps LC6's
+      // extra DB read + log volume gated to the single domain/type
+      // where it can ever matter.
+      const isLc6Target = task.domain === "deploy" && task.type === "deploy.prod";
+      if (!isLc6Target) {
+        const outPlain = await orchestrator.run(task.id);
+        if (outPlain.finalStatus === "succeeded") return { outcome: "SUCCESS" };
+        if (outPlain.finalStatus === "failed") {
+          return { outcome: "FAILED", error: outPlain.errorMessage };
+        }
+        return { outcome: "BLOCKED", error: outPlain.errorMessage };
+      }
+      const sb = getSupabase();
+      // LC6 (#877) deployContext: repo/branch are copied onto the new
+      // child rollback execution_tasks row's payload so the
+      // `deploy.prod.rollback` adapter can execute `revert_pr` without
+      // re-reading env at run time. When `GITHUB_RUNNER_REPO` is
+      // absent we explicitly skip auto-rollback dispatch instead of
+      // queuing a child row destined to fail invocation validation.
+      const lc6Repo = Deno.env.get("GITHUB_RUNNER_REPO") ?? undefined;
+      const lc6Branch = Deno.env.get("GITHUB_RUNNER_REF") ?? "main";
+      if (!lc6Repo) {
+        const outPlain = await orchestrator.run(task.id);
+        await logRun({
+          engineName: "execution-loop:lc6",
+          category: "auto-rollback-skipped",
+          status: "ok",
+          effectSummary:
+            "auto-rollback skipped: GITHUB_RUNNER_REPO not configured",
+          metadata: { task_id: task.id, skipped_reason: "missing_github_runner_repo" },
+        });
+        if (outPlain.finalStatus === "succeeded") return { outcome: "SUCCESS" };
+        if (outPlain.finalStatus === "failed") {
+          return { outcome: "FAILED", error: outPlain.errorMessage };
+        }
+        return { outcome: "BLOCKED", error: outPlain.errorMessage };
+      }
+      const { outcome: out, autoRollback } = await runAndReconcileDeployProdTask({
+        orchestrator,
+        taskId: task.id,
+        fetchSettled: createSupabaseSettledFetcher(sb),
+        dispatcher: createSupabaseRollbackDispatcher(sb),
+        deployContext: { repo: lc6Repo, branch: lc6Branch },
+      });
+      if (autoRollback?.triggered) {
+        await logRun({
+          engineName: "execution-loop:lc6",
+          category: "auto-rollback-dispatched",
+          status: "ok",
+          effectSummary:
+            `auto-rollback dispatched (strategy=${autoRollback.strategySlug})`,
+          metadata: {
+            task_id: task.id,
+            rollback_task_id: autoRollback.rollbackTaskId,
+            strategy: autoRollback.strategySlug,
+            trigger_error_code: out.errorCode ?? null,
+          },
+        });
+      } else if (autoRollback) {
+        await logRun({
+          engineName: "execution-loop:lc6",
+          category: "auto-rollback-skipped",
+          status: "ok",
+          effectSummary: `auto-rollback skipped: ${autoRollback.skippedReason}`,
+          metadata: { task_id: task.id, skipped_reason: autoRollback.skippedReason },
+        });
+      }
       if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
       if (out.finalStatus === "failed") {
         return { outcome: "FAILED", error: out.errorMessage };

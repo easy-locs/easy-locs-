@@ -12,6 +12,13 @@ export const DEPLOY_DOMAIN = "deploy";
 export const DEPLOY_TASK_TYPES = {
   PREVIEW: "DEPLOY_PREVIEW",
   PROD: "DEPLOY_PROD",
+  // LC6 (#877) — Auto-rollback rollback task type. When a deploy.prod
+  // task settles `failed(DEPLOY_HEALTH_CHECK_FAILED)`, the LC6
+  // reconciler INSERTS a child execution_tasks row of this type
+  // (parent_task_id = original deploy task) so the rollback itself
+  // has full lifecycle and audit as a first-class task row, on top of
+  // the L3 transition-in-place mechanism used for manual rollbacks.
+  PROD_ROLLBACK: "DEPLOY_PROD_ROLLBACK",
 } as const;
 
 export type DeployTaskType =
@@ -56,6 +63,10 @@ export const DEPLOY_ERROR_CODES = {
   DISPATCH_FAILED: "DEPLOY_DISPATCH_FAILED",
   RUNNER_THREW: "DEPLOY_RUNNER_THREW",
   PROD_NOT_APPROVED: "DEPLOY_PROD_NOT_APPROVED",
+  // LC6 (#877) — post-deploy /api/health probe failed inside the 5-minute
+  // window. The adapter still records the underlying Vercel deployment in
+  // `output`, so downstream auto-rollback can read the deployed git SHA.
+  HEALTH_CHECK_FAILED: "DEPLOY_HEALTH_CHECK_FAILED",
 } as const;
 
 export type DeployErrorCode =
