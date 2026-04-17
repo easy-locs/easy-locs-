@@ -1,0 +1,53 @@
+tree 5514e94d356fb3f99f5759e49c2c7640b288fc61
+parent 75bafdd99aecef5d95cf29d9255113f9ce3ec6ef
+author jstarbuzz <jstarbuzz@gmail.com> 1776462489 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776462489 +0000
+
+Task #930: Post Edge Function contract drift summary as a sticky PR comment
+
+What
+- Added a new GitHub Actions workflow that regenerates the Edge Function
+  Contract Matrix on every PR, posts a sticky PR comment with the
+  blocking-mismatch table inline, then runs the CI gate and uploads the
+  regenerated matrix as a downloadable artifact on failure.
+- Added a small companion script that turns the machine-readable matrix
+  JSON into the comment body (clean state vs failing state).
+
+Files
+- .github/workflows/edge-fn-contract-matrix.yml (new — root, where
+  GitHub Actions actually executes from)
+- easy-locs-ea1eb0ed/scripts/edge-function-contract-matrix-comment.ts (new)
+
+Behavior
+- Workflow runs the CI gate (`npm run contracts:matrix:ci`) FIRST against
+  the checked-out (committed) state with `continue-on-error: true` so the
+  built-in stale-artifact check still has teeth, then regenerates the
+  matrix on disk to feed the comment builder, posts the sticky comment,
+  and finally re-propagates a non-zero exit if the gate failed.
+- Sticky comment header `edge-fn-contract-matrix` is reused, so the
+  comment is updated in place across pushes — no duplicates accumulate.
+- When blocking mismatches exist, the comment shows a "Blocking
+  mismatches" Markdown table (kind, function, caller, detail) — same
+  shape as the table in docs/edge-functions-contract-matrix.md. Capped
+  at 50 rows with an overflow pointer to the artifact.
+- When no blocking mismatches exist, the comment auto-updates to
+  "✓ contract matrix clean — no blocking mismatches." with totals.
+- Comment posting runs with `if: always()`; CI gate runs after so the
+  job still fails red. Matrix artifacts upload on failure for the full
+  detail view.
+
+Deviations
+- The task description implied an existing workflow file at
+  `.github/workflows/edge-fn-contract-matrix.yml`, but no contract
+  matrix workflow existed in either the repo root or
+  `easy-locs-ea1eb0ed/.github/workflows/`. I created the workflow from
+  scratch under `easy-locs-ea1eb0ed/.github/workflows/` to match the
+  existing pattern (bundle-size-gate.yml etc.) and incorporated the CI
+  gate + artifact upload alongside the new comment-posting behavior.
+
+Verification
+- Ran the comment-builder script against the current matrix JSON
+  (2 blocking method mismatches) — produced the expected failing
+  comment with the table.
+- Re-ran against a synthetically cleaned JSON — produced the expected
+  "✓ contract matrix clean" comment.
