@@ -1,6 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — ops-ai-chat now goes through the platform agent
+// registry. Direct `openaiChat` is no longer permitted on this surface; every
+// call is governed (quota, sensitive routing, audit) and persisted to
+// `system.execution_tasks` + `ai_interactions` by the AI adapter.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -21,48 +25,70 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const messages = Array.isArray(body?.messages) ? body.messages : [];
 
-    const response = await openaiChat({
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an operational AI assistant for a platform managing rides, deliveries, marketplace, property, and support. Give concise, practical, execution-first answers. When asked about disputes, refunds, payouts, or fraud, provide specific actionable recommendations.",
-        },
-        ...messages,
-      ],
-    });
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "ops-ai-chat",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an operational AI assistant for a platform managing rides, deliveries, marketplace, property, and support. Give concise, practical, execution-first answers. When asked about disputes, refunds, payouts, or fraud, provide specific actionable recommendations.",
+          },
+          ...messages,
+        ],
+        purpose: "general",
+      },
+      { feature: "ops-ai-chat" },
+    );
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Payment required, please add funds." }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-      const t = await response.text();
-      console.error("OpenAI API error:", response.status, t);
+    if (outcome.status === "succeeded" && outcome.output) {
       return new Response(
-        JSON.stringify({ error: "OpenAI API error" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({
+          answer: outcome.output.text ?? "",
+          usage: {
+            prompt_tokens: outcome.output.interaction.promptTokens,
+            completion_tokens: outcome.output.interaction.completionTokens,
+            total_tokens:
+              outcome.output.interaction.promptTokens +
+              outcome.output.interaction.completionTokens,
+          },
+          model: outcome.output.interaction.model,
+          task_id: outcome.taskId,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const json = await response.json();
-    const answer = json?.choices?.[0]?.message?.content ?? "";
+    if (outcome.status === "pending_review") {
+      return new Response(
+        JSON.stringify({
+          status: "pending_review",
+          task_id: outcome.taskId,
+          reason: outcome.blockedReason,
+        }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
+    const httpStatus =
+      outcome.status === "timeout" ? 504 :
+      outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
+      (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
+      500;
+
+    console.error(
+      "[ops-ai-chat] dispatch outcome:",
+      outcome.status,
+      outcome.errorCode,
+      outcome.errorMessage ?? outcome.blockedReason,
+    );
     return new Response(
       JSON.stringify({
-        answer,
-        usage: json?.usage ?? null,
-        model: json?.model ?? "gpt-4o-mini",
+        error: outcome.errorMessage ?? outcome.blockedReason ?? "AI dispatch failed",
+        error_code: outcome.errorCode,
+        task_id: outcome.taskId,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("ops-ai-chat error:", err);

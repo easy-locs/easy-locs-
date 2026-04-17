@@ -1,5 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — AI parsing of inbound command emails goes through the
+// platform agent registry; direct `openaiChat` is no longer permitted.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { verifyHmacSha256, constantTimeEqual } from "../_shared/webhook-signature.ts";
@@ -79,22 +81,34 @@ async function parseEmailWithAI(subject: string, body: string): Promise<ParsedEm
   if (!OPENAI_API_KEY) return local;
 
   try {
-    const res = await openaiChat({
-      messages: [
-        {
-          role: "system",
-          content: `Parse this email into a task for a property management super-app (Easy-Locs).
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "command-email-intake",
+        messages: [
+          {
+            role: "system",
+            content: `Parse this email into a task for a property management super-app (Easy-Locs).
 Pillars: dashboard, radar, orbit, wallet, me, marketplace, property, admin, infrastructure.
 Return ONLY JSON: {"title":"...", "description":"...", "pillar":"...", "priority":"critical|high|medium|low", "type":"feature|bug|refactor|docs|test|task"}`,
-        },
-        { role: "user", content: `Subject: ${subject}\n\nBody:\n${body}` },
-      ],
-      max_tokens: 500,
-      temperature: 0.1,
-    });
-    if (!res.ok) return local;
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content?.trim();
+          },
+          { role: "user", content: `Subject: ${subject}\n\nBody:\n${body}` },
+        ],
+        maxTokens: 500,
+        temperature: 0.1,
+        purpose: "general",
+      },
+      { feature: "command-email-intake" },
+    );
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.warn(
+        "[command-email-intake] AI parse not succeeded — falling back to local parser:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      return local;
+    }
+    const content = outcome.output.text?.trim();
     if (!content) return local;
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return local;
@@ -109,7 +123,13 @@ Return ONLY JSON: {"title":"...", "description":"...", "pillar":"...", "priority
       type: parsed.type || local.type,
       labels,
     };
-  } catch { return local; }
+  } catch (err) {
+    console.warn(
+      "[command-email-intake] AI parse threw — falling back to local parser:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return local;
+  }
 }
 
 async function createGithubIssue(parsed: ParsedEmail): Promise<{ number: number; url: string } | null> {
