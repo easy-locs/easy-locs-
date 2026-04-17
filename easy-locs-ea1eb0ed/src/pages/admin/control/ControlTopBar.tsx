@@ -108,7 +108,7 @@ export default function ControlTopBar({ onToggleMobileNav }: ControlTopBarProps)
                 size="sm"
                 className="h-9 gap-2"
                 onClick={() => setConfirmOpen(true)}
-                disabled={killSwitch.busy}
+                disabled={killSwitch.busy || !killSwitchHandler}
                 data-testid="control-kill-switch"
                 aria-label="Global kill-switch"
               >
@@ -146,7 +146,8 @@ export default function ControlTopBar({ onToggleMobileNav }: ControlTopBarProps)
                 : "This will immediately halt every running agent and pending run. Use only in case of incident."}
               {!killSwitchHandler && (
                 <span className="mt-2 block rounded border border-amber-500/40 bg-amber-500/10 p-2 text-xs text-amber-600 dark:text-amber-400">
-                  No handler is wired yet — confirming will be a no-op until Agent 5/6 binds it.
+                  Kill-switch handler isn't loaded on this section. Open the
+                  Mission Control overview first to register it.
                 </span>
               )}
             </AlertDialogDescription>

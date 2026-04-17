@@ -22,7 +22,7 @@ const CITY_BASE_COUNTS: Record<string, number> = {
   "jeddah": 65, "tel-aviv": 75, "bangkok": 110, "phuket": 90,
   "osaka": 85, "melbourne": 80, "bali": 95, "marrakech": 70,
   "casablanca": 60, "cape-town": 65, "johannesburg": 60,
-  "istanbul": 165, "antalya": 75, "chiang-mai": 65,
+  "antalya": 75, "chiang-mai": 65,
   // Tier 3 — smaller/emerging markets
   "nice": 55, "bordeaux": 52, "toulouse": 50, "manchester": 65,
   "edinburgh": 58, "birmingham": 60, "malaga": 55, "florence": 60,

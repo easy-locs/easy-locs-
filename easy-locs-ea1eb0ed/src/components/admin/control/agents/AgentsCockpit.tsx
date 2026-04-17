@@ -385,14 +385,26 @@ function AgentRowItem({
 
   return (
     <div
-      role="row"
-      className="grid items-center gap-3 px-3 border-b border-border/30 hover:bg-muted/40 cursor-pointer transition-colors"
+      role="button"
+      tabIndex={0}
+      aria-label={`Open agent ${agent.slug}`}
+      className="grid items-center gap-3 px-3 border-b border-border/30 hover:bg-muted/40 focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"
       style={{
         gridTemplateColumns:
           "minmax(180px, 2fr) 110px 90px 110px 110px 110px 80px 200px",
         height: ROW_HEIGHT,
       }}
       onClick={() => onOpen(agent)}
+      onKeyDown={(e) => {
+        // Only handle when the row itself is focused — keyboard events
+        // bubbling from inner controls (inline action buttons, sparkline
+        // tooltips) must not reopen the drawer.
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onOpen(agent);
+        }
+      }}
       data-testid={`agent-row-${agent.slug}`}
     >
       <div className="flex items-center gap-2 min-w-0">
