@@ -495,6 +495,18 @@ export class ExecutionOrchestratorV2 {
           errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
           errorMessage: message,
         });
+        // L3 (#811) — Verification service itself threw AFTER execute().
+        // The mutation has already been applied, so we MUST attempt
+        // auto-rollback per adapter contract to avoid leaving the domain
+        // half-committed. Symmetrical to `decision.kind === "threw"`
+        // below.
+        await this.maybeAutoRollback(
+          task,
+          adapter,
+          previousState,
+          adapterPayload.output ?? null,
+          message,
+        );
         outcome = this.outcome(task, "failed", startedAt, {
           errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
           errorMessage: message,
