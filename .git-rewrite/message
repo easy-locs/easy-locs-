@@ -1,0 +1,57 @@
+LC4 #924 — wire merge-conflict recovery into the dev-builder loop
+
+Original task: the LC4 dev-builder loop opened PRs but never consulted the
+LC7 drift-detector before merging, so a hard hunk overlap with a parallel
+dev branch (or a commit landed on main since the branch was cut) could
+not trigger automatic recovery in production.
+
+Rebase note: the upstream main already shipped task #915, which added a
+DIFFERENT `merge-conflict-recovery.ts` exporting `formatMergeConflictReason`,
+`requestMergeConflictReplan`, and an RPC-dispatching
+`createMergeConflictRecoveryHandler` (calls `system.request_dev_replan`
+directly from the merge-step `onBlocked` seam). Resolution kept BOTH
+feature sets per the conflict philosophy:
+
+  - Retained #915's API verbatim: standalone-merge callers (the smoke
+    script) keep `createMergeConflictRecoveryHandler` with the same
+    signature + behavior.
+  - Renamed our task #924 audit-only handler to
+    `createMergeConflictAuditHandler` to avoid name collision.
+  - `createMergeConflictPreMergeCheck` defaults its `onBlocked` to the
+    audit handler so the loop's own `requestReplan` callback remains the
+    sole `request_dev_replan` dispatcher (otherwise we would double-fire
+    when the loop converts `drift_conflict` to verifier-red).
+
+Changes:
+- `supabase/functions/_shared/execution/builders/merge-conflict-recovery.ts`
+  - #915: `formatMergeConflictReason`, `requestMergeConflictReplan`,
+    `createMergeConflictRecoveryHandler` (RPC dispatcher,
+    swallows + reports failures via `onReplanFailed`).
+  - #924: `createMergeConflictAuditHandler` (audit-only payload write),
+    `defaultComputeCurrentChanges` (whole-file conservative ranges),
+    `createMergeConflictPreMergeCheck` (delegates to `runDevBuilderMerge`,
+    returns `drift_conflict` on hard overlap).
+- `dev-builder-runtime.ts`: `merge: { fetchOthers, computeCurrentChanges? }`
+  option on `RunDevBuilderForPlanOptions`. When supplied (and no explicit
+  `preMergeCheck`), the runtime composes the recovery wiring automatically.
+- `supabase/functions/dev-builder/index.ts`: wires `createGithubFetchOthers`
+  (24h branch-cut window) into the `merge` config so production gets the
+  recovery path by default.
+- `src/__tests__/lc4-merge-conflict-recovery.test.ts` (20 tests, combined):
+  - #915: `formatMergeConflictReason` purity, `requestMergeConflictReplan`
+    RPC behavior + error paths, recovery handler dispatches replan exactly
+    once / forwards failures via `onReplanFailed`.
+  - #924: audit handler appends row payload + never throws,
+    `defaultComputeCurrentChanges` aggregation, pre-merge check verdicts,
+    and end-to-end `runDevBuilderForPlan` recovery → rev-2 plan opens PR
+    without operator intervention.
+
+Verification: 62/62 tests pass across `lc4-merge-conflict-recovery`,
+`lc4-dev-builder.integration`, and `lc7-drift-detector.integration`;
+tsc clean; post-merge setup OK (auto-push to GitHub failed
+non-fast-forward as expected after rebase — unrelated to resolution).
+
+Follow-ups #939 (precise line-range conflict detection), #940 (ops
+dashboard surfacing) already proposed.
+
+Replit-Task-Id: 2885d818-f92d-4f19-9ed4-ae9a0d3cb874
