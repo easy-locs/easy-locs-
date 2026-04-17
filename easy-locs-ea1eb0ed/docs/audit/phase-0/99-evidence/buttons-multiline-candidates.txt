@@ -1,0 +1,152 @@
+# <Button> openings whose tag spans multiple lines (heuristic candidates only).
+# Manual review required because the handler may be on a subsequent line.
+# Format: file:line:opening
+src/components/communication/DealRoomPanel.tsx:224:              <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md"
+src/components/communication/DealRoomPanel.tsx:229:                <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md border-orange-500/30 text-orange-600"
+src/components/communication/DealRoomPanel.tsx:237:            <Button size="sm" className="text-[0.625rem] h-7 gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white"
+src/components/communication/DealRoomPanel.tsx:248:            <Button size="sm" className="text-[0.625rem] h-7 gap-1 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground"
+src/components/communication/DealRoomPanel.tsx:254:            <Button size="sm" variant="outline" className="text-[0.625rem] h-7 gap-1 rounded-md"
+src/components/communication/DealRoomPanel.tsx:271:            <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 gap-1 rounded-md text-destructive hover:bg-destructive/10 ml-auto"
+src/components/communication-hub/CommGroupsSection.tsx:169:          <Button size="sm" variant="ghost" className="h-8 gap-1.5 text-xs"
+src/components/communication-hub/CommGroupsSection.tsx:201:              <Button size="sm" variant="ghost" className="gap-1.5 mt-2"
+src/components/communication-hub/CommGroupsSection.tsx:302:            <Button className="w-full" disabled={!newGroup.name.trim() || creating} onClick={handleCreate}
+src/components/delivery/AdminModerationPanel.tsx:200:                              <Button key={action} size="sm" className="text-[0.625rem] h-7 px-1"
+src/components/delivery/AdminModerationPanel.tsx:273:                              <Button size="sm" className="w-full text-[0.625rem] h-7"
+src/components/delivery/AIDispatchBrain.tsx:142:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/AutomatedDispatchRules.tsx:157:                <Button size="sm" className="h-8 text-[0.625rem] px-3" onClick={addRule}
+src/components/delivery/AutomatedDispatchRules.tsx:357:                        <Button size="sm" variant="ghost" className="w-full text-[0.625rem] h-7"
+src/components/delivery/AutomatedInvoicingEngine.tsx:100:          <Button size="sm" className="text-[0.625rem] h-7" onClick={generateBatchInvoices} disabled={generating}
+src/components/delivery/AutomatedInvoicingEngine.tsx:96:          <Button size="sm" className="text-[0.625rem] h-7" onClick={exportCSV}
+src/components/delivery/BatchDispatchPanel.tsx:68:          <Button size="sm" variant="ghost" className="text-[0.625rem] h-6 px-2"
+src/components/delivery/BatchDispatchPanel.tsx:74:            <Button size="sm" variant="ghost" className="text-[0.625rem] h-6 px-2"
+src/components/delivery/CarbonOffsetEngine.tsx:145:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/ComplianceDashboard.tsx:155:            <Button size="sm" className="w-full text-xs h-8" variant="outline"
+src/components/delivery/CreateJobForm.tsx:137:        <Button size="sm" className="flex-1 text-xs h-9" onClick={handleSubmit} disabled={submitting}
+src/components/delivery/CreateJobForm.tsx:141:        <Button size="sm" variant="outline" className="text-xs h-9" onClick={onCancel}
+src/components/delivery/CrowdDeliveryNetwork.tsx:163:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/CustomerLiveTracking.tsx:173:          <Button size="sm" className="h-8 w-8 p-0"
+src/components/delivery/CustomerLiveTracking.tsx:245:              <Button size="sm" className="h-8 w-8 p-0" onClick={sendMessage}
+src/components/delivery/CustomerRewardsProgram.tsx:150:          <Button size="sm" className="text-[0.625rem] h-8" onClick={redeemCashback}
+src/components/delivery/CustomerTrackingPortal.tsx:176:              <Button size="sm" className="flex-1 text-xs h-8" disabled={rating === 0} onClick={submitFeedback}
+src/components/delivery/CustomerWalletLoyalty.tsx:183:            <Button size="sm" className="w-full text-xs h-8" variant="outline"
+src/components/delivery/CustomerWalletLoyalty.tsx:206:                  <Button size="sm" className="text-[0.625rem] h-7 px-3" disabled={!canAfford}
+src/components/delivery/DeliveryAdvancedAnalytics.tsx:90:        <Button size="sm" className="text-[0.625rem] h-6 px-2" onClick={exportCSV}
+src/components/delivery/DeliveryAnalyticsReports.tsx:144:        <Button size="sm" variant="outline" className="text-[0.625rem] h-7 px-2.5"
+src/components/delivery/DeliveryAPIWebhooks.tsx:219:              <Button size="sm" className="w-full text-xs h-8" onClick={addWebhook}
+src/components/delivery/DeliveryDisputeFlow.tsx:100:        <Button size="sm" className="flex-1 text-xs h-9" onClick={handleSubmit} disabled={submitting}
+src/components/delivery/DeliveryDisputeFlow.tsx:105:        <Button size="sm" variant="outline" className="text-xs h-9" onClick={onCancel}
+src/components/delivery/DeliveryDisputeFlow.tsx:171:            <Button className="w-full text-xs h-9 font-semibold" size="sm"
+src/components/delivery/DeliveryDisputeFlow.tsx:254:                              <Button size="sm" className="flex-1 text-[0.625rem] h-7"
+src/components/delivery/DeliveryDisputeFlow.tsx:259:                              <Button size="sm" className="text-[0.625rem] h-7 px-3"
+src/components/delivery/DeliveryDisputeFlow.tsx:286:        <Button size="sm" variant="ghost" className="w-full text-xs h-8" onClick={onClose}
+src/components/delivery/DeliveryEventNotifications.tsx:171:                      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-7"
+src/components/delivery/DeliveryEventNotifications.tsx:187:      <Button size="sm" className="w-full text-xs h-9"
+src/components/delivery/DeliveryHistoryExport.tsx:118:        <Button size="sm" className="text-[0.625rem] h-7 px-3" onClick={exportCSV}
+src/components/delivery/DeliveryInsuranceClaims.tsx:139:            <Button size="sm" className="flex-1 text-xs h-8" disabled={submitting} onClick={submitClaim}
+src/components/delivery/DeliveryInsurancePanel.tsx:233:              <Button size="sm" className="flex-1 text-[0.625rem] h-7" onClick={submitClaim}
+src/components/delivery/DeliveryLiveTracker.tsx:55:        <Button size="sm" variant="ghost" className="w-full text-xs h-8" onClick={onClose}
+src/components/delivery/DeliveryMarketplace.tsx:190:                <Button size="sm" className="w-full text-[0.625rem] h-7" variant="outline"
+src/components/delivery/DeliveryMarketplace.tsx:198:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/DeliveryNotificationCenter.tsx:127:          <Button size="sm" variant="ghost" className="h-7 px-2 text-[0.625rem]" onClick={markAllRead}
+src/components/delivery/DeliveryNotificationHub.tsx:97:            <Button size="sm" variant="ghost" className="h-7 px-2 text-[0.625rem]" onClick={markAllRead}
+src/components/delivery/DeliverySLAPanel.tsx:160:      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-8"
+src/components/delivery/DeliveryZonesManager.tsx:165:                <Button size="sm" className="flex-1 text-[0.625rem] h-8" onClick={createZone}
+src/components/delivery/DriverEarningsPayroll.tsx:196:      <Button size="sm" variant="outline" className="w-full text-[0.625rem] h-8"
+src/components/delivery/DriverEarningsPayroll.tsx:283:      <Button size="sm" className="w-full text-xs h-9" onClick={exportCSV}
+src/components/delivery/DriverJobMarketplace.tsx:223:                    <Button size="sm" variant="outline" className="text-[0.625rem] h-8 px-3"
+src/components/delivery/DriverOnboardingComplete.tsx:289:        <Button size="sm" className="flex-1 text-xs h-9" disabled={!canNext() || submitting}
+src/components/delivery/DriverOnboardingFlow.tsx:241:          <Button size="sm" onClick={nextStep} disabled={!canProceed()} className="text-xs flex-1"
+src/components/delivery/DriverOnboardingFlow.tsx:246:          <Button size="sm" onClick={handleSubmit} disabled={submitting} className="text-xs flex-1"
+src/components/delivery/DriverOnboardingPortal.tsx:247:                <Button size="sm" className="text-xs h-9 mt-2" onClick={onComplete}
+src/components/delivery/DriverOnboardingPortal.tsx:259:        <Button size="sm" className="w-full text-xs h-9" onClick={nextStep} disabled={!canProceed()}
+src/components/delivery/DriverOnboardingRegistration.tsx:165:            <Button className="w-full text-xs h-9" disabled={!canProceedIdentity}
+src/components/delivery/DriverOnboardingRegistration.tsx:215:              <Button className="flex-1 text-xs h-9" disabled={!canProceedDocs}
+src/components/delivery/DriverOnboardingRegistration.tsx:264:                <Button className="flex-1 text-xs h-9" onClick={submitQuiz}
+src/components/delivery/DriverOnboardingRegistration.tsx:314:              <Button className="flex-1 text-xs h-9" onClick={submitApplication}
+src/components/delivery/DriverOnboardingWizard.tsx:227:                  <Button size="sm" className="h-8 text-[0.625rem] px-3"
+src/components/delivery/DriverOnboardingWizard.tsx:268:                  <Button size="sm" variant={docUploaded[doc.type] ? "outline" : "default"}
+src/components/delivery/DriverOnboardingWizard.tsx:313:        <Button size="sm" className="flex-1 text-xs h-9"
+src/components/delivery/DriverReferralProgram.tsx:89:        <Button size="sm" className="text-xs h-8 px-4" onClick={shareCode}
+src/components/delivery/DriverSearchPanel.tsx:39:        <Button size="sm" className="flex-1 text-xs h-8" onClick={handleSearch} disabled={searching}
+src/components/delivery/DriverSearchPanel.tsx:43:        <Button size="sm" variant="ghost" className="text-xs h-8" onClick={onClose}
+src/components/delivery/DriverShiftScheduler.tsx:234:                <Button size="sm" className="flex-1 text-[0.625rem] h-6"
+src/components/delivery/DriverShiftScheduler.tsx:237:                <Button size="sm" variant="outline" className="flex-1 text-[0.625rem] h-6"
+src/components/delivery/DriverShiftScheduling.tsx:111:          <Button size="sm" className="text-[0.625rem] h-7 px-2" onClick={autoRotate}
+src/components/delivery/DriverShiftScheduling.tsx:208:              <Button size="sm" className="w-full text-[0.625rem] h-7" onClick={addShift}
+src/components/delivery/DriverWalletPanel.tsx:189:          <Button size="sm" onClick={handleWithdraw} disabled={submitting || !withdrawAmount}
+src/components/delivery/DroneDelivery.tsx:286:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/DynamicPricingSurge.tsx:240:          <Button size="sm" className="w-full text-[0.625rem] h-7"
+src/components/delivery/FinancialControlCenter.tsx:204:            <Button className="text-xs h-9" onClick={runReconciliation}
+src/components/delivery/FleetMaintenanceAI.tsx:300:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/GeofencingPanel.tsx:172:            <Button size="sm" onClick={addZone} className="text-[0.625rem] h-7 flex-1"
+src/components/delivery/IncidentManagement.tsx:204:          <Button className="w-full text-xs h-9" onClick={submitIncident}
+src/components/delivery/InsuranceClaims.tsx:160:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/LiveDeliveryChat.tsx:159:          <Button size="sm" variant="ghost" className="mt-3 text-xs h-8" onClick={onClose}
+src/components/delivery/LiveDeliveryChat.tsx:176:            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={onClose}
+src/components/delivery/LiveDeliveryChat.tsx:248:        <Button size="sm" className="h-9 w-9 p-0" onClick={sendMessage}
+src/components/delivery/LiveDeliveryChat.tsx:258:            <Button size="sm" className="w-full text-xs h-8" onClick={shareLocation}
+src/components/delivery/MultiCurrencyDelivery.tsx:178:                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
+src/components/delivery/MultiDropBatchPanel.tsx:231:                    <Button size="sm" className="w-full text-[0.625rem] h-8 mt-2"
+src/components/delivery/MultiModalTransport.tsx:178:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/MultiStopRoutePanel.tsx:187:        <Button size="sm" variant="outline" onClick={optimizeRoute} className="text-[0.625rem] h-7 flex-1"
+src/components/delivery/MultiStopRoutePlanner.tsx:172:        <Button size="sm" className="h-8 px-2" onClick={addStop}
+src/components/delivery/MultiStopRoutePlanner.tsx:180:        <Button size="sm" className="flex-1 text-xs h-9" onClick={optimizeRoute}
+src/components/delivery/MultiStopRoutePlanner.tsx:184:        <Button size="sm" variant="outline" className="text-xs h-9"
+src/components/delivery/MultiVendorMarketplace.tsx:199:              <Button className="w-full text-xs h-9" onClick={checkout}
+src/components/delivery/ProofOfDeliveryPlus.tsx:308:            <Button size="sm" className="flex-1 text-[0.625rem] h-8" onClick={confirmSignature}
+src/components/delivery/ProofOfDeliveryPlus.tsx:391:      <Button className="w-full text-xs h-10 font-semibold" disabled={!requiredComplete || submitting || !proof.recipientName.trim()}
+src/components/delivery/QualityAssuranceSystem.tsx:201:          <Button className="w-full text-xs h-9 mt-2" onClick={submitChecklist}
+src/components/delivery/RegulatoryCompliance.tsx:223:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/ReturnsManagement.tsx:171:                    <Button size="sm" className="flex-1 text-[0.625rem] h-7"
+src/components/delivery/ReturnsManagement.tsx:176:                    <Button size="sm" className="flex-1 text-[0.625rem] h-7"
+src/components/delivery/ReturnsManagement.tsx:184:                  <Button size="sm" className="w-full text-[0.625rem] h-7"
+src/components/delivery/ReturnsReverseLogistics.tsx:133:            <Button size="sm" className="flex-1 text-[0.625rem] h-7" onClick={submitReturn}
+src/components/delivery/RouteOptimizationEngine.tsx:152:          <Button size="sm" onClick={analyzeAndOptimize} disabled={loading}
+src/components/delivery/RouteOptimizationPanel.tsx:219:        <Button size="sm" className="flex-1 text-xs h-9" onClick={optimize} disabled={stops.length < 2}
+src/components/delivery/RouteOptimizationPanel.tsx:223:        <Button size="sm" variant="outline" className="text-xs h-9" onClick={addStop}
+src/components/delivery/ScheduledDeliveryPanel.tsx:154:      <Button className="w-full text-xs h-9 font-semibold" onClick={handleSubmit} disabled={submitting}
+src/components/delivery/SellerLogisticsPanel.tsx:155:                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
+src/components/delivery/SellerLogisticsPanel.tsx:162:                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
+src/components/delivery/SellerLogisticsPanel.tsx:169:                        <Button size="sm" className="text-[0.625rem] h-7 px-2"
+src/components/delivery/SellerLogisticsPanel.tsx:176:                        <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 px-1.5"
+src/components/delivery/SellerLogisticsPanel.tsx:183:                        <Button size="sm" variant="ghost" className="text-[0.625rem] h-7 px-2"
+src/components/delivery/SellerPartnerPortal.tsx:218:          <Button className="w-full text-xs h-9 mt-2" onClick={createSupportTicket}
+src/components/delivery/SellerPayoutReports.tsx:130:        <Button size="sm" variant="outline" className="h-7 text-[0.625rem] px-2" onClick={exportCSV}
+src/components/delivery/SmartCapacityPlanning.tsx:155:        <Button size="sm" className="text-[0.625rem] h-7" onClick={rebalance}
+src/components/delivery/SmartLockerNetwork.tsx:133:          <Button size="sm" className="w-full text-[0.625rem] h-8" variant="outline"
+src/components/delivery/SmartLockerNetwork.tsx:167:                  <Button size="sm" className="text-[0.625rem] h-6 px-2"
+src/components/delivery/SmartNotificationsEngine.tsx:133:            <Button size="sm" className="w-full text-xs h-9 mt-2" onClick={handleSave}
+src/components/delivery/SmartNotificationsEngine.tsx:209:            <Button size="sm" className="w-full text-xs h-9" onClick={handleSave}
+src/components/orbit/OrbitContactsDirectory.tsx:73:        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+src/components/orbit/OrbitContactsDirectory.tsx:77:        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+src/components/orbit/OrbitContactsDirectory.tsx:81:        <Button variant="ghost" size="icon" className="h-9 w-9 min-w-[36px] min-h-[36px] rounded-full"
+src/components/orbit/OrbitSecuritySettings.tsx:210:            <Button variant="outline" size="sm" onClick={handle2FAEnroll} disabled={enrolling2FA} className="gap-2"
+src/components/orbit/OrbitSecuritySettings.tsx:287:            <Button variant="outline" size="sm" className="w-full justify-start gap-2 text-xs"
+src/components/orbit/OrbitSessionManager.tsx:167:                <Button variant="ghost" size="sm" className="text-token-xs h-7 px-2 gap-1"
+src/components/orbit/OrbitSessionManager.tsx:228:                  <Button variant="ghost" size="icon" className="h-8 w-8"
+src/components/storefront/CouponManager.tsx:214:                    <Button size="sm" variant="ghost" className="h-6 text-[0.625rem] flex-1"
+src/components/storefront/CouponManager.tsx:219:                    <Button size="sm" variant="ghost" className="h-6 text-[0.625rem] text-destructive"
+src/components/storefront/CustomerSupport.tsx:167:              <Button key={s} size="sm" variant="outline" className="text-[0.625rem] h-7"
+src/components/storefront/CustomerSupport.tsx:210:            <Button key={v} size="sm" variant={view === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
+src/components/storefront/GamificationEngine.tsx:156:            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
+src/components/storefront/GamificationEngine.tsx:234:                      <Button size="sm" variant="outline" className="text-[0.625rem] h-7 shrink-0"
+src/components/storefront/LiveShopping.tsx:137:            <Button key={v} size="sm" variant={tab === v ? "default" : "ghost"} className="text-[0.625rem] h-6 px-2"
+src/components/storefront/LiveShopping.tsx:188:                        <Button size="sm" variant="destructive" className="text-[0.625rem] h-6 px-2"
+src/components/storefront/LiveShopping.tsx:194:                        <Button size="sm" variant="outline" className="text-[0.625rem] h-6 px-2"
+src/components/storefront/MultiStoreManager.tsx:183:                    <Button key={s.id} size="sm" variant="ghost" className="text-[0.625rem] h-5 px-1.5"
+src/components/storefront/ShopReviews.tsx:171:                    <Button size="sm" variant="outline" className="text-[0.625rem] h-auto self-end"
+src/pages/ChannelManager.tsx:508:                                    <Button size="sm" variant="ghost" className="h-7 px-2"
+src/pages/ChannelManager.tsx:512:                                    <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive hover:text-destructive"
+src/pages/mobility/RiderLivePage.tsx:617:                          <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
+src/pages/mobility/RiderLivePage.tsx:621:                          <Button variant="ghost" size="sm" className="h-10 gap-1.5 text-xs text-muted-foreground"
+src/pages/mobility/RiderLivePage.tsx:629:                          <Button variant="outline" size="sm" className="h-10 gap-1.5 text-xs"
+src/pages/mobility/RiderLivePage.tsx:633:                          <Button variant="ghost" size="sm" className="h-10 gap-1.5 text-xs text-muted-foreground"
+src/pages/PropertyCalendar.tsx:392:                <Button key={v} size="sm" variant={viewMode === v ? "default" : "ghost"}
+src/pages/PublicRealEstateListing.tsx:681:                <Button className="w-full h-12 font-bold text-sm sm:text-base rounded-xl" onClick={handleSubmitContact} disabled={submitting || !contactForm.name || !contactForm.email}
+src/pages/PublicRealEstateListing.tsx:721:            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
+src/pages/PublicRealEstateListing.tsx:725:            <Button variant="outline" size="sm" className="h-10 gap-2 rounded-lg text-xs font-medium"
+src/pages/PublicServiceBooking.tsx:529:                  <Button className="w-full mt-4" disabled={!canProceedStep1}
+src/pages/RealEstateListings.tsx:351:                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+src/pages/RealEstateListings.tsx:355:                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+src/pages/RealEstateListings.tsx:359:                          <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
+src/pages/ShopPage.tsx:754:                    <Button size="sm" variant="outline" className="h-8 text-xs"
