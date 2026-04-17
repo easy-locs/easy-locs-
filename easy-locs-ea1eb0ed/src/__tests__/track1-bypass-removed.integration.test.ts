@@ -152,27 +152,18 @@ const OPENAI_KEY_ENV_ALLOWLIST = new Set<string>([
   "supabase/functions/_shared/execution/adapters/ai/runner-aiRoute.ts",
 ]);
 
-// Documented Level C orchestrator exception — these standalone files are
-// not wired into the runtime app and are pinned here as the SOLE
-// permitted importers of the `openai` SDK / `@openai/agents` SDK while
-// the LC1 migration converts them onto the canonical `dispatchAiCompletion`
-// path. Adding a new file here requires explicit Level C reviewer sign-off.
-const ORCHESTRATOR_SDK_ALLOWLIST = new Set<string>([
-  "orchestrator/src/orchestrator.ts",
-  "orchestrator/src/task-decomposition.ts",
-  "orchestrator/src/agents/base-agent.ts",
-  "orchestrator/src/agents/chief-architect.ts",
-  "orchestrator/src/agents/coding.ts",
-  "orchestrator/src/agents/deploy.ts",
-  "orchestrator/src/agents/observability.ts",
-  "orchestrator/src/agents/qa-validation.ts",
-  "orchestrator/src/agents/supabase.ts",
-]);
+// LB Closeout #852 — the unwired `orchestrator/` standalone Express
+// service was deleted as part of this closeout (it had no consumers in
+// the runtime app and was the sole holder of `from "openai"` /
+// `from "@openai/agents"` SDK imports). The future Level C dev.* agents
+// will be built fresh on top of the canonical dispatch surface per the
+// `.local/level-c-planning/` bundle — they will NOT be allow-listed here.
+// No SDK exception is permitted.
+const ORCHESTRATOR_SDK_ALLOWLIST: ReadonlySet<string> = new Set();
 
 const SCAN_ROOTS = [
   "supabase/functions",
   "lambda-handlers",
-  "orchestrator",
   "src",
 ];
 

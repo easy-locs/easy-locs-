@@ -146,3 +146,6 @@ verify_jwt = false
 # ─── CSP report collector (no JWT from browsers) ────────────────────────
 [functions.csp-report]
 verify_jwt = false
+
+[functions.command-email-parse]
+verify_jwt = true
