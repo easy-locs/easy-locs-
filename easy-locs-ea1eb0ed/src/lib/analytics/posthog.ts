@@ -55,4 +55,23 @@ export function resetPostHog() {
   }).catch(() => {});
 }
 
+/**
+ * Health probe for the integration registry. The registry treats PostHog as
+ * required in dev (key + host) so missing env throws at boot. At runtime the
+ * SDK additionally requires analytics consent before it actually starts —
+ * this probe distinguishes "missing config" from "consent withheld" so the
+ * diagnostics page can show the right reason.
+ */
+export function getPostHogHealth(): { ok: boolean; reason?: string } {
+  const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
+  const host = import.meta.env.VITE_POSTHOG_HOST as string | undefined;
+  if (!key) return { ok: false, reason: "VITE_POSTHOG_KEY is not set" };
+  if (!host) return { ok: false, reason: "VITE_POSTHOG_HOST is not set" };
+  if (!isCategoryAllowed("analytics")) {
+    return { ok: false, reason: "Analytics consent has not been granted" };
+  }
+  if (!started) return { ok: false, reason: "PostHog SDK has not been initialised yet" };
+  return { ok: true };
+}
+
 export { posthog };

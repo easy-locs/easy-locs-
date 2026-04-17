@@ -7,12 +7,17 @@ import { APP_VERSION } from "@/lib/version-check";
 import { initSentryBoot, captureBootCrash, reportTimeToFirstRender } from "@/lib/analytics/sentry";
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
+import { validateIntegrationsBoot } from "@/lib/integrations";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
 // Sentry (replays, tracing) is upgraded later in Stage 1 of the boot plan.
 const __BOOT_START__ = performance.now();
 initSentryBoot();
+// Loud, single-shot validation of every required integration env var. In dev
+// this throws before render so misconfiguration is caught immediately instead
+// of presenting as a silent runtime no-op (Mapbox/AWS/Sentry/PostHog/...).
+validateIntegrationsBoot();
 // Seed a trace for the whole session and propagate it through fetch so
 // front → edge → db logs share a trace_id.
 startTrace();
