@@ -198,22 +198,10 @@ platformBus.on("ORDER_COMPLETED", (event) => {
 });
 
 // ── QR payment completed ──
-platformBus.on("qr:payment_completed", (event) => {
-  const p = event.payload as QrPaymentPayload;
-  db.auth.getUser().then(({ data }) => {
-    const userId = data?.user?.id;
-    if (!userId) return;
-    void insertNotification({
-      user_id: userId,
-      actor: "client",
-      domain: "wallet",
-      type: "payment.qr.success",
-      title: "QR Payment successful ✅",
-      body: `Payment of ${p.amount ?? ""} ${p.currency ?? "AED"} completed`,
-      data: { targetId: p.targetId },
-    });
-  });
-});
+// Notification ownership has moved to `installQrPaymentReactions()` in
+// `src/lib/qr/qr-payment-reactions.ts`, which also handles cache invalidation
+// and the failure case. Keeping a single owner avoids duplicate notifications
+// on success.
 
 // ── C2C: new message on listing ──
 platformBus.on("c2c:new_message", (event) => {
