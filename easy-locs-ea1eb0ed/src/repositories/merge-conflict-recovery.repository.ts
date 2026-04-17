@@ -183,122 +183,146 @@ export function projectMergeConflictRecoverySummary(
   };
 }
 
-// ── Spike-detection threshold (shared across operators) ───────────────────
-//
-// Persisted in `public.platform_settings` so every operator and the
-// server-side detection job (see
-// `supabase/functions/_shared/execution/builders/merge-conflict-storm-alerts.ts`)
-// see the same value. The dashboard panel reads/writes this key and the
-// audit handler reads it whenever a new recovery envelope is written.
+// ── Threshold-based alerting (task #973) ──────────────────────────────────
 
-export interface MergeConflictAlertThreshold {
-  /** Number of recoveries against a single file path that triggers an alert. */
-  readonly count: number;
-  /** Sliding window the count is evaluated over (in minutes). */
-  readonly windowMinutes: number;
+/**
+ * Operator-tunable thresholds for merge-conflict spike alerts.
+ *
+ * - `dailyEventThreshold` — fire when ANY single day in the 14-day window
+ *   has at least this many recovery events. Default 10.
+ * - `totalEventsThreshold` — fire when the 14-day total reaches this
+ *   value. Default 30.
+ * - `topFileMinEvents` — minimum event count for the #1 top file before
+ *   it is even considered for the dominance alert. Default 5.
+ * - `topFileDominanceRatio` — fraction of `totalEvents` the #1 top file
+ *   must reach for the dominance alert. Default 0.5 (50%).
+ */
+export interface MergeConflictRecoveryAlertThresholds {
+  readonly dailyEventThreshold: number;
+  readonly totalEventsThreshold: number;
+  readonly topFileMinEvents: number;
+  readonly topFileDominanceRatio: number;
 }
 
-export const MERGE_CONFLICT_ALERT_THRESHOLD_KEY =
-  "merge_conflict_recovery.alert_threshold";
-
-export const DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD: MergeConflictAlertThreshold =
-  {
-    count: 5,
-    windowMinutes: 60,
+export const DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS:
+  MergeConflictRecoveryAlertThresholds = {
+    dailyEventThreshold: 10,
+    totalEventsThreshold: 30,
+    topFileMinEvents: 5,
+    topFileDominanceRatio: 0.5,
   };
 
-export const MIN_THRESHOLD_COUNT = 2;
-export const MIN_THRESHOLD_WINDOW_MINUTES = 5;
-export const MAX_THRESHOLD_WINDOW_MINUTES = 24 * 60;
+export type MergeConflictRecoveryAlertKind =
+  | "daily_spike"
+  | "total_spike"
+  | "file_dominance";
 
-function clampThreshold(
-  raw: Partial<MergeConflictAlertThreshold> | null | undefined,
-): MergeConflictAlertThreshold {
-  const count = Math.max(
-    MIN_THRESHOLD_COUNT,
-    Math.floor(Number(raw?.count) || DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD.count),
-  );
-  const windowMinutes = Math.min(
-    MAX_THRESHOLD_WINDOW_MINUTES,
-    Math.max(
-      MIN_THRESHOLD_WINDOW_MINUTES,
-      Math.floor(
-        Number(raw?.windowMinutes) ||
-          DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD.windowMinutes,
-      ),
-    ),
-  );
-  return { count, windowMinutes };
-}
-
-export async function loadMergeConflictAlertThreshold(): Promise<
-  MergeConflictAlertThreshold
-> {
-  const { data, error } = await db
-    .from("platform_settings")
-    .select("value")
-    .eq("key", MERGE_CONFLICT_ALERT_THRESHOLD_KEY)
-    .maybeSingle();
-  if (error) {
-    throw new Error(
-      `loadMergeConflictAlertThreshold failed: ${error.message}`,
-    );
-  }
-  return clampThreshold(
-    (data?.value as Partial<MergeConflictAlertThreshold> | null) ?? null,
-  );
-}
-
-export async function saveMergeConflictAlertThreshold(
-  next: MergeConflictAlertThreshold,
-): Promise<MergeConflictAlertThreshold> {
-  const clamped = clampThreshold(next);
-  const { error } = await db
-    .from("platform_settings")
-    .upsert(
-      { key: MERGE_CONFLICT_ALERT_THRESHOLD_KEY, value: clamped },
-      { onConflict: "key" },
-    );
-  if (error) {
-    throw new Error(
-      `saveMergeConflictAlertThreshold failed: ${error.message}`,
-    );
-  }
-  return clamped;
+export interface MergeConflictRecoveryAlert {
+  readonly kind: MergeConflictRecoveryAlertKind;
+  readonly severity: "high" | "medium";
+  readonly title: string;
+  readonly message: string;
+  readonly data: Record<string, unknown>;
 }
 
 /**
- * Per-file conflict counts inside a sliding time window. Used by the
- * dashboard's spike-detection panel to decide whether a single file
- * path is being storm-hit (e.g. two agents racing on the same file).
+ * Pure evaluator: turns a projection summary + thresholds into a list of
+ * alerts. No I/O, no clock — easy to unit-test exhaustively.
  *
- * Pure projection — caller decides the window size and the alert
- * threshold so the same primitive can drive both UI proximity bars
- * and threshold-crossing alerts. The authoritative trip-wire runs
- * server-side (see `merge-conflict-storm-alerts.ts`); the dashboard
- * uses this projection only to render proximity to the threshold.
+ * Alerts fire independently. The same summary may produce 0..3 alerts.
  */
-export function summarizeFileBurstsWithinWindow(
-  events: MergeConflictRecoveryEvent[],
-  windowMs: number,
-  now: number = Date.now(),
-): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
-  const cutoff = now - windowMs;
-  const counts = new Map<string, { count: number; lastAt: string }>();
-  for (const e of events) {
-    const t = Date.parse(e.at);
-    if (!Number.isFinite(t) || t < cutoff) continue;
-    for (const f of e.files) {
-      const cur = counts.get(f);
-      if (!cur) {
-        counts.set(f, { count: 1, lastAt: e.at });
-      } else {
-        cur.count += 1;
-        if (e.at > cur.lastAt) cur.lastAt = e.at;
+export function evaluateMergeConflictRecoveryAlerts(
+  summary: MergeConflictRecoverySummary,
+  thresholds: MergeConflictRecoveryAlertThresholds =
+    DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS,
+): MergeConflictRecoveryAlert[] {
+  const alerts: MergeConflictRecoveryAlert[] = [];
+
+  // 1) Daily spike — pick the worst day at-or-above the threshold.
+  if (thresholds.dailyEventThreshold > 0) {
+    let worst: { day: string; count: number } | null = null;
+    for (const d of summary.perDay) {
+      if (d.count >= thresholds.dailyEventThreshold) {
+        if (!worst || d.count > worst.count) worst = { ...d };
       }
     }
+    if (worst) {
+      alerts.push({
+        kind: "daily_spike",
+        severity: "high",
+        title: `Merge-conflict spike: ${worst.count} events on ${worst.day}`,
+        message:
+          `The dev-builder loop recorded ${worst.count} merge-conflict ` +
+          `recoveries on ${worst.day}, which is at or above the configured ` +
+          `daily threshold of ${thresholds.dailyEventThreshold}.`,
+        data: {
+          day: worst.day,
+          count: worst.count,
+          threshold: thresholds.dailyEventThreshold,
+        },
+      });
+    }
   }
-  return Array.from(counts.entries())
-    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
-    .sort((a, b) => b.count - a.count);
+
+  // 2) Total spike — 14-day total at-or-above the threshold.
+  if (
+    thresholds.totalEventsThreshold > 0 &&
+    summary.totalEvents >= thresholds.totalEventsThreshold
+  ) {
+    alerts.push({
+      kind: "total_spike",
+      severity: "medium",
+      title:
+        `Merge-conflict volume elevated: ${summary.totalEvents} events in 14d`,
+      message:
+        `${summary.totalEvents} merge-conflict recoveries were recorded in ` +
+        `the last 14 days across ${summary.affectedTasks} builder task(s), ` +
+        `at or above the configured total threshold of ` +
+        `${thresholds.totalEventsThreshold}.`,
+      data: {
+        total: summary.totalEvents,
+        affectedTasks: summary.affectedTasks,
+        threshold: thresholds.totalEventsThreshold,
+      },
+    });
+  }
+
+  // 3) File dominance — one path is responsible for too many of the
+  //    events. Skip cleanly when there are no events at all.
+  if (
+    summary.totalEvents > 0 &&
+    thresholds.topFileMinEvents > 0 &&
+    thresholds.topFileDominanceRatio > 0 &&
+    summary.topFiles.length > 0
+  ) {
+    const top = summary.topFiles[0]!;
+    const ratio = top.count / summary.totalEvents;
+    if (
+      top.count >= thresholds.topFileMinEvents &&
+      ratio >= thresholds.topFileDominanceRatio
+    ) {
+      const pct = Math.round(ratio * 100);
+      alerts.push({
+        kind: "file_dominance",
+        severity: "high",
+        title: `Merge-conflict hot file: ${top.file} (${pct}%)`,
+        message:
+          `'${top.file}' was involved in ${top.count} of ${summary.totalEvents} ` +
+          `merge-conflict recoveries (${pct}%) over the last 14 days, ` +
+          `at or above the configured dominance threshold of ` +
+          `${Math.round(thresholds.topFileDominanceRatio * 100)}% / ` +
+          `${thresholds.topFileMinEvents} events.`,
+        data: {
+          file: top.file,
+          count: top.count,
+          total: summary.totalEvents,
+          ratio,
+          minEventsThreshold: thresholds.topFileMinEvents,
+          ratioThreshold: thresholds.topFileDominanceRatio,
+        },
+      });
+    }
+  }
+
+  return alerts;
 }
