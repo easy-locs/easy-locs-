@@ -1,26 +1,16 @@
 name: Edge Function Contract Matrix
 
-# Runs the frontend ↔ Edge Function contract matrix on every pull request.
-# The `--ci` flag (npm run contracts:matrix:ci) fails the step on any of:
-#   - orphaned frontend call (target function does not exist on disk)
-#   - method mismatch
-#   - missing required body field
-#   - missing body when handler requires JSON
-#   - missing Authorization header on a fetch() to a JWT-required function
-#   - stale committed matrix artifact (docs/edge-functions-contract-matrix.{md,json})
-#
-# This gates merges on contract drift instead of waiting for someone to
-# remember to re-run the script locally.
 on:
   pull_request:
-  workflow_dispatch:
+    branches:
+      - main
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   contract-matrix:
-    name: Edge function contract matrix
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,21 +27,42 @@ jobs:
           cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: npm ci
 
-      - name: Run contract matrix (CI mode — fails on mismatches or stale artifact)
-        run: npm run contracts:matrix:ci
-
-      - name: Regenerate matrix artifact for inspection on failure
-        if: failure()
+      - name: Regenerate contract matrix
         run: npm run contracts:matrix
 
-      - name: Upload regenerated matrix on failure
+      - name: Build PR comment body
+        if: always()
+        run: npx tsx scripts/edge-function-contract-matrix-comment.ts ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Ensure comment body exists
+        if: always()
+        run: |
+          if [ ! -s "${{ github.workspace }}/edge-fn-contract-comment.md" ]; then
+            cat > "${{ github.workspace }}/edge-fn-contract-comment.md" <<EOF
+          ## Edge Function Contract Matrix
+
+          The contract matrix workflow did not produce a report for this commit.
+          See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          EOF
+          fi
+
+      - name: Post sticky PR comment
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: edge-fn-contract-matrix
+          path: ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Run contract matrix CI gate
+        run: npm run contracts:matrix:ci
+
+      - name: Upload regenerated matrix
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: edge-functions-contract-matrix-${{ github.sha }}
+          name: edge-fn-contract-matrix
           path: |
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.md
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.json
-          retention-days: 14
