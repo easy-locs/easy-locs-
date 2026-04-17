@@ -119,7 +119,7 @@ async function checkEdgeFunctions(timeoutMs: number): Promise<ConnectivityCheck>
   const start = performance.now();
   try {
     const { error } = await withTimeout(
-      supabase.functions.invoke("health-check", { body: { ping: true } }),
+      supabase.functions.invoke("health-check", { method: "GET" }),
       timeoutMs,
       "supabase-edge-functions",
     );

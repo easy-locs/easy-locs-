@@ -42,7 +42,7 @@ async function fetchFromExchangeRateAPI(): Promise<Record<string, number> | null
 async function fetchFromEdge(): Promise<Record<string, number> | null> {
   try {
     const { db } = await import("@/services/db");
-    const { data, error } = await db.functions.invoke("fx-rates", { body: null });
+    const { data, error } = await db.functions.invoke("fx-rates", { method: "GET" });
     if (error || !data?.rates) return null;
     return data.rates as Record<string, number>;
   } catch {

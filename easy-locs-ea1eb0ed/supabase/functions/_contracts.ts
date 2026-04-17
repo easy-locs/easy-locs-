@@ -116,7 +116,7 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     requireAuthHeader: true,
   },
   "health-check": {
-    methods: ["POST"],
+    methods: ["GET"],
     response: { fields: ["status", "checks", "totalMs"], successStatuses: [200] },
   },
   "rent-payment": {

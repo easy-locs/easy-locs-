@@ -54,6 +54,7 @@ interface BackfillResult {
 
 async function fetchBackfillStatus(): Promise<BackfillStatus> {
   const { data, error } = await supabase.functions.invoke("dld-analytics", {
+    method: "GET",
     headers: { "x-endpoint": "backfill-status" },
   });
   if (error) throw error;
@@ -62,10 +63,12 @@ async function fetchBackfillStatus(): Promise<BackfillStatus> {
 
 async function triggerBackfill(months: number): Promise<BackfillResult> {
   const { data, error } = await supabase.functions.invoke("dld-analytics", {
+    method: "POST",
     headers: {
       "x-endpoint": "backfill",
       "x-params": `months=${months}`,
     },
+    body: { months },
   });
   if (error) throw error;
   if (data?.error) throw new Error(data.error);
