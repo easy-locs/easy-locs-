@@ -147,7 +147,7 @@ export function ApprovalDecisionDrawer({
         status: string;
         payload: unknown;
         previous_state?: unknown;
-        result: unknown;
+        result?: unknown;
         execution_result?: unknown;
         blocked_reason?: string | null;
         agent_id?: string | null;
@@ -166,24 +166,35 @@ export function ApprovalDecisionDrawer({
    * `payload` for legacy rows.
    */
   const aiMeta = useMemo(() => {
-    const src =
-      (task?.execution_result as Record<string, unknown> | undefined) ??
-      (task?.payload as Record<string, unknown> | undefined);
-    if (!src) return null;
-    const purpose =
-      (src.purpose as string | undefined) ??
-      ((task?.payload as Record<string, unknown> | undefined)?.purpose as
-        | string
-        | undefined);
-    const verification = src.verification as
+    // Canonical orchestrator shape (LB1 #834):
+    //   execution_result = { output, logs, actions_taken, verification }
+    // and the AI adapter places its generated response/tools inside
+    // `output`. We read from `execution_result` first, fall back to the
+    // legacy `result` column, then `payload` for very old rows.
+    const exec = task?.execution_result as
       | Record<string, unknown>
       | undefined;
-    const tools = (src.tools_used ?? src.tools) as
+    const legacyResult = task?.result as Record<string, unknown> | undefined;
+    const payload = task?.payload as Record<string, unknown> | undefined;
+    const output =
+      ((exec?.output as Record<string, unknown> | undefined) ??
+        legacyResult ??
+        payload) ?? undefined;
+    if (!output && !exec && !payload) return null;
+    const purpose =
+      (output?.purpose as string | undefined) ??
+      (payload?.purpose as string | undefined);
+    const verification =
+      ((exec?.verification as Record<string, unknown> | undefined) ??
+        (output?.verification as Record<string, unknown> | undefined)) ??
+      undefined;
+    const tools = ((output?.tools_used ?? output?.tools) as
       | Array<unknown>
-      | undefined;
+      | undefined) ?? undefined;
     const response =
-      (src.response as string | undefined) ??
-      (src.output_text as string | undefined);
+      (output?.response as string | undefined) ??
+      (output?.text as string | undefined) ??
+      (output?.output_text as string | undefined);
     if (!purpose && !verification && !tools && !response) return null;
     return { purpose, verification, tools, response };
   }, [task]);

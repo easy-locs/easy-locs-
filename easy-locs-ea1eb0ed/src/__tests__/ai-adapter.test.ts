@@ -194,7 +194,7 @@ describe("AI completion adapter — LB1 (#815)", () => {
     expect(res.success).toBe(false);
     if (!res.success) {
       expect(res.errorCode).toBe("QUOTA_EXCEEDED");
-      expect(res.error).toMatch(/Quota accounting failed/i);
+      expect(res.errorMessage).toMatch(/Quota accounting failed/i);
     }
   });
 
