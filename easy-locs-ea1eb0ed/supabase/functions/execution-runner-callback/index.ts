@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
   const { data: taskRow, error: loadErr } = await sb
     .schema("system")
     .from("execution_tasks")
-    .select("id, status, runner, runner_token_hash, result, external_run_url, pr_url")
+    .select("id, status, runner, runner_token_hash, execution_result, external_run_url, pr_url")
     .eq("id", task_id)
     .maybeSingle();
 
@@ -147,7 +147,12 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Build patch ───────────────────────────────────────────────────────
-  const prevResult = (taskRow.result as Record<string, unknown> | null) ?? {};
+  // Write the canonical V2 columns (`execution_result` + `error_code`) so the
+  // Command Center / orchestrator surfaces only have to read one shape. The
+  // legacy `result` / `error` columns kept around by migration
+  // 20260418500000_execution_tasks_v2.sql are no longer touched here; a
+  // companion backfill migration copies any in-flight legacy rows forward.
+  const prevResult = (taskRow.execution_result as Record<string, unknown> | null) ?? {};
   const patch: Record<string, unknown> = {};
 
   if (status === "RUNNING") {
@@ -155,7 +160,7 @@ Deno.serve(async (req: Request) => {
     if (external_run_url) {
       patch.external_run_url = external_run_url;
     }
-    patch.result = {
+    patch.execution_result = {
       ...prevResult,
       github_status: "RUNNING",
       logs: logs ?? (prevResult.logs as unknown[] | undefined) ?? [],
@@ -167,7 +172,7 @@ Deno.serve(async (req: Request) => {
     patch.status = "succeeded";
     if (pr_url) patch.pr_url = pr_url;
     if (external_run_url) patch.external_run_url = external_run_url;
-    patch.result = {
+    patch.execution_result = {
       ...prevResult,
       github_status: "SUCCESS",
       pr_url: pr_url ?? null,
@@ -179,9 +184,9 @@ Deno.serve(async (req: Request) => {
   } else {
     // FAILED: terminal — transition running → failed.
     patch.status = "failed";
-    patch.error = runnerError ?? "GitHub Actions runner reported failure";
+    patch.error_code = runnerError ?? "GitHub Actions runner reported failure";
     if (external_run_url) patch.external_run_url = external_run_url;
-    patch.result = {
+    patch.execution_result = {
       ...prevResult,
       github_status: "FAILED",
       error: runnerError ?? null,

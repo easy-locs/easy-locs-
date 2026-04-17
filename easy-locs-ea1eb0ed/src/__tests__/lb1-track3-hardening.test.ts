@@ -19,10 +19,10 @@
  *   - **Catch sites** (behavioural): exercise the actual catch branch,
  *     assert the canonical event is emitted via `console.error` and that
  *     fatal codes re-throw / last-entry re-throws.
- *   - **UI projection** (pure): both writer-path shapes
- *     (orchestrator-V2 `execution_result` and legacy `result`/`error`
- *     written by `execution-runner-callback`) flow correctly into the
- *     4-zone UI.
+ *   - **UI projection** (pure): both writer paths now agree on the V2
+ *     `execution_result` + `error_code` columns (the GitHub-runner
+ *     callback was migrated off the legacy `result`/`error` shape in
+ *     task #848); the 4-zone UI is fed from the canonical columns only.
  *   - **Command Center dispatch** (integration): submit lands a row in
  *     `system.execution_tasks` via the canonical edge function, and NO
  *     `agent_tasks` write is performed.
@@ -61,11 +61,9 @@ function makeRow(over: Partial<ExecutionTaskRow> = {}): ExecutionTaskRow {
     status: "queued",
     payload: null,
     execution_result: null,
-    result: null,
     external_run_url: null,
     blocked_reason: null,
     error_code: null,
-    error: null,
     requested_by: "user_1",
     created_at: "2026-04-17T00:00:00.000Z",
     updated_at: "2026-04-17T00:00:00.000Z",
@@ -369,12 +367,12 @@ describe("Track 3 (#843) â€” Command Center projection (system.execution_tasks â
     expect(uiStatus("cancelled")).toBe("error");
   });
 
-  it("projects a GitHub-runner-callback row (legacy `result` + `error` columns)", () => {
+  it("projects a GitHub-runner-callback row (V2 `execution_result` + `error_code` columns, post #848)", () => {
     const row = makeRow({
       status: "succeeded",
       payload: { prompt: "fix login bug", label: "fix login bug" },
       external_run_url: "https://github.com/owner/repo/actions/runs/1234567",
-      result: {
+      execution_result: {
         github_status: "SUCCESS",
         pr_url: "https://github.com/owner/repo/pull/42",
         logs: ["step 1: ok", "step 2: ok"],
@@ -408,12 +406,12 @@ describe("Track 3 (#843) â€” Command Center projection (system.execution_tasks â
     expect(view.result).toBe("PR summary text");
   });
 
-  it("FAILED runner callback surfaces error + conclusion in the UI", () => {
+  it("FAILED runner callback surfaces error + conclusion in the UI (V2 columns)", () => {
     const row = makeRow({
       status: "failed",
       payload: { prompt: "p" },
-      error: "GitHub Actions runner reported failure",
-      result: { github_status: "FAILED", error: "step 3 failed", logs: ["build ok", "test FAILED"] },
+      error_code: "GitHub Actions runner reported failure",
+      execution_result: { github_status: "FAILED", error: "step 3 failed", logs: ["build ok", "test FAILED"] },
     });
     const view = projectTask(row);
     expect(uiStatus(view.status)).toBe("error");
