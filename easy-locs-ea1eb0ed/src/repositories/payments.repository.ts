@@ -66,8 +66,12 @@ export async function invokeOrbitPayment(body: Record<string, any>) {
 }
 
 // ── FX ──
-export async function invokeFXRate(body: Record<string, any>) {
-  const { data, error } = await db.functions.invoke("fx-rates", { body });
+export async function invokeFXRate(params: Record<string, string | number> = {}) {
+  const query = new URLSearchParams(
+    Object.entries(params).map(([k, v]) => [k, String(v)]),
+  ).toString();
+  const target = query ? `fx-rates?${query}` : "fx-rates";
+  const { data, error } = await db.functions.invoke(target, { method: "GET" });
   if (error) throw error;
   return data;
 }

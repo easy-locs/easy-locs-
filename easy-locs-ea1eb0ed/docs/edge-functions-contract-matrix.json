@@ -871,7 +871,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 125,
+          "line": 129,
           "method": "POST",
           "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Mobile Money ── export async functio"
         },
@@ -1077,7 +1077,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 118,
+          "line": 122,
           "method": "POST",
           "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ── Booking payment ── export async fu"
         }
@@ -1351,7 +1351,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 162,
+          "line": 166,
           "method": "POST",
           "snippet": "functions.invoke(\"create-subscription\", { body }); if (error) throw error; return data; } export async function manageSubscription(body"
         }
@@ -1429,7 +1429,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 147,
+          "line": 151,
           "method": "POST",
           "snippet": "functions.invoke(\"crypto-payment\", { body }); if (error) throw error; return data; } export async function checkCryptoChargeStatus(char"
         },
@@ -1445,7 +1445,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 153,
+          "line": 157,
           "method": "POST",
           "snippet": "functions.invoke(\"crypto-payment\", { body: { action: \"status\", charge_id: chargeId }, }); if (error) throw error; return data; }"
         }
@@ -1846,21 +1846,23 @@
           "hasHeaders": true,
           "kind": "invoke",
           "line": 56,
-          "method": "POST",
-          "snippet": "functions.invoke(\"dld-analytics\", { headers: { \"x-endpoint\": \"backfill-status\" }, }); if (error) throw error; return data; } asyn"
+          "method": "GET",
+          "snippet": "functions.invoke(\"dld-analytics\", { method: \"GET\", headers: { \"x-endpoint\": \"backfill-status\" }, }); if (error) throw error; r"
         },
         {
           "bodyHasSpread": false,
-          "bodyKeys": [],
+          "bodyKeys": [
+            "months"
+          ],
           "column": 42,
           "file": "src/pages/admin/AdminDldBackfillPage.tsx",
           "fn": "dld-analytics",
-          "hasBody": false,
+          "hasBody": true,
           "hasHeaders": true,
           "kind": "invoke",
-          "line": 64,
+          "line": 65,
           "method": "POST",
-          "snippet": "functions.invoke(\"dld-analytics\", { headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`, }, }); if ("
+          "snippet": "functions.invoke(\"dld-analytics\", { method: \"POST\", headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`,"
         }
       ],
       "exists": true,
@@ -2091,17 +2093,17 @@
     {
       "callers": [
         {
-          "bodyHasSpread": true,
+          "bodyHasSpread": false,
           "bodyKeys": [],
           "column": 26,
           "file": "src/hooks/useCurrencyConversion.ts",
           "fn": "fx-rates",
-          "hasBody": true,
+          "hasBody": false,
           "hasHeaders": true,
           "kind": "fetch",
           "line": 27,
-          "method": "POST",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/fx-rates`, { method: \"POST\", headers: { apikey: anonKey, Authorizatio"
+          "method": "GET",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/fx-rates`, { method: \"GET\", headers: { apikey: anonKey, Authorization"
         },
         {
           "bodyHasSpread": false,
@@ -2158,28 +2160,15 @@
         {
           "bodyHasSpread": false,
           "bodyKeys": [],
-          "column": 36,
-          "file": "src/repositories/payments.repository.ts",
-          "fn": "fx-rates",
-          "hasBody": true,
-          "hasHeaders": false,
-          "kind": "invoke",
-          "line": 70,
-          "method": "POST",
-          "snippet": "functions.invoke(\"fx-rates\", { body }); if (error) throw error; return data; } // ── Subscription ── export async function fetchSubscri"
-        },
-        {
-          "bodyHasSpread": true,
-          "bodyKeys": [],
           "column": 38,
           "file": "src/services/data/forex-data-service.ts",
           "fn": "fx-rates",
-          "hasBody": true,
+          "hasBody": false,
           "hasHeaders": false,
           "kind": "invoke",
           "line": 45,
-          "method": "POST",
-          "snippet": "functions.invoke(\"fx-rates\", { body: null }); if (error || !data?.rates) return null; return data.rates as Record<string, number>;"
+          "method": "GET",
+          "snippet": "functions.invoke(\"fx-rates\", { method: \"GET\" }); if (error || !data?.rates) return null; return data.rates as Record<string, number>"
         }
       ],
       "contractMethods": [
@@ -2613,22 +2602,20 @@
       "callers": [
         {
           "bodyHasSpread": false,
-          "bodyKeys": [
-            "ping"
-          ],
+          "bodyKeys": [],
           "column": 16,
           "file": "src/lib/engines/backend-connectivity-engine.ts",
           "fn": "health-check",
-          "hasBody": true,
+          "hasBody": false,
           "hasHeaders": false,
           "kind": "invoke",
           "line": 122,
-          "method": "POST",
-          "snippet": "functions.invoke(\"health-check\", { body: { ping: true } }), timeoutMs, \"supabase-edge-functions\", ); const latency = Ma"
+          "method": "GET",
+          "snippet": "functions.invoke(\"health-check\", { method: \"GET\" }), timeoutMs, \"supabase-edge-functions\", ); const latency = Math.roun"
         }
       ],
       "contractMethods": [
-        "POST"
+        "GET"
       ],
       "exists": true,
       "fn": "health-check",
@@ -2815,7 +2802,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 168,
+          "line": 172,
           "method": "POST",
           "snippet": "functions.invoke(\"manage-subscription\", { body }); if (error) throw error; return data; } export async function openSubscriptionPortal("
         }
@@ -2902,7 +2889,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 132,
+          "line": 136,
           "method": "POST",
           "snippet": "functions.invoke(\"mobile-money-payment\", { body }); if (error) throw error; return data; } export async function checkMobileMoneyStatus"
         },
@@ -2918,7 +2905,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 138,
+          "line": 142,
           "method": "POST",
           "snippet": "functions.invoke(\"mobile-money-payment\", { body: { action: \"status\", tx_ref: txRef }, }); if (error) throw error; return data; }"
         }
@@ -3827,7 +3814,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 193,
+          "line": 197,
           "method": "POST",
           "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"request\", ...body }, }); if (error) throw error; return data; } export async"
         },
@@ -3843,7 +3830,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 201,
+          "line": 205,
           "method": "POST",
           "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"list\", status: params?.status || \"pending\" }, }); if (error) throw error; retu"
         },
@@ -3859,7 +3846,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 209,
+          "line": 213,
           "method": "POST",
           "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"approve\", refund_id: body.refund_id }, }); if (error) throw error; return data"
         },
@@ -3876,7 +3863,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 217,
+          "line": 221,
           "method": "POST",
           "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"reject\", refund_id: body.refund_id, reason: body.reason }, }); if (error) throw"
         }
@@ -5157,7 +5144,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 174,
+          "line": 178,
           "method": "POST",
           "snippet": "functions.invoke(\"subscription-portal\", { body: {} }); if (error) throw error; return data; } export async function fetchCurrentSubscri"
         }
@@ -5511,26 +5498,19 @@
       "callers": [
         {
           "bodyHasSpread": false,
-          "bodyKeys": [
-            "user_id",
-            "query_embedding",
-            "match_count",
-            "similarity_threshold"
-          ],
+          "bodyKeys": [],
           "column": 38,
           "file": "src/engines/recommendations/recommendation-engine.ts",
           "fn": "vector-similarity-search",
-          "hasBody": true,
+          "hasBody": false,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 168,
+          "line": 169,
           "method": "POST",
-          "snippet": "functions.invoke(\"vector-similarity-search\", { body: { user_id: userId, query_embedding: queryEmbedding, match"
+          "snippet": "functions.invoke(\"vector-similarity-search\", { body: { user_id: userId, // The edge function embeds the text server-si"
         }
       ],
-      "contractFields": [
-        "query_embedding"
-      ],
+      "contractFields": [],
       "contractMethods": [
         "POST"
       ],
@@ -6193,7 +6173,7 @@
     "webauthn-router"
   ],
   "totals": {
-    "callSites": 258,
+    "callSites": 257,
     "contractCoverage": "28/117 (23.9%)",
     "declaredContracts": 28,
     "functionsOnDisk": 238,
@@ -6206,6 +6186,6 @@
     "undeclaredResponseFieldWarnings": 0,
     "unhandledErrorsWarnings": 0,
     "uniqueTargets": 117,
-    "verifiedCallSites": 239
+    "verifiedCallSites": 238
   }
 }

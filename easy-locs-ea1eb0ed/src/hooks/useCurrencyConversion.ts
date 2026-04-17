@@ -25,13 +25,11 @@ async function fetchLiveRates(): Promise<Record<string, number> | null> {
 
     if (supabaseUrl && anonKey) {
       const resp = await fetch(`${supabaseUrl}/functions/v1/fx-rates`, {
-        method: "POST",
+        method: "GET",
         headers: {
           apikey: anonKey,
           Authorization: `Bearer ${anonKey}`,
-          "Content-Type": "application/json",
         },
-        body: "null",
       });
       if (resp.ok) {
         const data = await resp.json();
