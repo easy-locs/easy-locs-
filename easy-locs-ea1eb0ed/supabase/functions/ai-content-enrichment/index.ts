@@ -12,7 +12,7 @@
 
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { aiRoute } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { applyGuardrails, sanitizeAssistantOutput } from "../_shared/ai-guardrails.ts";
 import { logAiInteraction, checkAiQuota } from "../_shared/ai-cost-tracker.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -68,11 +68,27 @@ function extractImageUrls(row: Record<string, unknown>, col?: string): string[] 
   return [];
 }
 
+// Note (#842): the tool-call schema previously enforced via OpenAI's
+// `tools` + `tool_choice` is now expressed as a strict JSON contract in
+// the system prompt. The dispatched ai.completion agent uses
+// responseFormat:"json" so the model returns a JSON object matching this
+// shape directly. Field length limits are still clamped server-side via
+// `clampEnrichment()`.
 const ENRICHMENT_SYSTEM_PROMPT = `You are a professional content enrichment engine for a global marketplace.
 Produce concise, accurate, multilingual-safe copy.
 Never invent factual claims (prices, addresses, ratings). Use only what is provided.
 Respect the target length limits strictly.
-Return ONLY a call to the enrich_content tool — no prose.`;
+
+You MUST respond with ONLY a single JSON object (no prose, no code fences) of EXACTLY this shape:
+{
+  "description":      string,                       // 150-250 word marketing description
+  "tags":             string[],                     // 5-12 concise topical tags
+  "seo_title":        string,                       // <=60 chars
+  "seo_description":  string,                       // <=155 chars
+  "seo_keywords":     string[],                     // 5-10 SEO keywords
+  "image_alts":       { [imageUrl: string]: string }, // <=120 chars per alt
+  "quality_score":    number                        // 0..1 self-estimated
+}`;
 
 function enrichUserPrompt(inputText: string, imageUrls: string[]): string {
   return `Entity facts:
@@ -81,43 +97,11 @@ ${inputText}
 ${imageUrls.length > 0 ? `Images to describe (generate descriptive, SEO-friendly alt text for each, max 120 chars each):\n${imageUrls.map((u, i) => `  ${i + 1}. ${u}`).join("\n")}` : "No images provided."}`;
 }
 
-function enrichTool() {
-  return [{
-    type: "function",
-    function: {
-      name: "enrich_content",
-      description: "Generate enriched content for an entity.",
-      parameters: {
-        type: "object",
-        properties: {
-          description:      { type: "string", description: "150-250 word marketing description." },
-          tags:             { type: "array", items: { type: "string" }, description: "5-12 concise topical tags." },
-          seo_title:        { type: "string", description: "<=60 char SEO title." },
-          seo_description:  { type: "string", description: "<=155 char meta description." },
-          seo_keywords:     { type: "array", items: { type: "string" }, description: "5-10 SEO keywords." },
-          image_alts:       { type: "object", additionalProperties: { type: "string" }, description: "Map of image URL -> alt text (<=120 chars each)." },
-          quality_score:    { type: "number", description: "0..1 self-estimated quality." },
-        },
-        required: ["description", "tags", "seo_title", "seo_description", "seo_keywords", "image_alts", "quality_score"],
-      },
-    },
-  }];
-}
-
-function parseEnrichment(provider: "openai" | "anthropic", data: unknown): EnrichmentOutput | null {
-  const obj = data as Record<string, unknown>;
+function parseEnrichment(maybeJson: unknown, text: string): EnrichmentOutput | null {
   try {
-    if (provider === "anthropic") {
-      const content = obj.content as Array<{ type: string; text?: string; input?: unknown; name?: string }> | undefined;
-      const toolUse = content?.find((b) => b.type === "tool_use");
-      if (toolUse?.input && typeof toolUse.input === "object") return toolUse.input as EnrichmentOutput;
-      const text = content?.find((b) => b.type === "text")?.text ?? "";
-      return JSON.parse(text) as EnrichmentOutput;
+    if (maybeJson && typeof maybeJson === "object") {
+      return maybeJson as EnrichmentOutput;
     }
-    const choices = obj.choices as Array<{ message?: { tool_calls?: Array<{ function?: { arguments?: string } }>; content?: string } }> | undefined;
-    const tool = choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (tool) return JSON.parse(tool) as EnrichmentOutput;
-    const text = choices?.[0]?.message?.content ?? "";
     return JSON.parse(text) as EnrichmentOutput;
   } catch {
     return null;
@@ -204,29 +188,42 @@ async function enrichOne(
   }
 
   const start = Date.now();
-  const { response, provider, fallbackUsed } = await aiRoute({
-    messages: [
-      { role: "system", content: ENRICHMENT_SYSTEM_PROMPT },
-      { role: "user",   content: enrichUserPrompt(guard.sanitized, imageUrls) },
-    ],
-    max_tokens: 1200,
-    temperature: 0.4,
-    tools: enrichTool(),
-    tool_choice: { type: "function", function: { name: "enrich_content" } },
-  });
-  if (!response.ok) {
-    const errText = await response.text();
-    return { ok: false, entityId, error: `provider_${response.status}: ${errText.slice(0, 240)}` };
+  // LB1 Cleanup #842: migrated from aiRoute() w/ OpenAI tool-call schema
+  // to dispatchAiCompletion() w/ responseFormat:"json". The model now
+  // returns the EnrichmentOutput JSON directly instead of as a tool-call
+  // arguments blob. Provider selection is registry-driven.
+  const aiOutcome = await dispatchAiCompletion(
+    {
+      feature: "ai-content-enrichment",
+      messages: [
+        { role: "system", content: ENRICHMENT_SYSTEM_PROMPT },
+        { role: "user",   content: enrichUserPrompt(guard.sanitized, imageUrls) },
+      ],
+      maxTokens: 1200,
+      temperature: 0.4,
+      responseFormat: "json",
+      purpose: "general",
+      tools: [{ name: "enrich_content", description: "Generate enriched content for an entity." }],
+    },
+    { feature: "ai-content-enrichment", correlationId: entityId },
+  );
+  if (aiOutcome.status !== "succeeded" || !aiOutcome.output) {
+    return {
+      ok: false,
+      entityId,
+      error: `dispatch_${aiOutcome.status}:${aiOutcome.errorCode ?? "unknown"}`.slice(0, 240),
+    };
   }
-  const data = await response.json();
-  const parsed = parseEnrichment(provider, data);
+  const parsed = parseEnrichment(aiOutcome.output.json, aiOutcome.output.text);
   if (!parsed) return { ok: false, entityId, error: "failed_to_parse_enrichment" };
   const clean = clampEnrichment(parsed, imageUrls);
 
-  const usage = (data as { usage?: { prompt_tokens?: number; completion_tokens?: number; input_tokens?: number; output_tokens?: number } }).usage ?? {};
-  const promptTokens     = usage.prompt_tokens ?? usage.input_tokens ?? 0;
-  const completionTokens = usage.completion_tokens ?? usage.output_tokens ?? 0;
-  const model = (data as { model?: string }).model ?? (provider === "anthropic" ? "claude-3-5-haiku-20241022" : "gpt-4o-mini");
+  const interaction = aiOutcome.output.interaction;
+  const promptTokens     = interaction.promptTokens;
+  const completionTokens = interaction.completionTokens;
+  const model = interaction.model;
+  const provider: "openai" | "anthropic" = interaction.provider === "internal" ? "openai" : interaction.provider;
+  const fallbackUsed = interaction.fallbackUsed;
 
   const { error: upsertErr } = await db.from("content_enrichments").upsert({
     entity_type: entityType,

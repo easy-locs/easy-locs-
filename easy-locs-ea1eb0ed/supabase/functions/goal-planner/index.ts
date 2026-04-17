@@ -25,7 +25,7 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-import { aiRouteAndParse } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -166,27 +166,38 @@ async function generatePlan(
   goalTitle: string,
   goalDescription: string | null,
   learned: string,
+  correlationId?: string,
 ): Promise<{ plan: PlanStep[]; source: "ai" | "fallback"; provider?: string }> {
-  const hasOpenAI = !!Deno.env.get("OPENAI_API_KEY");
-  const hasAnthropic = !!Deno.env.get("ANTHROPIC_API_KEY");
-  if (!hasOpenAI && !hasAnthropic) {
-    return { plan: deterministicFallback(goalTitle), source: "fallback" };
-  }
-
   try {
     const userMsg = `GOAL TITLE: ${goalTitle}\n\nGOAL DESCRIPTION:\n${goalDescription ?? "(none)"}${learned}`;
-    const { content, provider } = await aiRouteAndParse({
-      messages: [
-        { role: "system", content: PLANNER_SYSTEM_PROMPT },
-        { role: "user", content: userMsg },
-      ],
-      temperature: 0.2,
-      max_tokens: 600,
-      response_format: { type: "json_object" },
-    });
-    const parsed = JSON.parse(content);
+    // LB1 Cleanup #842: migrated from legacy aiRouteAndParse() to the
+    // canonical dispatchAiCompletion() so the call goes through the
+    // registered ai.completion agent (policy gate + ai_interactions row +
+    // agent quota). Provider selection is registry-driven now — no
+    // per-call override.
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "goal-planner",
+        messages: [
+          { role: "system", content: PLANNER_SYSTEM_PROMPT },
+          { role: "user", content: userMsg },
+        ],
+        temperature: 0.2,
+        maxTokens: 600,
+        responseFormat: "json",
+        purpose: "general",
+      },
+      { feature: "goal-planner", correlationId },
+    );
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.warn(
+        `[goal-planner] dispatch did not succeed (status=${outcome.status}, code=${outcome.errorCode ?? "n/a"}); using fallback`,
+      );
+      return { plan: deterministicFallback(goalTitle), source: "fallback" };
+    }
+    const parsed = outcome.output.json ?? JSON.parse(outcome.output.text);
     const plan = validatePlan(parsed, goalTitle);
-    return { plan, source: "ai", provider };
+    return { plan, source: "ai", provider: outcome.output.interaction.provider };
   } catch (e) {
     console.warn("[goal-planner] AI plan failed, using fallback:", e instanceof Error ? e.message : e);
     return { plan: deterministicFallback(goalTitle), source: "fallback" };
@@ -278,7 +289,7 @@ Deno.serve(async (req) => {
   }
 
   const learned = await loadLearnedPatterns(serviceClient);
-  const { plan, source, provider } = await generatePlan(goal.title, goal.description, learned);
+  const { plan, source, provider } = await generatePlan(goal.title, goal.description, learned, goal.id);
 
   // Create iteration row up-front so planning is always recorded — even if
   // dispatch fails partially or goal is in 'plan' mode.
