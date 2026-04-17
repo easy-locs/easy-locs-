@@ -137,6 +137,25 @@ export type OpenPullRequestFn = (args: {
   iterations: readonly LoopIterationRecord[];
 }) => Promise<{ number: number; url: string }>;
 
+/** Pre-merge verdict surfaced by the LC7 drift detector. A `drift_conflict`
+ *  means another dev task touched the same hunk(s) on a parallel branch
+ *  (or merged into main since this branch was cut) — the iteration MUST
+ *  NOT open a PR; instead the loop converts it into a transient verifier
+ *  red and triggers `request_dev_replan` with the carried reason. */
+export type PreMergeVerdict =
+  | { status: "ok" }
+  | { status: "drift_conflict"; reason: string };
+
+/** Caller-supplied callback that runs the LC7 pre-merge drift hook AFTER
+ *  the verifier has gone green and BEFORE the PR is opened. Defaults to
+ *  `{ status: "ok" }` when not provided (single-task / no-conflict mode). */
+export type PreMergeCheckFn = (args: {
+  builderTaskId: string;
+  planId: string;
+  iteration: number;
+  iterations: readonly LoopIterationRecord[];
+}) => Promise<PreMergeVerdict>;
+
 export interface RunDevBuilderLoopOptions {
   readonly builderTaskId: string;
   readonly initialPlan: DevPlan;
@@ -150,6 +169,9 @@ export interface RunDevBuilderLoopOptions {
   readonly runVerifier: RunVerifierFn;
   readonly requestReplan: RequestReplanFn;
   readonly openPullRequest: OpenPullRequestFn;
+  /** Optional LC7 pre-merge drift hook. When omitted, every iteration
+   *  proceeds straight to PR open (single-task / no-conflict mode). */
+  readonly preMergeCheck?: PreMergeCheckFn;
 }
 
 /** Canonical LC4 loop. Order of operations is fixed and MUST NOT be
@@ -206,14 +228,40 @@ export async function runDevBuilderLoop(
       stepResults: children,
     });
 
+    // If the verifier is green AND a pre-merge hook is wired, consult
+    // the LC7 drift detector BEFORE opening the PR. A `drift_conflict`
+    // means another dev task touched overlapping hunks on a parallel
+    // branch (or merged into main since this branch was cut). We MUST
+    // NOT open the PR in that case; instead we convert the verdict into
+    // a transient verifier red so the existing replan path fires with a
+    // truthful, auditable reason.
+    let effectiveVerifier: VerifierVerdict = verifier;
+    if (verifier.status === "green" && opts.preMergeCheck) {
+      const preMerge = await opts.preMergeCheck({
+        builderTaskId: opts.builderTaskId,
+        planId: plan.plan_id,
+        iteration: i,
+        iterations: [
+          ...iterations,
+          { iteration: i, planRevision: plan.revision ?? 0, children, verifier },
+        ],
+      });
+      if (preMerge.status === "drift_conflict") {
+        effectiveVerifier = {
+          status: "red",
+          reason: `merge_conflict:${preMerge.reason}`,
+        };
+      }
+    }
+
     iterations.push({
       iteration: i,
       planRevision: plan.revision ?? 0,
       children,
-      verifier,
+      verifier: effectiveVerifier,
     });
 
-    if (verifier.status === "green") {
+    if (effectiveVerifier.status === "green") {
       const pr = await opts.openPullRequest({
         builderTaskId: opts.builderTaskId,
         planId: plan.plan_id,
@@ -222,11 +270,11 @@ export async function runDevBuilderLoop(
       return { status: "merged", iterations, pr };
     }
 
-    if (verifier.permanent) {
+    if (effectiveVerifier.status === "red" && effectiveVerifier.permanent) {
       return {
         status: "rejected_permanent",
         iterations,
-        reason: verifier.reason,
+        reason: effectiveVerifier.reason,
       };
     }
 
@@ -238,12 +286,22 @@ export async function runDevBuilderLoop(
       };
     }
 
+    if (effectiveVerifier.status !== "red") {
+      // Defensive: only reachable if a future code path produced an
+      // unexpected verdict; we treat it as a non-replan terminal.
+      return {
+        status: "rejected_replan_failed",
+        iterations,
+        reason: `unexpected_verdict:${effectiveVerifier.status}`,
+      };
+    }
+
     let nextPlan: DevPlan | null;
     try {
       nextPlan = await opts.requestReplan({
         builderTaskId: opts.builderTaskId,
         previousPlan: plan,
-        verifier,
+        verifier: effectiveVerifier,
         iteration: i,
       });
     } catch (err) {
