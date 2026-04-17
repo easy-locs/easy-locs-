@@ -1,38 +1,47 @@
-Task #952: Alert ops when merge-conflict recovery storms a single file
+ACP Agent 7 (#866) — Runs Explorer + Replay + trace/DAG
 
-Adds threshold-based spike detection to the operator dashboard at
-/admin/merge-conflict-recovery so a single file path crossing N
-conflicts within a rolling window pages on-call instead of waiting
-for someone to refresh the page.
+Replaces the placeholder /admin/control/runs section with a full Runs
+Explorer that reuses the canonical `agentsRepo.listAgentRunsRich` hook
+(same data path as `AdminAgentRunsPage`).
 
-Changes:
-- src/repositories/merge-conflict-recovery.repository.ts
-  Adds pure projection `summarizeFileBurstsWithinWindow(events,
-  windowMs, now?)` returning per-file counts + lastAt within the
-  window. Sorted desc by count.
+What ships
+----------
+- `pages/admin/control/runs/RunsExplorer.tsx` — main UI with:
+  * agent picker driven by `?agent=:slug` query param (legacy redirect
+    target from `/admin/agents/:slug/runs` already configured by
+    Agent 3 in `admin.routes.tsx`).
+  * filters: status, period (1h/24h/7d/30d/all), model contains,
+    max cost USD, max latency ms, free-text search.
+  * compact 24-bucket timeline with success/fail/other segments.
+  * runs list with explicit loading / empty / error / refresh states.
+  * detail pane: stats grid, sensitive-hold banner, Prompt + Response
+    with auto JSON/markdown highlighting, verifier verdict (JSON),
+    tool DAG, error block, deep-link to approvals inbox.
+- `pages/admin/control/runs/syntax.tsx` — dependency-free regex-based
+  JSON + markdown highlighters (escape-then-tokenize, no html
+  injection of unsanitized data).
+- `pages/admin/control/runs/ToolDag.tsx` — vertical DAG view of
+  `tools_used` with parent/child detection, status tone, duration.
+- `pages/admin/control/runs/ReplayDialog.tsx` — confirmation dialog
+  with editable prompt; dispatches a fresh task through the canonical
+  `taskDispatcher` (same path used by ExecutionTaskPanel's Retry),
+  with `parentTaskId` linkage and a unique idempotency key. Approval
+  is never auto-carried; sensitive types land in `pending_review` and
+  the operator is told where to follow up.
+- `sections/RunsSection.tsx` rewired to render `RunsExplorer`.
 
-- src/pages/admin/AdminMergeConflictRecoveryPage.tsx
-  - Configurable threshold (count + window minutes) with sensible
-    defaults (5 conflicts / 60 min) persisted to localStorage.
-    Bounded inputs: count >= 2, window 5..1440 minutes.
-  - New "Spike detection" card showing the threshold inputs, a top-
-    of-window proximity bar (current top-file count vs threshold),
-    and per-file proximity bars for the 10 worst files in the
-    window. Card border / icon turn destructive when any file is
-    over the line.
-  - `useFileBurstAlerts` hook fires `createAdminAlert` with
-    alertType `merge_conflict_recovery_storm`, severity `high`,
-    contextType `merge_conflict_recovery`, contextId = file path,
-    and metadata (count, threshold, window, last_event_at). Dedup
-    keyed on (file, threshold) with a 1h cool-down stored in
-    localStorage; in-flight set prevents double-fire from the
-    refetch interval. Errors are swallowed (logged) so a flaky
-    insert doesn't break the dashboard.
+No new dependencies, no edge-function changes, no schema changes. All
+mutations go through the existing `taskDispatcher`/`dispatch_execution_task`
+RPC — replay is real, not mocked. TS + ESLint clean.
 
-Alerts flow into the existing alert center (admin_alerts /
-AdminAlertCenterPage) — no new pipeline added.
+Post-review fixes
+-----------------
+- ToolDag: orphan tool nodes now chain off the previous node
+  (`parentId = prev.id`) so flat tools_used arrays render as a
+  sequential DAG instead of a row of disconnected roots.
+- ReplayDialog reset effect now keys only on `open` + `runId`
+  (excluding the `run` object identity and the mutation handle), so
+  the parent's 15s poll cannot wipe operator edits or confirmation
+  state mid-flight.
 
-Verification: tsc --noEmit and eslint both clean on touched files.
-
-Follow-ups proposed (#974 server-side firing, #975 team-wide
-threshold storage, #976 tests for spike detection).
+Replit-Task-Id: 7c50ecce-59e5-40c8-9b87-b26395d006bc
