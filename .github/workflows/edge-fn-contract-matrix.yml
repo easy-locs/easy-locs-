@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -29,7 +30,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Regenerate contract matrix
+      # Gate runs FIRST against the checked-out (committed) state so the
+      # built-in stale-artifact check in `contracts:matrix:ci` still has
+      # teeth — comparing freshly-computed output against the committed
+      # docs files. We use continue-on-error so the comment-posting steps
+      # below still execute on failure; the final step propagates the
+      # exit status to keep the job red.
+      - name: Run contract matrix CI gate
+        id: gate
+        run: npm run contracts:matrix:ci
+        continue-on-error: true
+
+      # Regenerate the docs after the gate so the comment body reflects
+      # the current state on this branch (including the very mismatches
+      # the gate is failing on). Safe because we're not committing the
+      # regenerated files — they're only used as input to the comment
+      # builder and the failure-only artifact upload.
+      - name: Regenerate contract matrix for comment + artifact
+        if: always()
         run: npm run contracts:matrix
 
       - name: Build PR comment body
@@ -49,20 +67,23 @@ jobs:
           fi
 
       - name: Post sticky PR comment
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: edge-fn-contract-matrix
           path: ${{ github.workspace }}/edge-fn-contract-comment.md
 
-      - name: Run contract matrix CI gate
-        run: npm run contracts:matrix:ci
-
       - name: Upload regenerated matrix
-        if: failure()
+        if: steps.gate.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: edge-fn-contract-matrix
           path: |
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.md
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.json
+
+      - name: Propagate gate result
+        if: steps.gate.outcome == 'failure'
+        run: |
+          echo "Edge Function contract matrix gate failed — see the sticky PR comment for the blocking mismatches."
+          exit 1
