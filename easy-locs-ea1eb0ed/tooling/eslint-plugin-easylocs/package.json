@@ -1,0 +1,14 @@
+{
+  "name": "eslint-plugin-easylocs",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Easy-Locs platform-native ESLint rules. require-dispatch-execution-task and no-direct-postgrest-mutation enforce the sovereign agent control contract from task #809.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "peerDependencies": {
+    "eslint": ">=9"
+  }
+}
