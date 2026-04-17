@@ -128,16 +128,17 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
   "vector-similarity-search": {
     methods: ["POST"],
     requestBody: {
-      required: ["query_embedding"],
-      optional: ["user_id", "match_count", "similarity_threshold"],
+      required: [],
+      optional: ["query_embedding", "query_text", "user_id", "match_count", "similarity_threshold"],
     },
     response: { fields: ["matches"], successStatuses: [200] },
     errors: [
-      { status: 400, reason: "query_embedding missing or wrong type" },
+      { status: 400, reason: "Neither query_embedding nor query_text provided, or query_embedding has wrong dimensions" },
       { status: 401, reason: "Missing or invalid JWT" },
+      { status: 502, reason: "Embedding provider failure when query_text supplied" },
       { status: 405, reason: "Non-POST method" },
     ],
-    note: "Currently a stub returning an empty matches array (#900, follow-up #903)",
+    note: "Runs pgvector cosine similarity across listings, marketplace_services, and seed_products via the match_embeddings RPC (#903).",
   },
   "send-email": {
     methods: ["POST"],
