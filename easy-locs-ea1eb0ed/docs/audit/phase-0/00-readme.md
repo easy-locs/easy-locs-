@@ -63,17 +63,51 @@ bash scripts/audit/phase-0/inventory-polling.sh
 bash scripts/audit/phase-0/inventory-events-and-writers.sh
 bash scripts/audit/phase-0/inventory-rpc-orphans.sh
 bash scripts/audit/phase-0/inventory-button-handlers.sh
+bash scripts/audit/phase-0/derive-edge-orphans.sh
+bash scripts/audit/phase-0/check-consistency.sh
 ```
 
-`inventory-tables-policies.sh` and `inventory-rpc-orphans.sh` shell out
-to two helper Node ESM scripts in the same directory:
-`extract-columns.mjs` (per-column extraction with `file:line` provenance)
-and `extract-trigger-targets.mjs` (multi-line `CREATE TRIGGER` parser
-that resolves `EXECUTE FUNCTION <name>` even when the trigger
-declaration spans many lines). Both are read-only.
+Or run the full pipeline + gate from a TypeScript-only environment:
 
-Each script writes its evidence into `docs/audit/phase-0/99-evidence/` and is
-safe to commit.
+```bash
+npx tsx scripts/audit/phase-0/run-all.ts
+npx tsx scripts/audit/phase-0/run-all.ts --check   # consistency gate only
+```
+
+### Why `.sh` + `.mjs` instead of native `.ts`?
+
+The audit work is overwhelmingly recursive I/O across the monorepo
+(`find` / `grep` / `awk` / `sort` over ~10k migration rows, ~239 edge
+function dirs, several thousand source files). POSIX shell + GNU
+coreutils execute these passes 5–20× faster than equivalent JS / tsx
+and produce identical text-stream outputs that diff cleanly. A thin
+`run-all.ts` driver is provided as the canonical entrypoint so callers
+can invoke the full pipeline from a TypeScript-only context. The two
+non-trivial parsers (`extract-columns.mjs`, `extract-trigger-targets.mjs`)
+are written in Node ESM because they need real tokenization across
+multi-line SQL statements.
+
+`derive-edge-orphans.sh` is the canonical generator for report 03's
+orphan listings — it reads `99-evidence/edge-functions.csv` and
+re-derives the four lists (`edge-orphans-zero-callers.txt`, `-routers`,
+`-webhook-cron`, `-true-candidates`) from scratch each run, verifying
+that every emitted name resolves to `supabase/functions/<name>/`.
+
+`check-consistency.sh` is a publish-time gate. It asserts that:
+
+1. every edge-function name appearing in any
+   `99-evidence/edge-orphans-*.txt` resolves to a directory on disk;
+2. every `public.<table>` reference in reports 03–06 either appears
+   in `tables-create-provenance.txt` or is on a documented allow-list
+   (`merchants`, `listings` are the canonically-missing tables called
+   out in report 04; `wallet`, `system` are glob-pattern prose);
+3. every `99-evidence/<file>` referenced from any markdown report
+   actually exists on disk.
+
+A non-zero exit blocks publication.
+
+Each script writes its evidence into `docs/audit/phase-0/99-evidence/`
+and is safe to commit.
 
 ## Audit ground rules respected
 
