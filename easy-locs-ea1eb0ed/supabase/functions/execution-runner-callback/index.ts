@@ -1,0 +1,259 @@
+/**
+ * execution-runner-callback — GitHub Actions runner status callback (#816).
+ *
+ * The GitHub Actions workflow (execution-runner.yml) posts to this function:
+ *   - On start  → status: "RUNNING"  (stores authoritative external_run_url)
+ *   - On success → status: "SUCCESS" (stores pr_url; transitions task running→succeeded)
+ *   - On failure → status: "FAILED"  (stores error; transitions task running→failed)
+ *
+ * This function is the SOLE authority for task terminal-state transitions on
+ * github-runner tasks. The execution-loop leaves the task in `running` after
+ * dispatch; only SUCCESS/FAILED callbacks move it to a terminal state.
+ *
+ * Authentication: the runner sends HMAC-SHA256(RUNNER_HMAC_KEY, task_id) in
+ * X-Runner-Token. This edge function loads runner_token_hash from the task row
+ * (which holds the same HMAC, computed by execution-loop at dispatch time) and
+ * compares them constant-time. Mismatches → 401.
+ *
+ * Token replay protection: on SUCCESS or FAILED we null out runner_token_hash
+ * in the same UPDATE so the token cannot be replayed.
+ */
+
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-runner-token",
+};
+
+type RunnerStatus = "RUNNING" | "SUCCESS" | "FAILED";
+
+interface CallbackBody {
+  task_id: string;
+  status: RunnerStatus;
+  pr_url?: string | null;
+  external_run_url?: string | null;
+  error?: string | null;
+  logs?: string[] | null;
+}
+
+/**
+ * Constant-time string equality to prevent timing-oracle attacks.
+ * Always iterates to max length regardless of early mismatch.
+ */
+function safeEqual(a: string, b: string): boolean {
+  const len = Math.max(a.length, b.length);
+  let diff = a.length ^ b.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (a.charCodeAt(i) ?? 0) ^ (b.charCodeAt(i) ?? 0);
+  }
+  return diff === 0;
+}
+
+Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const sb = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  let body: CallbackBody;
+  try {
+    body = await req.json() as CallbackBody;
+  } catch {
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const { task_id, status, pr_url, external_run_url, error: runnerError, logs } = body;
+
+  if (!task_id || typeof task_id !== "string") {
+    return new Response(JSON.stringify({ error: "task_id is required" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if (!["RUNNING", "SUCCESS", "FAILED"].includes(status)) {
+    return new Response(JSON.stringify({ error: "status must be RUNNING | SUCCESS | FAILED" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ── Authenticate callback ─────────────────────────────────────────────
+  // Authenticate BEFORE loading the full row to fail fast on bad token shape.
+  const rawToken = req.headers.get("x-runner-token") ?? "";
+  if (!rawToken) {
+    return new Response(JSON.stringify({ error: "Missing X-Runner-Token header" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ── Load task row ─────────────────────────────────────────────────────
+  const { data: taskRow, error: loadErr } = await sb
+    .schema("system")
+    .from("execution_tasks")
+    .select("id, status, runner, runner_token_hash, result, external_run_url, pr_url")
+    .eq("id", task_id)
+    .maybeSingle();
+
+  if (loadErr || !taskRow) {
+    return new Response(JSON.stringify({ error: "Task not found" }), {
+      status: 404,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // Verify this is a github-runner task
+  if (taskRow.runner !== "github") {
+    return new Response(JSON.stringify({ error: "Task is not a github-runner task" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const storedHmac = (taskRow.runner_token_hash as string | null) ?? "";
+  if (!storedHmac) {
+    // HMAC already cleared (replay attempt after a terminal SUCCESS/FAILED callback)
+    return new Response(JSON.stringify({ error: "Token already consumed" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // The runner sends HMAC-SHA256(RUNNER_HMAC_KEY, task_id) in X-Runner-Token.
+  // The execution-loop stored the same HMAC in runner_token_hash.
+  // Constant-time compare to prevent timing-oracle guessing of the HMAC value.
+  if (!safeEqual(rawToken, storedHmac)) {
+    return new Response(JSON.stringify({ error: "Invalid runner token" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // ── Build patch ───────────────────────────────────────────────────────
+  const prevResult = (taskRow.result as Record<string, unknown> | null) ?? {};
+  const patch: Record<string, unknown> = {};
+
+  if (status === "RUNNING") {
+    // Authoritative run URL from the workflow itself — always overwrite.
+    if (external_run_url) {
+      patch.external_run_url = external_run_url;
+    }
+    patch.result = {
+      ...prevResult,
+      github_status: "RUNNING",
+      logs: logs ?? (prevResult.logs as unknown[] | undefined) ?? [],
+    };
+    // No task status transition — task stays `running`.
+
+  } else if (status === "SUCCESS") {
+    // Terminal: transition running → succeeded.
+    patch.status = "succeeded";
+    if (pr_url) patch.pr_url = pr_url;
+    if (external_run_url) patch.external_run_url = external_run_url;
+    patch.result = {
+      ...prevResult,
+      github_status: "SUCCESS",
+      pr_url: pr_url ?? null,
+      logs: logs ?? (prevResult.logs as unknown[] | undefined) ?? [],
+    };
+    // One-time token consumed — clear hash to prevent replay.
+    patch.runner_token_hash = null;
+
+  } else {
+    // FAILED: terminal — transition running → failed.
+    patch.status = "failed";
+    patch.error = runnerError ?? "GitHub Actions runner reported failure";
+    if (external_run_url) patch.external_run_url = external_run_url;
+    patch.result = {
+      ...prevResult,
+      github_status: "FAILED",
+      error: runnerError ?? null,
+      logs: logs ?? (prevResult.logs as unknown[] | undefined) ?? [],
+    };
+    patch.runner_token_hash = null;
+  }
+
+  // For terminal transitions (SUCCESS/FAILED) assert the expected `from`
+  // status to protect against race conditions (e.g. two callbacks arriving).
+  let patchQuery = sb
+    .schema("system")
+    .from("execution_tasks")
+    .update(patch)
+    .eq("id", task_id);
+
+  if (status === "SUCCESS" || status === "FAILED") {
+    patchQuery = patchQuery.eq("status", "running");
+  }
+
+  const { data: patchData, error: patchErr } = await patchQuery.select("id");
+
+  if (patchErr) {
+    console.error("[execution-runner-callback] patch failed:", patchErr.message);
+    return new Response(JSON.stringify({ error: "Failed to update task" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // If the patch returned no rows for a terminal callback, the task was already
+  // transitioned (duplicate delivery from GHA retry). Return 200 so Actions
+  // considers the step successful and doesn't endlessly retry.
+  const alreadyTransitioned =
+    (status === "SUCCESS" || status === "FAILED") && (patchData?.length ?? 0) === 0;
+
+  // Log for auditability
+  try {
+    await sb.from("engine_run_logs").insert({
+      engine_name: "execution-runner-callback",
+      category: `github-runner-${status.toLowerCase()}`,
+      status: status === "FAILED" ? "error" : "ok",
+      started_at: new Date().toISOString(),
+      finished_at: new Date().toISOString(),
+      duration_ms: 0,
+      effect_summary: alreadyTransitioned
+        ? `GitHub runner callback DUPLICATE: task=${task_id} status=${status} (already transitioned)`
+        : `GitHub runner callback: task=${task_id} status=${status}`,
+      metadata_json: {
+        task_id,
+        github_status: status,
+        pr_url: pr_url ?? null,
+        external_run_url: external_run_url ?? null,
+        error: runnerError ?? null,
+        duplicate: alreadyTransitioned,
+      },
+      trigger_source: "execution-runner-callback",
+    });
+  } catch (e) {
+    console.warn("[execution-runner-callback] engine_run_logs insert failed:", e);
+  }
+
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      task_id,
+      github_status: status,
+      duplicate: alreadyTransitioned,
+    }),
+    {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    },
+  );
+});

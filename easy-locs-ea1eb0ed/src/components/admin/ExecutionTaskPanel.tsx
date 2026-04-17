@@ -62,6 +62,10 @@ type ExecRow = {
   idempotency_key: string | null;
   attempt_count: number;
   max_attempts: number;
+  // GitHub Actions runner fields (#816)
+  runner: "internal" | "github" | null;
+  external_run_url: string | null;
+  pr_url: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -227,6 +231,55 @@ function TaskRow({ row, onRetry, retrying }: {
 
         {expanded && (
           <div className="space-y-3 border-t border-border/40 pt-3">
+            {/* GitHub Actions runner info (#816) */}
+            {row.runner === "github" && (
+              <div>
+                <div className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1.5">
+                  GitHub Actions Runner
+                </div>
+                <div className="space-y-1 text-[0.6875rem]">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary" className="text-[0.5625rem]">github</Badge>
+                    {row.external_run_url ? (
+                      <a
+                        href={row.external_run_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline truncate max-w-xs"
+                      >
+                        View run ↗
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground italic">Run URL pending…</span>
+                    )}
+                  </div>
+                  {row.pr_url ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground shrink-0">PR:</span>
+                      <a
+                        href={row.pr_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline truncate max-w-xs font-medium"
+                      >
+                        {row.pr_url.replace("https://github.com/", "")} ↗
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="text-muted-foreground italic">PR not yet opened</div>
+                  )}
+                  {(row.result as Record<string, unknown> | null)?.github_status && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground shrink-0">GitHub status:</span>
+                      <span className="font-mono text-[0.625rem]">
+                        {String((row.result as Record<string, unknown>).github_status)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Timeline */}
             <div>
               <div className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1.5">

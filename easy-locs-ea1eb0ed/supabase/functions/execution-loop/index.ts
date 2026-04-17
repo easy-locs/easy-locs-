@@ -63,13 +63,14 @@ const BACKOFF_BASE_MS = 2_000;
 const BACKOFF_MAX_MS = 5 * 60 * 1000;
 
 const TASK_COLUMNS =
-  "id,type,domain,risk_level,status,payload,approved_by,attempt_count,max_attempts,parent_task_id,requested_by,blocked_reason,next_retry_at,created_at,updated_at";
+  "id,type,domain,risk_level,status,payload,approved_by,attempt_count,max_attempts,parent_task_id,requested_by,blocked_reason,next_retry_at,runner,created_at,updated_at";
 
 interface ExecutionTaskRow {
   id: string;
   type: string;
   domain: string;
   risk_level: "SAFE" | "MEDIUM" | "CRITICAL";
+  runner: "internal" | "github" | null;
   status:
     | "draft"
     | "pending_review"
@@ -214,6 +215,15 @@ async function validateTask(
         reason: `MEDIUM_REQUIRES_APPROVAL: task type "${task.type}" requires a non-system approver`,
       };
     }
+  }
+  // GitHub-runner tasks (#816): routed via the runner column, not domain agent registry.
+  // Phase-1 validation is purely structural; the dispatch function itself enforces secrets.
+  if ((task as ExecutionTaskRow).runner === "github") {
+    return { ok: true };
+  }
+  // V2-registered adapters (marketplace, etc.) bypass the Phase-1 agent scope check.
+  if (globalAdapterRegistry.has(task.domain, task.type)) {
+    return { ok: true };
   }
   const agent = getAgentForDomain(task.domain);
   if (!agent) {
@@ -363,9 +373,174 @@ async function getOrchestratorV2(): Promise<ExecutionOrchestratorV2> {
   return _orchestrator;
 }
 
+// ── GitHub Actions runner dispatch (Phase 1, #816) ─────────────────────────
+// Tasks with runner='github' bypass the V2 orchestrator and the Phase-1
+// agent path. The execution-loop dispatches them to GitHub Actions via
+// workflow_dispatch and leaves the task in `running`. The callback Edge
+// Function (execution-runner-callback) is the sole authority that transitions
+// the task to `succeeded` or `failed` once the workflow finishes.
+
+/**
+ * Compute HMAC-SHA256(key, message) as lowercase hex.
+ * Used to derive the runner callback credential from the shared RUNNER_HMAC_KEY
+ * secret so the raw credential is never sent over workflow_dispatch inputs
+ * (which are visible in the GitHub Actions UI to repo members).
+ *
+ * The callback Edge Function recomputes the same HMAC from the same key + task_id
+ * to verify without storing a per-task random token.
+ */
+async function _ghHmac(key: string, message: string): Promise<string> {
+  const enc = new TextEncoder();
+  const k = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(key),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", k, enc.encode(message));
+  return Array.from(new Uint8Array(sig), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function _ghDispatch(
+  pat: string,
+  repo: string,
+  ref: string,
+  inputs: Record<string, string>,
+): Promise<boolean> {
+  const res = await fetch(
+    `https://api.github.com/repos/${repo}/actions/workflows/execution-runner.yml/dispatches`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${pat}`,
+        Accept: "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ ref, inputs }),
+    },
+  );
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.warn(`[execution-loop:github-runner] workflow_dispatch failed: ${res.status} ${text}`);
+  }
+  return res.status === 204;
+}
+
+async function dispatchGitHubRunnerTask(
+  task: ExecutionTaskRow,
+): Promise<{ outcome: "SUCCESS" | "FAILED" | "BLOCKED" | "SKIPPED"; error?: string }> {
+  const start = Date.now();
+  const currentAttempt = (task.attempt_count ?? 0) + 1;
+  const maxAttempts = Math.max(1, task.max_attempts ?? 3);
+
+  // Validation gate (same as Phase-1 path)
+  const validation = await validateTask(task);
+  if (!validation.ok) {
+    const reason = `Validation rejected github-runner task: ${validation.reason ?? "unspecified"}`;
+    await tasks()
+      .update({ status: "blocked", blocked_reason: reason })
+      .eq("id", task.id)
+      .eq("status", "queued");
+    await logRun({
+      engineName: "execution-loop:github-runner",
+      category: "task-validation-rejected",
+      status: "error",
+      effectSummary: reason,
+      metadata: { task_id: task.id, type: task.type, domain: task.domain },
+    });
+    return { outcome: "BLOCKED", error: reason };
+  }
+
+  // Atomic claim (queued → running) — prevents double-dispatch on concurrent ticks.
+  const claimed = await atomicClaim(task.id, currentAttempt);
+  if (!claimed) {
+    return { outcome: "SKIPPED", error: "Task already claimed by a concurrent loop tick" };
+  }
+
+  const pat = Deno.env.get("GITHUB_RUNNER_PAT") ?? "";
+  const repo = Deno.env.get("GITHUB_RUNNER_REPO") ?? "";
+  const ref = Deno.env.get("GITHUB_RUNNER_REF") ?? "main";
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const hmacKey = Deno.env.get("RUNNER_HMAC_KEY") ?? "";
+
+  if (!pat || !repo || !hmacKey) {
+    const reason = "GITHUB_RUNNER_MISSING_SECRETS: GITHUB_RUNNER_PAT, GITHUB_RUNNER_REPO, or RUNNER_HMAC_KEY not configured";
+    if (currentAttempt >= maxAttempts) {
+      await tasks()
+        .update({ status: "failed", error: reason })
+        .eq("id", task.id);
+    } else {
+      const retryAt = new Date(Date.now() + backoffMs(currentAttempt)).toISOString();
+      await tasks()
+        .update({ status: "queued", next_retry_at: retryAt, error: reason })
+        .eq("id", task.id);
+    }
+    return { outcome: "FAILED", error: reason };
+  }
+
+  // Derive the expected callback credential via HMAC-SHA256(RUNNER_HMAC_KEY, task_id).
+  // This is stored as runner_token_hash and the callback recomputes it from the same
+  // shared secret — the raw credential is never sent in workflow_dispatch inputs
+  // (which are visible in the GitHub Actions UI to repo members with Actions:read).
+  const expectedHmac = await _ghHmac(hmacKey, task.id);
+
+  await tasks()
+    .update({ runner_token_hash: expectedHmac })
+    .eq("id", task.id);
+
+  const payload = (task.payload ?? {}) as Record<string, unknown>;
+  const dispatched = await _ghDispatch(pat, repo, ref, {
+    task_id: task.id,
+    task_type: task.type,
+    supabase_url: supabaseUrl,
+    label: typeof payload.label === "string" ? payload.label : "",
+    // NOTE: callback_token is intentionally omitted from inputs.
+    // The GitHub Actions runner reads RUNNER_HMAC_KEY from its own repo secrets
+    // and computes HMAC-SHA256(key, task_id) locally to produce the header value.
+  });
+
+  if (!dispatched) {
+    const reason = "GITHUB_RUNNER_DISPATCH_FAILED: workflow_dispatch to GitHub returned non-204";
+    if (currentAttempt >= maxAttempts) {
+      await tasks()
+        .update({ status: "failed", error: reason, runner_token_hash: null })
+        .eq("id", task.id);
+      return { outcome: "FAILED", error: reason };
+    }
+    const retryAt = new Date(Date.now() + backoffMs(currentAttempt)).toISOString();
+    await tasks()
+      .update({ status: "queued", next_retry_at: retryAt, error: reason, runner_token_hash: null })
+      .eq("id", task.id);
+    return { outcome: "FAILED", error: reason };
+  }
+
+  // Dispatch confirmed. Task is now `running`; the callback drives terminal transition.
+  await logRun({
+    engineName: "execution-loop:github-runner",
+    category: "github-runner-dispatched",
+    status: "ok",
+    effectSummary: `dispatched task ${task.id} (${task.type}) to ${repo}/execution-runner.yml ref=${ref}`,
+    durationMs: Date.now() - start,
+    metadata: { task_id: task.id, type: task.type, domain: task.domain, repo, ref, attempt: currentAttempt },
+  });
+
+  // Return SUCCESS to the loop tick (= dispatch confirmed). Task status stays
+  // `running` until execution-runner-callback transitions it to succeeded/failed.
+  return { outcome: "SUCCESS" };
+}
+
 async function processTask(
   task: ExecutionTaskRow,
 ): Promise<{ outcome: "SUCCESS" | "FAILED" | "BLOCKED" | "SKIPPED"; agentResult?: AgentTaskOutput; error?: string }> {
+  // GitHub Actions runner (#816): tasks with runner='github' are dispatched
+  // to GitHub Actions and kept `running` until the callback resolves them.
+  // This check MUST come before the V2 registry delegation so runner-column
+  // routing takes precedence over any (domain, type) registry match.
+  if (task.runner === "github") {
+    return await dispatchGitHubRunnerTask(task);
+  }
+
   // Phase-2 delegation: if (domain, task_type) is registered in the V2
   // adapter registry, route the task there. Otherwise fall through to the
   // Phase-1 agent path below.
