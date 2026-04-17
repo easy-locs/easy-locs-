@@ -43,6 +43,13 @@ import { bootstrapAiAdapters } from "../_shared/execution/adapters/ai/bootstrap.
 // L7 P1 (#926) — payments + wallet governed adapters, behind feature flags
 import { bootstrapPaymentsAdapters } from "../_shared/execution/adapters/payments/bootstrap.ts";
 import { bootstrapWalletAdapters } from "../_shared/execution/adapters/wallet/bootstrap.ts";
+// P4 (#945) — content + contacts adapter framework. Both are gated on
+// per-domain feature flags (`AGENT_CONTENT_ENABLED`, `AGENT_CONTACTS_ENABLED`)
+// so the §7 dispatch-allowlist drain can land phase-by-phase. No silent
+// fallback: when a flag is off the adapters are NOT registered and any
+// task dispatched to that domain fails loudly with NO_ADAPTER.
+import { bootstrapContentAdapters } from "../_shared/execution/adapters/content/bootstrap.ts";
+import { bootstrapContactsAdapters } from "../_shared/execution/adapters/contacts/bootstrap.ts";
 // LC2 (#872) — dev-pipeline code.tool adapters
 import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/bootstrap.ts";
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
@@ -329,6 +336,27 @@ function getHeartbeat(): HeartbeatEmitter {
   return _heartbeat;
 }
 
+// P4 (#945) — feature-flag readers. Env-var-backed for now; an admin UI
+// can flip these without a redeploy by setting them at the function
+// runtime layer. Default is OFF so a fresh deploy stays in the
+// pre-cutover state until the operator opts in. There is no third
+// "silent" branch: a flag is either ON (adapters register) or OFF
+// (tasks fail with NO_ADAPTER).
+function readEnvFlag(name: string): boolean {
+  try {
+    const v = (Deno.env.get(name) ?? "").trim().toLowerCase();
+    return v === "1" || v === "true" || v === "yes" || v === "on";
+  } catch {
+    return false;
+  }
+}
+function isAgentContentEnabled(): boolean {
+  return readEnvFlag("AGENT_CONTENT_ENABLED");
+}
+function isAgentContactsEnabled(): boolean {
+  return readEnvFlag("AGENT_CONTACTS_ENABLED");
+}
+
 async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
   if (!_bootstrapPromise) {
     // Cache the promise so concurrent callers await the same reconcile;
@@ -346,6 +374,28 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       // feature flag is off (canary off in production by default).
       await bootstrapPaymentsAdapters(sb);
       await bootstrapWalletAdapters(sb);
+      // P4 (#945) — content + contacts. Each is gated on its own
+      // feature flag so the L7 §7 mechanical drain can land phase-by-
+      // phase. When the flag is off we DO NOT register the adapter:
+      // any task dispatched to (content.*, contacts.*) then fails
+      // loudly with NO_ADAPTER (see globalAdapterRegistry.has check
+      // in validateTask). There is no silent fallback to direct mutation.
+      if (isAgentContentEnabled()) {
+        await bootstrapContentAdapters(sb);
+      } else {
+        console.warn(
+          "[execution-loop] P4 content adapters disabled (set AGENT_CONTENT_ENABLED=true to enable). " +
+          "Tasks dispatched to content.* domains will fail with NO_ADAPTER until enabled.",
+        );
+      }
+      if (isAgentContactsEnabled()) {
+        await bootstrapContactsAdapters(sb);
+      } else {
+        console.warn(
+          "[execution-loop] P4 contacts adapters disabled (set AGENT_CONTACTS_ENABLED=true to enable). " +
+          "Tasks dispatched to contacts.* domains will fail with NO_ADAPTER until enabled.",
+        );
+      }
       // LC2 (#872) — dev pipeline. Each bootstrap reconciles its own
       // agent rows in `system.agents`; in production a failed reconcile
       // hard-fails the boot, in dev/preview it logs and continues.
