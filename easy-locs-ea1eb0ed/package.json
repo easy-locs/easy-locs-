@@ -13,6 +13,8 @@
     "check:bundle": "npx tsx scripts/check-bundle-size.ts",
     "check:budget": "npx tsx scripts/check-budget.ts",
     "bundle:gate": "npx tsx scripts/bundle-size-gate.ts",
+    "bundle:history": "npx tsx scripts/bundle-size-gate.ts append-history",
+    "bundle:trend": "npx tsx scripts/bundle-size-gate.ts trend-check",
     "lint": "eslint .",
     "check:pillar-routes": "npx tsx scripts/check-pillar-routes.ts",
     "preview": "vite preview",

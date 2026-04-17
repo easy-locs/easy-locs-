@@ -4,10 +4,24 @@ import { execSync } from "node:child_process";
 
 const DIST_DIR = path.resolve("dist/assets");
 const BASELINE_FILE = path.resolve("bundle-size-baseline.json");
+const HISTORY_FILE = path.resolve("bundle-size-history.json");
 const REGRESSION_THRESHOLD = Number.parseFloat(
   process.env.BUNDLE_SIZE_THRESHOLD ?? "0.10",
 );
 const BASELINE_REF = process.env.BUNDLE_SIZE_BASELINE_REF ?? "origin/main";
+const TREND_THRESHOLD = Number.parseFloat(
+  process.env.BUNDLE_SIZE_TREND_THRESHOLD ?? "0.25",
+);
+const TREND_WINDOW_DAYS = Number.parseInt(
+  process.env.BUNDLE_SIZE_TREND_WINDOW_DAYS ?? "30",
+  10,
+);
+const HISTORY_MAX_ENTRIES = Number.parseInt(
+  process.env.BUNDLE_SIZE_HISTORY_MAX_ENTRIES ?? "365",
+  10,
+);
+const TREND_FAIL = process.env.BUNDLE_SIZE_TREND_FAIL === "1" ||
+  process.env.BUNDLE_SIZE_TREND_FAIL === "true";
 
 const PILLAR_PATTERNS = [
   "pillar-dashboard",
@@ -121,6 +135,50 @@ function appendSummary(lines: string[]): void {
   if (commentFile) fs.writeFileSync(commentFile, body);
 }
 
+interface HistoryEntry extends BundleSnapshot {
+  sha?: string;
+  ref?: string;
+}
+
+interface HistoryFile {
+  entries: HistoryEntry[];
+  _comment?: string;
+}
+
+function currentSha(): string | undefined {
+  try {
+    return execSync("git rev-parse HEAD", {
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim();
+  } catch {
+    return undefined;
+  }
+}
+
+function loadHistory(): HistoryFile {
+  if (!fs.existsSync(HISTORY_FILE)) {
+    return { entries: [] };
+  }
+  try {
+    const parsed = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8"));
+    if (parsed && Array.isArray(parsed.entries)) return parsed as HistoryFile;
+  } catch (err) {
+    console.warn(`[bundle-size-gate] Could not parse ${HISTORY_FILE}: ${(err as Error).message}`);
+  }
+  return { entries: [] };
+}
+
+function writeHistory(history: HistoryFile): void {
+  const out: HistoryFile = {
+    _comment:
+      "Append-only bundle size snapshots, written by scripts/bundle-size-gate.ts on each push to main. Used by the trend-check mode to alert on slow drift.",
+    entries: history.entries,
+  };
+  fs.writeFileSync(HISTORY_FILE, `${JSON.stringify(out, null, 2)}\n`);
+}
+
 const mode = process.argv[2] ?? "check";
 const current = snapshotDist();
 
@@ -130,6 +188,155 @@ if (mode === "update") {
   console.log(
     `  Total JS: ${fmtKB(current.totalBytes)} | main: ${fmtKB(current.mainChunkBytes)} | CSS: ${fmtKB(current.cssBytes)} | assets: ${fmtKB(current.assetBytes)}`,
   );
+  process.exit(0);
+}
+
+if (mode === "append-history") {
+  const history = loadHistory();
+  const sha = process.env.GITHUB_SHA ?? currentSha();
+  const ref = process.env.GITHUB_REF ?? undefined;
+  const entry: HistoryEntry = {
+    generatedAt: current.generatedAt,
+    totalBytes: current.totalBytes,
+    mainChunkBytes: current.mainChunkBytes,
+    cssBytes: current.cssBytes,
+    assetBytes: current.assetBytes,
+    pillarChunks: current.pillarChunks,
+    // Drop allChunks from history to keep the file small.
+    allChunks: {},
+    sha,
+    ref,
+  };
+  // Replace any prior entry for the same SHA, otherwise append.
+  const existingIdx = sha
+    ? history.entries.findIndex((e) => e.sha === sha)
+    : -1;
+  if (existingIdx >= 0) {
+    history.entries[existingIdx] = entry;
+  } else {
+    history.entries.push(entry);
+  }
+  // Keep history bounded.
+  if (history.entries.length > HISTORY_MAX_ENTRIES) {
+    history.entries = history.entries.slice(-HISTORY_MAX_ENTRIES);
+  }
+  writeHistory(history);
+  console.log(
+    `[bundle-size-gate] Appended snapshot to ${HISTORY_FILE} (${history.entries.length} entries; sha=${sha ?? "n/a"})`,
+  );
+  console.log(
+    `  Total JS: ${fmtKB(current.totalBytes)} | main: ${fmtKB(current.mainChunkBytes)} | CSS: ${fmtKB(current.cssBytes)} | assets: ${fmtKB(current.assetBytes)}`,
+  );
+  process.exit(0);
+}
+
+if (mode === "trend-check") {
+  const history = loadHistory();
+  const trendSummary: string[] = [
+    "## Bundle Size Trend",
+    "",
+    `**Window:** ${TREND_WINDOW_DAYS} days  |  **Alert threshold:** +${(TREND_THRESHOLD * 100).toFixed(1)}% rolling growth`,
+    "",
+  ];
+
+  if (history.entries.length < 2) {
+    const msg = `Not enough history yet (${history.entries.length} entr${history.entries.length === 1 ? "y" : "ies"}). Need at least 2 to compute a trend.`;
+    console.log(`[bundle-size-gate] ${msg}`);
+    trendSummary.push(`_${msg}_`);
+    appendSummary(trendSummary);
+    process.exit(0);
+  }
+
+  const now = Date.now();
+  const windowMs = TREND_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const cutoff = now - windowMs;
+
+  const sorted = [...history.entries].sort(
+    (a, b) =>
+      new Date(a.generatedAt).getTime() - new Date(b.generatedAt).getTime(),
+  );
+  const latest = sorted[sorted.length - 1];
+
+  // Pick the oldest entry within the window. If none fall inside, fall back
+  // to the newest entry just before the window cutoff so we still report
+  // drift across the longest reasonable interval ending at "latest".
+  const inWindow = sorted.filter(
+    (e) => new Date(e.generatedAt).getTime() >= cutoff,
+  );
+  let windowStart: HistoryEntry;
+  if (inWindow.length > 0) {
+    windowStart = inWindow[0];
+  } else {
+    // sorted is ascending; find the last entry strictly before the cutoff
+    // that isn't the latest sample itself.
+    const candidates = sorted
+      .slice(0, -1)
+      .filter((e) => new Date(e.generatedAt).getTime() < cutoff);
+    windowStart = candidates.length > 0
+      ? candidates[candidates.length - 1]
+      : sorted[Math.max(0, sorted.length - 2)];
+  }
+
+  const compareMetric = (label: string, cur: number, base: number) => {
+    const delta = pct(cur, base);
+    const breached = base > 0 && delta / 100 > TREND_THRESHOLD;
+    return { label, cur, base, delta, breached };
+  };
+
+  const metrics = [
+    compareMetric("Total JS", latest.totalBytes, windowStart.totalBytes),
+    compareMetric("Main chunk", latest.mainChunkBytes, windowStart.mainChunkBytes),
+    compareMetric("CSS", latest.cssBytes ?? 0, windowStart.cssBytes ?? 0),
+    compareMetric("Static assets", latest.assetBytes ?? 0, windowStart.assetBytes ?? 0),
+  ];
+
+  trendSummary.push(
+    `**Window start:** ${windowStart.generatedAt}${windowStart.sha ? ` (${windowStart.sha.slice(0, 7)})` : ""}`,
+    `**Latest:** ${latest.generatedAt}${latest.sha ? ` (${latest.sha.slice(0, 7)})` : ""}`,
+    `**Samples in window:** ${inWindow.length} / ${sorted.length} total`,
+    "",
+    "| Metric | Window start | Latest | Δ |",
+    "| --- | ---: | ---: | ---: |",
+  );
+  for (const m of metrics) {
+    const deltaStr = m.base === 0
+      ? "new"
+      : `${m.delta >= 0 ? "+" : ""}${m.delta.toFixed(2)}%`;
+    const flag = m.breached ? " ⚠️" : "";
+    trendSummary.push(
+      `| ${m.label} | ${fmtKB(m.base)} | ${fmtKB(m.cur)} | ${deltaStr}${flag} |`,
+    );
+  }
+
+  console.log("== Bundle Size Trend ==");
+  console.log(
+    `Window: ${TREND_WINDOW_DAYS} days | Alert threshold: +${(TREND_THRESHOLD * 100).toFixed(1)}%`,
+  );
+  console.log(`Window start: ${windowStart.generatedAt}`);
+  console.log(`Latest:       ${latest.generatedAt}`);
+  for (const m of metrics) {
+    console.log(
+      `  ${m.label}: ${fmtKB(m.base)} → ${fmtKB(m.cur)} (${m.delta >= 0 ? "+" : ""}${m.delta.toFixed(2)}%)${m.breached ? "  ALERT" : ""}`,
+    );
+  }
+
+  const breaches = metrics.filter((m) => m.breached);
+  if (breaches.length > 0) {
+    const summary = breaches
+      .map((m) => `${m.label} +${m.delta.toFixed(2)}%`)
+      .join(", ");
+    const msg = `Bundle size drift exceeds +${(TREND_THRESHOLD * 100).toFixed(1)}% over ${TREND_WINDOW_DAYS}d: ${summary}`;
+    // GitHub Actions warning annotation (picked up by the runner UI).
+    console.log(`::warning title=Bundle size drift::${msg}`);
+    trendSummary.push("", `**Result:** ⚠️ ALERT — ${msg}`);
+    appendSummary(trendSummary);
+    process.exit(TREND_FAIL ? 1 : 0);
+  }
+
+  const okMsg = `All tracked metrics within +${(TREND_THRESHOLD * 100).toFixed(1)}% over the last ${TREND_WINDOW_DAYS} days.`;
+  console.log(`\n${okMsg}`);
+  trendSummary.push("", `**Result:** ✅ OK — ${okMsg}`);
+  appendSummary(trendSummary);
   process.exit(0);
 }
 
