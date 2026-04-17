@@ -14,7 +14,7 @@ code was modified by this audit** — only files under
 | Edge function dir entries (incl. shared) | 242 |
 | SQL migration files                    |   702 |
 | Tables observed in `CREATE TABLE`      |   791 |
-| Distinct RPC / functions defined       |   288 |
+| Distinct RPC / functions defined       |   283 |
 | RLS policy statements                  |  2234 |
 | Indexes declared                       |  1046 |
 | Triggers declared                      |   241 |
@@ -61,7 +61,16 @@ bash scripts/audit/phase-0/inventory-frontend-direct-db.sh
 bash scripts/audit/phase-0/inventory-routes.sh
 bash scripts/audit/phase-0/inventory-polling.sh
 bash scripts/audit/phase-0/inventory-events-and-writers.sh
+bash scripts/audit/phase-0/inventory-rpc-orphans.sh
+bash scripts/audit/phase-0/inventory-button-handlers.sh
 ```
+
+`inventory-tables-policies.sh` and `inventory-rpc-orphans.sh` shell out
+to two helper Node ESM scripts in the same directory:
+`extract-columns.mjs` (per-column extraction with `file:line` provenance)
+and `extract-trigger-targets.mjs` (multi-line `CREATE TRIGGER` parser
+that resolves `EXECUTE FUNCTION <name>` even when the trigger
+declaration spans many lines). Both are read-only.
 
 Each script writes its evidence into `docs/audit/phase-0/99-evidence/` and is
 safe to commit.
