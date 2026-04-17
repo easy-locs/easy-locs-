@@ -102,8 +102,17 @@ export function AdminRoutes() {
       <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/command-center" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><CommandCenterPage /></FeatureErrorBoundary></SuperAdminGate>} />
 
-      {/* ACP · /admin/control unified shell (#861). Placeholder shell — UI replaced by Agent 4. */}
+      {/* ACP · /admin/control unified shell (#861).
+          Sensitive sections (agents/runs/command/approvals/master) are wrapped
+          ProtectedRoute > SuperAdminGate so non-admins still see the shared
+          AdminAccessDenied screen and admins fall through to SuperAdminGate.
+          Explicit paths take precedence over the `:section` catch-all (v6). */}
       <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ Internal Labs ══ */}
