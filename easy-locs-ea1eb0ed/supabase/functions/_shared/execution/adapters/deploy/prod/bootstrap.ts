@@ -14,14 +14,42 @@ import { reconcileAgents, type ReconcileResult } from "../../../agent-reconciler
 import {
   createDeployProdAdapter,
   type DeployProdAdapterDeps,
+  type DeployProdPostDeployHook,
   type DeployProdRunner,
 } from "./deploy-prod-adapter.ts";
 import { createDeployProdVerifier } from "./deploy-prod-verifier.ts";
+import { createDeployProdRollbackVerifier } from "./deploy-prod-rollback-verifier.ts";
 import { createVercelProdRunner } from "../vercel-runner.ts";
+// LC6 (#877): post-deploy health-check + auto-rollback wiring.
+import {
+  createPostDeployHook,
+  createRevertPrRollbackHandler,
+  type RevertPrHandlerDeps,
+} from "./lc6-glue.ts";
+import { createDeployProdRollbackAdapter } from "./deploy-prod-rollback-adapter.ts";
+import type { HealthCheckOptions } from "../../../post-deploy/health-check.ts";
 
 export interface DeployProdBootstrapOverrides extends DeployProdAdapterDeps {
   reconcileAgents?: boolean;
   reconcile?: (sb: SupabaseClient) => Promise<ReconcileResult>;
+  // ── LC6 wiring (#877) ────────────────────────────────────────────────
+  /**
+   * Inject a GithubRevertClient (octokit-shaped). When set, the bootstrap
+   * registers a `revert_pr` rollback handler on the adapter AND installs
+   * the post-deploy health-check hook that marks the deploy task `failed`
+   * with `DEPLOY_HEALTH_CHECK_FAILED` when `/api/health` does not settle
+   * green inside the watch window.
+   *
+   * Auto-rollback itself is dispatched by a SEPARATE post-settlement
+   * reconciler (see `dispatchAutoRollbackForSettledTask` in lc6-glue.ts),
+   * because `system.request_rollback` requires status ∈ {failed,
+   * succeeded} and the hook runs while the row is still `running`.
+   */
+  github?: RevertPrHandlerDeps;
+  /** Health-check tuning passed through to runPostDeployHealthCheck. */
+  healthCheck?: Omit<HealthCheckOptions, "url">;
+  /** Disable LC6 post-deploy + revert_pr wiring entirely (testing). */
+  disableLc6?: boolean;
 }
 
 function bootEnv(): string {
@@ -46,14 +74,56 @@ export async function bootstrapDeployProdAdapters(
   const keyEnv = overrides.keyEnv ?? "VERCEL_ACCESS_TOKEN";
   const runner: DeployProdRunner = overrides.runner ?? createVercelProdRunner(keyEnv);
   globalVerifierRegistry.register(createDeployProdVerifier(), { overwrite: true });
+
+  // ── LC6 (#877): wire health-check + revert_pr only when github is set ──
+  let postDeploy: DeployProdPostDeployHook | undefined = overrides.postDeploy;
+  let rollbackHandler = overrides.rollbackHandler;
+  if (!overrides.disableLc6 && overrides.github) {
+    rollbackHandler = rollbackHandler ??
+      createRevertPrRollbackHandler(overrides.github);
+    if (!postDeploy) {
+      // Hook only runs the health probe. It does NOT dispatch
+      // `system.request_rollback` from inside execute() — L3 requires
+      // the row be in `failed | succeeded`, so auto-rollback is
+      // dispatched by the post-settlement reconciler instead.
+      postDeploy = createPostDeployHook({ health: overrides.healthCheck });
+    }
+  }
+
   globalAdapterRegistry.register(
     createDeployProdAdapter({
       runner,
       defaultTeam: overrides.defaultTeam,
       keyEnv,
+      postDeploy,
+      rollbackHandler,
+      rollbackStrategyName: overrides.rollbackStrategyName,
     }),
     { overwrite: true },
   );
+
+  // LC6 (#877): register the child rollback adapter too. Every
+  // auto-rollback inserts a new `deploy.prod.rollback` row
+  // (parent_task_id linked) with full lifecycle + audit; this adapter
+  // is what the orchestrator dispatches to execute the revert.
+  if (!overrides.disableLc6 && overrides.github) {
+    globalAdapterRegistry.register(
+      createDeployProdRollbackAdapter({
+        client: overrides.github.client,
+        defaultRepo: overrides.github.repo,
+        defaultBranch: overrides.github.branch,
+      }),
+      { overwrite: true },
+    );
+    // LC6 (#877): register the child-row verifier so the orchestrator
+    // can ratify successful revert_pr runs. Without it,
+    // ExecutionOrchestratorV2 refuses to settle the row `succeeded`
+    // (NO_VERIFIER → status `blocked`).
+    globalVerifierRegistry.register(
+      createDeployProdRollbackVerifier(),
+      { overwrite: true },
+    );
+  }
 
   if (overrides.reconcileAgents === false) return;
 
