@@ -84,7 +84,7 @@ export default function MissingIntegrationsBanner() {
       <div style={{ color: "#94a3b8", fontSize: 11 }}>{detail}</div>
       <div style={{ marginTop: 6 }}>
         <a
-          href="/admin/diagnostics"
+          href="/admin/integration-diagnostics"
           style={{ color: "#5eead4", fontSize: 11, textDecoration: "underline" }}
         >
           Open diagnostics →
