@@ -6,22 +6,22 @@
     "snapshot_taken_on": "2026-04-17",
     "expected_to_drain_in": "L7 — Migration sweep, executed phase by phase per docs/architecture/agent-migration-inventory.md §7",
     "last_audit": {
-      "by": "task #938 (Drain the P4 (content + contacts) entries from the dispatch allow-list)",
+      "by": "tasks #926 (P1 — payments + wallet) + #938 (P4 — content + contacts)",
       "on": "2026-04-17",
-      "notes": "Drained the 149 owning_phase: \"P4\" per-file entries (126 storefront/content + 23 contacts/content) per the §7 mechanical procedure in docs/audits/agent-migration/p4-content-contacts.md. The drain is the forcing function for the L7 phase 4 sweep: callsite migration to dispatchExecutionTask and the content + contacts adapter framework remain to be built (tracked separately). Until that work lands, the easylocs/require-dispatch-execution-task, easylocs/no-direct-postgrest-mutation and easylocs/no-direct-rpc-mutation rules will report errors on the previously-exempt P4 files — that visibility is the intended outcome.",
-      "per_file_count": 307,
-      "global_count": 144,
+      "notes": "Two P-bucket drains landed on the same date and were merged at rebase. Task #926 removed all 79 owning_phase=P1 entries from exemptions[], built and registered the governed payments adapter (FINANCIAL_CHARGE/REFUND/PAYOUT) and wallet adapter (WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) with verifiers and manual rollback strategies, wired both into ExecutionOrchestratorV2 via execution-loop bootstrap behind agent.payments.enabled / agent.wallet.enabled feature flags (canary-off in production, fail-loud ADAPTER_DISABLED when disabled), and added 79 corresponding globalExemptions tagged WALLET/PAYMENTS/PAYOUTS/BILLING referencing #926. Task #938 removed all 149 owning_phase=P4 entries (126 storefront/content + 23 contacts/content) per the §7 mechanical procedure; the P4 callsite migration to dispatchExecutionTask and the content + contacts adapter framework remain to be built (tracked separately). See docs/audits/agent-migration/p1-payments-wallet.md and docs/audits/agent-migration/p4-content-contacts.md.",
+      "per_file_count": 228,
+      "global_count": 223,
       "unjustified_count": 0,
       "phase_distribution": {
         "P3": 157,
         "P5": 33,
-        "P1": 79,
         "P2": 38
       },
       "promoted_to_global": {
-        "ADMIN": 40,
-        "PLATFORM": 67,
-        "ORBIT": 14
+        "P1_PAYMENTS": 39,
+        "P1_WALLET": 19,
+        "P1_PAYOUTS": 7,
+        "P1_BILLING": 14
       },
       "previous_audit": {
         "by": "task #914 (Drain the auto-merge guard's grandfathered list to zero)",
@@ -639,6 +639,322 @@
     {
       "pattern": "supabase/functions/watchdog-ping/index.ts",
       "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/components/delivery/DriverWalletPanel.tsx",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/components/orbit/payments/OrbitPaymentRequest.tsx",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/components/storefront/AdvancedCheckout.tsx",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/components/storefront/ReturnsRefundEngine.tsx",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/components/wallet/WalletSecuritySettings.tsx",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/domains/wallet/adapters/supabase.adapter.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/finance/payout-locks.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/finance/reconcile.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/finance/settlementEngine.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/finance/treasury.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/merchant-qr/merchant-payment-executor.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/mobility/dispatch-wallet-bridge.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/orbit-payment-bridge.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orders/booking-payment-saga.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/payments/payment-intents.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/payments/payment-link-service.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/payments/paymentLiveConnector.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/payments/paymentService.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/refunds/create-refund-request.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/settlement/orderSettlement.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/support/agents/payment-anomaly-agent.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/apply-wallet-credit.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/ensureWalletAccount.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/ledger.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/request-payout.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/wallet-account.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/wallet-engine.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/wallet/wallet-identity-binding.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/pages/travel/HotelCheckout.tsx",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/payments/payment-request-hooks.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/domain/wallet.repo.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/payment-notices.repository.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/payment-providers.repository.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/payments.repository.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/rent-payment.repository.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/wallet-repository.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/plaid.service.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/referral.service.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/subscription.service.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/stores/walletStore.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/check-connect-status/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/check-subscription/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/collect-sepa-rents/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/commission-split/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-booking-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-concierge-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-connect-account/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-guest-checkout/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-storefront-checkout/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-stripe-intent/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/create-wallet-topup/index.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/crypto-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/crypto-webhook/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/disconnect-stripe/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/expire-pending-referrals/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/fx-rates/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/generate-rent-receipt/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/manage-subscription/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/mobile-money-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/orbit-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/payment-notification/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/payout-request-create/index.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/plaid-link-token/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/plaid-webhook/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/process-referral-reward/index.ts",
+      "reason": "BILLING — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/process-refund/index.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/qr-payment-session/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/refund-process-booking/index.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/refund-request-booking/index.ts",
+      "reason": "PAYOUTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/rent-create-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/rent-lifecycle-cron/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/rent-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/rent-reminders/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/stripe-webhook/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/verify-guest-payment/index.ts",
+      "reason": "PAYMENTS — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/wallet-ops/index.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/wallet-pin/index.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/wallet-router/index.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/wallet-transfer/index.ts",
+      "reason": "WALLET — L7 P1 framework landed by task #926 (payments + wallet governed adapters: FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE) behind feature flags 'agent.payments.enabled' / 'agent.wallet.enabled'. Per-file routing of this surface to dispatchExecutionTask is tracked separately as P1 follow-up work; the production mutation paths remain in this file pending that routing. Promoted from per-file to globalExemptions with this rationale per task #914 precedent. Original #908 reason: L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
     }
   ],
   "exemptions": [
@@ -668,11 +984,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/components/delivery/DriverWalletPanel.tsx",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/components/delivery/MultiChannelDriverComms.tsx",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -693,19 +1004,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/components/orbit/payments/OrbitPaymentRequest.tsx",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/components/orbit/support/OrbitAISupportChat.tsx",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/components/storefront/AdvancedCheckout.tsx",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/components/storefront/AffiliateProgram.tsx",
@@ -788,11 +1089,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/components/storefront/ReturnsRefundEngine.tsx",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/components/storefront/RiskFlagsDashboard.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -853,11 +1149,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/components/wallet/WalletSecuritySettings.tsx",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/domains/delivery/adapters/supabase.adapter.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -871,11 +1162,6 @@
       "pattern": "src/domains/ride/adapters/supabase.adapter.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/domains/wallet/adapters/supabase.adapter.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/hooks/useBoostPurchase.ts",
@@ -1033,34 +1319,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/finance/payout-locks.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/finance/reconcile.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/finance/settlementEngine.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/finance/treasury.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/lib/listing-lifecycle.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/merchant-qr/merchant-payment-executor.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/lib/merchant/availabilityEngine.ts",
@@ -1131,11 +1392,6 @@
       "pattern": "src/lib/mobility/dispatch-reassign-engine.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/mobility/dispatch-wallet-bridge.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/lib/mobility/dispatch-wave-engine.ts",
@@ -1233,11 +1489,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "src/lib/orbit/orbit-payment-bridge.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/lib/orchestration/handlers/delivery-handlers.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1246,31 +1497,6 @@
       "pattern": "src/lib/orchestration/handlers/support-handlers.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/orders/booking-payment-saga.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/payments/payment-intents.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/payments/payment-link-service.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/payments/paymentLiveConnector.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/payments/paymentService.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/lib/promo/promoEngine.ts",
@@ -1333,11 +1559,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/refunds/create-refund-request.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/lib/seasonal/seasonal-repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1371,11 +1592,6 @@
       "pattern": "src/lib/services/driver-location.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/settlement/orderSettlement.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/lib/shared/notification-engine.ts",
@@ -1421,11 +1637,6 @@
       "pattern": "src/lib/support/agents/learning-agent.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/support/agents/payment-anomaly-agent.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/lib/support/support-session-service.ts",
@@ -1478,41 +1689,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "src/lib/wallet/apply-wallet-credit.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/ensureWalletAccount.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/ledger.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/request-payout.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/wallet-account.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/wallet-engine.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/wallet/wallet-identity-binding.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/pages/merchant/MerchantMenuItemEditorPage.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1526,16 +1702,6 @@
       "pattern": "src/pages/StorePage.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/pages/travel/HotelCheckout.tsx",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/payments/payment-request-hooks.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/repositories/auth-utils.repository.ts",
@@ -1578,11 +1744,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/domain/wallet.repo.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/repositories/driver-onboarding.repository.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1613,26 +1774,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/payment-notices.repository.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/repositories/payment-providers.repository.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/repositories/payments.repository.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/repositories/rent-payment.repository.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/repositories/ride-tracking.repository.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1651,11 +1792,6 @@
       "pattern": "src/repositories/storefront.repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/wallet-repository.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/services/boost.service.ts",
@@ -1678,16 +1814,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/services/plaid.service.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/services/referral.service.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "src/services/storefront-orders.service.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1696,11 +1822,6 @@
       "pattern": "src/services/storefront.service.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/services/subscription.service.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "src/stores/analyticsStore.ts",
@@ -1721,11 +1842,6 @@
       "pattern": "src/stores/reviewsStore.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/stores/walletStore.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/_shared/brain-firewall.ts",
@@ -1783,84 +1899,14 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/check-connect-status/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/check-subscription/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/collect-sepa-rents/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/command-email-intake/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
     },
     {
-      "pattern": "supabase/functions/commission-split/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-booking-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-concierge-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-connect-account/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-guest-checkout/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-storefront-checkout/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-stripe-intent/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/create-wallet-topup/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/crypto-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/crypto-webhook/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/csp-report/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
-    },
-    {
-      "pattern": "supabase/functions/disconnect-stripe/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/dispatch-cron/index.ts",
@@ -1908,16 +1954,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/expire-pending-referrals/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/fx-rates/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/gdpr-delete-account/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -1931,11 +1967,6 @@
       "pattern": "supabase/functions/gdpr-export/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
-    },
-    {
-      "pattern": "supabase/functions/generate-rent-receipt/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/guest-session/index.ts",
@@ -1958,19 +1989,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/manage-subscription/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/marketplace-router/index.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "supabase/functions/mobile-money-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/notification-dispatcher/index.ts",
@@ -1988,79 +2009,9 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "supabase/functions/orbit-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/payment-notification/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/payout-request-create/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/plaid-link-token/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/plaid-webhook/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/process-referral-reward/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/process-refund/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/qr-payment-session/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/receive-email/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/refund-process-booking/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/refund-request-booking/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/rent-create-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/rent-lifecycle-cron/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/rent-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/rent-reminders/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/reveal-contact/index.ts",
@@ -2103,39 +2054,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/stripe-webhook/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/verify-guest-payment/index.ts",
-      "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
       "pattern": "supabase/functions/verify-otp/index.ts",
       "reason": "L7 P5: otp/calls — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/wallet-ops/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/wallet-pin/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/wallet-router/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/wallet-transfer/index.ts",
-      "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P1"
     },
     {
       "pattern": "supabase/functions/webauthn-authentication-challenge/index.ts",

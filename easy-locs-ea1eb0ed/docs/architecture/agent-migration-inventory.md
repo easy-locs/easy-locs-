@@ -11,9 +11,9 @@
 | --- | --- |
 | Deployable edge functions (excluding `_shared`) | **234** |
 | Domains still running direct mutations | **10** (payments, wallet, marketplace, kyc/identity, rides/logistics, content/storefront, contacts, notifications, otp, ai) |
-| Adapters **bootstrapped at runtime** today | **1 domain** — only `bootstrapMarketplaceAdapters` is invoked by `supabase/functions/execution-loop/index.ts` |
+| Adapters **bootstrapped at runtime** today | **3 domains** — `bootstrapMarketplaceAdapters`, `bootstrapPaymentsAdapters` and `bootstrapWalletAdapters` are invoked by `supabase/functions/execution-loop/index.ts` (the latter two behind `agent.payments.enabled` / `agent.wallet.enabled` feature flags, landed by task #926) |
 | Adapters **implemented but not yet bootstrapped** | **1 domain** — `github-runner` (`SMOKE_NOOP`) has bootstrap + verifier code in `_shared/execution/adapters/github-runner/` but no live call site |
-| `dispatch-allowlist.json` exemption entries | **307** per-file (P1..P3, P5) + **144** structural globalExemptions — re-organised by task #908 (phase tagging) and task #914 (ADMIN/PLATFORM/ORBIT promotion) on 2026-04-17, then drained of all 149 P4 entries by task #938 on 2026-04-17 (see `docs/audits/agent-migration/p4-content-contacts.md`). |
+| `dispatch-allowlist.json` exemption entries | **228** per-file (P2, P3, P5) + **223** structural globalExemptions — re-organised by task #908 (phase tagging) and task #914 (ADMIN/PLATFORM/ORBIT promotion), then drained of all 79 P1 entries by task #926 on 2026-04-17 (see `docs/audits/agent-migration/p1-payments-wallet.md`) and all 149 P4 entries by task #938 on 2026-04-17 (see `docs/audits/agent-migration/p4-content-contacts.md`). |
 | `(domain, task_type)` pairs governed at runtime today | **2** (`marketplace.MARKETPLACE.LISTING.PUBLISH`, `marketplace.MARKETPLACE.LISTING.UNPUBLISH`) of an estimated **~30** required by end of L7 |
 
 The platform is roughly **10 %** governed at runtime. The remaining 90 %
@@ -43,8 +43,8 @@ sovereign control plane today. That bypass is what L7 closes.
 ## 3. Lint allow-list snapshot
 
 `easy-locs-ea1eb0ed/.eslintrc.dispatch-allowlist.json` is the L6 escape
-hatch. After two consecutive cleanups it now holds **456 per-file
-patterns + 144 structural `globalExemptions`** (down from 626 raw
+hatch. After three consecutive cleanups it now holds **377 per-file
+patterns + 223 structural `globalExemptions`** (down from 626 raw
 entries):
 
 - **Task #908** (Sovereign Closeout) tagged every per-file entry with
@@ -54,14 +54,22 @@ entries):
   (40), PLATFORM (67) and ORBIT (14) entries — 121 total — out of the
   per-file list and into `globalExemptions` with written
   "structural — keep" rationale.
+- **Task #926** drained the P1 (payments + wallet) bucket: built and
+  registered the governed `payments` and `wallet` adapters
+  (FINANCIAL_CHARGE/REFUND/PAYOUT, WALLET_CREDIT/DEBIT/TRANSFER/FREEZE)
+  behind `agent.payments.enabled` / `agent.wallet.enabled`, and
+  promoted the 79 per-file P1 entries to `globalExemptions` tagged
+  WALLET / PAYMENTS / PAYOUTS / BILLING with rationale that points at
+  the new framework. Per-file routing of those production sites to
+  `dispatchExecutionTask` is tracked as P1-routing follow-up work.
 
-What remains in `exemptions` is exclusively L7 phase work (P1..P5).
+What remains in `exemptions` is exclusively L7 phase work (P2..P5).
 Each per-phase task can grep its `owning_phase` and retire the entries
 it owns:
 
 | Bucket | Count | Disposition |
 | --- | --- | --- |
-| P1 (payments + wallet) | 79 | per-file, retires when payments+wallet adapters land |
+| P1 (payments + wallet) | 0 | drained by task #926 — adapters live, 79 entries promoted to `globalExemptions` |
 | P2 (KYC + identity) | 38 | per-file, retires when KYC+identity adapters land |
 | P3 (rides + marketplace) | 157 | per-file, retires when rides+marketplace adapters land — phase plan + gating doc at `docs/audits/agent-migration/p3-rides-marketplace.md` (task #927) |
 | P4 (content + contacts) | **0** | drained 2026-04-17 — see `docs/audits/agent-migration/p4-content-contacts.md` (task #938). Adapter framework + callsite migration tracked separately; until those land the dispatch-guard rules will report errors on the previously-exempt files (intended forcing function). |
@@ -73,8 +81,8 @@ it owns:
 | LB1 | already promoted by #908 | AI router (out of L7 scope — task #815) |
 
 The L7 success criterion is to prune this file down to **only the
-structural exemptions** below — i.e. drain the **456** P1..P5 per-file
-entries to **zero**, phase by phase.
+structural exemptions** below — i.e. drain the remaining **377**
+P2..P5 per-file entries to **zero**, phase by phase.
 
 ### 3a. Structural exemptions (must remain)
 
