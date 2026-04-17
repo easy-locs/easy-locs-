@@ -11,16 +11,26 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren } from "lucide-react";
+import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
 import {
   fetchMergeConflictRecoveryEvents,
+  loadMergeConflictAlertThreshold,
+  MAX_THRESHOLD_WINDOW_MINUTES,
+  type MergeConflictAlertThreshold,
+  MIN_THRESHOLD_COUNT,
+  MIN_THRESHOLD_WINDOW_MINUTES,
   projectMergeConflictRecoverySummary,
+  saveMergeConflictAlertThreshold,
+  summarizeFileBurstsWithinWindow,
 } from "@/repositories/merge-conflict-recovery.repository";
 
 const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
@@ -69,6 +79,41 @@ export default function AdminMergeConflictRecoveryPage() {
     for (const d of summary.perDay) if (d.count > max) max = d.count;
     return max;
   }, [summary.perDay]);
+
+  const queryClient = useQueryClient();
+  const thresholdQuery = useQuery({
+    queryKey: ["admin-merge-conflict-recovery-threshold"],
+    queryFn: loadMergeConflictAlertThreshold,
+    staleTime: 30_000,
+  });
+  const thresholdMutation = useMutation({
+    mutationFn: saveMergeConflictAlertThreshold,
+    onSuccess: (saved) => {
+      queryClient.setQueryData(
+        ["admin-merge-conflict-recovery-threshold"],
+        saved,
+      );
+      toast.success("Spike-detection threshold saved");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to save threshold: ${msg}`);
+    },
+  });
+  const threshold: MergeConflictAlertThreshold | undefined = thresholdQuery.data;
+
+  const fileBursts = useMemo(() => {
+    if (!threshold) return [];
+    return summarizeFileBurstsWithinWindow(
+      data ?? [],
+      threshold.windowMinutes * 60 * 1000,
+    ).slice(0, 10);
+  }, [data, threshold]);
+
+  const alertingFiles = useMemo(() => {
+    if (!threshold) return [];
+    return fileBursts.filter((f) => f.count >= threshold.count);
+  }, [fileBursts, threshold]);
 
   return (
     <SubPageShell
@@ -153,6 +198,14 @@ export default function AdminMergeConflictRecoveryPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <SpikeDetectionCard
+              thresholdQuery={thresholdQuery}
+              onSave={(t) => thresholdMutation.mutate(t)}
+              isSaving={thresholdMutation.isPending}
+              bursts={fileBursts}
+              alertingFiles={alertingFiles}
+            />
 
             <Card>
               <CardHeader>
@@ -426,6 +479,241 @@ function Stat({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+interface SpikeDetectionCardProps {
+  thresholdQuery: {
+    data: MergeConflictAlertThreshold | undefined;
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => void;
+  };
+  onSave: (next: MergeConflictAlertThreshold) => void;
+  isSaving: boolean;
+  bursts: ReadonlyArray<{ file: string; count: number; lastAt: string }>;
+  alertingFiles: ReadonlyArray<{ file: string; count: number; lastAt: string }>;
+}
+
+function SpikeDetectionCard({
+  thresholdQuery,
+  onSave,
+  isSaving,
+  bursts,
+  alertingFiles,
+}: SpikeDetectionCardProps) {
+  const threshold = thresholdQuery.data;
+  const [draft, setDraft] = useState<MergeConflictAlertThreshold | null>(null);
+  useEffect(() => {
+    if (threshold) setDraft(threshold);
+  }, [threshold]);
+
+  if (thresholdQuery.isLoading || !threshold || !draft) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-muted-foreground" />
+            Spike detection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (thresholdQuery.error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-destructive" />
+            Spike detection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-destructive flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              Failed to load shared threshold:{" "}
+              {(thresholdQuery.error as Error).message}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const dirty =
+    draft.count !== threshold.count ||
+    draft.windowMinutes !== threshold.windowMinutes;
+  const topCount = bursts[0]?.count ?? 0;
+  const proximityPct = Math.min(
+    100,
+    Math.round((topCount / Math.max(1, threshold.count)) * 100),
+  );
+  const proximityTone =
+    topCount >= threshold.count
+      ? "bg-destructive"
+      : topCount >= threshold.count * 0.75
+        ? "bg-warning"
+        : "bg-primary/70";
+  return (
+    <Card className={alertingFiles.length > 0 ? "border-destructive/50" : ""}>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Siren
+            className={`h-4 w-4 ${alertingFiles.length > 0 ? "text-destructive" : "text-muted-foreground"}`}
+          />
+          Spike detection
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="mcr-threshold-count" className="text-xs">
+              Alert when a single file path crosses
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="mcr-threshold-count"
+                type="number"
+                inputMode="numeric"
+                min={MIN_THRESHOLD_COUNT}
+                value={draft.count}
+                onChange={(e) => {
+                  const next = Math.max(
+                    MIN_THRESHOLD_COUNT,
+                    Math.floor(Number(e.target.value) || MIN_THRESHOLD_COUNT),
+                  );
+                  setDraft({ ...draft, count: next });
+                }}
+                className="h-8 w-24"
+              />
+              <span className="text-xs text-muted-foreground">conflicts</span>
+            </div>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="mcr-threshold-window" className="text-xs">
+              Within rolling window
+            </Label>
+            <div className="flex items-center gap-2">
+              <Input
+                id="mcr-threshold-window"
+                type="number"
+                inputMode="numeric"
+                min={MIN_THRESHOLD_WINDOW_MINUTES}
+                max={MAX_THRESHOLD_WINDOW_MINUTES}
+                value={draft.windowMinutes}
+                onChange={(e) => {
+                  const raw = Math.floor(
+                    Number(e.target.value) || MIN_THRESHOLD_WINDOW_MINUTES,
+                  );
+                  const next = Math.min(
+                    MAX_THRESHOLD_WINDOW_MINUTES,
+                    Math.max(MIN_THRESHOLD_WINDOW_MINUTES, raw),
+                  );
+                  setDraft({ ...draft, windowMinutes: next });
+                }}
+                className="h-8 w-24"
+              />
+              <span className="text-xs text-muted-foreground">minutes</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Shared across all operators. Server-side audit handler reads
+            this and pages on-call automatically when crossed.
+          </p>
+          <Button
+            size="sm"
+            variant={dirty ? "default" : "outline"}
+            disabled={!dirty || isSaving}
+            onClick={() => onSave(draft)}
+            className="gap-2 shrink-0"
+          >
+            {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
+            Save
+          </Button>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className="text-muted-foreground">
+              Worst file proximity to threshold
+            </span>
+            <span className="tabular-nums font-medium">
+              {topCount} / {threshold.count}
+            </span>
+          </div>
+          <div className="h-2 w-full rounded bg-muted overflow-hidden">
+            <div
+              className={`h-full ${proximityTone} transition-all`}
+              style={{ width: `${proximityPct}%` }}
+            />
+          </div>
+        </div>
+
+        {bursts.length === 0 ? (
+          <p className="text-xs text-muted-foreground">
+            No file conflicts in the last {threshold.windowMinutes} minute
+            {threshold.windowMinutes === 1 ? "" : "s"}.
+          </p>
+        ) : (
+          <ul className="space-y-1.5">
+            {bursts.map((b) => {
+              const tripped = b.count >= threshold.count;
+              const pct = Math.min(
+                100,
+                Math.round((b.count / Math.max(1, threshold.count)) * 100),
+              );
+              return (
+                <li key={b.file} className="text-xs">
+                  <div className="flex items-center justify-between gap-2 mb-0.5">
+                    <code className="font-mono truncate">{b.file}</code>
+                    <Badge
+                      variant={tripped ? "destructive" : "secondary"}
+                      className="text-[10px] shrink-0"
+                    >
+                      {b.count} / {threshold.count}
+                    </Badge>
+                  </div>
+                  <div className="h-1.5 w-full rounded bg-muted overflow-hidden">
+                    <div
+                      className={`h-full ${tripped ? "bg-destructive" : "bg-primary/60"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {alertingFiles.length > 0 && (
+          <div className="rounded border border-destructive/40 bg-destructive/5 p-3 text-xs flex items-start gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-destructive shrink-0" />
+            <span>
+              {alertingFiles.length} file
+              {alertingFiles.length === 1 ? " is" : "s are"} over the threshold.
+              The server-side audit handler pages ops in the Alert Center
+              (rate-limited to once per hour per file).
+            </span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// NOTE (#952): the dashboard-driven alert hook was removed in favour
+// of server-side spike detection inside
+// `supabase/functions/_shared/execution/builders/merge-conflict-storm-alerts.ts`.
+// The dashboard only renders threshold + proximity now, which means ops
+// gets paged whether or not anyone has this page open.
 
 function Metric({ title, value }: { title: string; value: string }) {
   return (

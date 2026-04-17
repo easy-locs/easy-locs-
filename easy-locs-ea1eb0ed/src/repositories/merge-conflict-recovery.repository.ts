@@ -16,7 +16,7 @@
  *     reason: "hard_overlap:<n>",
  *   }
  */
-import { domainDb } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 
 export interface MergeConflictRecoveryAudit {
   readonly kind: "merge_conflict_recovery";
@@ -98,7 +98,7 @@ export async function fetchMergeConflictRecoveryEvents(): Promise<
   return events;
 }
 
-export function normalizeAudit(
+function normalizeAudit(
   raw: unknown,
   rowId: string,
 ): MergeConflictRecoveryEvent | null {
@@ -162,9 +162,7 @@ export function projectMergeConflictRecoverySummary(
       perDayMap.set(day, (perDayMap.get(day) ?? 0) + 1);
     }
     taskIds.add(e.builder_task_id);
-    // Dedup files within a single event so a buggy/duplicated audit
-    // entry can't skew the top-files leaderboard.
-    for (const f of new Set(e.files)) {
+    for (const f of e.files) {
       fileCounts.set(f, (fileCounts.get(f) ?? 0) + 1);
     }
   }
@@ -183,4 +181,124 @@ export function projectMergeConflictRecoverySummary(
     perDay,
     topFiles,
   };
+}
+
+// ── Spike-detection threshold (shared across operators) ───────────────────
+//
+// Persisted in `public.platform_settings` so every operator and the
+// server-side detection job (see
+// `supabase/functions/_shared/execution/builders/merge-conflict-storm-alerts.ts`)
+// see the same value. The dashboard panel reads/writes this key and the
+// audit handler reads it whenever a new recovery envelope is written.
+
+export interface MergeConflictAlertThreshold {
+  /** Number of recoveries against a single file path that triggers an alert. */
+  readonly count: number;
+  /** Sliding window the count is evaluated over (in minutes). */
+  readonly windowMinutes: number;
+}
+
+export const MERGE_CONFLICT_ALERT_THRESHOLD_KEY =
+  "merge_conflict_recovery.alert_threshold";
+
+export const DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD: MergeConflictAlertThreshold =
+  {
+    count: 5,
+    windowMinutes: 60,
+  };
+
+export const MIN_THRESHOLD_COUNT = 2;
+export const MIN_THRESHOLD_WINDOW_MINUTES = 5;
+export const MAX_THRESHOLD_WINDOW_MINUTES = 24 * 60;
+
+function clampThreshold(
+  raw: Partial<MergeConflictAlertThreshold> | null | undefined,
+): MergeConflictAlertThreshold {
+  const count = Math.max(
+    MIN_THRESHOLD_COUNT,
+    Math.floor(Number(raw?.count) || DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD.count),
+  );
+  const windowMinutes = Math.min(
+    MAX_THRESHOLD_WINDOW_MINUTES,
+    Math.max(
+      MIN_THRESHOLD_WINDOW_MINUTES,
+      Math.floor(
+        Number(raw?.windowMinutes) ||
+          DEFAULT_MERGE_CONFLICT_ALERT_THRESHOLD.windowMinutes,
+      ),
+    ),
+  );
+  return { count, windowMinutes };
+}
+
+export async function loadMergeConflictAlertThreshold(): Promise<
+  MergeConflictAlertThreshold
+> {
+  const { data, error } = await db
+    .from("platform_settings")
+    .select("value")
+    .eq("key", MERGE_CONFLICT_ALERT_THRESHOLD_KEY)
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `loadMergeConflictAlertThreshold failed: ${error.message}`,
+    );
+  }
+  return clampThreshold(
+    (data?.value as Partial<MergeConflictAlertThreshold> | null) ?? null,
+  );
+}
+
+export async function saveMergeConflictAlertThreshold(
+  next: MergeConflictAlertThreshold,
+): Promise<MergeConflictAlertThreshold> {
+  const clamped = clampThreshold(next);
+  const { error } = await db
+    .from("platform_settings")
+    .upsert(
+      { key: MERGE_CONFLICT_ALERT_THRESHOLD_KEY, value: clamped },
+      { onConflict: "key" },
+    );
+  if (error) {
+    throw new Error(
+      `saveMergeConflictAlertThreshold failed: ${error.message}`,
+    );
+  }
+  return clamped;
+}
+
+/**
+ * Per-file conflict counts inside a sliding time window. Used by the
+ * dashboard's spike-detection panel to decide whether a single file
+ * path is being storm-hit (e.g. two agents racing on the same file).
+ *
+ * Pure projection — caller decides the window size and the alert
+ * threshold so the same primitive can drive both UI proximity bars
+ * and threshold-crossing alerts. The authoritative trip-wire runs
+ * server-side (see `merge-conflict-storm-alerts.ts`); the dashboard
+ * uses this projection only to render proximity to the threshold.
+ */
+export function summarizeFileBurstsWithinWindow(
+  events: MergeConflictRecoveryEvent[],
+  windowMs: number,
+  now: number = Date.now(),
+): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
+  const cutoff = now - windowMs;
+  const counts = new Map<string, { count: number; lastAt: string }>();
+  for (const e of events) {
+    const t = Date.parse(e.at);
+    if (!Number.isFinite(t) || t < cutoff) continue;
+    for (const f of e.files) {
+      const cur = counts.get(f);
+      if (!cur) {
+        counts.set(f, { count: 1, lastAt: e.at });
+      } else {
+        cur.count += 1;
+        if (e.at > cur.lastAt) cur.lastAt = e.at;
+      }
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
+    .sort((a, b) => b.count - a.count);
 }
