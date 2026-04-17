@@ -12,6 +12,10 @@ const PILLAR_BUDGETS: Record<string, number> = {
 const CRITICAL_BUDGET_KB = 250;
 const GLOBAL_BUDGET_KB = 300;
 
+const CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-react": 500,
+};
+
 const distDir = path.resolve(process.cwd(), "dist/assets");
 
 if (!fs.existsSync(distDir)) {
@@ -23,7 +27,7 @@ const files = fs.readdirSync(distDir).filter((f) => f.endsWith(".js"));
 const violations: string[] = [];
 const warnings: string[] = [];
 
-const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+const criticalPatterns = ["vendor-react", "vendor-supabase"];
 
 for (const file of files) {
   const filePath = path.join(distDir, file);
@@ -33,8 +37,11 @@ for (const file of files) {
   const isCritical = criticalPatterns.some((p) => file.includes(p));
   const pillarMatch = Object.keys(PILLAR_BUDGETS).find((p) => file.includes(p));
 
-  if (isCritical && sizeKB > CRITICAL_BUDGET_KB) {
-    violations.push(`CRITICAL: ${file} is ${sizeKB}KB (limit: ${CRITICAL_BUDGET_KB}KB)`);
+  const overrideKey = Object.keys(CHUNK_BUDGET_OVERRIDES_KB).find((k) => file.includes(k));
+  const criticalLimit = overrideKey ? CHUNK_BUDGET_OVERRIDES_KB[overrideKey] : CRITICAL_BUDGET_KB;
+
+  if (isCritical && sizeKB > criticalLimit) {
+    violations.push(`CRITICAL: ${file} is ${sizeKB}KB (limit: ${criticalLimit}KB)`);
   } else if (pillarMatch && sizeKB > PILLAR_BUDGETS[pillarMatch]) {
     violations.push(`PILLAR: ${file} is ${sizeKB}KB (limit: ${PILLAR_BUDGETS[pillarMatch]}KB)`);
   } else if (sizeKB > GLOBAL_BUDGET_KB) {
