@@ -193,10 +193,19 @@ const ROUTER_INTERNAL_HEADER = "X-Router-Origin";
 
 function getRouterSecret(): string {
   const secret = Deno.env.get("EDGE_ROUTER_SECRET");
-  if (!secret) {
+  if (secret) return secret;
+  const allowInsecure = (Deno.env.get("ALLOW_INSECURE_ROUTER_SECRET") || "").toLowerCase();
+  const isLocalDev =
+    Deno.env.get("ENVIRONMENT") !== "production" &&
+    (allowInsecure === "true" || allowInsecure === "1" || allowInsecure === "yes");
+  if (!isLocalDev) {
     throw new Error("EDGE_ROUTER_SECRET environment variable is required");
   }
-  return secret;
+  console.warn(
+    "[edge-router] EDGE_ROUTER_SECRET missing — using insecure local-dev fallback. " +
+      "This is only allowed because ALLOW_INSECURE_ROUTER_SECRET=true and ENVIRONMENT!=production.",
+  );
+  return "_easylocs_dev_router_secret_v1";
 }
 
 export function proxyToFunction(

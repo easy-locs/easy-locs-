@@ -14,6 +14,44 @@ const MAX_SESSIONS_PER_30_MIN = 5;
 
 type OtpChannel = "sms" | "whatsapp";
 
+function isMockMode(): boolean {
+  const flag = (Deno.env.get("OTP_MOCK_MODE") || "").toLowerCase();
+  const explicitOn = flag === "true" || flag === "1" || flag === "yes";
+  const explicitOff = flag === "false" || flag === "0" || flag === "no";
+  const isProduction = Deno.env.get("ENVIRONMENT") === "production";
+
+  if (explicitOff) return false;
+  if (explicitOn) {
+    if (isProduction) {
+      console.error(
+        "[send-otp] OTP_MOCK_MODE=true is not allowed in production — ignoring and requiring real Twilio delivery.",
+      );
+      return false;
+    }
+    return true;
+  }
+  // Auto-fallback to mock only outside production, and only when Twilio is unconfigured.
+  if (isProduction) {
+    if (!isTwilioConfigured() && !isWhatsAppConfigured()) {
+      console.error(
+        "[send-otp] Twilio is not configured in production. OTP delivery will fail — set TWILIO_* secrets.",
+      );
+    }
+    return false;
+  }
+  return !isTwilioConfigured() && !isWhatsAppConfigured();
+}
+
+function logMockOtp(phone: string, otp: string, channel: OtpChannel): void {
+  const banner = "=".repeat(60);
+  console.log(banner);
+  console.log(`[send-otp][MOCK] ${channel.toUpperCase()} delivery disabled — Twilio not in use.`);
+  console.log(`[send-otp][MOCK] Phone:  ${phone}`);
+  console.log(`[send-otp][MOCK] Code:   ${otp}`);
+  console.log(`[send-otp][MOCK] Expiry: ${OTP_EXPIRY_MINUTES} minutes`);
+  console.log(banner);
+}
+
 function generateOtp(): string {
   const array = new Uint32Array(1);
   crypto.getRandomValues(array);
@@ -51,6 +89,7 @@ function isWhatsAppConfigured(): boolean {
 }
 
 function getAvailableChannels(): OtpChannel[] {
+  if (isMockMode()) return ["sms", "whatsapp"];
   const channels: OtpChannel[] = [];
   if (isTwilioConfigured()) channels.push("sms");
   if (isWhatsAppConfigured()) channels.push("whatsapp");
@@ -136,12 +175,14 @@ Deno.serve(async (req) => {
     const { phone, probe, channel: requestedChannel } = body;
 
     if (probe) {
+      const mock = isMockMode();
       const channels = getAvailableChannels();
       return jsonResponse({
         configured: channels.length > 0,
         channels,
-        sms: isTwilioConfigured(),
-        whatsapp: isWhatsAppConfigured(),
+        sms: mock ? true : isTwilioConfigured(),
+        whatsapp: mock ? true : isWhatsAppConfigured(),
+        mock,
       });
     }
 
@@ -203,6 +244,11 @@ Deno.serve(async (req) => {
     if (insertErr) {
       console.error("[send-otp] DB insert error:", insertErr);
       return jsonResponse({ success: false, error_code: "DB_ERROR" }, 500);
+    }
+
+    if (isMockMode()) {
+      logMockOtp(phone, otp, channel);
+      return jsonResponse({ success: true, channel, mock: true });
     }
 
     const result = await sendViaTwilio(phone, otp, channel);
