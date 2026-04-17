@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface CalendarPropertyOption {
   id: string;
   label: string;
@@ -10,15 +11,14 @@ export interface CalendarPropertyOption {
 }
 
 export async function fetchCalendarProperties(orgId: string, country?: string | null): Promise<CalendarPropertyOption[]> {
-  let q = db("properties").select("id, label, country").eq("org_id", orgId);
+  let q = cFrom("properties").select("id, label, country").eq("org_id", orgId);
   if (country) q = q.eq("country", country);
   const { data } = await q;
   return (data || []) as CalendarPropertyOption[];
 }
 
 export async function fetchSeasonalEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await db
-    .from("booking_requests")
+  const { data } = await cFrom("booking_requests")
     .select("*, properties!booking_requests_property_id_fkey(label)")
     .eq("org_id", orgId)
     .in("property_id", propertyIds);
@@ -26,8 +26,7 @@ export async function fetchSeasonalEvents(orgId: string, propertyIds: string[]) 
 }
 
 export async function fetchLeaseEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await db
-    .from("leases")
+  const { data } = await cFrom("leases")
     .select("*, tenants!leases_tenant_id_fkey(name, email, phone), properties!leases_property_id_fkey(label)")
     .eq("org_id", orgId)
     .in("property_id", propertyIds);
@@ -35,8 +34,7 @@ export async function fetchLeaseEvents(orgId: string, propertyIds: string[]) {
 }
 
 export async function fetchMarketplaceEvents(orgId: string) {
-  const { data } = await db
-    .from("marketplace_bookings")
+  const { data } = await cFrom("marketplace_bookings")
     .select("*")
     .eq("org_id", orgId)
     .not("property_id", "is", null);
@@ -44,8 +42,7 @@ export async function fetchMarketplaceEvents(orgId: string) {
 }
 
 export async function fetchConciergeEvents(orgId: string, propertyIds: string[]) {
-  const { data } = await db
-    .from("concierge_orders")
+  const { data } = await cFrom("concierge_orders")
     .select("*")
     .eq("org_id", orgId)
     .in("property_id", propertyIds);
@@ -53,8 +50,7 @@ export async function fetchConciergeEvents(orgId: string, propertyIds: string[])
 }
 
 export async function fetchBlockedDates(orgId: string, propertyIds: string[]) {
-  const { data } = await db
-    .from("property_blocked_dates")
+  const { data } = await cFrom("property_blocked_dates")
     .select("*, properties!property_blocked_dates_property_id_fkey(label)")
     .eq("org_id", orgId)
     .in("property_id", propertyIds);
@@ -68,11 +64,11 @@ export async function insertBlockedDate(params: {
   date_to: string;
   reason?: string;
 }) {
-  const { error } = await db("property_blocked_dates").insert(params);
+  const { error } = await cFrom("property_blocked_dates").insert(params);
   if (error) throw error;
 }
 
 export async function deleteBlockedDate(id: string) {
-  const { error } = await db("property_blocked_dates").delete().eq("id", id);
+  const { error } = await cFrom("property_blocked_dates").delete().eq("id", id);
   if (error) throw error;
 }

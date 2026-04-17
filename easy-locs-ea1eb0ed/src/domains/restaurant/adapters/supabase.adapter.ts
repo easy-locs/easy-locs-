@@ -1,9 +1,9 @@
 import { db } from "@/services/db";
 import type { RestaurantOrderRepository, FoodOrder, FoodOrderStatus, DailyStats } from "../ports";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 async function getShopCoords(shopId: string): Promise<{ lat?: number; lng?: number }> {
-  const { data } = await db
-    .from("storefront_pages")
+  const { data } = await cFrom("storefront_pages")
     .select("latitude, longitude")
     .eq("id", shopId)
     .maybeSingle();
@@ -79,8 +79,7 @@ function mapOrder(row: DbOrderRow): FoodOrder {
 
 export const restaurantOrderAdapter: RestaurantOrderRepository = {
   async findById(id: string): Promise<FoodOrder | null> {
-    const { data, error } = await db
-      .from("storefront_orders")
+    const { data, error } = await cFrom("storefront_orders")
       .select("*, storefront_order_items(*)")
       .eq("id", id)
       .maybeSingle();
@@ -93,8 +92,7 @@ export const restaurantOrderAdapter: RestaurantOrderRepository = {
   },
 
   async findActiveByShop(shopId: string): Promise<FoodOrder[]> {
-    const { data, error } = await db
-      .from("storefront_orders")
+    const { data, error } = await cFrom("storefront_orders")
       .select("*, storefront_order_items(*)")
       .eq("shop_id", shopId)
       .not("status", "in", '("delivered","cancelled")')
@@ -128,8 +126,7 @@ export const restaurantOrderAdapter: RestaurantOrderRepository = {
       }
 
       if (Object.keys(metadataExtra).length > 0) {
-        const { data: current } = await db
-          .from("storefront_orders")
+        const { data: current } = await cFrom("storefront_orders")
           .select("metadata")
           .eq("id", id)
           .maybeSingle();
@@ -137,8 +134,7 @@ export const restaurantOrderAdapter: RestaurantOrderRepository = {
       }
     }
 
-    let query = db
-      .from("storefront_orders")
+    let query = cFrom("storefront_orders")
       .update(patch)
       .eq("id", id);
 
@@ -165,8 +161,7 @@ export const restaurantOrderAdapter: RestaurantOrderRepository = {
       storefront_order_items?: { title: string }[];
     }
 
-    const { data: orders } = await db
-      .from("storefront_orders")
+    const { data: orders } = await cFrom("storefront_orders")
       .select("total, status, created_at, metadata, storefront_order_items(title)")
       .eq("shop_id", shopId)
       .gte("created_at", todayStart.toISOString());

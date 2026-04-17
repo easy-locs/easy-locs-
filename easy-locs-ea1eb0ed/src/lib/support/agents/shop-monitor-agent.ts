@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import type { ShopQualityScore } from "../support-types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const ANALYSIS_WINDOW_DAYS = 30;
 const POOR_RESPONSE_THRESHOLD = 0.5;
 const HIGH_COMPLAINT_THRESHOLD = 0.15;
@@ -16,7 +17,7 @@ export async function runShopMonitorAgent(): Promise<{
 
   const cutoff = new Date(Date.now() - ANALYSIS_WINDOW_DAYS * 86400000).toISOString();
 
-  const { data: activeShops } = await db("support_sessions")
+  const { data: activeShops } = await cFrom("support_sessions")
     .select("shop_id")
     .not("shop_id", "is", null)
     .gte("created_at", cutoff)
@@ -29,7 +30,7 @@ export async function runShopMonitorAgent(): Promise<{
   for (const shopId of shopIds) {
     const score = await computeShopQualityScore(shopId, cutoff);
 
-    await db("shop_quality_scores").upsert({
+    await cFrom("shop_quality_scores").upsert({
       shop_id: shopId,
       response_rate: score.response_rate,
       avg_response_time_minutes: score.avg_response_time_minutes,
@@ -66,7 +67,7 @@ async function computeShopQualityScore(
   shopId: string,
   since: string,
 ): Promise<ShopQualityScore> {
-  const { data: sessions } = await db("support_sessions")
+  const { data: sessions } = await cFrom("support_sessions")
     .select("*")
     .eq("shop_id", shopId)
     .gte("created_at", since);
@@ -119,7 +120,7 @@ async function computeShopQualityScore(
   ).length;
   const refundRate = refunds / totalSessions;
 
-  const { count: fraudCount } = await db("shop_quality_events")
+  const { count: fraudCount } = await cFrom("shop_quality_events")
     .select("*", { count: "exact", head: true })
     .eq("shop_id", shopId)
     .eq("event_type", "fraud_indicator")

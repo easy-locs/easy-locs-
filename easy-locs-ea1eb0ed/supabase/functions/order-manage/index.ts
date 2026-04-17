@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -81,8 +82,7 @@ Deno.serve(withEdgeLogging("order-manage", async (req, logger) => {
         patch.payment_status = "released";
       }
 
-      const { data: updated, error: updateErr } = await admin
-        .from("storefront_orders")
+      const { data: updated, error: updateErr } = await cFromEdge(admin, "storefront_orders")
         .update(patch)
         .eq("id", orderId)
         .select("*")
@@ -91,7 +91,7 @@ Deno.serve(withEdgeLogging("order-manage", async (req, logger) => {
       if (updateErr) throw updateErr;
 
       // Log status history
-      await admin.from("order_status_history").insert({
+      await cFromEdge(admin, "order_status_history").insert({
         order_id: orderId,
         status,
         actor_type: isSeller ? "merchant" : "customer",
@@ -101,8 +101,7 @@ Deno.serve(withEdgeLogging("order-manage", async (req, logger) => {
       // If order completed, create settlement entry for merchant
       if (status === "completed" && order.total > 0) {
         // Find or create merchant account
-        const { data: merchantAcct } = await admin
-          .from("merchant_accounts")
+        const { data: merchantAcct } = await cFromEdge(admin, "merchant_accounts")
           .select("id")
           .eq("user_id", order.seller_id)
           .maybeSingle();
@@ -114,7 +113,7 @@ Deno.serve(withEdgeLogging("order-manage", async (req, logger) => {
           const netAmount = Number((grossAmount - platformFee - processingFee).toFixed(2));
 
           // Insert settlement entry
-          await admin.from("settlement_ledger").insert({
+          await cFromEdge(admin, "settlement_ledger").insert({
             merchant_id: merchantAcct.id,
             order_id: orderId,
             gross_amount: grossAmount,
@@ -126,20 +125,19 @@ Deno.serve(withEdgeLogging("order-manage", async (req, logger) => {
           });
 
           // Update merchant balance
-          const { data: balance } = await admin
-            .from("merchant_balances")
+          const { data: balance } = await cFromEdge(admin, "merchant_balances")
             .select("*")
             .eq("merchant_id", merchantAcct.id)
             .eq("currency", order.currency || "AED")
             .maybeSingle();
 
           if (balance) {
-            await admin.from("merchant_balances").update({
+            await cFromEdge(admin, "merchant_balances").update({
               available_balance: Number(balance.available_balance) + netAmount,
               updated_at: new Date().toISOString(),
             }).eq("id", balance.id);
           } else {
-            await admin.from("merchant_balances").insert({
+            await cFromEdge(admin, "merchant_balances").insert({
               merchant_id: merchantAcct.id,
               currency: order.currency || "AED",
               pending_balance: 0,

@@ -3,8 +3,9 @@
  */
 import { db } from "@/services/db";
 
+import { ctFrom as cFrom, ctRpc as cRpc } from "@/lib/execution/contacts-mutation";
 export async function fetchTenantDocs(tenantId: string) {
-  const { data } = await db("tenant_documents")
+  const { data } = await cFrom("tenant_documents")
     .select("id, doc_type, label, file_url, filename, status, created_at")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
@@ -12,7 +13,7 @@ export async function fetchTenantDocs(tenantId: string) {
 }
 
 export async function fetchTenantContactInfo(tenantId: string) {
-  const { data } = await db("tenants").select("email, tenant_user_id").eq("id", tenantId).single();
+  const { data } = await cFrom("tenants").select("email, tenant_user_id").eq("id", tenantId).single();
   return data;
 }
 
@@ -27,13 +28,13 @@ export async function uploadTenantDocument(orgId: string, tenantId: string, docT
   const path = `${orgId}/tenants/${tenantId}/${docType}_${Date.now()}.${ext}`;
   const { error: uploadErr } = await db.storage.from("rental-docs").upload(path, file);
   if (uploadErr) throw uploadErr;
-  const { data: insertedDoc, error: insertErr } = await db("tenant_documents").insert({
+  const { data: insertedDoc, error: insertErr } = await cFrom("tenant_documents").insert({
     org_id: orgId, tenant_id: tenantId, doc_type: docType, label, file_url: path, filename: file.name, uploaded_by: userId,
   }).select("id").single();
   if (insertErr) throw insertErr;
 
   if (insertedDoc?.id) {
-    const { data: tenant } = await db("tenants").select("user_id").eq("id", tenantId).maybeSingle();
+    const { data: tenant } = await cFrom("tenants").select("user_id").eq("id", tenantId).maybeSingle();
     if (tenant?.user_id && tenant.user_id !== userId) {
       const { dispatchMultiChannel } = await import("@/lib/notifications/notification-dispatcher");
       dispatchMultiChannel({
@@ -53,18 +54,18 @@ export async function uploadTenantDocument(orgId: string, tenantId: string, docT
 }
 
 export async function validateTenantDoc(docId: string, status: "validated" | "rejected") {
-  await db("tenant_documents").update({ status }).eq("id", docId);
+  await cFrom("tenant_documents").update({ status }).eq("id", docId);
 }
 
 export async function deleteTenantDoc(docId: string) {
-  const { error } = await db("tenant_documents").delete().eq("id", docId);
+  const { error } = await cFrom("tenant_documents").delete().eq("id", docId);
   if (error) throw error;
 }
 
 export { insertChatMessage } from "@/repositories/communication.repository";
 
 export async function insertAppNotificationForTenant(record: Record<string, any>) {
-  await db("app_notifications").insert(record);
+  await cFrom("app_notifications").insert(record);
 }
 
 export async function invokeSendEmail(body: Record<string, any>) {

@@ -3,8 +3,9 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchVaultFiles(orgId: string) {
-  const { data } = await db("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await cFrom("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return (data || []) as any[];
 }
 
@@ -14,7 +15,7 @@ export async function uploadVaultFile(path: string, file: File) {
 }
 
 export async function insertVaultFileRecord(record: Record<string, any>) {
-  await db("vault_files").insert(record);
+  await cFrom("vault_files").insert(record);
 }
 
 export async function downloadVaultFile(path: string) {
@@ -25,6 +26,6 @@ export async function downloadVaultFile(path: string) {
 
 export async function deleteVaultFile(id: string, storagePath: string) {
   await db.storage.from("vault").remove([storagePath]);
-  const { error } = await db("vault_files").delete().eq("id", id);
+  const { error } = await cFrom("vault_files").delete().eq("id", id);
   if (error) throw error;
 }

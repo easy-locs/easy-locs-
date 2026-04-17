@@ -1,5 +1,5 @@
-import { domainDb } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export {
   fetchOnboardingProgress,
   saveOnboardingStep,
@@ -12,8 +12,7 @@ export {
 
 export const onboardingRepo = {
   async listSessions(userId: string) {
-    const { data } = await domainDb.onboarding
-      .from("onboarding_sessions")
+    const { data } = await cFrom("onboarding_sessions", { schema: "onboarding" })
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
@@ -21,15 +20,13 @@ export const onboardingRepo = {
   },
 
   async upsertSession(record: Record<string, unknown>) {
-    const { error } = await domainDb.onboarding
-      .from("onboarding_sessions")
+    const { error } = await cFrom("onboarding_sessions", { schema: "onboarding" })
       .upsert(record);
     if (error) throw error;
   },
 
   async listImportJobs(userId: string) {
-    const { data } = await domainDb.onboarding
-      .from("import_jobs")
+    const { data } = await cFrom("import_jobs", { schema: "onboarding" })
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
@@ -37,8 +34,7 @@ export const onboardingRepo = {
   },
 
   async listStagingEntities(jobId: string) {
-    const { data } = await domainDb.onboarding
-      .from("staging_entities")
+    const { data } = await cFrom("staging_entities", { schema: "onboarding" })
       .select("*")
       .eq("job_id", jobId);
     return data ?? [];

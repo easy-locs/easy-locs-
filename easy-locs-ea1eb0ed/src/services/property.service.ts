@@ -1,6 +1,7 @@
 import { db } from "./db";
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface PropertyRow {
   id: string;
   user_id: string;
@@ -40,7 +41,7 @@ const PROPERTY_LIST_COLS = "id, user_id, org_id, title, address, city, country, 
 export const propertyService = {
   async fetchByUser(userId: string, opts?: { limit?: number; offset?: number }) {
     const limit = opts?.limit ?? 30;
-    let q = db("properties")
+    let q = cFrom("properties")
       .select(PROPERTY_LIST_COLS)
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
@@ -52,7 +53,7 @@ export const propertyService = {
   },
 
   async fetchById(propertyId: string) {
-    const { data, error } = await db("properties")
+    const { data, error } = await cFrom("properties")
       .select("*")
       .eq("id", propertyId)
       .maybeSingle() as { data: PropertyRow | null; error: unknown };
@@ -62,7 +63,7 @@ export const propertyService = {
 
   async fetchByOrg(orgId: string, opts?: { limit?: number; offset?: number }) {
     const limit = opts?.limit ?? 30;
-    let q = db("properties")
+    let q = cFrom("properties")
       .select(PROPERTY_LIST_COLS)
       .eq("org_id", orgId)
       .order("created_at", { ascending: false })
@@ -74,7 +75,7 @@ export const propertyService = {
   },
 
   async countByUser(userId: string) {
-    const { count, error } = await db("properties")
+    const { count, error } = await cFrom("properties")
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId) as { count: number | null; error: unknown };
     if (error) throw error;
@@ -82,7 +83,7 @@ export const propertyService = {
   },
 
   async update(propertyId: string, userId: string, updates: Partial<PropertyRow>) {
-    const { error } = await db("properties")
+    const { error } = await cFrom("properties")
       .update(updates)
       .eq("id", propertyId)
       .eq("user_id", userId);
@@ -90,7 +91,7 @@ export const propertyService = {
   },
 
   async insert(row: Omit<PropertyRow, "id" | "created_at">) {
-    const { data, error } = await db("properties")
+    const { data, error } = await cFrom("properties")
       .insert(row)
       .select()
       .single() as { data: PropertyRow | null; error: unknown };
@@ -101,7 +102,7 @@ export const propertyService = {
 
 export const leaseService = {
   async fetchByProperty(propertyId: string) {
-    const { data, error } = await db("leases")
+    const { data, error } = await cFrom("leases")
       .select("id, property_id, tenant_id, start_date, end_date, rent_amount, currency, status, created_at")
       .eq("property_id", propertyId)
       .order("start_date", { ascending: false }) as { data: LeaseRow[] | null; error: unknown };
@@ -110,7 +111,7 @@ export const leaseService = {
   },
 
   async fetchByOrg(orgId: string) {
-    const { data, error } = await db("leases")
+    const { data, error } = await cFrom("leases")
       .select("id, property_id, tenant_id, start_date, end_date, rent_amount, currency, status, created_at, properties!inner(org_id)")
       .eq("properties.org_id", orgId)
       .order("start_date", { ascending: false }) as { data: LeaseRow[] | null; error: unknown };
@@ -119,7 +120,7 @@ export const leaseService = {
   },
 
   async fetchById(leaseId: string) {
-    const { data, error } = await db("leases")
+    const { data, error } = await cFrom("leases")
       .select("*")
       .eq("id", leaseId)
       .maybeSingle() as { data: LeaseRow | null; error: unknown };
@@ -130,7 +131,7 @@ export const leaseService = {
 
 export const tenantService = {
   async fetchByProperty(propertyId: string) {
-    const { data, error } = await db("tenants")
+    const { data, error } = await cFrom("tenants")
       .select("id, user_id, name, email, phone, property_id, status")
       .eq("property_id", propertyId) as { data: TenantRow[] | null; error: unknown };
     if (error) throw error;
@@ -138,7 +139,7 @@ export const tenantService = {
   },
 
   async fetchByUser(userId: string) {
-    const { data, error } = await db("tenants")
+    const { data, error } = await cFrom("tenants")
       .select("id, user_id, name, email, phone, property_id, status")
       .eq("user_id", userId) as { data: TenantRow[] | null; error: unknown };
     if (error) throw error;
@@ -146,7 +147,7 @@ export const tenantService = {
   },
 
   async fetchByTenantUserId(userId: string) {
-    const { data, error } = await db("tenants")
+    const { data, error } = await cFrom("tenants")
       .select("id, user_id, name, email, phone, property_id, status, tenant_user_id, properties(id, title, address, city)")
       .eq("tenant_user_id", userId) as { data: unknown[] | null; error: unknown };
     if (error) throw error;
@@ -154,7 +155,7 @@ export const tenantService = {
   },
 
   async fetchById(tenantId: string) {
-    const { data, error } = await db("tenants")
+    const { data, error } = await cFrom("tenants")
       .select("*")
       .eq("id", tenantId)
       .maybeSingle() as { data: TenantRow | null; error: unknown };
@@ -163,7 +164,7 @@ export const tenantService = {
   },
 
   async fetchFullTenantView(userId: string) {
-    const { data: tenants, error } = await db("tenants")
+    const { data: tenants, error } = await cFrom("tenants")
       .select("id, user_id, name, email, phone, property_id, status, tenant_user_id, properties(id, title, address, city, country)")
       .eq("tenant_user_id", userId) as { data: unknown[] | null; error: unknown };
     if (error) throw error;
@@ -171,9 +172,9 @@ export const tenantService = {
     const tenant = tenants[0] as any;
 
     const [rentRes, leaseRes, docRes] = await Promise.all([
-      db("rent_calls").select("id, tenant_id, month, rent_amount, charges_amount, total_amount, paid, paid_date, payment_method").eq("tenant_id", tenant.id).order("month", { ascending: false }).limit(24),
-      db("leases").select("id, property_id, tenant_id, start_date, end_date, rent_amount, currency, status").eq("tenant_id", tenant.id).order("created_at", { ascending: false }).limit(5),
-      db("documents").select("id, property_id, doc_type, file_url, file_name, created_at").eq("property_id", tenant.property_id).in("doc_type", ["quittance", "rent-receipt", "lease", "bail"]).order("created_at", { ascending: false }).limit(20),
+      cFrom("rent_calls").select("id, tenant_id, month, rent_amount, charges_amount, total_amount, paid, paid_date, payment_method").eq("tenant_id", tenant.id).order("month", { ascending: false }).limit(24),
+      cFrom("leases").select("id, property_id, tenant_id, start_date, end_date, rent_amount, currency, status").eq("tenant_id", tenant.id).order("created_at", { ascending: false }).limit(5),
+      cFrom("documents").select("id, property_id, doc_type, file_url, file_name, created_at").eq("property_id", tenant.property_id).in("doc_type", ["quittance", "rent-receipt", "lease", "bail"]).order("created_at", { ascending: false }).limit(20),
     ]);
     if (rentRes.error) throw rentRes.error;
     if (leaseRes.error) throw leaseRes.error;
@@ -190,7 +191,7 @@ export const tenantService = {
 
 export const leaseServiceExtended = {
   async fetchByPropertyAndOrg(propertyId: string, orgId: string) {
-    const { data, error } = await db("leases")
+    const { data, error } = await cFrom("leases")
       .select("id, property_id, tenant_id, start_date, end_date, rent_amount, currency, status, tenants(name, email, phone), properties(label, address, city)")
       .eq("property_id", propertyId)
       .eq("org_id", orgId)
@@ -202,7 +203,7 @@ export const leaseServiceExtended = {
 
 export const documentService = {
   async fetchByPropertyAndOrg(propertyId: string, orgId: string) {
-    const { data, error } = await db("documents")
+    const { data, error } = await cFrom("documents")
       .select("id, property_id, org_id, doc_type, file_url, file_name, created_at")
       .eq("property_id", propertyId)
       .eq("org_id", orgId)

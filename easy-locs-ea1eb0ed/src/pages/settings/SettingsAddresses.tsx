@@ -12,6 +12,7 @@ import { userService } from "@/services/user.service";
 import { toast } from "sonner";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 interface SavedAddress {
   id: string;
   label: string;
@@ -40,8 +41,7 @@ export default function SettingsAddresses() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const { data, error } = await db
-        .from("user_addresses")
+      const { data, error } = await cFrom("user_addresses")
         .select("*")
         .eq("user_id", user.id)
         .order("is_default", { ascending: false })
@@ -81,8 +81,7 @@ export default function SettingsAddresses() {
     setSaving(true);
     try {
       if (addr.id.startsWith("temp-")) {
-        const { data, error } = await db
-          .from("user_addresses")
+        const { data, error } = await cFrom("user_addresses")
           .insert({
             user_id: user.id,
             label: addr.label,
@@ -99,8 +98,7 @@ export default function SettingsAddresses() {
         if (error) throw error;
         setAddresses(prev => prev.map(a => a.id === addr.id ? { ...addr, id: data.id } : a));
       } else {
-        const { error } = await db
-          .from("user_addresses")
+        const { error } = await cFrom("user_addresses")
           .update({
             label: addr.label,
             line1: addr.line1,

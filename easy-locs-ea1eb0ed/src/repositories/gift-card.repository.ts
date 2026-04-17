@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface GiftCardRow {
   id: string;
   shop_id: string;
@@ -29,7 +30,7 @@ export async function fetchGiftCards(
   mode: "seller" | "buyer",
   userId: string,
 ): Promise<GiftCardRow[]> {
-  let q = db("storefront_gift_cards").select("*").eq("shop_id", shopId);
+  let q = cFrom("storefront_gift_cards").select("*").eq("shop_id", shopId);
   if (mode === "buyer") {
     q = q.or(`purchaser_id.eq.${userId},recipient_id.eq.${userId}`);
   }
@@ -46,7 +47,7 @@ export async function createGiftCard(input: {
   recipientEmail?: string | null;
   message?: string | null;
 }): Promise<void> {
-  const { error } = await db("storefront_gift_cards").insert({
+  const { error } = await cFrom("storefront_gift_cards").insert({
     shop_id: input.shopId,
     code: input.code,
     type: input.type,
@@ -65,8 +66,7 @@ export async function redeemGiftCard(
   shopId: string,
   userId: string,
 ): Promise<void> {
-  const { data: card } = await db
-    .from("storefront_gift_cards")
+  const { data: card } = await cFrom("storefront_gift_cards")
     .select("*")
     .eq("code", code.trim().toUpperCase())
     .eq("shop_id", shopId)
@@ -75,8 +75,7 @@ export async function redeemGiftCard(
 
   if (!card) throw new Error("Invalid or expired code");
 
-  const { error: updateError } = await db
-    .from("storefront_gift_cards")
+  const { error: updateError } = await cFrom("storefront_gift_cards")
     .update({
       recipient_id: userId,
       updated_at: new Date().toISOString(),
@@ -84,8 +83,7 @@ export async function redeemGiftCard(
     .eq("id", card.id);
   if (updateError) throw new Error(updateError.message);
 
-  const { error: txError } = await db
-    .from("storefront_gift_card_transactions")
+  const { error: txError } = await cFrom("storefront_gift_card_transactions")
     .insert({
       gift_card_id: card.id,
       amount: 0,

@@ -1,3 +1,4 @@
+import { cFromEdge, cRpcEdge } from "./execution/content-mutation.ts";
 export interface PrayerSendState {
   state: "claimed" | "sent" | "failed";
   retry_count: number;
@@ -163,7 +164,7 @@ export async function processPrayerCron(
     const icon = PRAYER_ICONS[prayerName] || "\u{1F54C}";
 
     try {
-      const { data: claimed, error: claimErr } = await supabase.rpc("claim_prayer_send", {
+      const { data: claimed, error: claimErr } = await cRpcEdge(supabase, "claim_prayer_send", {
         p_user_id: userId,
         p_date: entry.scheduleDate,
         p_prayer_name: prayerName,
@@ -187,7 +188,7 @@ export async function processPrayerCron(
       const result = await sendPushNotification(supabase, userId, prayerName, prayerTime, icon);
 
       if (result.success) {
-        const { error: markErr } = await supabase.rpc("mark_prayer_sent", {
+        const { error: markErr } = await cRpcEdge(supabase, "mark_prayer_sent", {
           p_user_id: userId,
           p_date: entry.scheduleDate,
           p_prayer_name: prayerName,
@@ -198,7 +199,7 @@ export async function processPrayerCron(
         logger.info("prayer_push_sent", { userId, prayerName, isRetry });
         totalSent++;
       } else {
-        const { error: markErr } = await supabase.rpc("mark_prayer_failed", {
+        const { error: markErr } = await cRpcEdge(supabase, "mark_prayer_failed", {
           p_user_id: userId,
           p_date: entry.scheduleDate,
           p_prayer_name: prayerName,
@@ -210,7 +211,7 @@ export async function processPrayerCron(
         totalFailed++;
       }
     } catch (e) {
-      const { error: markErr } = await supabase.rpc("mark_prayer_failed", {
+      const { error: markErr } = await cRpcEdge(supabase, "mark_prayer_failed", {
         p_user_id: userId,
         p_date: entry.scheduleDate,
         p_prayer_name: prayerName,

@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { assertValidProviderType, assertValidKycStatus } from "@/lib/security/enum-validators";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type ProviderType =
   | "taxi_driver"
   | "service_provider"
@@ -86,7 +87,7 @@ export async function upsertProviderRecord(
 ): Promise<{ id?: string }> {
   assertValidProviderType(payload.provider_type);
   assertValidKycStatus(payload.kyc_status);
-  let query = db.from("providers").upsert(payload, { onConflict: "user_id" });
+  let query = cFrom("providers").upsert(payload, { onConflict: "user_id" });
 
   if (options?.select) {
     const { data, error } = await query.select(options.select).single();

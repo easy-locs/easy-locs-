@@ -4,9 +4,9 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchGroups(userId: string) {
-  const { data, error } = await db
-    .from("orbit_groups")
+  const { data, error } = await cFrom("orbit_groups")
     .select("*, orbit_group_members!inner(user_id, role)")
     .eq("orbit_group_members.user_id", userId)
     .order("updated_at", { ascending: false });
@@ -20,8 +20,7 @@ export async function createGroup(
   groupType: string = "group",
   description?: string,
 ) {
-  const { data, error } = await db
-    .from("orbit_groups")
+  const { data, error } = await cFrom("orbit_groups")
     .insert({
       name,
       created_by: createdBy,
@@ -33,7 +32,7 @@ export async function createGroup(
   if (error) throw error;
 
   // Auto-add creator as admin
-  await db("orbit_group_members").insert({
+  await cFrom("orbit_group_members").insert({
     group_id: data.id,
     user_id: createdBy,
     role: "admin",
@@ -43,8 +42,7 @@ export async function createGroup(
 }
 
 export async function fetchGroupMessages(groupId: string, limit = 50) {
-  const { data, error } = await db
-    .from("orbit_group_messages")
+  const { data, error } = await cFrom("orbit_group_messages")
     .select("*")
     .eq("group_id", groupId)
     .order("created_at", { ascending: false })
@@ -54,8 +52,7 @@ export async function fetchGroupMessages(groupId: string, limit = 50) {
 }
 
 export async function sendGroupMessage(groupId: string, senderId: string, content: string) {
-  const { data, error } = await db
-    .from("orbit_group_messages")
+  const { data, error } = await cFrom("orbit_group_messages")
     .insert({ group_id: groupId, sender_id: senderId, content })
     .select()
     .single();
@@ -64,8 +61,7 @@ export async function sendGroupMessage(groupId: string, senderId: string, conten
 }
 
 export async function fetchGroupMembers(groupId: string) {
-  const { data, error } = await db
-    .from("orbit_group_members")
+  const { data, error } = await cFrom("orbit_group_members")
     .select("*")
     .eq("group_id", groupId);
   if (error) throw error;
@@ -73,15 +69,13 @@ export async function fetchGroupMembers(groupId: string) {
 }
 
 export async function addGroupMember(groupId: string, userId: string, role = "member") {
-  const { error } = await db
-    .from("orbit_group_members")
+  const { error } = await cFrom("orbit_group_members")
     .insert({ group_id: groupId, user_id: userId, role });
   if (error) throw error;
 }
 
 export async function removeGroupMember(groupId: string, userId: string) {
-  const { error } = await db
-    .from("orbit_group_members")
+  const { error } = await cFrom("orbit_group_members")
     .delete()
     .eq("group_id", groupId)
     .eq("user_id", userId);
@@ -89,8 +83,7 @@ export async function removeGroupMember(groupId: string, userId: string) {
 }
 
 export async function togglePinMessage(messageId: string, pinned: boolean) {
-  const { error } = await db
-    .from("orbit_group_messages")
+  const { error } = await cFrom("orbit_group_messages")
     .update({ pinned })
     .eq("id", messageId);
   if (error) throw error;

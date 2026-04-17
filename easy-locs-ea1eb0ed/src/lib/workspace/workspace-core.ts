@@ -1,6 +1,7 @@
 import { db as supabase } from "@/services/db";
 import { getCurrentUser, updateMyProfile } from "@/lib/auth/profile";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -21,8 +22,7 @@ export async function createWorkspace(params: {
 
   const slug = `${slugify(params.name)}-${user.id.slice(0, 6)}`;
 
-  const { data: workspace, error: workspaceError } = await supabase
-    .from("workspaces" as any)
+  const { data: workspace, error: workspaceError } = await cFrom("workspaces")
     .insert({
       name: params.name,
       slug,
@@ -34,8 +34,7 @@ export async function createWorkspace(params: {
 
   if (workspaceError) throw workspaceError;
 
-  const { error: memberError } = await supabase
-    .from("workspace_members" as any)
+  const { error: memberError } = await cFrom("workspace_members")
     .insert({
       workspace_id: (workspace as any).id,
       user_id: user.id,
@@ -45,8 +44,7 @@ export async function createWorkspace(params: {
 
   if (memberError) throw memberError;
 
-  const { error: settingsError } = await supabase
-    .from("workspace_settings" as any)
+  const { error: settingsError } = await cFrom("workspace_settings")
     .insert({
       workspace_id: (workspace as any).id,
       currency: params.currency ?? "AED",
@@ -65,8 +63,7 @@ export async function getMyWorkspaces() {
   const user = await getCurrentUser();
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from("workspace_members" as any)
+  const { data, error } = await cFrom("workspace_members")
     .select("*, workspaces (*)")
     .eq("user_id", user.id)
     .eq("status", "active")
@@ -81,7 +78,7 @@ export async function inviteWorkspaceMember(params: {
   userId: string;
   role?: string;
 }) {
-  const { error } = await supabase.rpc("add_workspace_member" as any, {
+  const { error } = await cRpc("add_workspace_member" as any, {
     _workspace_id: params.workspaceId,
     _user_id: params.userId,
     _role: params.role ?? "member",

@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -47,19 +48,18 @@ Deno.serve(async (req) => {
         try {
           const name = (raw.raw_name ?? "").trim();
           if (!name) {
-            await supabase.from("imported_shop_raw").update({ parsed_status: "skipped", error_message: "Empty name" }).eq("id", raw.id);
+            await cFromEdge(supabase, "imported_shop_raw").update({ parsed_status: "skipped", error_message: "Empty name" }).eq("id", raw.id);
             continue;
           }
 
           // Simple dedup by phone
           if (raw.raw_phone) {
-            const { data: existing } = await supabase
-              .from("onboarding_shop_candidates")
+            const { data: existing } = await cFromEdge(supabase, "onboarding_shop_candidates")
               .select("id")
               .eq("phone", raw.raw_phone.replace(/[^\d+]/g, ""))
               .limit(1);
             if (existing?.length) {
-              await supabase.from("imported_shop_raw").update({ parsed_status: "duplicate" }).eq("id", raw.id);
+              await cFromEdge(supabase, "imported_shop_raw").update({ parsed_status: "duplicate" }).eq("id", raw.id);
               dupes++;
               continue;
             }
@@ -94,8 +94,7 @@ Deno.serve(async (req) => {
 
           const candidateStatus = qs >= 60 ? "approved" : qs >= 30 ? "review" : "low_quality";
 
-          const { data: cand, error: candErr } = await supabase
-            .from("onboarding_shop_candidates")
+          const { data: cand, error: candErr } = await cFromEdge(supabase, "onboarding_shop_candidates")
             .insert({
               batch_id: raw.batch_id,
               raw_id: raw.id,
@@ -122,13 +121,13 @@ Deno.serve(async (req) => {
             .single();
 
           if (candErr) {
-            await supabase.from("imported_shop_raw").update({ parsed_status: "failed", error_message: candErr.message }).eq("id", raw.id);
+            await cFromEdge(supabase, "imported_shop_raw").update({ parsed_status: "failed", error_message: candErr.message }).eq("id", raw.id);
             failed++;
             continue;
           }
 
           // Create onboarding state
-          await supabase.from("merchant_onboarding_state").insert({
+          await cFromEdge(supabase, "merchant_onboarding_state").insert({
             entity_id: cand.id,
             onboarding_mode: "imported_draft",
             import_source: raw.source_type,
@@ -149,13 +148,13 @@ Deno.serve(async (req) => {
               asset_source: raw.source_type,
               is_primary: i === 0,
             }));
-            await supabase.from("imported_shop_assets").insert(assets);
+            await cFromEdge(supabase, "imported_shop_assets").insert(assets);
           }
 
-          await supabase.from("imported_shop_raw").update({ parsed_status: "processed" }).eq("id", raw.id);
+          await cFromEdge(supabase, "imported_shop_raw").update({ parsed_status: "processed" }).eq("id", raw.id);
           created++;
         } catch (e) {
-          await supabase.from("imported_shop_raw").update({
+          await cFromEdge(supabase, "imported_shop_raw").update({
             parsed_status: "failed",
             error_message: e instanceof Error ? e.message : "Unknown",
           }).eq("id", raw.id);
@@ -166,11 +165,10 @@ Deno.serve(async (req) => {
       // Update batch counters
       const batchIds = [...new Set(pendingRaw.map((r: any) => r.batch_id))];
       for (const bid of batchIds) {
-        const { data: batchCands } = await supabase
-          .from("onboarding_shop_candidates")
+        const { data: batchCands } = await cFromEdge(supabase, "onboarding_shop_candidates")
           .select("id", { head: true, count: "exact" })
           .eq("batch_id", bid);
-        await supabase.from("import_batches").update({
+        await cFromEdge(supabase, "import_batches").update({
           total_created: batchCands?.length ?? created,
           total_duplicates: dupes,
           total_failed: failed,

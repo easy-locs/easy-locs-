@@ -1,6 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 import {
   processPrayerCron,
 } from "../_shared/prayer-cron-helpers.ts";
@@ -53,8 +54,7 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
     const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 10);
-    const { data: expiredRows, error: cleanupErr } = await supabase
-      .from("prayer_push_schedules")
+    const { data: expiredRows, error: cleanupErr } = await cFromEdge(supabase, "prayer_push_schedules")
       .delete()
       .lt("schedule_date", cutoffDate)
       .select("id");
@@ -67,7 +67,7 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
       logger.info("prayer_push_cleanup_done", { cutoff_date: cutoffDate, cleaned: cleanedCount });
     }
 
-    await supabase.rpc("update_autonomy_status", {
+    await cRpcEdge(supabase, "update_autonomy_status", {
       p_system_name: "prayer_schedule_cleanup",
       p_status: cleanupErr ? "yellow" : "green",
       p_error_message: cleanupErr ? cleanupErr.message : null,

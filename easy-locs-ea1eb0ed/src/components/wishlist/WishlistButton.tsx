@@ -5,6 +5,7 @@ import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 interface WishlistButtonProps {
   itemId: string;
   shopId?: string;
@@ -20,7 +21,7 @@ export default function WishlistButton({ itemId, shopId, variantId, size = "md",
 
   useEffect(() => {
     if (!user?.id || !itemId) return;
-    let q = db.from("user_wishlist_items").select("id").eq("user_id", user.id).eq("item_id", itemId);
+    let q = cFrom("user_wishlist_items").select("id").eq("user_id", user.id).eq("item_id", itemId);
     if (variantId) q = q.eq("variant_id", variantId);
     else q = q.is("variant_id", null);
     q.maybeSingle().then(({ data }) => setIsWishlisted(!!data));
@@ -33,14 +34,14 @@ export default function WishlistButton({ itemId, shopId, variantId, size = "md",
     setLoading(true);
     try {
       if (isWishlisted) {
-        let q = db.from("user_wishlist_items").delete().eq("user_id", user.id).eq("item_id", itemId);
+        let q = cFrom("user_wishlist_items").delete().eq("user_id", user.id).eq("item_id", itemId);
         if (variantId) q = q.eq("variant_id", variantId);
         else q = q.is("variant_id", null);
         await q;
         setIsWishlisted(false);
         toast.success("Removed from wishlist");
       } else {
-        await db.from("user_wishlist_items").insert({
+        await cFrom("user_wishlist_items").insert({
           user_id: user.id,
           item_id: itemId,
           variant_id: variantId || null,

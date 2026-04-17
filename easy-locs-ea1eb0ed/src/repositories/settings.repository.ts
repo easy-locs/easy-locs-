@@ -4,11 +4,12 @@
 import { db } from "@/services/db";
 import { cachedFetch, cacheKey, invalidateOnMutation } from "@/lib/infrastructure/cache-layer";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchProfile(userId: string) {
   return cachedFetch(
     cacheKey("settings-profile", userId),
     async () => {
-      const { data } = await db("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
+      const { data } = await cFrom("profiles").select("name, email, country, locale, signature_url, theme, profile_visibility, biometric_enabled").eq("id", userId).single();
       if (data && !data.name) {
         try {
           const { data: authData } = await db.auth.getUser();
@@ -26,7 +27,7 @@ export async function fetchProfile(userId: string) {
 }
 
 export async function updateProfile(userId: string, updates: { name: string; country: string; locale: string; signature_url?: string }) {
-  await db("profiles").update(updates as any).eq("id", userId);
+  await cFrom("profiles").update(updates as any).eq("id", userId);
   invalidateOnMutation("configs", cacheKey("settings-profile", userId));
   invalidateOnMutation("profiles", cacheKey("profile", userId));
   invalidateOnMutation("profiles", cacheKey("profile-critical", userId));
@@ -36,7 +37,7 @@ export async function fetchOrg(orgId: string) {
   return cachedFetch(
     cacheKey("org-config", orgId),
     async () => {
-      const { data } = await db("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single();
+      const { data } = await cFrom("orgs").select("name, address, postal_code, city, phone, siret, email, logo_url, stamp_url, brand_name, brand_primary_color, brand_accent_color").eq("id", orgId).single();
       return data;
     },
     "configs",
@@ -44,7 +45,7 @@ export async function fetchOrg(orgId: string) {
 }
 
 export async function updateOrg(orgId: string, updates: Record<string, any>) {
-  await db("orgs").update(updates as any).eq("id", orgId);
+  await cFrom("orgs").update(updates as any).eq("id", orgId);
   invalidateOnMutation("configs", cacheKey("org-config", orgId));
 }
 
@@ -67,11 +68,11 @@ export async function exportUserData(userId: string) {
 }
 
 export async function updateOrgBranding(orgId: string, branding: { brand_name: string | null; brand_primary_color: string | null; brand_accent_color: string | null }) {
-  await db("orgs").update(branding as any).eq("id", orgId);
+  await cFrom("orgs").update(branding as any).eq("id", orgId);
 }
 
 export async function requestAccountDeletion(userId: string, email: string) {
-  await db("audit_logs").insert({
+  await cFrom("audit_logs").insert({
     user_id: userId, action: "account_deletion_requested",
     metadata_json: { email, requested_at: new Date().toISOString() },
   });
@@ -79,17 +80,17 @@ export async function requestAccountDeletion(userId: string, email: string) {
 
 // ── Orbit locale/currency ──
 export async function fetchProfileLocale(userId: string) {
-  const { data } = await db("profiles").select("locale, currency").eq("id", userId).single();
+  const { data } = await cFrom("profiles").select("locale, currency").eq("id", userId).single();
   return data;
 }
 
 export async function updateProfileField(userId: string, field: string, value: any) {
-  await db("profiles").update({ [field]: value } as any).eq("id", userId);
+  await cFrom("profiles").update({ [field]: value } as any).eq("id", userId);
 }
 
 // ── Payments / Providers ──
 export async function fetchOrgPaymentConfig(orgId: string) {
-  const { data } = await db("orgs").select("stripe_account_id, stripe_onboarding_complete, country, currency").eq("id", orgId).single();
+  const { data } = await cFrom("orgs").select("stripe_account_id, stripe_onboarding_complete, country, currency").eq("id", orgId).single();
   return data;
 }
 
@@ -130,18 +131,18 @@ export async function unenrollMFA(factorId: string) {
 
 // ── Notification preferences ──
 export async function upsertNotificationPreferences(prefs: Record<string, any>) {
-  const { error } = await db("notification_preferences").upsert(prefs as any, { onConflict: "user_id" });
+  const { error } = await cFrom("notification_preferences").upsert(prefs as any, { onConflict: "user_id" });
   if (error) throw error;
 }
 
 // ── Security ──
 export async function fetchSecuritySettings(userId: string) {
-  const { data } = await db("profiles_safe").select("has_wallet_pin, face_id_enabled, login_2fa_enabled, biometric_enabled").eq("id", userId).single();
+  const { data } = await cFrom("profiles_safe").select("has_wallet_pin, face_id_enabled, login_2fa_enabled, biometric_enabled").eq("id", userId).single();
   return data;
 }
 
 export async function updateSecuritySetting(userId: string, column: string, value: any) {
-  const { error } = await db("profiles").update({ [column]: value } as any).eq("id", userId);
+  const { error } = await cFrom("profiles").update({ [column]: value } as any).eq("id", userId);
   if (error) throw error;
 }
 
@@ -162,21 +163,21 @@ export async function exportTableData(userId: string, table: string) {
 }
 
 export async function deleteUserAccount(userId: string) {
-  const { error } = await db.rpc("delete_user_account" as any, { target_user_id: userId });
+  const { error } = await cRpc("delete_user_account" as any, { target_user_id: userId });
   if (error) throw error;
 }
 
 // ── Roles check ──
 export async function hasRole(userId: string, role: string) {
-  const { data } = await db.rpc("has_role", { _user_id: userId, _role: role as any });
+  const { data } = await cRpc("has_role", { _user_id: userId, _role: role as any });
   return !!data;
 }
 
 // ── Permission bootstrap ──
 export async function fetchPermissions(userId: string) {
   const [adminRes, ownerRes] = await Promise.all([
-    db.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    db.rpc("has_role", { _user_id: userId, _role: "owner" }),
+    cRpc("has_role", { _user_id: userId, _role: "admin" }),
+    cRpc("has_role", { _user_id: userId, _role: "owner" }),
   ]);
   return { isAdmin: !!adminRes.data, isOwner: !!ownerRes.data };
 }
@@ -184,11 +185,11 @@ export async function fetchPermissions(userId: string) {
 // ── Onboarding checklist ──
 export async function fetchOnboardingCounts(orgId: string) {
   const [p, t, d, l, m] = await Promise.all([
-    db("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    db("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    db("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    db("leases").select("id", { count: "exact", head: true }).eq("org_id", orgId),
-    db("org_members").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    cFrom("properties").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    cFrom("tenants").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    cFrom("documents").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    cFrom("leases").select("id", { count: "exact", head: true }).eq("org_id", orgId),
+    cFrom("org_members").select("id", { count: "exact", head: true }).eq("org_id", orgId),
   ]);
   return {
     properties: p.count || 0,
@@ -201,16 +202,16 @@ export async function fetchOnboardingCounts(orgId: string) {
 
 // ── Ensure org ──
 export async function fetchUserOrg(userId: string) {
-  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await cFrom("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
   return data?.org_id ?? null;
 }
 
 export async function createOrg(userId: string, name: string) {
-  const { data, error } = await db("orgs").insert({ name, owner_user_id: userId } as any).select("id").single();
+  const { data, error } = await cFrom("orgs").insert({ name, owner_user_id: userId } as any).select("id").single();
   if (error) throw error;
   const orgId = data?.id;
   if (orgId) {
-    await db("org_members").insert({ org_id: orgId, user_id: userId, role: "owner" });
+    await cFrom("org_members").insert({ org_id: orgId, user_id: userId, role: "owner" });
   }
   return orgId;
 }

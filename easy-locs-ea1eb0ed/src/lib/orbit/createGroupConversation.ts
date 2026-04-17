@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type GroupParticipantInput = {
   userId: string;
   orbitId?: string | null;
@@ -52,8 +53,7 @@ export async function createGroupConversation(input: CreateGroupConversationInpu
 
   const now = new Date().toISOString();
 
-  const { data, error } = await db
-    .from("conversations_v2")
+  const { data, error } = await cFrom("conversations_v2")
     .insert({
       type: "group",
       title: input.title,

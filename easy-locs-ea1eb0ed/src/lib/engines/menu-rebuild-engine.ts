@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 interface MenuItem {
   name: string;
   price: number | null;
@@ -58,8 +59,7 @@ export async function runMenuRebuild(batchSize = 200): Promise<RebuildResult> {
 }
 
 export async function runMenuRebuildEngine(batchSize = 200): Promise<RebuildResult> {
-  const { data: merchants } = await db
-    .from("seed_merchants")
+  const { data: merchants } = await cFrom("seed_merchants")
     .select("id, name, vertical, menu_items_json, raw_menu_json, pipeline_stage")
     .in("vertical", ["food", "grocery"])
     .limit(batchSize);
@@ -85,8 +85,7 @@ export async function runMenuRebuildEngine(batchSize = 200): Promise<RebuildResu
       let persisted = false;
       if (cleaned.length > 0) {
         try {
-          const { error } = await db
-            .from("seed_merchants")
+          const { error } = await cFrom("seed_merchants")
             .update({ menu_items_json: cleaned })
             .eq("id", m.id);
           persisted = !error;
@@ -103,8 +102,7 @@ export async function runMenuRebuildEngine(batchSize = 200): Promise<RebuildResu
     if (dedupedMenu.length < current.length) {
       let persisted = false;
       try {
-        const { error } = await db
-          .from("seed_merchants")
+        const { error } = await cFrom("seed_merchants")
           .update({ menu_items_json: dedupedMenu })
           .eq("id", m.id);
         persisted = !error;
@@ -121,8 +119,7 @@ export async function runMenuRebuildEngine(batchSize = 200): Promise<RebuildResu
       const cleaned = cleanMenuItems(current);
       let persisted = false;
       try {
-        const { error } = await db
-          .from("seed_merchants")
+        const { error } = await cFrom("seed_merchants")
           .update({ menu_items_json: cleaned })
           .eq("id", m.id);
         persisted = !error;

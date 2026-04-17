@@ -4,6 +4,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 /** Upload avatar to storage, return public URL */
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
   if (!file.type.startsWith("image/")) {
@@ -105,11 +106,11 @@ export async function saveProfile(userId: string, displayNameOrData: string | Pr
   if (data.firstName !== undefined) profileUpdate.first_name = data.firstName;
   if (data.lastName !== undefined) profileUpdate.last_name = data.lastName;
   if (data.phone !== undefined) profileUpdate.phone = data.phone;
-  const { error: profileError } = await db("profiles").update(profileUpdate).eq("id", userId);
+  const { error: profileError } = await cFrom("profiles").update(profileUpdate).eq("id", userId);
   if (profileError) console.warn("[saveProfile] profiles update:", profileError.message);
 
   const orbitUpdate: Record<string, any> = { display_name: data.displayName, avatar_url: data.avatarUrl };
-  const { error: orbitError } = await db("orbit_profiles_v2" as any).update(orbitUpdate as any).eq("id", userId);
+  const { error: orbitError } = await cFrom("orbit_profiles_v2").update(orbitUpdate as any).eq("id", userId);
   if (orbitError) console.warn("[saveProfile] orbit_profiles_v2 update:", orbitError.message);
 }
 
@@ -119,7 +120,7 @@ export async function updateAvatarOnly(userId: string, avatarUrl: string): Promi
   });
   if (authError) throw authError;
 
-  const { error: orbitError } = await db("orbit_profiles_v2" as any).update({ avatar_url: avatarUrl } as any).eq("id", userId);
+  const { error: orbitError } = await cFrom("orbit_profiles_v2").update({ avatar_url: avatarUrl } as any).eq("id", userId);
   if (orbitError) console.warn("[updateAvatarOnly] orbit_profiles_v2:", orbitError.message);
 }
 
@@ -127,7 +128,7 @@ export async function updateAvatarOnly(userId: string, avatarUrl: string): Promi
 export async function archiveAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await db("conversation_preferences").upsert(
+    await cFrom("conversation_preferences").upsert(
       { user_id: userId, context_id: id, archived: true },
       { onConflict: "user_id,context_id" },
     );
@@ -139,7 +140,7 @@ export async function archiveAllChats(userId: string): Promise<number> {
 export async function clearAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await db("conversation_preferences").upsert(
+    await cFrom("conversation_preferences").upsert(
       { user_id: userId, context_id: id, cleared_at: new Date().toISOString() },
       { onConflict: "user_id,context_id" },
     );
@@ -151,7 +152,7 @@ export async function clearAllChats(userId: string): Promise<number> {
 export async function deleteAllChats(userId: string): Promise<number> {
   const threads = await getUserThreadIds(userId);
   for (const id of threads) {
-    await db("conversation_preferences").upsert(
+    await cFrom("conversation_preferences").upsert(
       { user_id: userId, context_id: id, archived: true, cleared_at: new Date().toISOString() },
       { onConflict: "user_id,context_id" },
     );
@@ -161,7 +162,7 @@ export async function deleteAllChats(userId: string): Promise<number> {
 
 /** Export chat messages as text */
 export async function exportChatHistory(userId: string): Promise<string> {
-  const { data: messages } = await db("chat_messages_v2")
+  const { data: messages } = await cFrom("chat_messages_v2")
     .select("body, created_at, sender_user_id")
     .or(`sender_user_id.eq.${userId}`)
     .order("created_at", { ascending: true })
@@ -174,7 +175,7 @@ export async function exportChatHistory(userId: string): Promise<string> {
 
 /** Get blocked contacts count */
 export async function getBlockedCount(userId: string): Promise<number> {
-  const { count } = await db("blocked_users")
+  const { count } = await cFrom("blocked_users")
     .select("id", { count: "exact", head: true })
     .eq("blocker_id", userId);
   return count || 0;
@@ -182,7 +183,7 @@ export async function getBlockedCount(userId: string): Promise<number> {
 
 // ── Internal ──
 async function getUserThreadIds(userId: string): Promise<string[]> {
-  const { data: threads } = await db("conversations_v2")
+  const { data: threads } = await cFrom("conversations_v2")
     .select("id")
     .order("updated_at", { ascending: false })
     .limit(500);

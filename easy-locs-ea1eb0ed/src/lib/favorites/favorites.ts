@@ -1,8 +1,8 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function listFavoriteMerchants(userId: string) {
-  const { data, error } = await db
-    .from("user_favorites")
+  const { data, error } = await cFrom("user_favorites")
     .select("*")
     .eq("user_id", userId)
     .eq("entity_type", "merchant")
@@ -13,8 +13,7 @@ export async function listFavoriteMerchants(userId: string) {
 }
 
 export async function isFavoriteMerchant(userId: string, merchantId: string) {
-  const { data, error } = await db
-    .from("user_favorites")
+  const { data, error } = await cFrom("user_favorites")
     .select("id")
     .eq("user_id", userId)
     .eq("entity_type", "merchant")
@@ -26,8 +25,7 @@ export async function isFavoriteMerchant(userId: string, merchantId: string) {
 }
 
 export async function addFavoriteMerchant(userId: string, merchantId: string) {
-  const { data, error } = await db
-    .from("user_favorites")
+  const { data, error } = await cFrom("user_favorites")
     .insert({
       user_id: userId,
       entity_type: "merchant",
@@ -41,8 +39,7 @@ export async function addFavoriteMerchant(userId: string, merchantId: string) {
 }
 
 export async function removeFavoriteMerchant(userId: string, merchantId: string) {
-  const { error } = await db
-    .from("user_favorites")
+  const { error } = await cFrom("user_favorites")
     .delete()
     .eq("user_id", userId)
     .eq("entity_type", "merchant")

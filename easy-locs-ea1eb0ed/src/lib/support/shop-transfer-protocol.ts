@@ -3,6 +3,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import type { ShopTransferPacket, SupportSession } from "./support-types";
 import type { SupportIssueCategory, SupportUrgency } from "./canonical-support-taxonomy";
 import { SUPPORT_SESSION_STATUS } from "./canonical-support-taxonomy";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import {
   updateSessionStatus,
   addTrace,
@@ -56,7 +57,7 @@ export async function initiateShopTransfer(
     urgency: packet.urgency,
   });
 
-  const { error: notifyError } = await db("orbit_notifications").insert({
+  const { error: notifyError } = await cFrom("orbit_notifications").insert({
     user_id: session.shop_id,
     type: "support_transfer",
     title: `Support: ${packet.issue_category.replace(/_/g, " ")}`,
@@ -122,7 +123,7 @@ export async function handleShopResponse(
       shop_id: shopId,
     });
 
-    const session = await db("support_sessions")
+    const session = await cFrom("support_sessions")
       .select("*")
       .eq("id", sessionId)
       .single();
@@ -141,7 +142,7 @@ async function scheduleTransferTimeout(
   shopId: string,
 ): Promise<void> {
   setTimeout(async () => {
-    const { data: session } = await db("support_sessions")
+    const { data: session } = await cFrom("support_sessions")
       .select("status")
       .eq("id", sessionId)
       .single();
@@ -157,7 +158,7 @@ async function scheduleTransferTimeout(
 
       await recordShopNonResponse(shopId, sessionId);
 
-      const fullSession = await db("support_sessions")
+      const fullSession = await cFrom("support_sessions")
         .select("*")
         .eq("id", sessionId)
         .single();
@@ -181,7 +182,7 @@ async function triggerFallbackTicket(
     SUPPORT_SESSION_STATUS.TICKET_CREATED,
   );
 
-  const { data: ticket } = await db("support_tickets").insert({
+  const { data: ticket } = await cFrom("support_tickets").insert({
     context_id: session.order_id ?? session.booking_id ?? session.id,
     context_type: session.order_id ? "order" : session.booking_id ? "booking" : "session",
     ticket_type: session.issue_category ?? "other",
@@ -199,7 +200,7 @@ async function triggerFallbackTicket(
   }).select().single();
 
   if (ticket) {
-    await db("support_sessions")
+    await cFrom("support_sessions")
       .update({ ticket_id: ticket.id, updated_at: new Date().toISOString() })
       .eq("id", session.id);
 
@@ -228,7 +229,7 @@ async function recordShopNonResponse(
   shopId: string,
   sessionId: string,
 ): Promise<void> {
-  await db("shop_quality_events").insert({
+  await cFrom("shop_quality_events").insert({
     shop_id: shopId,
     event_type: "support_non_response",
     session_id: sessionId,

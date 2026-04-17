@@ -1,6 +1,6 @@
 /**
  * orbit-profile.repository — Canonical DB access for orbit_profiles_v2.
- * Replaces direct db("orbit_profiles_v2") calls in orbitStore.ts.
+ * Replaces direct cFrom("orbit_profiles_v2") calls in orbitStore.ts.
  *
  * All reads/writes to orbit_profiles_v2 for the profile domain go through here.
  */
@@ -10,13 +10,13 @@ import type { AppRole } from "@/domains/shared/canonical-types";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 /**
  * Fetch a single orbit profile by auth user ID.
  * Returns null if not found or on error.
  */
 export async function getOrbitProfile(userId: string): Promise<CanonicalOrbitProfile | null> {
-  const { data, error } = await db
-    .from("orbit_profiles_v2")
+  const { data, error } = await cFrom("orbit_profiles_v2")
     .select("*")
     .eq("id", userId)
     .maybeSingle();
@@ -36,8 +36,7 @@ export async function getOrbitProfile(userId: string): Promise<CanonicalOrbitPro
  * Returns true on success, false on error.
  */
 export async function updateOrbitProfileRole(userId: string, role: AppRole): Promise<boolean> {
-  const { error } = await db
-    .from("orbit_profiles_v2")
+  const { error } = await cFrom("orbit_profiles_v2")
     .update({ role, updated_at: new Date().toISOString() })
     .eq("id", userId);
 

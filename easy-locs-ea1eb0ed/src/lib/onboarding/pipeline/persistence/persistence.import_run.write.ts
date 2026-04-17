@@ -5,6 +5,7 @@
 import { db } from "@/services/db";
 import type { RawInput } from "../contracts";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function writeImportRun(params: {
   vertical: string;
   input: RawInput;
@@ -12,8 +13,7 @@ export async function writeImportRun(params: {
   resultJson: unknown;
 }): Promise<string> {
   
-  const { data, error } = await db
-    .from("onboarding_import_runs")
+  const { data, error } = await cFrom("onboarding_import_runs")
     .insert({
       vertical: params.vertical,
       input_json: params.input,

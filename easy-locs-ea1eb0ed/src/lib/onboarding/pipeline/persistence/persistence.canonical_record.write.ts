@@ -5,6 +5,7 @@
 import { db } from "@/services/db";
 import type { CanonicalOnboardingRecord } from "../../types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function writeCanonicalRecords(
   importRunId: string,
   records: CanonicalOnboardingRecord[],
@@ -40,8 +41,7 @@ export async function writeCanonicalRecords(
     publish_visibility: publishMap[record.entityId] ?? "draft",
   }));
 
-  const { data, error } = await db
-    .from("onboarding_canonical_records")
+  const { data, error } = await cFrom("onboarding_canonical_records")
     .insert(rows)
     .select("id");
 

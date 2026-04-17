@@ -21,6 +21,7 @@ import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { isDLDApiConfigured } from "../_shared/dld-api-client.ts";
 import { syncDLDData } from "../_shared/dld-sync.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -205,9 +206,7 @@ async function logSyncRun(
   result: Record<string, unknown>,
 ): Promise<void> {
   try {
-    await supabase
-      .schema("analytics")
-      .from("dld_sync_log")
+    await cFromEdge(supabase.schema("analytics"), "dld_sync_log")
       .insert({
         status: result.status,
         mode: result.mode || null,

@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function getRegistrationChallenge() {
   const { data, error } = await db.functions.invoke("webauthn-registration-challenge");
   if (error) throw error;
@@ -85,8 +86,7 @@ export async function verifyLogin(credential: PublicKeyCredential, userId: strin
 }
 
 export async function getUserCredentials() {
-  const { data, error } = await db
-    .from("webauthn_credentials")
+  const { data, error } = await cFrom("webauthn_credentials")
     .select("id, credential_id, device_name, created_at, last_used_at")
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -94,16 +94,14 @@ export async function getUserCredentials() {
 }
 
 export async function deleteCredential(credentialDbId: string) {
-  const { error } = await db
-    .from("webauthn_credentials")
+  const { error } = await cFrom("webauthn_credentials")
     .delete()
     .eq("id", credentialDbId);
   if (error) throw error;
 }
 
 export async function getBiometricStatus(): Promise<boolean> {
-  const { data, error } = await db
-    .from("profiles")
+  const { data, error } = await cFrom("profiles")
     .select("biometric_enabled")
     .single();
   if (error) throw error;
@@ -113,8 +111,7 @@ export async function getBiometricStatus(): Promise<boolean> {
 export async function setBiometricEnabled(enabled: boolean) {
   const { data: { user } } = await db.auth.getUser();
   if (!user?.id) throw new Error("Not authenticated");
-  const { error } = await db
-    .from("profiles")
+  const { error } = await cFrom("profiles")
     .update({ biometric_enabled: enabled })
     .eq("id", user.id);
   if (error) throw error;

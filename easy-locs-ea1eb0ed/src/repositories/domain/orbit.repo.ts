@@ -1,6 +1,6 @@
-import { domainDb, db } from "@/services/db";
 import type { ConversationRecord, ChatMessageRecord } from "@/domains/shared/canonical-types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export {
   fetchUserConversations,
   fetchUserChatMessages,
@@ -13,8 +13,7 @@ export { chatRepoExtended } from "@/lib/supabase/chat-repo-extended";
 
 export const orbitRepo = {
   async listConversations(orbitId: string): Promise<ConversationRecord[]> {
-    const { data, error } = await domainDb.orbit
-      .from("conversations_v2")
+    const { data, error } = await cFrom("conversations_v2", { schema: "orbit" })
       .select("*")
       .contains("participants", [{ orbitId }])
       .order("last_message_at", { ascending: false, nullsFirst: false });
@@ -26,8 +25,7 @@ export const orbitRepo = {
   },
 
   async getConversation(id: string): Promise<ConversationRecord | null> {
-    const { data, error } = await domainDb.orbit
-      .from("conversations_v2")
+    const { data, error } = await cFrom("conversations_v2", { schema: "orbit" })
       .select("*")
       .eq("id", id)
       .maybeSingle();
@@ -36,8 +34,7 @@ export const orbitRepo = {
   },
 
   async listMessages(conversationId: string): Promise<ChatMessageRecord[]> {
-    const { data, error } = await domainDb.orbit
-      .from("chat_messages_v2")
+    const { data, error } = await cFrom("chat_messages_v2", { schema: "orbit" })
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true });
@@ -46,16 +43,14 @@ export const orbitRepo = {
   },
 
   async fetchContacts(orbitId: string) {
-    const { data } = await domainDb.orbit
-      .from("orbit_contacts_v2")
+    const { data } = await cFrom("orbit_contacts_v2", { schema: "orbit" })
       .select("*")
       .eq("owner_orbit_id", orbitId);
     return data ?? [];
   },
 
   async fetchCallLogs(orbitId: string, limit = 50) {
-    const { data } = await domainDb.orbit
-      .from("call_logs")
+    const { data } = await cFrom("call_logs", { schema: "orbit" })
       .select("*")
       .or(`caller_orbit_id.eq.${orbitId},callee_orbit_id.eq.${orbitId}`)
       .order("created_at", { ascending: false })
@@ -64,8 +59,7 @@ export const orbitRepo = {
   },
 
   async fetchAdhanPrefsEnabled(userId: string) {
-    const { data } = await db
-      .from("adhan_notification_prefs")
+    const { data } = await cFrom("adhan_notification_prefs")
       .select("enabled")
       .eq("user_id", userId)
       .single();
@@ -73,8 +67,7 @@ export const orbitRepo = {
   },
 
   async fetchAdhanPrefsFull(userId: string) {
-    const { data } = await db
-      .from("adhan_notification_prefs")
+    const { data } = await cFrom("adhan_notification_prefs")
       .select("enabled, fajr, dhuhr, asr, maghrib, isha, offset_minutes, method, asr_school")
       .eq("user_id", userId)
       .single();
@@ -82,7 +75,7 @@ export const orbitRepo = {
   },
 
   async upsertAdhanPrefs(userId: string, enabled: boolean) {
-    await db.from("adhan_notification_prefs").upsert({
+    await cFrom("adhan_notification_prefs").upsert({
       user_id: userId,
       enabled,
       updated_at: new Date().toISOString(),
@@ -100,7 +93,7 @@ export const orbitRepo = {
     method?: number;
     asr_school?: number;
   }) {
-    await db.from("adhan_notification_prefs").upsert({
+    await cFrom("adhan_notification_prefs").upsert({
       user_id: userId,
       ...prefs,
       updated_at: new Date().toISOString(),

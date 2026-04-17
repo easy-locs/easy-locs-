@@ -1,4 +1,5 @@
 import { db } from "@/services/db";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import {
   buildProviderBase,
   upsertProviderRecord,
@@ -49,7 +50,7 @@ export async function submitTaxiDriverProvider(params: {
     throw new Error("Failed to create taxi driver provider record");
   }
 
-  const { error: riderError } = await db.from("rider_profiles").upsert({
+  const { error: riderError } = await cFrom("rider_profiles").upsert({
     user_id: userId,
     full_name: personal.fullName,
     phone: personal.phone,
@@ -204,8 +205,7 @@ export async function submitHotelProvider(params: {
     throw new Error("Failed to create hotel provider record");
   }
 
-  const { data: hotelData, error: hotelError } = await db
-    .from("hotels")
+  const { data: hotelData, error: hotelError } = await cFrom("hotels")
     .insert({
       name: info.name,
       description: info.descriptionEn || info.descriptionFr,
@@ -230,7 +230,7 @@ export async function submitHotelProvider(params: {
 
   if (hotelData?.id) {
     for (const room of rooms) {
-      const { data: roomData } = await db.from("hotel_rooms").insert({
+      const { data: roomData } = await cFrom("hotel_rooms").insert({
         hotel_id: hotelData.id,
         name: room.name,
         capacity: room.capacity,
@@ -239,7 +239,7 @@ export async function submitHotelProvider(params: {
       }).select("id").single();
 
       if (roomData?.id && room.pricePerNight > 0) {
-        await db.from("hotel_rate_plans").insert({
+        await cFrom("hotel_rate_plans").insert({
           room_id: roomData.id,
           name: "Standard Rate",
           cancellation_policy: "flexible",
@@ -258,7 +258,7 @@ export async function submitHotelProvider(params: {
             currency: "AED",
           };
         });
-        await db.from("hotel_availability").insert(availabilityRows);
+        await cFrom("hotel_availability").insert(availabilityRows);
       }
     }
   }

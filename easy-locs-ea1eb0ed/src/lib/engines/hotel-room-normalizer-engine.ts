@@ -11,6 +11,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export const CANONICAL_ROOM_TYPES = [
   "standard", "deluxe", "suite", "junior_suite", "executive_suite",
   "presidential_suite", "studio", "apartment", "villa", "bungalow",
@@ -259,8 +260,7 @@ export async function runHotelRoomNormalizer(
     "moderation_blocked", "moderation_flagged",
   ].join(",");
 
-  let query = db
-    .from("seed_merchants")
+  let query = cFrom("seed_merchants")
     .select("id, name, rooms_json, vertical")
     .in("vertical", ["hotel", "stay"])
     .or(`pipeline_stage.is.null,pipeline_stage.not.in.(${TERMINAL_STAGES})`)
@@ -322,7 +322,7 @@ export async function runHotelRoomNormalizer(
     // Persist normalized rooms_json back to DB if anything was auto-fixed.
     // Only increment persisted on successful write to keep metrics accurate.
     if (hadChanges) {
-      const { error: persistErr } = await db("seed_merchants")
+      const { error: persistErr } = await cFrom("seed_merchants")
         .update({ rooms_json: normalizedRooms, updated_at: now })
         .eq("id", m.id);
       if (persistErr) {

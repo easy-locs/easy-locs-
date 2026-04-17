@@ -11,6 +11,7 @@
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import {
   notifyOrderAccepted,
   notifyOrderReady,
@@ -32,8 +33,7 @@ export async function setOrderStatusWithEvents(params: {
     patch.completed_at = new Date().toISOString();
   }
 
-  const { data, error } = await db
-    .from("orders")
+  const { data, error } = await cFrom("orders")
     .update(patch)
     .eq("id", params.orderId)
     .select("*")

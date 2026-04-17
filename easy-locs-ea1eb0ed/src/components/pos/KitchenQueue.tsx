@@ -17,6 +17,7 @@ import { haptic } from "@/lib/haptics";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 interface KitchenQueueProps {
   shopId: string;
 }
@@ -38,8 +39,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["kitchen-queue", shopId],
     queryFn: async () => {
-      const { data } = await db
-        .from("storefront_orders")
+      const { data } = await cFrom("storefront_orders")
         .select("id, status, total_amount, currency, items_json, notes, fulfillment_type, created_at, customer_name, customer_phone")
         .eq("shop_id", shopId)
         .in("status", ["paid", "confirmed", "preparing", "ready"])
@@ -71,8 +71,7 @@ export default function KitchenQueue({ shopId }: KitchenQueueProps) {
     setUpdatingId(orderId);
     haptic("light");
     try {
-      const { error } = await db
-        .from("storefront_orders")
+      const { error } = await cFrom("storefront_orders")
         .update({ status: newStatus, updated_at: new Date().toISOString() })
         .eq("id", orderId);
 

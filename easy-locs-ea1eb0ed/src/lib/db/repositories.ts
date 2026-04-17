@@ -1,10 +1,9 @@
-import { domainDb } from "@/services/db";
 import type { WalletStateModel, WalletTransaction, PropertyListing } from "@/domains/shared/canonical-types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export const walletRepo = {
   async getByOwnerOrbitId(ownerOrbitId: string): Promise<WalletStateModel | null> {
-    const { data } = await domainDb.wallet
-      .from("wallet_accounts")
+    const { data } = await cFrom("wallet_accounts", { schema: "wallet" })
       .select("*")
       .eq("owner_orbit_id", ownerOrbitId)
       .maybeSingle();
@@ -21,8 +20,7 @@ export const walletRepo = {
   },
 
   async createTransaction(tx: WalletTransaction): Promise<WalletTransaction> {
-    const { data, error } = await domainDb.wallet
-      .from("wallet_transactions")
+    const { data, error } = await cFrom("wallet_transactions", { schema: "wallet" })
       .insert({
         id: tx.id,
         type: tx.type,
@@ -72,8 +70,7 @@ interface ListingRow {
 
 export const listingRepo = {
   async listPublished(): Promise<PropertyListing[]> {
-    const { data } = await domainDb.marketplace
-      .from("listings")
+    const { data } = await cFrom("listings", { schema: "marketplace" })
       .select("*")
       .eq("status", "published")
       .order("created_at", { ascending: false })
@@ -83,8 +80,7 @@ export const listingRepo = {
   },
 
   async create(listing: PropertyListing): Promise<PropertyListing> {
-    const { data, error } = await domainDb.marketplace
-      .from("listings")
+    const { data, error } = await cFrom("listings", { schema: "marketplace" })
       .insert({
         id: listing.id,
         owner_orbit_id: listing.ownerOrbitId,

@@ -2,6 +2,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -45,7 +46,7 @@ Deno.serve(async (req) => {
       rowsRead++;
       const raw = m.raw_menu_json as any;
       if (!raw?.categories?.length) {
-        await supabase.from("seed_merchants").update({
+        await cFromEdge(supabase, "seed_merchants").update({
           pipeline_stage: "menu_built",
           menu_items_json: null,
           menu_categories_json: null,
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
 
       const allItems = menuCategories.flatMap(c => c.items);
 
-      await supabase.from("seed_merchants").update({
+      await cFromEdge(supabase, "seed_merchants").update({
         menu_items_json: allItems,
         menu_categories_json: menuCategories,
         menu_normalized_at: new Date().toISOString(),
@@ -98,7 +99,7 @@ Deno.serve(async (req) => {
       }).eq("id", m.id);
 
       // Save normalized snapshot
-      await supabase.from("merchant_menu_snapshots").insert({
+      await cFromEdge(supabase, "merchant_menu_snapshots").insert({
         merchant_id: m.id,
         source: "deliveroo",
         normalized_json: { categories: menuCategories, total_items: allItems.length },
@@ -107,7 +108,7 @@ Deno.serve(async (req) => {
       rowsAffected++;
     }
 
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-menu-builder-engine", trigger_source: "edge-function", status: "ok",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, rows_read: rowsRead, db_rows_affected: rowsAffected,
@@ -118,7 +119,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-menu-builder-engine", trigger_source: "edge-function", status: "error",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, effect_summary: `Error: ${(err as Error).message}`,

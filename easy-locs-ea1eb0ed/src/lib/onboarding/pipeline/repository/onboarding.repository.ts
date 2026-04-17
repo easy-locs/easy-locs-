@@ -4,6 +4,7 @@
 import { db } from "@/services/db";
 import type { CanonicalShop } from "../canonical-shop.schema";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export const onboardingRepository = {
   async save(shop: CanonicalShop) {
     const record = {
@@ -21,6 +22,6 @@ export const onboardingRepository = {
       menu_json: shop.products.length > 0 ? shop.products : null,
       quality_score: shop.quality.score,
     };
-    return db("auto_discovered_merchants").upsert(record, { onConflict: "id" });
+    return cFrom("auto_discovered_merchants").upsert(record, { onConflict: "id" });
   },
 };

@@ -3,6 +3,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { notifyWalletCredit } from "@/lib/engines/notification-event-dispatcher";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type CreateEscrowInput = {
   orderId: string;
   customerUserId: string;
@@ -17,8 +18,7 @@ const DRIVER_RATE = 0.10;   // 10%
 export async function createOrderEscrow(input: CreateEscrowInput) {
   const currency = input.currency ?? "AED";
 
-  const { data, error } = await db
-    .from("wallet_ledger_entries")
+  const { data, error } = await cFrom("wallet_ledger_entries")
     .insert({
       wallet_account_id: null,
       amount: Number(input.amount ?? 0),
@@ -35,8 +35,7 @@ export async function createOrderEscrow(input: CreateEscrowInput) {
 
   if (error) throw error;
 
-  const { error: orderErr } = await db
-    .from("orders")
+  const { error: orderErr } = await cFrom("orders")
     .update({
       payment_status: "captured",
       settlement_status: "pending",
@@ -75,8 +74,7 @@ export async function releaseOrderEscrow(params: {
   const storeAmount = Math.round((totalAmount - platformAmount - driverAmount) * 100) / 100;
 
   // 1. Escrow release ledger entry
-  const { error: ledgerErr } = await db
-    .from("wallet_ledger_entries")
+  const { error: ledgerErr } = await cFrom("wallet_ledger_entries")
     .insert({
       wallet_account_id: null,
       amount: totalAmount,
@@ -92,8 +90,7 @@ export async function releaseOrderEscrow(params: {
   if (ledgerErr) throw ledgerErr;
 
   // 2. Commission split
-  const { error: splitErr } = await db
-    .from("commission_splits")
+  const { error: splitErr } = await cFrom("commission_splits")
     .insert({
       order_id: params.orderId,
       total_amount: totalAmount,
@@ -113,8 +110,7 @@ export async function releaseOrderEscrow(params: {
   if (splitErr) console.error("[escrow] commission_splits insert failed:", splitErr.message);
 
   // 3. Settlement ledger
-  const { error: settlErr } = await db
-    .from("settlement_ledger")
+  const { error: settlErr } = await cFrom("settlement_ledger")
     .insert({
       merchant_id: params.merchantUserId ?? null,
       order_id: params.orderId,
@@ -129,8 +125,7 @@ export async function releaseOrderEscrow(params: {
   if (settlErr) console.error("[escrow] settlement_ledger insert failed:", settlErr.message);
 
   // 4. Update order
-  const { error: orderErr } = await db
-    .from("orders")
+  const { error: orderErr } = await cFrom("orders")
     .update({
       settlement_status: "released",
       platform_commission_amount: platformAmount,
@@ -182,8 +177,7 @@ export async function refundOrderEscrow(params: {
 }) {
   const currency = params.currency ?? "AED";
 
-  const { data, error } = await db
-    .from("wallet_ledger_entries")
+  const { data, error } = await cFrom("wallet_ledger_entries")
     .insert({
       wallet_account_id: null,
       amount: Number(params.amount ?? 0),
@@ -200,8 +194,7 @@ export async function refundOrderEscrow(params: {
 
   if (error) throw error;
 
-  const { error: orderErr } = await db
-    .from("orders")
+  const { error: orderErr } = await cFrom("orders")
     .update({
       status: "refunded",
       payment_status: "refunded",

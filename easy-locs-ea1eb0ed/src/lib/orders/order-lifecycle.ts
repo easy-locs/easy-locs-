@@ -11,6 +11,7 @@ import { APP_EVENTS } from "@/lib/platform/events";
 import { registerFlow, updateFlowState } from "@/engines/governance/flow-integrity-engine";
 import type { CanonicalFlowDescriptor } from "@/domains/shared/canonical-types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const trace = (step: string, phase: "input" | "output" | "error", payload?: Record<string, unknown>) => {
   const logger = phase === "error" ? console.error : console.log;
   logger(`[ORDER][${step}] ${phase}:`, payload ?? {});
@@ -81,8 +82,7 @@ export async function transitionOrder(input: TransitionInput): Promise<Transitio
   // Write
   const writeStep = addStep(flow, "db_write");
   try {
-    const { error } = await db
-      .from("orders")
+    const { error } = await cFrom("orders")
       .update({
         status: input.toStatus,
         updated_at: new Date().toISOString(),

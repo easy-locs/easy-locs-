@@ -11,6 +11,7 @@ import { db } from "@/services/db";
 import { validateBasicMerchantInfo } from "./publish-gate-base";
 import { CANONICAL_ROOM_TYPES } from "./hotel-room-normalizer-engine";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface HotelGateResult {
   shopId: string;
   shopName: string;
@@ -125,8 +126,7 @@ function isStale(m: Record<string, unknown>): boolean {
 }
 
 export async function runHotelPublishGate(batchSize = 100): Promise<HotelGateBatchReport> {
-  const { data: merchants } = await db
-    .from("seed_merchants")
+  const { data: merchants } = await cFrom("seed_merchants")
     .select("id, name, cover_image_url, cover_image, phone, address, description, rooms_json, star_rating, check_in_time, check_out_time, policies_json, updated_at, is_published, visibility_score, vertical")
     .in("vertical", ["hotel", "stay"])
     .limit(batchSize);
@@ -149,7 +149,7 @@ export async function runHotelPublishGate(batchSize = 100): Promise<HotelGateBat
     try {
       // Auto-unpublish stale listings
       if (stale && merchant.is_published) {
-        const { error: staleErr } = await db("seed_merchants")
+        const { error: staleErr } = await cFrom("seed_merchants")
           .update({ is_published: false, gate_status: "failed", blocking_reason: "stale_listing", pipeline_stage: "auto_unpublished_stale", updated_at: now })
           .eq("id", merchant.id);
         if (staleErr) throw staleErr;
@@ -180,7 +180,7 @@ export async function runHotelPublishGate(batchSize = 100): Promise<HotelGateBat
         // Gate passed — mark gate_status=passed and set quality metadata.
         // Do NOT publish here; publishing happens via runAutoPublish() after
         // the moderation stage has run (moderation scans gate_status=passed, is_published=false).
-        const { error: passErr } = await db("seed_merchants")
+        const { error: passErr } = await cFrom("seed_merchants")
           .update({
             gate_status: "passed",
             blocking_reason: null,
@@ -194,7 +194,7 @@ export async function runHotelPublishGate(batchSize = 100): Promise<HotelGateBat
       } else {
         // Gate failed — set gate_status=failed to block auto-publish (fail closed)
         const blockingReason = failures.join(", ");
-        const { error: failErr } = await db("seed_merchants")
+        const { error: failErr } = await cFrom("seed_merchants")
           .update({
             gate_status: "failed",
             blocking_reason: blockingReason,

@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 type PublishMenuParams = {
   userId?: string;
   workspaceId?: string | null;
@@ -18,8 +19,7 @@ async function resolveMerchantProfile(params: PublishMenuParams) {
     throw new Error("Missing user context for menu publication.");
   }
 
-  const { data: storefront } = await db
-    .from("storefront_pages")
+  const { data: storefront } = await cFrom("storefront_pages")
     .select("merchant_profile_id, org_id")
     .eq("user_id", params.userId)
     .order("updated_at", { ascending: false })
@@ -33,8 +33,7 @@ async function resolveMerchantProfile(params: PublishMenuParams) {
     };
   }
 
-  const { data: profile } = await db
-    .from("merchant_onboarding_profiles")
+  const { data: profile } = await cFrom("merchant_onboarding_profiles")
     .select("id, workspace_id")
     .eq("claimed_by", params.userId)
     .order("updated_at", { ascending: false })
@@ -52,8 +51,7 @@ async function resolveMerchantProfile(params: PublishMenuParams) {
 }
 
 export async function publishMenu(shopId: string) {
-  const { data: shop } = await db
-    .from("storefront_pages")
+  const { data: shop } = await cFrom("storefront_pages")
     .select("merchant_profile_id, org_id")
     .eq("id", shopId)
     .maybeSingle();
@@ -71,8 +69,7 @@ export async function publishMenu(shopId: string) {
 export async function publishImportedMenuToCatalog(params: PublishMenuParams = {}) {
   const { profileId, workspaceId } = await resolveMerchantProfile(params);
 
-  const { data: importedRows, error: importError } = await db
-    .from("merchant_menu_import_items")
+  const { data: importedRows, error: importError } = await cFrom("merchant_menu_import_items")
     .select("id, item_name, item_description, image_url, price, currency, published")
     .eq("profile_id", profileId)
     .order("created_at", { ascending: true });
@@ -84,8 +81,7 @@ export async function publishImportedMenuToCatalog(params: PublishMenuParams = {
     return { profileId, importedCount: importedRows?.length ?? 0, createdCount: 0, skippedCount: 0 };
   }
 
-  const { data: existingRows, error: existingError } = await db
-    .from("menu_items")
+  const { data: existingRows, error: existingError } = await cFrom("menu_items")
     .select("id, name")
     .eq("merchant_profile_id", profileId);
 
@@ -110,8 +106,7 @@ export async function publishImportedMenuToCatalog(params: PublishMenuParams = {
     }));
 
   if (itemsToCreate.length > 0) {
-    const { error: insertError } = await db
-      .from("menu_items")
+    const { error: insertError } = await cFrom("menu_items")
       .insert(itemsToCreate);
 
     if (insertError) throw insertError;
@@ -119,8 +114,7 @@ export async function publishImportedMenuToCatalog(params: PublishMenuParams = {
 
   const publishedIds = pendingRows.map((row: any) => row.id);
   if (publishedIds.length > 0) {
-    const { error: updateImportError } = await db
-      .from("merchant_menu_import_items")
+    const { error: updateImportError } = await cFrom("merchant_menu_import_items")
       .update({ published: true, normalized: true })
       .in("id", publishedIds);
 
@@ -128,8 +122,7 @@ export async function publishImportedMenuToCatalog(params: PublishMenuParams = {
   }
 
   const totalMenuItems = (existingRows?.length ?? 0) + itemsToCreate.length;
-  await db
-    .from("storefront_pages")
+  await cFrom("storefront_pages")
     .update({ has_menu: totalMenuItems > 0, products_count: totalMenuItems })
     .eq("merchant_profile_id", profileId);
 

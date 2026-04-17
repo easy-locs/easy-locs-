@@ -9,6 +9,7 @@ import { firecrawlMap, firecrawlCrawl, firecrawlScrape } from "../_shared/firecr
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -215,7 +216,7 @@ Deno.serve(async (req) => {
 
   try {
     // Create scrape run record
-    const { data: runRow } = await supabase.from("merchant_scrape_runs").insert({
+    const { data: runRow } = await cFromEdge(supabase, "merchant_scrape_runs").insert({
       engine_name: "deliveroo-food-intake-engine", source: SOURCE, source_type: SOURCE, region: REGION,
       started_at: startedAt, status: "running", trigger_source: "edge_function",
     }).select("id").single();
@@ -227,7 +228,7 @@ Deno.serve(async (req) => {
     console.log(`[deliveroo] Discovered ${stats.discovered} restaurant URLs`);
 
     if (scrapeRunId) {
-      await supabase.from("merchant_scrape_runs").update({ discovered_count: stats.discovered }).eq("id", scrapeRunId);
+      await cFromEdge(supabase, "merchant_scrape_runs").update({ discovered_count: stats.discovered }).eq("id", scrapeRunId);
     }
 
     // Step 2: Scrape batch
@@ -271,11 +272,11 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        const { error: upsertErr } = await supabase.from("seed_merchants").upsert(row as any, { onConflict: "source_type,source_entity_id" });
+        const { error: upsertErr } = await cFromEdge(supabase, "seed_merchants").upsert(row as any, { onConflict: "source_type,source_entity_id" });
         if (upsertErr) { stats.failed++; stats.errors.push(`upsert:${parsed.source_entity_id}:${upsertErr.message}`); continue; }
 
         // Save snapshot
-        await supabase.from("merchant_source_snapshots").insert({
+        await cFromEdge(supabase, "merchant_source_snapshots").insert({
           source: SOURCE, source_entity_id: parsed.source_entity_id, source_merchant_id: parsed.source_entity_id,
           source_url: parsed.source_url, raw_payload_json: { markdown }, extracted_payload_json: parsed,
           snapshot_json: parsed.raw_payload, region: REGION,
@@ -289,7 +290,7 @@ Deno.serve(async (req) => {
 
     // Finalize scrape run
     if (scrapeRunId) {
-      await supabase.from("merchant_scrape_runs").update({
+      await cFromEdge(supabase, "merchant_scrape_runs").update({
         finished_at: new Date().toISOString(),
         status: stats.errors.length > 0 ? "partial" : "completed",
         discovered_count: stats.discovered, scraped_count: stats.scraped,
@@ -299,7 +300,7 @@ Deno.serve(async (req) => {
     }
 
     // Engine log
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "deliveroo-food-intake-engine", started_at: startedAt, finished_at: new Date().toISOString(),
       duration_ms: Date.now() - new Date(startedAt).getTime(), status: "ok",
       rows_read: stats.discovered, db_rows_affected: stats.accepted + stats.blocked, side_effect_count: stats.scraped,
@@ -310,12 +311,12 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ success: true, stats }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     if (scrapeRunId) {
-      await supabase.from("merchant_scrape_runs").update({
+      await cFromEdge(supabase, "merchant_scrape_runs").update({
         finished_at: new Date().toISOString(), status: "error", failed_count: stats.failed + 1,
         metadata_json: { errors: [...stats.errors, String(err)].slice(0, 20) },
       }).eq("id", scrapeRunId);
     }
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "deliveroo-food-intake-engine", started_at: startedAt, finished_at: new Date().toISOString(),
       duration_ms: Date.now() - new Date(startedAt).getTime(), status: "error",
       error_message: String(err), effect_summary: "Fatal error during Deliveroo intake",

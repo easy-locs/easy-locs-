@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { checkThrottle, ThrottleError } from "@/lib/client-throttle";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type ReviewVertical = "merchant" | "property" | "rider" | "service" | "experience";
 
 const RATING_PRECISION = 1;
@@ -38,8 +39,7 @@ function getRatingTable(vertical: ReviewVertical): string {
 
 export async function listReviews(entityId: string, vertical: ReviewVertical = "merchant") {
   const column = getEntityColumn(vertical);
-  const { data, error } = await db
-    .from("reviews")
+  const { data, error } = await cFrom("reviews")
     .select("*")
     .eq(column, entityId)
     .order("created_at", { ascending: false })
@@ -69,8 +69,7 @@ export async function createReview(params: {
   const column = getEntityColumn(params.vertical);
   const rating = normalizeRating(params.rating);
 
-  const { data, error } = await db
-    .from("reviews")
+  const { data, error } = await cFrom("reviews")
     .insert({
       [column]: params.entityId,
       reviewer_user_id: params.reviewerUserId,
@@ -114,8 +113,7 @@ export async function replyToReview(params: {
   reviewId: string;
   merchantReply: string;
 }) {
-  const { data, error } = await db
-    .from("reviews")
+  const { data, error } = await cFrom("reviews")
     .update({
       merchant_reply: params.merchantReply,
       replied_at: new Date().toISOString(),
@@ -130,8 +128,7 @@ export async function replyToReview(params: {
 }
 
 export async function listRiderReviews(riderUserId: string) {
-  const { data, error } = await db
-    .from("reviews")
+  const { data, error } = await cFrom("reviews")
     .select("*")
     .eq("merchant_id", riderUserId)
     .order("created_at", { ascending: false })
@@ -149,8 +146,7 @@ export async function recomputeEntityRating(entityId: string, vertical: ReviewVe
 
   const table = getRatingTable(vertical);
 
-  const { data, error } = await db
-    .from(table)
+  const { data, error } = await cFrom(table)
     .update({
       rating: count > 0 ? avg : null,
       review_count: count,

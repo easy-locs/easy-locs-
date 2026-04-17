@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface ExpenseRecord {
   id: string;
   property_id: string | null;
@@ -20,14 +21,14 @@ export interface PropertyOption {
 }
 
 export async function fetchExpensesProperties(orgId: string, country?: string | null): Promise<PropertyOption[]> {
-  let q = db("properties").select("id, label, country").eq("org_id", orgId).order("label");
+  let q = cFrom("properties").select("id, label, country").eq("org_id", orgId).order("label");
   if (country) q = q.eq("country", country);
   const { data } = await q;
   return (data || []).map((p: any) => ({ id: p.id, label: p.label }));
 }
 
 export async function fetchExpenses(orgId: string, propertyIds?: string[]): Promise<ExpenseRecord[]> {
-  let q = db("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
+  let q = cFrom("expenses").select("*").eq("org_id", orgId).order("expense_date", { ascending: false });
   if (propertyIds && propertyIds.length > 0) {
     q = q.in("property_id", propertyIds);
   }
@@ -46,11 +47,11 @@ export async function insertExpense(params: {
   supplier: string | null;
   notes: string;
 }) {
-  const { error } = await db("expenses").insert(params);
+  const { error } = await cFrom("expenses").insert(params);
   if (error) throw error;
 }
 
 export async function deleteExpense(id: string) {
-  const { error } = await db("expenses").delete().eq("id", id);
+  const { error } = await cFrom("expenses").delete().eq("id", id);
   if (error) throw error;
 }

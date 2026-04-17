@@ -1,29 +1,30 @@
 /**
  * rental.repository — All DB ops for rental hooks and components.
  */
-import { db, domainDb } from "@/services/db";
+import { db } from "@/services/db";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ── Lease workflow ──
 export async function fetchLease(leaseId: string) {
-  const { data } = await db("leases").select("*").eq("id", leaseId).single();
+  const { data } = await cFrom("leases").select("*").eq("id", leaseId).single();
   return data;
 }
 
 export async function updateLease(leaseId: string, updates: Record<string, any>) {
-  const { error } = await db("leases").update(updates as any).eq("id", leaseId);
+  const { error } = await cFrom("leases").update(updates as any).eq("id", leaseId);
   if (error) throw error;
 }
 
 export async function fetchLeasesByOrg(orgId: string) {
-  const { data } = await db("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await cFrom("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
 // ── Receipts ──
 export async function fetchRentCalls(orgId: string, filters?: Record<string, any>) {
-  let q = db("rent_calls").select("*").eq("org_id", orgId);
+  let q = cFrom("rent_calls").select("*").eq("org_id", orgId);
   if (filters?.paid !== undefined) q = q.eq("paid", filters.paid);
   if (filters?.tenantId) q = q.eq("tenant_id", filters.tenantId);
   const { data } = await q.order("month", { ascending: false });
@@ -31,13 +32,13 @@ export async function fetchRentCalls(orgId: string, filters?: Record<string, any
 }
 
 export async function updateRentCall(id: string, updates: Record<string, any>) {
-  const { error } = await db("rent_calls").update(updates as any).eq("id", id);
+  const { error } = await cFrom("rent_calls").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 // ── Messages (rental) ──
 export async function fetchRentalMessages(orgId: string) {
-  const { data } = await db("chat_messages_v2").select("*").ilike("conversation_id", `tenant_${orgId}_%`).order("created_at", { ascending: false }).limit(500);
+  const { data } = await cFrom("chat_messages_v2").select("*").ilike("conversation_id", `tenant_${orgId}_%`).order("created_at", { ascending: false }).limit(500);
   return data ?? [];
 }
 
@@ -66,16 +67,16 @@ export function subscribeRentalMessages(orgId: string, onInsert: (msg: any) => v
 
 // ── Notifications ──
 export async function fetchRentalNotifications(userId: string) {
-  const { data } = await db("app_notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
+  const { data } = await cFrom("app_notifications").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
   return data ?? [];
 }
 
 export async function markNotificationsRead(userId: string, ids: string[]) {
-  await db("app_notifications").update({ read_at: new Date().toISOString() }).in("id", ids);
+  await cFrom("app_notifications").update({ read_at: new Date().toISOString() }).in("id", ids);
 }
 
 export async function insertNotification(record: Record<string, any>) {
-  await db("app_notifications").insert(record);
+  await cFrom("app_notifications").insert(record);
 }
 
 // ── Realtime bridge ──
@@ -97,12 +98,12 @@ export function subscribeLeases(orgId: string, onUpdate: (payload: any) => void)
 
 // ── Auto-generate lease ──
 export async function fetchTenantForLeaseGen(tenantId: string) {
-  const { data } = await db("tenants").select("*").eq("id", tenantId).single();
+  const { data } = await cFrom("tenants").select("*").eq("id", tenantId).single();
   return data;
 }
 
 export async function fetchPropertyForLeaseGen(propertyId: string) {
-  const { data } = await db("properties").select("*").eq("id", propertyId).single();
+  const { data } = await cFrom("properties").select("*").eq("id", propertyId).single();
   return data;
 }
 
@@ -114,40 +115,40 @@ export async function invokeGenerateDocument(body: Record<string, any>) {
 
 // ── Reminders ──
 export async function fetchReminders(orgId: string) {
-  const { data } = await db("reminders").select("*").eq("org_id", orgId).order("due_date");
+  const { data } = await cFrom("reminders").select("*").eq("org_id", orgId).order("due_date");
   return data ?? [];
 }
 
 export async function insertReminder(record: Record<string, any>) {
-  const { data, error } = await db("reminders").insert(record).select("*").single();
+  const { data, error } = await cFrom("reminders").insert(record).select("*").single();
   if (error) throw error;
   return data;
 }
 
 export async function updateReminder(id: string, updates: Record<string, any>) {
-  const { error } = await db("reminders").update(updates).eq("id", id);
+  const { error } = await cFrom("reminders").update(updates).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteReminder(id: string) {
-  const { error } = await db("reminders").delete().eq("id", id);
+  const { error } = await cFrom("reminders").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Vault ──
 export async function fetchVaultFiles(orgId: string) {
-  const { data } = await db("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await cFrom("vault_files").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
 export async function insertVaultFile(record: Record<string, any>) {
-  const { error } = await db("vault_files").insert(record);
+  const { error } = await cFrom("vault_files").insert(record);
   if (error) throw error;
 }
 
 export async function deleteVaultFile(fileId: string, fileUrl: string) {
   await db.storage.from("vault").remove([fileUrl]);
-  const { error } = await db("vault_files").delete().eq("id", fileId);
+  const { error } = await cFrom("vault_files").delete().eq("id", fileId);
   if (error) throw error;
 }
 
@@ -160,8 +161,8 @@ export async function uploadVaultFile(path: string, file: File) {
 
 // ── Charges regularization ──
 export async function fetchChargesData(orgId: string) {
-  const { data: tenants } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
-  const { data: rentCalls } = await db("rent_calls").select("id, tenant_id, month, charges_amount, paid").eq("org_id", orgId);
+  const { data: tenants } = await cFrom("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data: rentCalls } = await cFrom("rent_calls").select("id, tenant_id, month, charges_amount, paid").eq("org_id", orgId);
   return { tenants: tenants ?? [], rentCalls: rentCalls ?? [] };
 }
 
@@ -169,42 +170,42 @@ export async function fetchChargesData(orgId: string) {
 export async function fetchFiscalData(orgId: string, year: number) {
   const startMonth = `${year}-01`;
   const endMonth = `${year}-12`;
-  const { data: rentCalls } = await db("rent_calls").select("*").eq("org_id", orgId).gte("month", startMonth).lte("month", endMonth);
-  const { data: entries } = await db("accounting_entries").select("*").eq("org_id", orgId).gte("accounting_period", startMonth).lte("accounting_period", endMonth);
+  const { data: rentCalls } = await cFrom("rent_calls").select("*").eq("org_id", orgId).gte("month", startMonth).lte("month", endMonth);
+  const { data: entries } = await cFrom("accounting_entries").select("*").eq("org_id", orgId).gte("accounting_period", startMonth).lte("accounting_period", endMonth);
   return { rentCalls: rentCalls ?? [], entries: entries ?? [] };
 }
 
 // ── Accounting entries ──
 export async function fetchAccountingEntries(orgId: string) {
-  const { data } = await db("accounting_entries").select("*").eq("org_id", orgId).order("accounting_period", { ascending: false });
+  const { data } = await cFrom("accounting_entries").select("*").eq("org_id", orgId).order("accounting_period", { ascending: false });
   return data ?? [];
 }
 
 export async function insertAccountingEntry(record: Record<string, any>) {
-  const { error } = await db("accounting_entries").insert(record);
+  const { error } = await cFrom("accounting_entries").insert(record);
   if (error) throw error;
 }
 
 // ── Tenant documents (rental component) ──
 export async function fetchTenantDocsForProperty(orgId: string, tenantId: string) {
-  const { data } = await db("tenant_documents").select("*").eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await cFrom("tenant_documents").select("*").eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
 // ── Tenant requests (rental component) ──
 export async function fetchTenantRequests(orgId: string) {
-  const { data } = await db("document_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data } = await cFrom("document_requests").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   return data ?? [];
 }
 
 export async function updateDocumentRequest(id: string, updates: Record<string, any>) {
-  const { error } = await db("document_requests").update(updates).eq("id", id);
+  const { error } = await cFrom("document_requests").update(updates).eq("id", id);
   if (error) throw error;
 }
 
 // ── Lease Signature Workflow ──
 export async function fetchLeaseForSignature(leaseId: string) {
-  const { data } = await db("leases").select("tenant_signed_at, org_id").eq("id", leaseId).single();
+  const { data } = await cFrom("leases").select("tenant_signed_at, org_id").eq("id", leaseId).single();
   return data;
 }
 
@@ -212,109 +213,109 @@ export async function updateLeaseSignature(leaseId: string, party: "tenant" | "o
   const updates: Record<string, any> = party === "tenant"
     ? { tenant_signed_at: signedAt, status: "signed" }
     : { owner_signed_at: signedAt };
-  const { data, error } = await db("leases").update(updates as any).eq("id", leaseId).select("*").single();
+  const { data, error } = await cFrom("leases").update(updates as any).eq("id", leaseId).select("*").single();
   if (error) throw error;
   if (signatureUrl) {
     const docUpdate: Record<string, any> = party === "tenant"
       ? { tenant_signature_url: signatureUrl, signed_by_tenant_at: signedAt }
       : { owner_signature_url: signatureUrl, signed_by_owner_at: signedAt };
-    await db("documents").update(docUpdate).eq("lease_id", leaseId);
+    await cFrom("documents").update(docUpdate).eq("lease_id", leaseId);
   }
   return data;
 }
 
 export async function updateLeaseOwnerSignature(leaseId: string, signedAt: string, newStatus: string, signatureUrl?: string) {
-  const { data, error } = await db("leases").update({ owner_signed_at: signedAt, status: newStatus } as any).eq("id", leaseId).select("*").single();
+  const { data, error } = await cFrom("leases").update({ owner_signed_at: signedAt, status: newStatus } as any).eq("id", leaseId).select("*").single();
   if (error) throw error;
   if (signatureUrl) {
-    await db("documents").update({ owner_signature_url: signatureUrl, signed_by_owner_at: signedAt, status: newStatus === "active" ? "signed" : "pending_signature" }).eq("lease_id", leaseId);
+    await cFrom("documents").update({ owner_signature_url: signatureUrl, signed_by_owner_at: signedAt, status: newStatus === "active" ? "signed" : "pending_signature" }).eq("lease_id", leaseId);
   }
   return data;
 }
 
 export async function insertLeaseAuditLog(orgId: string | undefined, action: string, metadata: Record<string, any>) {
-  await db("audit_logs").insert({ user_id: null, org_id: orgId, action, metadata_json: metadata });
+  await cFrom("audit_logs").insert({ user_id: null, org_id: orgId, action, metadata_json: metadata });
 }
 
 // ── Document requests ──
 export async function fetchDocumentRequests(tenantId: string) {
-  const { data } = await db("document_requests").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await cFrom("document_requests").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data || [];
 }
 
 export async function resolveDocumentRequest(requestId: string) {
-  const { error } = await db("document_requests").update({ status: "resolved", resolved_at: new Date().toISOString() } as any).eq("id", requestId);
+  const { error } = await cFrom("document_requests").update({ status: "resolved", resolved_at: new Date().toISOString() } as any).eq("id", requestId);
   if (error) throw error;
 }
 
 export async function fetchTenantUserId(tenantId: string) {
-  const { data } = await db("tenants").select("tenant_user_id").eq("id", tenantId).single();
+  const { data } = await cFrom("tenants").select("tenant_user_id").eq("id", tenantId).single();
   return data?.tenant_user_id as string | null;
 }
 
 export async function insertAppNotification(payload: Record<string, any>) {
-  await db("app_notifications").insert(payload);
+  await cFrom("app_notifications").insert(payload);
 }
 
 // ── Fiscal report ──
 export async function fetchPropertiesForOrg(orgId: string, countryFilter?: string) {
-  let q = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let q = cFrom("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) q = q.eq("country", countryFilter);
   const { data } = await q;
   return data || [];
 }
 
 export async function fetchRentCallsForOrg(orgId: string) {
-  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await cFrom("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Charges regularization ──
 export async function fetchTenantsForCharges(orgId: string) {
-  const { data } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data } = await cFrom("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 export async function fetchPropertiesMinimal(orgId: string) {
-  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Reminders ──
 export async function deactivateReminder(id: string) {
-  await db("reminders").update({ active: false } as any).eq("id", id);
+  await cFrom("reminders").update({ active: false } as any).eq("id", id);
 }
 
 // ── Add property ──
 export async function insertProperty(payload: Record<string, any>) {
-  const { error } = await db("properties").insert(payload);
+  const { error } = await cFrom("properties").insert(payload);
   if (error) throw error;
 }
 
 // ── Referrals ──
 export async function fetchReferralCode(userId: string) {
-  const { data } = await db("profiles").select("referral_code").eq("id", userId).single();
+  const { data } = await cFrom("profiles").select("referral_code").eq("id", userId).single();
   return data;
 }
 
 export async function fetchReferrals(userId: string) {
-  const { data } = await db("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
+  const { data } = await cFrom("referrals").select("*").eq("referrer_user_id", userId).order("created_at", { ascending: false });
   return data || [];
 }
 
 // ── Profile settings ──
 export async function fetchProfilePrivacy(userId: string, columns: string) {
-  const { data } = await db("profiles").select(columns).eq("id", userId).single();
+  const { data } = await cFrom("profiles").select(columns).eq("id", userId).single();
   return data;
 }
 
 export async function updateProfileField(userId: string, column: string, value: any) {
-  await db("profiles").update({ [column]: value } as any).eq("id", userId);
+  await cFrom("profiles").update({ [column]: value } as any).eq("id", userId);
 }
 
 // ── Tenant signup ──
 export async function validateTenantInvitation(token: string) {
-  const { data, error } = await db.rpc("validate_tenant_invitation", { _token: token });
+  const { data, error } = await cRpc("validate_tenant_invitation", { _token: token });
   if (error) throw error;
   return data;
 }
@@ -340,19 +341,19 @@ export async function invokeLeaseWorkflow(body: Record<string, any>) {
 
 // ── Accounting entries ──
 export async function fetchPropertiesForAccounting(orgId: string) {
-  const { data } = await db("properties").select("id, label, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Landlord rent dashboard properties ──
 export async function fetchPropertyIdsForCountry(orgId: string, country: string) {
-  const { data } = await db("properties").select("id").eq("org_id", orgId).eq("country", country);
+  const { data } = await cFrom("properties").select("id").eq("org_id", orgId).eq("country", country);
   return (data || []).map((p: any) => p.id);
 }
 
 // ── Fiscal report queries (extended) ──
 export async function fetchPropertiesForFiscalReport(orgId: string, countryFilter?: string) {
-  let q = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let q = cFrom("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) q = q.eq("country", countryFilter);
   const { data } = await q;
   return data || [];
@@ -360,18 +361,18 @@ export async function fetchPropertiesForFiscalReport(orgId: string, countryFilte
 
 // ── Reminders ──
 export async function dismissReminder(id: string) {
-  await db("reminders").update({ active: false } as any).eq("id", id);
+  await cFrom("reminders").update({ active: false } as any).eq("id", id);
 }
 
 // ── Inventory report full ──
 export async function fetchInventoryReportFull(reportId: string) {
-  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await cFrom("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 // ── Booking requests ──
 export async function insertBookingRequest(payload: Record<string, any>) {
-  const { data, error } = await domainDb.commerce.from("bookings").insert({ ...payload, booking_type: "request" } as any).select().single();
+  const { data, error } = await cFrom("bookings", { schema: "commerce" }).insert({ ...payload, booking_type: "request" } as any).select().single();
   if (error) throw error;
   return data;
 }
@@ -382,34 +383,34 @@ export async function invokeNotifyBooking(bookingRequestId: string) {
 
 // ── Local services ──
 export async function fetchOrgLocalServicesEnabled(orgId: string) {
-  const { data } = await db("orgs").select("local_services_enabled").eq("id", orgId).single();
+  const { data } = await cFrom("orgs").select("local_services_enabled").eq("id", orgId).single();
   return data?.local_services_enabled || false;
 }
 
 export async function fetchLocalServices(orgId: string) {
-  const { data } = await db("local_services" as any).select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
+  const { data } = await cFrom("local_services").select("*").eq("org_id", orgId).eq("active", true).order("sort_order");
   return data || [];
 }
 
 // ── Newsletter ──
 export async function insertNewsletterSubscriber(email: string) {
-  const { error } = await db("newsletter_subscribers").insert({ email });
+  const { error } = await cFrom("newsletter_subscribers").insert({ email });
   if (error) throw error;
 }
 
 // ── Auth context helpers ──
 export async function checkTenantLink(userId: string) {
-  const { data } = await db("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  const { data } = await cFrom("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function checkOrgLink(userId: string) {
-  const { data } = await db("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await cFrom("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
   return data;
 }
 
 export async function markOnboardingComplete(userId: string) {
-  await db("profiles").update({ onboarding_completed: true }).eq("id", userId);
+  await cFrom("profiles").update({ onboarding_completed: true }).eq("id", userId);
 }
 
 // ── Upload booking document ──
@@ -420,60 +421,60 @@ export async function uploadBookingDocument(path: string, file: File) {
 
 // ── Inventory reports (detailed) ──
 export async function fetchInventoryReports(orgId: string) {
-  const { data } = await db("inventory_reports").select("id, property_id, tenant_id, report_type, report_date, status").eq("org_id", orgId).order("report_date", { ascending: false });
+  const { data } = await cFrom("inventory_reports").select("id, property_id, tenant_id, report_type, report_date, status").eq("org_id", orgId).order("report_date", { ascending: false });
   return data || [];
 }
 
 export async function fetchInventoryReportById(reportId: string) {
-  const { data } = await db("inventory_reports").select("*").eq("id", reportId).single();
+  const { data } = await cFrom("inventory_reports").select("*").eq("id", reportId).single();
   return data;
 }
 
 export async function fetchInventoryRooms(reportId: string) {
-  const { data } = await db("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
+  const { data } = await cFrom("inventory_rooms").select("*").eq("report_id", reportId).order("sort_order");
   return data || [];
 }
 
 export async function fetchInventoryItems(roomId: string) {
-  const { data } = await db("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
+  const { data } = await cFrom("inventory_items").select("*").eq("room_id", roomId).order("sort_order");
   return data || [];
 }
 
 // ── Charges regularization ──
 export async function fetchChargesRegTenants(orgId: string) {
-  const { data } = await db("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
+  const { data } = await cFrom("tenants").select("id, name, charges_amount, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 export async function fetchChargesRegProperties(orgId: string) {
-  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Fiscal report ──
 export async function fetchFiscalProperties(orgId: string, countryFilter?: string) {
-  let query = db("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
+  let query = cFrom("properties").select("id, label, monthly_rent, monthly_charges, address, city, country").eq("org_id", orgId);
   if (countryFilter) query = query.eq("country", countryFilter);
   const { data } = await query;
   return data || [];
 }
 
 export async function fetchFiscalRentCalls(orgId: string) {
-  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await cFrom("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Rent dashboard ──
 export async function fetchPropertiesByCountry(orgId: string, country: string) {
-  const { data } = await db("properties").select("id").eq("org_id", orgId).eq("country", country);
+  const { data } = await cFrom("properties").select("id").eq("org_id", orgId).eq("country", country);
   return data || [];
 }
 
 // ── Existing bookings for availability ──
 export async function fetchExistingBookings(propertyId: string) {
   const [{ data: seasonal }, { data: requests }] = await Promise.all([
-    db("seasonal_bookings").select("check_in, check_out, status").eq("property_id", propertyId).neq("status", "cancelled"),
-    domainDb.commerce.from("bookings").select("check_in, check_out, status").eq("property_id", propertyId).eq("booking_type", "request").in("status", ["confirmed", "paid", "approved", "payment_pending"]),
+    cFrom("seasonal_bookings").select("check_in, check_out, status").eq("property_id", propertyId).neq("status", "cancelled"),
+    cFrom("bookings", { schema: "commerce" }).select("check_in, check_out, status").eq("property_id", propertyId).eq("booking_type", "request").in("status", ["confirmed", "paid", "approved", "payment_pending"]),
   ]);
   return [
     ...(seasonal || []).map((b: any) => ({ check_in: b.check_in, check_out: b.check_out })),
@@ -483,40 +484,40 @@ export async function fetchExistingBookings(propertyId: string) {
 
 // ── QR resolved card helpers ──
 export async function fetchProfileName(userId: string) {
-  const { data } = await db("profiles").select("name").eq("id", userId).maybeSingle();
+  const { data } = await cFrom("profiles").select("name").eq("id", userId).maybeSingle();
   return data?.name || null;
 }
 
 export async function fetchContactExists(ownerId: string, contactUserId: string) {
-  const { data } = await db("contacts").select("id").eq("owner_id", ownerId).eq("contact_user_id", contactUserId).maybeSingle();
+  const { data } = await cFrom("contacts").select("id").eq("owner_id", ownerId).eq("contact_user_id", contactUserId).maybeSingle();
   return !!data;
 }
 
 // ── Marketplace services ──
 export async function insertMarketplaceService(payload: Record<string, any>) {
-  const { error } = await domainDb.marketplace.from("listings").insert(payload as any);
+  const { error } = await cFrom("listings", { schema: "marketplace" }).insert(payload as any);
   if (error) throw error;
 }
 
 export async function fetchServiceBySlug(slug: string) {
-  const { data } = await domainDb.marketplace.from("listings").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await cFrom("listings", { schema: "marketplace" }).select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 
 // ── Parcel job details ──
 export async function insertParcelJobDetails(payload: Record<string, any>) {
-  await db("parcel_job_details").insert(payload);
+  await cFrom("parcel_job_details").insert(payload);
 }
 
 // ── Audit reports ──
 export async function fetchAuditHistory(limit = 30) {
-  const { data } = await db("audit_reports").select("created_at, global_score, total_issues, scan_type").order("created_at", { ascending: false }).limit(limit);
+  const { data } = await cFrom("audit_reports").select("created_at, global_score, total_issues, scan_type").order("created_at", { ascending: false }).limit(limit);
   return data || [];
 }
 
 // ── Key bundles ──
 export async function upsertKeyBundle(userId: string, publicKey: string, deviceId: string) {
-  await db("user_key_bundles").upsert({
+  await cFrom("user_key_bundles").upsert({
     user_id: userId, identity_public_key: publicKey, device_id: deviceId, updated_at: new Date().toISOString(),
   }, { onConflict: "user_id" });
 }
@@ -524,7 +525,7 @@ export async function upsertKeyBundle(userId: string, publicKey: string, deviceI
 // ── Storefront pages (for health check) ──
 export async function healthCheckDb() {
   const start = performance.now();
-  const { data, error, status } = await db("storefront_pages").select("id").limit(1);
+  const { data, error, status } = await cFrom("storefront_pages").select("id").limit(1);
   const elapsed = performance.now() - start;
   return { data, error, status, elapsed };
 }
@@ -538,37 +539,37 @@ export async function invokeDispatchRide(body: Record<string, any>) {
 
 // ── Storefront orders ──
 export async function updateStorefrontOrder(orderId: string, updates: Record<string, any>) {
-  await db("storefront_orders").update(updates).eq("id", orderId);
+  await cFrom("storefront_orders").update(updates).eq("id", orderId);
 }
 
 // ── Shop follows ──
 export async function fetchShopFollow(userId: string, shopId: string) {
-  const { data } = await db("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
+  const { data } = await cFrom("shop_follows").select("user_id, shop_id").eq("user_id", userId).eq("shop_id", shopId).maybeSingle() as any;
   return !!data;
 }
 
 // ── Shop by slug ──
 export async function fetchShopBySlug(slug: string) {
-  const { data } = await db("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
+  const { data } = await cFrom("storefront_pages").select("id, slug, name, user_id").eq("slug", slug).maybeSingle();
   return data;
 }
 
 // ── Conversations v2 direct threads ──
 export async function fetchDirectThreads(limit = 100) {
-  const { data } = await db("conversations_v2").select("id, participants").eq("type", "direct").order("updated_at", { ascending: false }).limit(limit);
+  const { data } = await cFrom("conversations_v2").select("id, participants").eq("type", "direct").order("updated_at", { ascending: false }).limit(limit);
   return data || [];
 }
 
 // ── Dual role check ──
 export async function checkTenantAndOrgLinks(userId: string) {
-  const t = await db("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
-  const o = await db("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
+  const t = await cFrom("tenants").select("id").eq("tenant_user_id", userId).limit(1).maybeSingle();
+  const o = await cFrom("org_members").select("id").eq("user_id", userId).limit(1).maybeSingle();
   return { hasTenant: !!t.data, hasOrg: !!o.data };
 }
 
 // ── Mark onboarding (fire-and-forget) ──
 export async function markOnboardingCompleteFireAndForget(userId: string) {
-  db("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
+  cFrom("profiles").update({ onboarding_completed: true }).eq("id", userId).then(() => {});
 }
 
 // ── Booking payment ──
@@ -580,13 +581,13 @@ export async function invokeCreateBookingPayment(body: Record<string, any>) {
 
 // ── Accounting entries properties ──
 export async function fetchAccountingProperties(orgId: string) {
-  const { data } = await db("properties").select("id, label, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Reminders ──
 export async function fetchRemindersForOrg(orgId: string) {
-  const { data } = await db("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
+  const { data } = await cFrom("reminders").select("id, type, label, next_run_at, active").eq("org_id", orgId).eq("active", true).order("next_run_at", { ascending: true });
   return data || [];
 }
 
@@ -595,80 +596,79 @@ export async function fetchRemindersForOrg(orgId: string) {
 
 // ── Peer key bundles ──
 export async function fetchPeerKeyBundle(peerId: string) {
-  const { data } = await db("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
+  const { data } = await cFrom("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
   return (data as any)?.identity_public_key as string | undefined;
 }
 
 // ── Group members ──
 export async function fetchGroupMemberIds(userId: string) {
-  const { data } = await db("group_members").select("group_id").eq("user_id", userId);
+  const { data } = await cFrom("group_members").select("group_id").eq("user_id", userId);
   return (data || []).map((r: any) => r.group_id).filter(Boolean);
 }
 
 export async function fetchGroupConversations() {
-  const { data, error } = await db("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
+  const { data, error } = await cFrom("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
   if (error) throw new Error(error.message);
   return data || [];
 }
 
 export async function fetchGroupMemberCount(groupId: string) {
-  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await cFrom("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 
 export async function fetchGroupLastMessage(groupId: string) {
-  const { data } = await db("chat_messages_v2").select("body, created_at").eq("conversation_id", groupId).order("created_at", { ascending: false }).limit(1);
+  const { data } = await cFrom("chat_messages_v2").select("body, created_at").eq("conversation_id", groupId).order("created_at", { ascending: false }).limit(1);
   return data?.[0] || null;
 }
 
 export async function createGroupConversation(payload: Record<string, any>) {
-  const { data, error } = await db("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
+  const { data, error } = await cFrom("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
   if (error) throw error;
   return data;
 }
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
-  await db("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
+  await cFrom("group_members").insert({ group_id: groupId, user_id: userId, role } as any);
 }
 
 // ── Chat messages — re-exported from canonical communication.repository ──
 export { insertChatMessage } from "@/repositories/communication.repository";
 
 export async function updateConversationTimestamp(conversationId: string) {
-  await db("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
+  await cFrom("conversations_v2").update({ last_message_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", conversationId);
 }
 
 export async function insertWalletTransaction(payload: Record<string, any>) {
-  await db("unified_wallet_transactions").insert(payload);
+  await cFrom("unified_wallet_transactions").insert(payload);
 }
 
 export async function fetchLeasesByOrgSimple(orgId: string) {
-  const { data } = await db("leases").select("*").eq("org_id", orgId);
+  const { data } = await cFrom("leases").select("*").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Charges Regularization (properties) ──
 export async function fetchPropertiesForCharges(orgId: string) {
-  const { data } = await db("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, monthly_charges, country").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Fiscal report (rent calls raw) ──
 export async function fetchFiscalRentCallsRaw(orgId: string) {
-  const { data } = await db("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
+  const { data } = await cFrom("rent_calls").select("month, rent_amount, charges_amount, total_amount, paid, property_id").eq("org_id", orgId);
   return data || [];
 }
 
 // ── Rent cockpit ──
 export async function fetchRentCockpit(orgId: string, countryFilter?: string | null) {
-  let query = db
-    .from("rent_calls")
+  let query = cFrom("rent_calls")
     .select("id, tenant_id, property_id, lease_id, month, rent_amount, charges_amount, total_amount, paid, paid_amount, paid_date, payment_status, payment_method, receipt_pdf_url, receipt_validated, tenants(name, email), properties(label, city, country)")
     .eq("org_id", orgId)
     .order("month", { ascending: false });
 
   if (countryFilter) {
-    const { data: props } = await db("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
+    const { data: props } = await cFrom("properties").select("id").eq("org_id", orgId).eq("country", countryFilter);
     const ids = (props || []).map((p: any) => p.id);
     if (ids.length > 0) query = query.in("property_id", ids);
     else return [];
@@ -680,8 +680,7 @@ export async function fetchRentCockpit(orgId: string, countryFilter?: string | n
 
 // ── Audit reports history ──
 export async function fetchAuditReportsHistory(limit = 30) {
-  const { data } = await db
-    .from("audit_reports")
+  const { data } = await cFrom("audit_reports")
     .select("created_at, global_score, total_issues, scan_type")
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -690,21 +689,21 @@ export async function fetchAuditReportsHistory(limit = 30) {
 
 // ── Marketplace service slug lookup ──
 export async function fetchMarketplaceServiceBySlug(slug: string) {
-  const { data } = await domainDb.marketplace.from("listings").select("id").eq("booking_slug", slug).maybeSingle();
+  const { data } = await cFrom("listings", { schema: "marketplace" }).select("id").eq("booking_slug", slug).maybeSingle();
   return data;
 }
 
 // ── Active listings count ──
 export async function countActiveListings(orgId: string) {
-  const { count } = await domainDb.marketplace.from("listings").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
+  const { count } = await cFrom("listings", { schema: "marketplace" }).select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("active", true);
   return count ?? 0;
 }
 
 // ── Ensure marketplace provider ──
 export async function ensureMarketplaceProvider(orgId: string, userId: string, defaults: Record<string, any>) {
-  let { data: provider } = await db("marketplace_providers").select("id").eq("org_id", orgId).maybeSingle();
+  let { data: provider } = await cFrom("marketplace_providers").select("id").eq("org_id", orgId).maybeSingle();
   if (!provider) {
-    const { data: newProvider, error } = await db("marketplace_providers").insert({ org_id: orgId, user_id: userId, ...defaults }).select("id").single();
+    const { data: newProvider, error } = await cFrom("marketplace_providers").insert({ org_id: orgId, user_id: userId, ...defaults }).select("id").single();
     if (error) throw error;
     provider = newProvider;
   }
@@ -727,17 +726,17 @@ export async function signBookingDocumentUrl(path: string, expiresIn = 3600) {
 }
 
 export async function updateDocumentUrls(tableName: string, bookingId: string, urls: string[]) {
-  await db(tableName).update({ document_urls: urls }).eq("id", bookingId);
+  await cFrom(tableName).update({ document_urls: urls }).eq("id", bookingId);
 }
 
 // ── Driver earnings data ──
 export async function fetchDriverEarningsData(userId: string) {
-  const { data: wallet } = await db("wallet_accounts").select("*").eq("owner_type", "driver").eq("owner_user_id", userId).limit(1).maybeSingle();
+  const { data: wallet } = await cFrom("wallet_accounts").select("*").eq("owner_type", "driver").eq("owner_user_id", userId).limit(1).maybeSingle();
   const walletId = wallet?.id ?? "none";
-  const { data: allSplits } = await db("wallet_order_splits").select("net_amount, split_status, created_at").eq("split_party_type", "driver").eq("wallet_account_id", walletId).order("created_at", { ascending: false }).limit(50);
-  const { data: jobs } = await db("mobility_jobs").select("*").eq("rider_user_id", userId).in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"]).order("created_at", { ascending: false });
-  const { count: completedCount } = await db("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "completed");
-  const { count: cancelledCount } = await db("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "cancelled");
+  const { data: allSplits } = await cFrom("wallet_order_splits").select("net_amount, split_status, created_at").eq("split_party_type", "driver").eq("wallet_account_id", walletId).order("created_at", { ascending: false }).limit(50);
+  const { data: jobs } = await cFrom("mobility_jobs").select("*").eq("rider_user_id", userId).in("status", ["accepted", "rider_arriving_pickup", "rider_arrived_pickup", "picked_up", "in_progress", "rider_arriving_dropoff"]).order("created_at", { ascending: false });
+  const { count: completedCount } = await cFrom("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "completed");
+  const { count: cancelledCount } = await cFrom("mobility_jobs").select("id", { count: "exact", head: true }).eq("rider_user_id", userId).eq("status", "cancelled");
   return { wallet, allSplits: allSplits ?? [], jobs: jobs ?? [], completedCount: completedCount ?? 0, cancelledCount: cancelledCount ?? 0 };
 }
 

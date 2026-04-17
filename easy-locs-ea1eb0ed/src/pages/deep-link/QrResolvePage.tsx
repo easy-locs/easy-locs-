@@ -18,6 +18,7 @@ import { db } from "@/services/db";
 import { formatMoney } from "@/lib/format";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export default function QrResolvePage() {
   useUiEngine("deep-link-qrresolvepage");
   const [params] = useSearchParams();
@@ -137,7 +138,7 @@ function SecurityActionConfirm({ payload }: { payload: UniversalQrPayload }) {
     setProcessing(true);
     try {
       if (payload.action === "login_verify" || payload.action === "device_link") {
-        const { data: result, error: rpcError } = await db.rpc("qr_confirm_security_action", {
+        const { data: result, error: rpcError } = await cRpc("qr_confirm_security_action", {
           p_action: payload.action,
           p_payload_user_id: payload.userId || null,
         });

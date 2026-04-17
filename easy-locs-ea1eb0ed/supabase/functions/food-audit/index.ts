@@ -2,6 +2,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 10);
 
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-audit-engine", trigger_source: "edge-function", status: "ok",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, rows_read: all.length,
@@ -87,7 +88,7 @@ Deno.serve(async (req) => {
       top_failures: sortedFailures.map(([k, v]) => ({ failure: k, count: v })),
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-audit-engine", trigger_source: "edge-function", status: "error",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, effect_summary: `Error: ${(err as Error).message}`,

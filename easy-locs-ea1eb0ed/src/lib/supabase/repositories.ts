@@ -1,4 +1,5 @@
-import { domainDb, db } from "@/services/db";
+import { db } from "@/services/db";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import type {
   OrbitProfile,
   WalletStateModel,
@@ -66,8 +67,7 @@ function mapOrbitToProfileRow(profile: OrbitProfile): Record<string, unknown> {
 
 export const orbitRepo = {
   async getByOrbitId(orbitId: string): Promise<OrbitProfile | null> {
-    const { data, error } = await domainDb.identity
-      .from("profiles")
+    const { data, error } = await cFrom("profiles", { schema: "identity" })
       .select("*")
       .eq("orbit_id", orbitId)
       .maybeSingle();
@@ -80,8 +80,7 @@ export const orbitRepo = {
   },
 
   async upsert(profile: OrbitProfile): Promise<OrbitProfile> {
-    const { data, error } = await domainDb.identity
-      .from("profiles")
+    const { data, error } = await cFrom("profiles", { schema: "identity" })
       .upsert(mapOrbitToProfileRow(profile), { onConflict: "id" })
       .select()
       .single();
@@ -92,8 +91,7 @@ export const orbitRepo = {
 
 export const walletRepo = {
   async getByOwnerOrbitId(ownerOrbitId: string): Promise<WalletStateModel | null> {
-    const { data, error } = await domainDb.wallet
-      .from("wallet_accounts")
+    const { data, error } = await cFrom("wallet_accounts", { schema: "wallet" })
       .select("*")
       .eq("owner_user_id", ownerOrbitId)
       .eq("status", "active")
@@ -125,8 +123,7 @@ export const walletRepo = {
     const { data: authData } = await db.auth.getUser();
     const userId = authData?.user?.id;
 
-    const { data, error } = await domainDb.wallet
-      .from("wallet_transactions")
+    const { data, error } = await cFrom("wallet_transactions", { schema: "wallet" })
       .insert({
         sender_id: userId || null,
         amount: tx.amount,
@@ -154,8 +151,7 @@ export const walletRepo = {
 
 export const listingRepo = {
   async listPublished(): Promise<PropertyListing[]> {
-    const { data, error } = await domainDb.marketplace
-      .from("listings")
+    const { data, error } = await cFrom("listings", { schema: "marketplace" })
       .select("*")
       .eq("status", "published")
       .order("created_at", { ascending: false })
@@ -165,8 +161,7 @@ export const listingRepo = {
   },
 
   async getById(id: string): Promise<PropertyListing | null> {
-    const { data, error } = await domainDb.marketplace
-      .from("listings")
+    const { data, error } = await cFrom("listings", { schema: "marketplace" })
       .select("*")
       .eq("id", id)
       .maybeSingle();
@@ -175,8 +170,7 @@ export const listingRepo = {
   },
 
   async create(listing: PropertyListing): Promise<PropertyListing> {
-    const { data, error } = await domainDb.marketplace
-      .from("listings")
+    const { data, error } = await cFrom("listings", { schema: "marketplace" })
       .insert(listing as Record<string, unknown>)
       .select()
       .single();
@@ -185,8 +179,7 @@ export const listingRepo = {
   },
 
   async update(id: string, patch: Partial<PropertyListing>): Promise<PropertyListing> {
-    const { data, error } = await domainDb.marketplace
-      .from("listings")
+    const { data, error } = await cFrom("listings", { schema: "marketplace" })
       .update(patch as Record<string, unknown>)
       .eq("id", id)
       .select()
@@ -198,8 +191,7 @@ export const listingRepo = {
 
 export const bookingRepo = {
   async create(booking: BookingRecord): Promise<BookingRecord> {
-    const { data, error } = await domainDb.commerce
-      .from("bookings")
+    const { data, error } = await cFrom("bookings", { schema: "commerce" })
       .insert(booking as Record<string, unknown>)
       .select()
       .single();
@@ -208,8 +200,7 @@ export const bookingRepo = {
   },
 
   async update(id: string, patch: Partial<BookingRecord>): Promise<BookingRecord> {
-    const { data, error } = await domainDb.commerce
-      .from("bookings")
+    const { data, error } = await cFrom("bookings", { schema: "commerce" })
       .update(patch as Record<string, unknown>)
       .eq("id", id)
       .select()
@@ -219,8 +210,7 @@ export const bookingRepo = {
   },
 
   async listByListing(listingId: string): Promise<BookingRecord[]> {
-    const { data, error } = await domainDb.commerce
-      .from("bookings")
+    const { data, error } = await cFrom("bookings", { schema: "commerce" })
       .select("*")
       .eq("listing_id", listingId)
       .order("created_at", { ascending: false })
@@ -249,8 +239,7 @@ export const chatRepo = {
 
     const orbitId = `orbit_${userId.replace(/-/g, "").substring(0, 8)}`;
 
-    const { data, error } = await domainDb.orbit
-      .from("conversations_v2")
+    const { data, error } = await cFrom("conversations_v2", { schema: "orbit" })
       .insert({
         id: conversation.id,
         type: conversation.type || "direct",
@@ -278,8 +267,7 @@ export const chatRepo = {
     const userId = authData?.user?.id;
     if (!userId) throw new Error("Not authenticated");
 
-    const { data, error } = await domainDb.orbit
-      .from("chat_messages_v2")
+    const { data, error } = await cFrom("chat_messages_v2", { schema: "orbit" })
       .insert({
         conversation_id: message.conversationId,
         sender_orbit_id: message.senderOrbitId,
@@ -294,8 +282,7 @@ export const chatRepo = {
 
     try {
       const { notifyNewMessage } = await import("@/lib/engines/notification-event-dispatcher");
-      const convData = await domainDb.orbit
-        .from("conversations_v2")
+      const convData = await cFrom("conversations_v2", { schema: "orbit" })
         .select("participants")
         .eq("id", message.conversationId)
         .maybeSingle();
@@ -316,8 +303,7 @@ export const chatRepo = {
   },
 
   async getMessages(conversationId: string): Promise<ChatMessageRecord[]> {
-    const { data, error } = await domainDb.orbit
-      .from("chat_messages_v2")
+    const { data, error } = await cFrom("chat_messages_v2", { schema: "orbit" })
       .select("*")
       .eq("conversation_id", conversationId)
       .order("created_at", { ascending: true })
@@ -337,8 +323,7 @@ export const chatRepo = {
 
 export const propertyManagementRepo = {
   async createUnit(unit: PropertyUnitManagement): Promise<PropertyUnitManagement> {
-    const { data, error } = await domainDb.property
-      .from("units")
+    const { data, error } = await cFrom("units", { schema: "property" })
       .insert(unit as Record<string, unknown>)
       .select()
       .single();
@@ -347,8 +332,7 @@ export const propertyManagementRepo = {
   },
 
   async createLease(lease: LeaseRecord): Promise<LeaseRecord> {
-    const { data, error } = await domainDb.property
-      .from("leases")
+    const { data, error } = await cFrom("leases", { schema: "property" })
       .insert(lease as Record<string, unknown>)
       .select()
       .single();
@@ -357,8 +341,7 @@ export const propertyManagementRepo = {
   },
 
   async createRentPayment(payment: RentPaymentRecord): Promise<RentPaymentRecord> {
-    const { data, error } = await db
-      .from("rent_payments")
+    const { data, error } = await cFrom("rent_payments")
       .insert(payment as Record<string, unknown>)
       .select()
       .single();
@@ -367,8 +350,7 @@ export const propertyManagementRepo = {
   },
 
   async updateRentPayment(id: string, patch: Partial<RentPaymentRecord>): Promise<RentPaymentRecord> {
-    const { data, error } = await db
-      .from("rent_payments")
+    const { data, error } = await cFrom("rent_payments")
       .update(patch as Record<string, unknown>)
       .eq("id", id)
       .select()

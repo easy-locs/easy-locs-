@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type LoyaltyTier = "bronze" | "silver" | "gold" | "platinum";
 
 export function getLoyaltyTier(points: number): LoyaltyTier {
@@ -10,8 +11,7 @@ export function getLoyaltyTier(points: number): LoyaltyTier {
 }
 
 export async function getOrCreateLoyaltyAccount(userId: string) {
-  const { data: existing, error: findErr } = await db
-    .from("loyalty_accounts")
+  const { data: existing, error: findErr } = await cFrom("loyalty_accounts")
     .select("*")
     .eq("user_id", userId)
     .maybeSingle();
@@ -19,8 +19,7 @@ export async function getOrCreateLoyaltyAccount(userId: string) {
   if (findErr) throw findErr;
   if (existing) return existing;
 
-  const { data, error } = await db
-    .from("loyalty_accounts")
+  const { data, error } = await cFrom("loyalty_accounts")
     .insert({
       user_id: userId,
       points_balance: 0,
@@ -42,8 +41,7 @@ export async function awardLoyaltyPoints(params: {
   const nextPoints = Number(account.points_balance ?? 0) + Number(params.points ?? 0);
   const nextTier = getLoyaltyTier(nextPoints);
 
-  const { data, error } = await db
-    .from("loyalty_accounts")
+  const { data, error } = await cFrom("loyalty_accounts")
     .update({
       points_balance: nextPoints,
       tier: nextTier,
@@ -65,8 +63,7 @@ export async function spendLoyaltyPoints(params: {
   const nextPoints = Math.max(0, Number(account.points_balance ?? 0) - Number(params.points ?? 0));
   const nextTier = getLoyaltyTier(nextPoints);
 
-  const { data, error } = await db
-    .from("loyalty_accounts")
+  const { data, error } = await cFrom("loyalty_accounts")
     .update({
       points_balance: nextPoints,
       tier: nextTier,

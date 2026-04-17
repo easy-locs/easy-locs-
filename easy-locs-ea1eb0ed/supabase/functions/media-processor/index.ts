@@ -7,6 +7,7 @@ import { getS3Client, hasAwsCredentials } from "../_shared/aws-sdk-clients.ts";
 import { GetObjectCommand } from "npm:@aws-sdk/client-s3@3.650.0";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -217,7 +218,7 @@ Deno.serve(async (req) => {
 
     const lqipHash = generateLqipDataUri(originalWidth, originalHeight);
 
-    const { data: assetId, error: upsertError } = await supabase.rpc("upsert_media_asset", {
+    const { data: assetId, error: upsertError } = await cRpcEdge(supabase, "upsert_media_asset", {
       p_bucket: bucket,
       p_path: path,
       p_content_type: contentType,

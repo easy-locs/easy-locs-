@@ -2,6 +2,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -39,7 +40,7 @@ Deno.serve(async (req) => {
       rowsRead++;
       const priority = (m.overall_quality_score ?? 0) < 50 ? 50 : 100;
 
-      await supabase.from("source_ingestion_queue").insert({
+      await cFromEdge(supabase, "source_ingestion_queue").insert({
         source: "deliveroo",
         city: "dubai",
         vertical: "food",
@@ -48,14 +49,14 @@ Deno.serve(async (req) => {
         priority,
       });
 
-      await supabase.from("seed_merchants").update({
+      await cFromEdge(supabase, "seed_merchants").update({
         needs_rescrape: false,
       }).eq("id", m.id);
 
       enqueued++;
     }
 
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-rescrape-monitor-engine", trigger_source: "edge-function", status: "ok",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, rows_read: rowsRead, db_rows_affected: enqueued,
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    await supabase.from("engine_run_logs").insert({
+    await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-rescrape-monitor-engine", trigger_source: "edge-function", status: "error",
       started_at: new Date(started).toISOString(), finished_at: new Date().toISOString(),
       duration_ms: Date.now() - started, effect_summary: `Error: ${(err as Error).message}`,

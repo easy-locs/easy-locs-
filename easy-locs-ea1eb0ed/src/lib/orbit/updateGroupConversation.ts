@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function updateGroupConversation(
   conversationId: string,
   updates: {
@@ -11,8 +12,7 @@ export async function updateGroupConversation(
     participants?: any[];
   }
 ) {
-  const { data: current, error: readError } = await db
-    .from("conversations_v2")
+  const { data: current, error: readError } = await cFrom("conversations_v2")
     .select("id, metadata")
     .eq("id", conversationId)
     .single();
@@ -37,8 +37,7 @@ export async function updateGroupConversation(
   if (updates.title !== undefined) payload.title = updates.title;
   if (updates.participants !== undefined) payload.participants = updates.participants;
 
-  const { data, error } = await db
-    .from("conversations_v2")
+  const { data, error } = await cFrom("conversations_v2")
     .update(payload)
     .eq("id", conversationId)
     .select("*")
