@@ -13,17 +13,15 @@ import { validateIntegrationsBoot } from "@/lib/integrations";
 // during module evaluation, React mount, or the very first render. Full
 // Sentry (replays, tracing) is upgraded later in Stage 1 of the boot plan.
 const __BOOT_START__ = performance.now();
-initSentryBoot();
-// Loud, single-shot validation of every required integration env var. In dev
-// this throws before render so misconfiguration is caught immediately instead
-// of presenting as a silent runtime no-op (Mapbox/AWS/Sentry/PostHog/...).
-validateIntegrationsBoot();
-// Seed a trace for the whole session and propagate it through fetch so
-// front → edge → db logs share a trace_id.
-startTrace();
-installFetchTracePropagation();
+// Each of these must NEVER throw out of module evaluation — they are wrapped
+// individually so a single failing helper cannot blank the screen. The render
+// try/catch below is the second safety net; the React error boundary inside
+// CoreProviders is the third. See docs/boot-audit.md for the full chain.
+try { initSentryBoot(); } catch (err) { console.warn("[boot] initSentryBoot failed", err); }
+try { startTrace(); } catch (err) { console.warn("[boot] startTrace failed", err); }
+try { installFetchTracePropagation(); } catch (err) { console.warn("[boot] installFetchTracePropagation failed", err); }
 // Best-effort OTel bootstrap — no-op unless VITE_OTEL_EXPORTER_OTLP_ENDPOINT is set.
-void initBrowserOtel({ serviceName: "easy-locs-frontend" });
+try { void initBrowserOtel({ serviceName: "easy-locs-frontend" }); } catch (err) { console.warn("[boot] initBrowserOtel failed", err); }
 
 const App = RawApp;
 
@@ -79,6 +77,13 @@ if (typeof window !== "undefined") {
 }
 
 try {
+  // Loud, single-shot validation of every required integration env var. In dev
+  // this throws when truly critical integrations (Supabase) are missing so the
+  // developer sees the failure immediately. Non-critical integrations (AWS,
+  // PostHog, Sentry) only emit a warning + dev banner — they no longer block
+  // boot. Wrapped here so any throw lands in the visible Boot Error UI below
+  // instead of aborting module evaluation and producing a blank screen.
+  validateIntegrationsBoot();
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>
