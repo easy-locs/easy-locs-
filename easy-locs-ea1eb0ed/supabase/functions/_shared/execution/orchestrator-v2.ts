@@ -49,6 +49,7 @@ import {
   type VerificationDecision,
   type VerificationRunOptions,
 } from "./verification-service.ts";
+import type { HeartbeatEmitter } from "./heartbeat-emitter.ts";
 
 export interface ValidationGate {
   validate(
@@ -75,6 +76,17 @@ export interface OrchestratorDeps {
   ownerId: string;
   lockTtlSeconds?: number;
   now?: () => Date;
+  /**
+   * Sovereign Agent Control · L2 (task #810). Optional heartbeat emitter
+   * pinned to this worker. The orchestrator pings it immediately on every
+   * task accept and complete so the in-flight count reflected in
+   * `system.agent_heartbeats` is fresh without waiting for the next tick.
+   * Heartbeat failure is best-effort — it never affects task execution.
+   *
+   * Lifecycle (start/stop) is owned by the worker process, not by the
+   * orchestrator: an emitter is shared across many `run()` calls.
+   */
+  heartbeat?: HeartbeatEmitter;
 }
 
 export class ExecutionOrchestratorV2 {
@@ -219,6 +231,8 @@ export class ExecutionOrchestratorV2 {
     }
 
     await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_LOCKED, { lockKey });
+    // L2 — refresh the heartbeat so in_flight reflects this task accept.
+    this.pingHeartbeat();
 
     let outcome: OrchestrationOutcome;
     try {
@@ -507,6 +521,22 @@ export class ExecutionOrchestratorV2 {
         this.currentSinkErrors.push(`UNLOCK_FAILED:${lockKey}:${detail}`);
         console.warn("[orchestrator-v2] unlock error:", lockKey, detail);
       }
+      // L2 — refresh the heartbeat so in_flight reflects this completion.
+      this.pingHeartbeat();
+    }
+  }
+
+  /**
+   * Best-effort heartbeat ping. NEVER throws and NEVER awaits — the
+   * emitter coalesces overlapping calls internally.
+   */
+  private pingHeartbeat(): void {
+    const hb = this.deps.heartbeat;
+    if (!hb) return;
+    try {
+      void hb.emitNow().catch(() => { /* swallow — best-effort */ });
+    } catch {
+      /* swallow — heartbeat must never affect task execution */
     }
   }
 
