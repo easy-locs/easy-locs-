@@ -1,0 +1,374 @@
+# setInterval / refetchInterval / revalidate / setTimeout-loop callsites
+src/components/admin/AgentCommandConsole.tsx:185:    staleTime: 60_000,
+src/components/admin/AgentCommandConsole.tsx:235:    refetchInterval: 4000,
+src/components/admin/AgentCommandConsole.tsx:236:    staleTime: 1000,
+src/components/admin/ExecutionTaskPanel.tsx:526:    refetchInterval: 5000,
+src/components/admin/ExecutionTaskPanel.tsx:527:    staleTime: 2000,
+src/components/admin/ExecutionTaskPanel.tsx:652:    staleTime: 10_000,
+src/components/admin/control/agents/AgentLiveLogs.tsx:66:    staleTime: 0,
+src/components/admin/control/agents/useAgentMetrics.ts:56:    refetchInterval: 60_000,
+src/components/admin/control/agents/AgentsCockpit.tsx:109:    refetchInterval: 30_000,
+src/components/auth/PhoneOTPFlow.tsx:66:    const timer = setInterval(() => setCooldown((c) => Math.max(0, c - 1)), 1000);
+src/components/brand/SplashScreen.tsx:455:    const interval = setInterval(() => {
+src/components/call/IncomingCallDialog.tsx:34:      timerRef.current = setInterval(() => setRingTime((prev) => prev + 1), 1000);
+src/components/call/CallProvider.tsx:95:    const interval = setInterval(tick, 1000);
+src/components/chat/ChatPaymentCards.tsx:297:    refetchInterval: request.status !== "paid" ? 3000 : false,
+src/components/communication-hub/DealContextHeader.tsx:109:    staleTime: 10_000,
+src/components/communication-hub/OrbitStatusSection.tsx:278:    const interval = setInterval(() => {
+src/components/communication-hub/QRContactCard.tsx:251:        scanIntervalRef.current = setInterval(async () => {
+src/components/communication-hub/QRContactCard.tsx:270:        scanIntervalRef.current = setInterval(() => {
+src/components/communication/VoiceRecorder.tsx:49:      timerRef.current = setInterval(() => setDuration(d => d + 1), 1000);
+src/components/dashboard/C2CSmartBanner.tsx:233:    const timer = setInterval(() => {
+src/components/dashboard/RealEstateAnalyticsCard.tsx:20:    staleTime: 10 * 60 * 1000,
+src/components/dashboard/ReferralCreditWidget.tsx:43:    staleTime: 5 * 60 * 1000,
+src/components/dashboard/PropertyDashboardWidget.tsx:25:    staleTime: 5 * 60 * 1000,
+src/components/dashboard/PropertyDashboardWidget.tsx:32:    staleTime: 5 * 60 * 1000,
+src/components/delivery/CustomerLiveTracking.tsx:64:    const interval = setInterval(() => {
+src/components/delivery/RealTimeDataHub.tsx:55:    const t = setInterval(() => setPulse(p => p + 1), 3000);
+src/components/discovery/VerticalHubPage.tsx:260:    const interval = window.setInterval(() => {
+src/components/home/SmartRecommendationsSection.tsx:13:    staleTime: 10000,
+src/components/landing/LiveActivityBar.tsx:26:    const iv = setInterval(() => {
+src/components/landing/Pricing.tsx:162:                onClick={() => setInterval(v)}
+src/components/marketplace/LiveCommerceToggle.tsx:41:    const interval = setInterval(update, 30_000);
+src/components/marketplace/StorefrontAnalytics.tsx:37:    staleTime: 60_000,
+src/components/marketplace/StorefrontAnalytics.tsx:52:    staleTime: 60_000,
+src/components/merchant/MerchantKitchenQueue.tsx:66:    const timer = setInterval(() => setTick((t) => t + 1), 1000);
+src/components/merchant/OrderNotificationAlert.tsx:50:      const interval = setInterval(playTone, 2000);
+src/components/mobility/TaxiRequestingScreen.tsx:25:    const interval = setInterval(() => {
+src/components/mobility/TaxiRequestingScreen.tsx:32:    const timer = setInterval(() => {
+src/components/mobility/MobilityLiveMap.tsx:411:    intervalRef.current = setInterval(() => {
+src/components/orbit/composer/ComposerVoiceRecording.tsx:28:    const id = setInterval(() => {
+src/components/orbit/payments/OrbitWalletPinDialog.tsx:69:    const interval = setInterval(tick, 1000);
+src/components/orders/OrderTimeline.tsx:9:    staleTime: 5000,
+src/components/pos/KitchenQueue.tsx:50:    refetchInterval: 10_000,
+src/components/promo/HomePromoCarousel.tsx:25:    staleTime: 10000,
+src/components/public/GuestBookingReply.tsx:58:    refetchInterval: 15000,
+src/components/radar/RadarStoryRail.tsx:92:    const iv = setInterval(load, 60_000);
+src/components/radar/RadarStoryRail.tsx:102:    const iv = setInterval(() => {
+src/components/reviews/ReviewList.tsx:12:    staleTime: 5000,
+src/components/rides/DriverLiveTripCard.tsx:43:    geoInterval.current = setInterval(pushGeo, 10000);
+src/components/storefront/AuctionManager.tsx:39:    const id = setInterval(tick, 1000);
+src/components/storefront/FlashSales.tsx:37:    const timer = setInterval(update, 1000);
+src/components/storefront/NotificationIntelligence.tsx:48:    staleTime: 30_000,
+src/components/storefront/SmartHome.tsx:392:    const interval = setInterval(() => {
+src/components/support/SupportThread.tsx:28:    staleTime: 5000,
+src/components/stories/StoryProgressBar.tsx:22:    const timer = setInterval(() => {
+src/components/islamic/AdhanMiniPlayer.tsx:14:    const interval = setInterval(() => {
+src/components/analytics/PriceComparisonOverlay.tsx:46:    staleTime: 10 * 60 * 1000,
+src/contexts/AuthContext.tsx:589:    const interval = setInterval(() => {
+src/domains/cards/adapters/seller-card-adapters.ts:27:    staleTime: 30_000,
+src/domains/cards/adapters/seller-card-adapters.ts:73:    staleTime: 30_000,
+src/domains/cards/adapters/admin-card-adapters.ts:30:    staleTime: 60_000,
+src/domains/cards/adapters/admin-card-adapters.ts:71:    staleTime: 120_000,
+src/domains/cards/adapters/driver-card-adapters.ts:87:    staleTime: 30_000,
+src/domains/orbit/stream/stream-upload.ts:54:  const progressInterval = setInterval(() => {
+src/families/calls/call-audio-engine.ts:93:      ringbackInterval = setInterval(playBurst, 4000); // 2s tone + 2s silence
+src/families/calls/call-ringtone.ts:73:      synthInterval = setInterval(playBurst, p.onMs + p.offMs);
+src/families/dashboard/dashboard.view-model.ts:115:    const iv = setInterval(() => setActiveBannerIdx((i) => (i + 1) % bannersModel.banners.length), 5000);
+src/families/device/device-haptics.ts:115:    const id = setInterval(() => {
+src/families/notifications/notification-vibration.ts:26:    vibrationInterval = setInterval(() => {
+src/families/presence/index.ts:125:  cleanupTimer = setInterval(() => {
+src/families/presence/index.ts:167:    heartbeatTimer = setInterval(() => {
+src/hooks/map/useMapRetry.ts:49:    tickTimer.current = setInterval(() => {
+src/hooks/map/useMapAdaptive.ts:127:    const interval = setInterval(evaluate, 3000);
+src/hooks/marketplace/useMarketplaceData.ts:25:    staleTime: 2 * 60 * 1000,
+src/hooks/marketplace/useMarketplaceData.ts:35:    staleTime: 2 * 60 * 1000,
+src/hooks/marketplace/useMarketplaceData.ts:50:    staleTime: 5 * 60 * 1000,
+src/hooks/orbit/families/useThreadMessageFamily.ts:113:    const interval = setInterval(() => {
+src/hooks/useDiscoverListings.ts:66:    staleTime: 60_000,
+src/hooks/useDriverLive.ts:9:    staleTime: 3000,
+src/hooks/useDriverLive.ts:10:    refetchInterval: 5000,
+src/hooks/useRideLiveETA.ts:27:    timerRef.current = setInterval(refresh, POLL_INTERVAL_MS);
+src/hooks/useRuntimeSupervisor.ts:31:    const timer = setInterval(refresh, pollIntervalMs);
+src/hooks/useUnifiedGlobalEngine.ts:55:    intervalRef.current = setInterval(execute, intervalMs);
+src/hooks/useVoiceRecorder.ts:54:      timerRef.current = setInterval(() => {
+src/hooks/useStoryFeed.ts:12:    staleTime: 5 * 60 * 1000,
+src/hooks/useStoryFeed.ts:20:    staleTime: 10 * 60 * 1000,
+src/hooks/useBackendEngineStatus.ts:122:    const timer = setInterval(fetchRuns, pollMs);
+src/hooks/useEngineDebugSnapshot.ts:37:    const timer = setInterval(fetch, pollMs);
+src/hooks/useShopTranslation.ts:42:    staleTime: 5 * 60 * 1000, // Cache 5 min
+src/hooks/useHotelDetail.ts:323:    staleTime: 60_000,
+src/hooks/useHotelDetail.ts:344:    staleTime: 30_000,
+src/hooks/useModuleHealth.ts:60:    const interval = setInterval(() => {
+src/hooks/useOnboardingReviewQueue.ts:16:    staleTime: 20_000,
+src/hooks/useOnboardingReviewQueue.ts:17:    refetchInterval: 30_000,
+src/hooks/useOnboardingQualityDashboard.ts:29:    staleTime: 20_000,
+src/hooks/useOnboardingQualityDashboard.ts:30:    refetchInterval: 30_000,
+src/hooks/useSubscription.ts:68:    const interval = setInterval(refreshSubscription, 60_000);
+src/hooks/useRadarOpportunities.ts:35:    const interval = setInterval(run, RECOMPUTE_INTERVAL_MS);
+src/hooks/useRadarOpportunities.ts:54:    refetchInterval: 30_000,
+src/hooks/useRadarOpportunities.ts:55:    staleTime: 15_000,
+src/hooks/useHomeSections.ts:142:    staleTime: 60_000,
+src/hooks/useVerticalListings.ts:219:    staleTime: 60_000,
+src/hooks/useDashboardLiveStats.ts:32:    staleTime: 30_000,
+src/hooks/useDashboardLiveStats.ts:46:    staleTime: 5 * 60_000,
+src/hooks/useDashboardLiveStats.ts:59:    staleTime: 60_000,
+src/hooks/useGeoDrivers.ts:113:    const interval = setInterval(fetchDrivers, 30_000);
+src/hooks/useAppHealthCheck.ts:93:    const t = window.setInterval(run, 60_000);
+src/hooks/useDeliveryLiveEta.ts:170:    const interval = setInterval(recalculate, REFRESH_INTERVAL_MS);
+src/hooks/useDeliveryLiveEta.ts:176:    const tick = setInterval(() => {
+src/hooks/useSmartLiveEta.ts:163:    const interval = setInterval(recalculate, REFRESH_INTERVAL_MS);
+src/hooks/useSmartLiveEta.ts:170:    const tick = setInterval(() => {
+src/hooks/useRainRadar.ts:57:    const interval = window.setInterval(() => {
+src/hooks/useIntelligenceTicker.ts:46:    refreshRef.current = setInterval(refresh, REFRESH_INTERVAL_MS);
+src/hooks/useIntelligenceTicker.ts:58:    rotationRef.current = setInterval(() => {
+src/hooks/useOrgRole.ts:30:    staleTime: 60_000,
+src/hooks/useForexRates.ts:122:    const staleCheckInterval = setInterval(() => {
+src/hooks/useLiveWeatherStation.ts:208:    const staleCheckInterval = setInterval(() => {
+src/hooks/usePrayerTimes.ts:220:      tickRef.current = setInterval(updateCountdown, 60_000);
+src/hooks/usePrayerTimes.ts:306:      tickRef.current = setInterval(updateCountdown, 60_000);
+src/hooks/useMapErrorAnalytics.ts:118:    const interval = setInterval(() => setTick((t) => t + 1), 15_000);
+src/hooks/useKycGate.ts:69:    staleTime: 30000,
+src/hooks/useAutonomousEngine.ts:35:    intervalRef.current = setInterval(execute, intervalMs);
+src/hooks/useDeliveryData.ts:161:    refetchInterval: 10_000,
+src/hooks/useDeliveryData.ts:341:    refetchInterval: 10_000,
+src/hooks/useDeliveryData.ts:448:    refetchInterval: 15_000,
+src/hooks/usePrayerNotifications.ts:222:    const interval = setInterval(poll, 30_000);
+src/hooks/useCacheMetrics.ts:120:    intervalRef.current = setInterval(fetchMetrics, POLL_INTERVAL_MS);
+src/hooks/useVisibilityAwareInterval.ts:45:    const tickId = setInterval(() => {
+src/hooks/useNewsData.ts:179:    const staleCheckInterval = setInterval(() => {
+src/hooks/useMapErrorDashboard.ts:291:    countdownRef.current = setInterval(() => {
+src/hooks/useMapErrorDashboard.ts:297:    intervalRef.current = setInterval(() => {
+src/hooks/useMapErrorDashboard.ts:338:    countdownRef.current = setInterval(() => {
+src/hooks/useMapErrorDashboard.ts:344:    intervalRef.current = setInterval(() => {
+src/hooks/useIsAdmin.ts:113:    staleTime: 5 * 60 * 1000,
+src/hooks/useIsAdmin.ts:115:    refetchOnWindowFocus: false,
+src/lib/analytics/event-bus.ts:49:  batchInterval = setInterval(async () => {
+src/lib/analytics/journeyTracker.ts:68:  setInterval(() => {
+src/lib/auto-heal/auto-heal-engine.ts:116:    this.checkTimer = setInterval(() => this.runChecks(), this.checkIntervalMs);
+src/lib/call/group-call-manager.ts:453:    this.elapsedTimer = setInterval(() => {
+src/lib/call/network-quality.ts:78:    this.interval = setInterval(() => void this.collect(), 3000);
+src/lib/call/call-recorder.ts:126:      this.durationTimer = setInterval(() => {
+src/lib/dedup/message-dedup.ts:53:    this.evictionTimer = setInterval(() => {
+src/lib/map/engine/performance-telemetry.ts:106:  const flushTimer = setInterval(() => {
+src/lib/mobility/dispatch-monitor.ts:89:  monitorInterval = setInterval(async () => {
+src/lib/mobility/gps-scheduler.ts:153:  state.timer = setInterval(pushLocation, ms);
+src/lib/mobility/smart-dispatch-controller.ts:582:  cronInterval = setInterval(async () => {
+src/lib/network/fallback-system.ts:31:      poller.timer = setInterval(async () => {
+src/lib/network/connection-manager.ts:169:    this.heartbeatInterval = setInterval(() => {
+src/lib/notifications/sounds.ts:134:  ringtoneInterval = setInterval(playRingPattern, 2400);
+src/lib/platform/module-health-system.ts:116:    this.healthInterval = setInterval(() => this.runHealthCycle(), 30_000);
+src/lib/platform/runtime-pipeline.ts:300:    this.dedupIntervalId = setInterval(() => {
+src/lib/radar/engines/source-engine.ts:73:    this.timers.set(key, setInterval(() => { void this.fetch(key); }, ms));
+src/lib/radar/radar-engine.ts:144:  setInterval(() => {
+src/lib/radar/radar-engine.ts:222:  setInterval(() => {
+src/lib/radar/radar-cinema-engine.ts:495:  state.timelineTimer = window.setInterval(() => {
+src/lib/runtime/optimistic-ui.ts:58:    queryClient.prefetchQuery({ queryKey: q.key, queryFn: q.fn, staleTime: 60_000 });
+src/lib/runtime/stale-cache-detector.ts:39:  scanTimer = setInterval(() => scanForStaleCache(), intervalMs);
+src/lib/runtime/auto-repair-engine.ts:203:  const interval = setInterval(() => runAutoRepairCycle(), intervalMs);
+src/lib/runtime/realtime-intelligence.ts:89:  const timer = setInterval(() => {
+src/lib/runtime/evolution-engine.ts:163:  intervalId = setInterval(() => {
+src/lib/runtime/continuous-improvement-loop.ts:176:  intervalId = setInterval(async () => {
+src/lib/runtime/architecture-guard.ts:232:  intervalId = setInterval(runArchitectureGuard, GUARD_INTERVAL_MS);
+src/lib/runtime/smart-flow-bridge.ts:60:  const scanInterval = setInterval(() => {
+src/lib/runtime/smart-prefetch.ts:60:        staleTime: target.staleTime ?? 30_000,
+src/lib/security/security-event-logger.ts:115:    flushTimer = setInterval(flushEvents, FLUSH_INTERVAL_MS);
+src/lib/security/anti-fraud-guard.ts:66:setInterval(pruneExpired, 60_000);
+src/lib/shared/platform-bus.ts:373:        this._devEmitTimer = setInterval(() => {
+src/lib/support/agents/index.ts:45:    setInterval(() => safeRun("Shop monitor", runShop), AGENT_INTERVALS.shopMonitor),
+src/lib/support/agents/index.ts:46:    setInterval(() => safeRun("Payment anomaly", runPayment), AGENT_INTERVALS.paymentAnomaly),
+src/lib/support/agents/index.ts:47:    setInterval(() => safeRun("Learning", runLearn), AGENT_INTERVALS.learning),
+src/lib/sync/time-sync.ts:73:  const timer = setInterval(() => syncClock(), intervalMs);
+src/lib/sync/background-sync.ts:97:    this.syncTimer = setInterval(() => {
+src/lib/ringtone.ts:86:    ringtoneInterval = setInterval(async () => {
+src/lib/task-queue.ts:217:    job.timerId = setInterval(async () => {
+src/lib/version-check.ts:150:  const interval = setInterval(check, CHECK_INTERVAL);
+src/lib/ride/ride-tracking-store.ts:66:  trackingInterval = setInterval(() => {
+src/lib/data-quality/execution-orchestrator.ts:176:  scheduledInterval = setInterval(() => {
+src/lib/enforcement/enforcement-wiring.ts:497:  pipelineTimer = setInterval(() => {
+src/lib/enforcement/enforcement-wiring.ts:531:  flowTimeoutTimer = setInterval(() => {
+src/lib/infrastructure/adaptive-storm-guard.ts:156:    this._windowInterval = setInterval(() => {
+src/lib/infrastructure/backpressure-manager.ts:200:    this._drainInterval = setInterval(() => {
+src/lib/infrastructure/dead-event-cleanup.ts:36:    this._cleanupInterval = setInterval(() => {
+src/lib/infrastructure/sla-engine-contracts.ts:209:    this._checkInterval = setInterval(() => {
+src/lib/infrastructure/cache-layer.ts:227:  _pruneInterval = setInterval(() => appCache.prune(), intervalMs);
+src/lib/infrastructure/realtime-hardener.ts:182:    this.globalHealthTimer = setInterval(() => {
+src/lib/infrastructure/realtime-hardener.ts:303:    hc.heartbeatTimer = setInterval(() => {
+src/lib/infrastructure/realtime-hardener.ts:329:    hc.zombieTimer = setInterval(() => {
+src/lib/predictive/anomaly-detector.ts:398:    this._intervalId = setInterval(() => this.analyzeAll(), BUCKET_DURATION_MS);
+src/lib/self-healing/closed-loop-wiring.ts:123:  const interval = setInterval(() => {
+src/lib/call-manager.ts:134:    this.elapsedTimer = setInterval(() => {
+src/lib/redis/presence-service.ts:128:  _heartbeatTimer = setInterval(() => {
+src/lib/client-throttle.ts:89:  setInterval(() => {
+src/lib/query-client.ts:7:      staleTime: 10 * 60 * 1000,
+src/lib/query-client.ts:11:      refetchOnWindowFocus: false,
+src/lib/query-prefetch.ts:21:    staleTime: 5 * 60 * 1000,
+src/lib/query-prefetch.ts:36:      staleTime: 60_000,
+src/lib/query-prefetch.ts:50:      staleTime: 60_000,
+src/lib/query-prefetch.ts:63:      staleTime: 30_000,
+src/lib/query-prefetch.ts:75:      staleTime: 5 * 60 * 1000,
+src/lib/guest-call.ts:409:    this.pollTimer = setInterval(async () => {
+src/lib/api-gateway/intelligence-bridge.ts:74:  const correlationTimer = setInterval(() => {
+src/lib/api-gateway/orchestration-engine.ts:47:    this._refreshTimer = setInterval(() => {
+src/lib/realtime-manager.ts:356:    this.presenceInterval = setInterval(heartbeat, 30_000);
+src/lib/realtime-manager.ts:423:    this.signalCleanupInterval = setInterval(() => {
+src/pages/admin/AdminCrmOpsPage.tsx:23:    staleTime: 10000,
+src/pages/admin/AdminGrowthOpsPage.tsx:27:    staleTime: 10000,
+src/pages/admin/AdminQualityOpsPage.tsx:22:    staleTime: 10000,
+src/pages/admin/AdminRetentionOpsPage.tsx:28:    staleTime: 10000,
+src/pages/admin/AdminSupportSlaPage.tsx:28:    staleTime: 5000,
+src/pages/admin/AdminUserLookupPage.tsx:18:    staleTime: 5000,
+src/pages/admin/AdminAnalyticsOpsPage.tsx:15:    staleTime: 10000,
+src/pages/admin/AdminAutonomyDashboardPage.tsx:80:    const interval = setInterval(loadData, 30000);
+src/pages/admin/AdminContentOpsPage.tsx:15:    staleTime: 10000,
+src/pages/admin/AdminContentOpsPage.tsx:21:    staleTime: 10000,
+src/pages/admin/AdminControlRoomPage.tsx:145:    refetchInterval: 10_000,
+src/pages/admin/AdminControlRoomPage.tsx:158:    refetchInterval: 30_000,
+src/pages/admin/AdminControlRoomPage.tsx:171:    refetchInterval: 15_000,
+src/pages/admin/AdminControlRoomPage.tsx:1238:    staleTime: 10_000,
+src/pages/admin/AdminDeliveryOpsPage.tsx:29:    staleTime: 10_000,
+src/pages/admin/AdminDriverMonitorPage.tsx:14:    staleTime: 5000,
+src/pages/admin/AdminEnginesDashboardPage.tsx:152:    const timer = setInterval(() => setTick(t => t + 1), 8000);
+src/pages/admin/AdminFinanceSummaryPage.tsx:24:    staleTime: 10000,
+src/pages/admin/AdminFirecrawlUsagePage.tsx:82:    staleTime: 30000,
+src/pages/admin/AdminFraudDetectionPage.tsx:33:    staleTime: 10000,
+src/pages/admin/AdminKycReviewPage.tsx:77:    staleTime: 5000,
+src/pages/admin/AdminMerchantApprovalQueuePage.tsx:15:    staleTime: 5000,
+src/pages/admin/AdminMerchantHealthPage.tsx:46:    staleTime: 10000,
+src/pages/admin/AdminNotificationOpsPage.tsx:14:    staleTime: 5000,
+src/pages/admin/AdminOpsDashboardPage.tsx:17:  const { data, isLoading, error, refetch } = useQuery({ queryKey: ["admin-ops-dashboard"], queryFn: fetchOpsDashboardData, staleTime: 15_000 });
+src/pages/admin/AdminOrderWatchPage.tsx:24:    staleTime: 5000,
+src/pages/admin/AdminPaymentsOpsPage.tsx:33:    staleTime: 10000,
+src/pages/admin/AdminSupportOpsPage.tsx:22:    staleTime: 10_000,
+src/pages/admin/EngineControlRoomPage.tsx:374:    const id = setInterval(refresh, 5_000);
+src/pages/admin/EngineMemoryPanel.tsx:90:    const interval = setInterval(() => setRefreshKey(k => k + 1), 15_000);
+src/pages/admin/GovernancePanel.tsx:38:    staleTime: 10_000,
+src/pages/admin/GovernancePanel.tsx:86:    const interval = setInterval(() => setRefreshKey((k) => k + 1), 10_000);
+src/pages/admin/AdminSystemHealthPage.tsx:26:  const { data, isLoading } = useQuery({ queryKey: ["admin-system-health"], queryFn: fetchSystemHealthData, staleTime: 10000 });
+src/pages/admin/StatementDashboardPage.tsx:353:    const interval = setInterval(refresh, 15_000);
+src/pages/admin/CommandControlDashboard.tsx:110:    staleTime: 15000,
+src/pages/admin/CommandControlDashboard.tsx:148:    staleTime: 10000,
+src/pages/admin/CommandControlDashboard.tsx:157:    staleTime: 15000,
+src/pages/admin/CommandControlDashboard.tsx:247:    staleTime: 10000,
+src/pages/admin/CommandControlDashboard.tsx:347:    staleTime: 10000,
+src/pages/admin/CommandControlDashboard.tsx:400:    staleTime: 10000,
+src/pages/admin/CommandControlDashboard.tsx:441:    staleTime: 30000,
+src/pages/admin/CommandControlDashboard.tsx:494:    staleTime: 10000,
+src/pages/admin/CommandControlDashboard.tsx:533:    staleTime: 15000,
+src/pages/admin/CommandControlDashboard.tsx:652:    staleTime: 30000,
+src/pages/admin/CommandControlDashboard.tsx:717:    staleTime: 30000,
+src/pages/admin/CommandControlDashboard.tsx:752:    staleTime: 15000,
+src/pages/admin/CommandControlDashboard.tsx:830:    refetchInterval: 5000,
+src/pages/admin/CommandControlDashboard.tsx:831:    staleTime: 2000,
+src/pages/admin/AdminSuperDashboardPage.tsx:114:    refetchInterval: 30000,
+src/pages/admin/AdminAgentsPage.tsx:107:    refetchInterval: 30_000,
+src/pages/admin/control/sections/AutonomySection.tsx:98:    refetchInterval: 30_000,
+src/pages/admin/control/sections/EnginesSection.tsx:112:    refetchInterval: 15_000,
+src/pages/admin/control/sections/EnginesSection.tsx:146:    refetchInterval: selected ? 5_000 : false,
+src/pages/admin/control/sections/ApprovalsSection.tsx:130:    refetchInterval: 30_000,
+src/pages/admin/control/overview/ControlOverview.tsx:109:    refetchInterval: 15_000,
+src/pages/admin/control/overview/ControlOverview.tsx:110:    staleTime: 5_000,
+src/pages/admin/control/runs/RunsExplorer.tsx:150:    staleTime: 60_000,
+src/pages/admin/control/runs/RunsExplorer.tsx:169:    refetchInterval: 15_000,
+src/pages/admin/AdminAgentRunsPage.tsx:67:    refetchInterval: 15_000,
+src/pages/admin/AdminApprovalsPage.tsx:107:    refetchInterval: 30_000,
+src/pages/admin/AdminApprovalsPage.tsx:126:    refetchInterval: 30_000,
+src/pages/admin/AdminDldBackfillPage.tsx:88:    staleTime: 15_000,
+src/pages/customer/CustomerAutoRepeatPage.tsx:22:    staleTime: 5000,
+src/pages/customer/CustomerSavedCartsPage.tsx:23:    staleTime: 5000,
+src/pages/customer/CustomerActiveOrdersPage.tsx:33:    staleTime: 5000,
+src/pages/customer/CustomerActiveOrdersPage.tsx:34:    refetchInterval: 7000,
+src/pages/customer/CustomerLoyaltyHistoryPage.tsx:86:    staleTime: 10000,
+src/pages/customer/CustomerOrderArchivePage.tsx:18:    staleTime: 10000,
+src/pages/customer/CustomerOrderReceiptsPage.tsx:28:    staleTime: 10000,
+src/pages/customer/CustomerPaymentActivityPage.tsx:17:    staleTime: 10000,
+src/pages/customer/CustomerReorderPage.tsx:18:    staleTime: 10000,
+src/pages/customer/CustomerRewardRedemptionPage.tsx:25:    staleTime: 5000,
+src/pages/driver/DriverActiveMissionsPage.tsx:29:    staleTime: 5000,
+src/pages/driver/DriverActiveMissionsPage.tsx:30:    refetchInterval: 8000,
+src/pages/driver/DriverCompletedDeliveriesPage.tsx:17:    staleTime: 10000,
+src/pages/driver/DriverEarningsPageNew.tsx:48:    staleTime: 10000,
+src/pages/driver/DriverEarningsSummaryPage.tsx:29:    staleTime: 10000,
+src/pages/driver/DriverMissionDetailPage.tsx:29:    staleTime: 10_000,
+src/pages/driver/DriverMissionsPage.tsx:28:    staleTime: 10_000,
+src/pages/driver/DriverTaxiDashboardPage.tsx:144:    countdownRef.current = setInterval(() => {
+src/pages/food/CuisineListPage.tsx:152:    staleTime: 120_000,
+src/pages/food/RestaurantPage.tsx:118:    staleTime: 60_000,
+src/pages/food/RestaurantPage.tsx:139:    staleTime: 60_000,
+src/pages/merchant/MerchantAutoAcceptSettingsPage.tsx:20:    staleTime: 5000,
+src/pages/merchant/MerchantBasicAnalyticsPage.tsx:30:    staleTime: 10000,
+src/pages/merchant/MerchantDailySalesPage.tsx:33:    staleTime: 10000,
+src/pages/merchant/MerchantMenuBulkEditPage.tsx:19:    staleTime: 10000,
+src/pages/merchant/MerchantReviewRepliesPage.tsx:21:    staleTime: 5000,
+src/pages/merchant/MerchantStaffAccessPage.tsx:26:    staleTime: 5000,
+src/pages/merchant/MerchantPromoBannerEditorPage.tsx:23:    staleTime: 5000,
+src/pages/merchant/MerchantBusinessSummaryPage.tsx:33:    staleTime: 10000,
+src/pages/merchant/MerchantCouponManagerPage.tsx:26:    staleTime: 5000,
+src/pages/merchant/MerchantCustomerInsightsPage.tsx:35:    staleTime: 10000,
+src/pages/merchant/MerchantCustomersPage.tsx:56:    staleTime: 10000,
+src/pages/merchant/MerchantInventoryAlertsPage.tsx:16:    staleTime: 10000,
+src/pages/merchant/MerchantInventoryPage.tsx:19:    staleTime: 5000,
+src/pages/merchant/MerchantKitchenDisplayPage.tsx:39:    staleTime: 5000,
+src/pages/merchant/MerchantKitchenDisplayPage.tsx:40:    refetchInterval: 5000,
+src/pages/merchant/MerchantLiveControlPage.tsx:22:    staleTime: 5000,
+src/pages/merchant/MerchantMenuPage.tsx:27:    staleTime: 30_000,
+src/pages/merchant/MerchantOrderBoardPage.tsx:41:    staleTime: 5000,
+src/pages/merchant/MerchantOrderBoardPage.tsx:42:    refetchInterval: 7000,
+src/pages/merchant/MerchantProductPerformancePage.tsx:29:    staleTime: 10000,
+src/pages/merchant/MerchantPromoManagerPage.tsx:22:    staleTime: 5000,
+src/pages/merchant/MerchantRefundRequestsPage.tsx:17:    staleTime: 5000,
+src/pages/merchant/MerchantStoreSettingsPage.tsx:23:    staleTime: 10000,
+src/pages/mobility/RiderLivePage.tsx:67:      intervalId = setInterval(tick, 200);
+src/pages/mobility/RiderLivePage.tsx:170:    const interval = setInterval(() => {
+src/pages/mobility/RiderLivePage.tsx:199:    const t = setInterval(() => setGpsHealth(getGPSHealth()), 5000);
+src/pages/support/SupportTicketDetailPage.tsx:22:    staleTime: 10000,
+src/pages/support/SupportTicketsPage.tsx:20:    staleTime: 15_000,
+src/pages/travel/FlightPaymentPage.tsx:39:    const interval = setInterval(update, 1000);
+src/pages/me/MePropertyDetail.tsx:95:    staleTime: 30_000,
+src/pages/me/MePropertyDetail.tsx:104:    staleTime: 30_000,
+src/pages/me/MePropertyHub.tsx:40:    staleTime: 60_000,
+src/pages/me/MeTenantView.tsx:38:    staleTime: 30_000,
+src/pages/pro/ProCompliance.tsx:53:    staleTime: 10000,
+src/pages/pro/ProCompliance.tsx:60:    staleTime: 10000,
+src/pages/geo/GeoExplorerPage.tsx:187:    const interval = setInterval(() => {
+src/pages/geo/GeoExplorerPage.tsx:263:    const interval = setInterval(() => {
+src/pages/provider/ProviderDashboardPage.tsx:35:    refetchInterval: 30000,
+src/pages/CustomerSpendingInsightsPage.tsx:49:    staleTime: 10000,
+src/pages/FavoritesPage.tsx:26:    staleTime: 5000,
+src/pages/FavoritesPage.tsx:51:    staleTime: 5000,
+src/pages/MeCommandCenter.tsx:99:    staleTime: 60_000,
+src/pages/MeCommandCenter.tsx:141:    staleTime: 60_000,
+src/pages/MeCommandCenter.tsx:154:    staleTime: 120_000,
+src/pages/MeCommandCenter.tsx:167:    staleTime: 120_000,
+src/pages/MeCommandCenter.tsx:180:    staleTime: 120_000,
+src/pages/MeCommandCenter.tsx:193:    staleTime: 30_000,
+src/pages/MeCommandCenter.tsx:231:    staleTime: 60_000,
+src/pages/MerchantClaimPage.tsx:74:    timerRef.current = setInterval(() => setCountdown((c) => c - 1), 1000);
+src/pages/OrderReceiptPage.tsx:52:    staleTime: 10000,
+src/pages/TrackingPage.tsx:57:    staleTime: 10_000,
+src/pages/TrackingPage.tsx:58:    refetchInterval: 15_000,
+src/pages/CommandCenter.tsx:164:    refetchInterval: 8000,
+src/pages/CommandCenter.tsx:181:    refetchInterval: 8000,
+src/pages/CommandCenter.tsx:208:    refetchInterval: 5000,
+src/pages/CommandCenter.tsx:237:    refetchInterval: 8000,
+src/pages/DashboardCommandCenter.tsx:328:    pollTimerRef.current = setInterval(refreshSelectedFromDb, POLL_INTERVAL_MS);
+src/providers/GlobalExperienceProvider.tsx:15:    intervalRef.current = setInterval(() => {
+src/engines/core/self-pilot.ts:89:  _intervalId = setInterval(runSelfCheck, ms);
+src/engines/core/network-optimizer.ts:34:      refetchOnWindowFocus: false,
+src/engines/core/network-optimizer.ts:58:              staleTime: 300_000,
+src/engines/core/network-optimizer.ts:60:              refetchOnWindowFocus: false,
+src/engines/core/engine-health-monitor.ts:79:    this.checkInterval = setInterval(() => this.runHealthChecks(), 5_000);
+src/engines/core/engine-shared-context.ts:105:    this.supabasePersistInterval = setInterval(() => {
+src/engines/core/engine-learning.ts:24:  learningTimer = setInterval(() => {
+src/engines/core/engine-optimizer.ts:50:    this.optimizerInterval = setInterval(() => this.runOptimization(), OPTIMIZER_INTERVAL_MS);
+src/engines/core/engine-scheduler.ts:149:    this.schedulerInterval = setInterval(() => this.runSchedulerCycle(), 500);
+src/engines/core/engine-storm-guard.ts:48:    this.cleanupInterval = setInterval(() => this.cleanup(), 10_000);
+src/engines/core/base-engine.ts:107:      this._timer = setInterval(() => this.executeTick(), this.intervalMs);
+src/engines/core/learning-loop.ts:100:  const invariantCheckInterval = setInterval(() => {
+src/engines/core/wiring-verifier.ts:540:  _continuousTimer = setInterval(run, intervalMs);
+src/engines/engine-registry.ts:410:      intervalId = setInterval(run, 300_000);
+src/services/governance/governance-dedup.ts:12:  cleanupTimer = setInterval(() => {
+src/services/data/data-health-monitor.ts:66:  _healthTimer = setInterval(checkHealth, intervalMs);
+src/services/data/weather-data-service.ts:125:  _refreshTimer = setInterval(() => {
+src/services/data/prayer-data-service.ts:127:  _refreshTimer = setInterval(() => {
+src/services/data/news-data-service.ts:270:  _refreshTimer = setInterval(() => {
+src/services/data/forex-data-service.ts:127:  _refreshTimer = setInterval(() => {
+src/core/sentinel/audit/sentinel-audit-engine.ts:81:    this._timer = setInterval(() => this.tick(), 30_000);
+src/core/sentinel/sentinel-core.ts:67:    this._heartbeatTimer = setInterval(() => this.heartbeat(), 30_000);
+src/core/omega/omega-core.ts:155:    this.loopInterval = setInterval(() => {
+src/core/command-center/command-center-bootstrap.ts:82:  _quarantineProcessingInterval = setInterval(() => {
+src/devos/runtime/devos-runtime.ts:156:  auditTimer = setInterval(runPeriodicAudit, AUDIT_INTERVAL_MS);
+src/devos/runtime/devos-runtime.ts:157:  healthTimer = setInterval(runHealthCheck, HEALTH_CHECK_INTERVAL_MS);
+src/devos/runtime/devos-runtime.ts:158:  errorWatchTimer = setInterval(processErrorBuffer, ERROR_WATCH_INTERVAL_MS);
+src/workers/cross-tab-client.ts:54:      this.heartbeatTimer = setInterval(() => {
+src/workers/cross-tab-sync.ts:218:setInterval(() => {
