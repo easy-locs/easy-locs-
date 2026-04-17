@@ -1,0 +1,27 @@
+Verify sitemap.xml auto-generation during build (Task #965)
+
+Original task: Generate sitemap.xml automatically during build so the SEO
+validator finds the index plus per-section sitemaps in dist/.
+
+Outcome: No code changes required — the implementation was already in place
+from prior SEO work. Verified end-to-end:
+
+- vite-plugin-sitemap.ts is registered in vite.config.ts (line 233) and runs
+  during closeBundle on every build.
+- Plugin emits the full set of files the validator expects:
+  sitemap.xml (index) + sitemap-core, -countries, -cities, -services,
+  -activities, -marketplace, -guides, -best, -compare, -images, -news.
+- Every <url> includes both <lastmod> (from CONTENT_LASTMOD per section) and
+  <priority>. Index entries also carry per-sub-sitemap lastmod values.
+- Routes are sourced from vite-seo-data.ts (same source as the prerender
+  plugin), so sitemap entries match the prerendered route set. A canonical
+  dedup check in the plugin fails the build on duplicate URLs.
+- public/robots.txt already contains "Sitemap: https://www.easy-locs.com/sitemap.xml".
+- The validator's missingSitemaps list intersected against plugin output is
+  empty, so the SEO report shows 0 missing sitemap files.
+
+Verification: Ran the plugin handler in isolation against an empty dist/.
+Result: 12 files written, 10,443 unique canonical URLs, 0 duplicates.
+
+No follow-ups proposed — task scope was verification, broader SEO/build
+items are already represented in the existing project task list.
