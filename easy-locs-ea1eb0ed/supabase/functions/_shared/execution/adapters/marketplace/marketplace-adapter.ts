@@ -24,6 +24,9 @@ import type {
   DomainAdapter,
   ExecutionContext,
   ExecutionTask,
+  RollbackContext,
+  RollbackInvocation,
+  RollbackResult,
 } from "../../types.ts";
 import {
   MARKETPLACE_DOMAIN,
@@ -128,6 +131,79 @@ function buildAdapter(
         rollback_strategy: "auto",
         verifier: "marketplace.listing",
       },
+    },
+
+    // ── Sovereign Agent Control · L3 (#811): rollback contract ──────────
+    rollback_strategy: "auto",
+    /**
+     * Snapshot the listing row before mutation. The orchestrator persists
+     * the result on `execution_tasks.previous_state` and feeds it back to
+     * `rollback()` on failure (auto OR manual).
+     */
+    async snapshotProvider(ctx: ExecutionContext): Promise<ListingSnapshot | null> {
+      const v = validator(ctx.task.payload);
+      if (!v.ok || !v.data) return null;
+      const prior = await deps.repo.findById(v.data.listingId);
+      return prior ? snapshot(prior) : null;
+    },
+    /**
+     * Inverse of execute: restore the listing row to its pre-mutation
+     * snapshot. Idempotent — the orchestrator may retry. Falls back to
+     * the snapshot embedded in the forward output (legacy path) when the
+     * caller has not supplied `previousState` directly.
+     */
+    async rollback(
+      _ctx: RollbackContext,
+      invocation: RollbackInvocation<ListingSnapshot, Record<string, unknown>>,
+    ): Promise<RollbackResult> {
+      const ts = () => now().toISOString();
+      const logs: string[] = [];
+      const snap: ListingSnapshot | null =
+        invocation.previousState ??
+        ((invocation.output?.previous_state as ListingSnapshot | undefined) ?? null);
+
+      if (!snap || !snap.id) {
+        return {
+          success: false,
+          errorCode: MARKETPLACE_ERROR_CODES.MUTATION_FAILED,
+          errorMessage: "rollback: no snapshot available to restore",
+          logs: [`[${ts()}] rollback.no_snapshot`],
+        };
+      }
+
+      try {
+        const restored = await deps.repo.restoreSnapshot(snap);
+        if (!restored) {
+          return {
+            success: false,
+            errorCode: MARKETPLACE_ERROR_CODES.LISTING_NOT_FOUND,
+            errorMessage: `rollback: listing ${snap.id} not found`,
+            logs: [`[${ts()}] rollback.not_found`],
+          };
+        }
+        logs.push(
+          `[${ts()}] rollback.ok restored_status=${restored.status} ` +
+            `is_published=${restored.is_published}`,
+        );
+        return {
+          success: true,
+          output: {
+            listingId: snap.id,
+            restored: snapshot(restored),
+            from_status: invocation.output?.target_status ?? null,
+            trigger: invocation.trigger,
+          },
+          logs,
+        };
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        return {
+          success: false,
+          errorCode: MARKETPLACE_ERROR_CODES.MUTATION_FAILED,
+          errorMessage: `rollback failed: ${message}`,
+          logs: [`[${ts()}] rollback.threw ${message}`],
+        };
+      }
     },
 
     getLockKey(task: ExecutionTask): string {

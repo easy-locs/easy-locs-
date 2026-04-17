@@ -21,7 +21,9 @@ export type ExecutionTaskStatus =
   | "succeeded"
   | "failed"
   | "blocked"
+  | "rolling_back"
   | "rolled_back"
+  | "rollback_failed"
   | "cancelled";
 
 /** Approval-policy enum — bound by CHECK constraint in SQL. */

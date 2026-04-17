@@ -37,11 +37,14 @@ import type { IdempotencyService } from "./idempotency-service.ts";
 import type { TaskRepository } from "./persistence.ts";
 import {
   ORCHESTRATOR_ERROR_CODES,
+  ROLLBACK_ERROR_CODES,
   type AdapterResult,
   type DomainAdapter,
   type ExecutionTask,
   type OrchestrationOutcome,
   type OrchestratorErrorCode,
+  type RollbackInvocation,
+  type RollbackResult,
 } from "./types.ts";
 import {
   TaskVerificationService,
@@ -308,15 +311,46 @@ export class ExecutionOrchestratorV2 {
         lockKey,
       });
 
+      // ── Step 5a (L3): snapshot pre-execute state for rollback ─────────
+      // We MUST capture before adapter.execute() so the auto-rollback path
+      // has the prior state on failure. Snapshot failures are non-fatal
+      // when strategy='auto' is paired with adapters that surface
+      // previous_state in their output (legacy behaviour); they DO surface
+      // an event so operators can see it.
+      let previousState: unknown | null = null;
+      const ctx = {
+        task,
+        lockKey,
+        ownerId: this.deps.ownerId,
+        attempt: task.attempt_count + 1,
+        startedAt: this.now().toISOString(),
+      };
+      if (adapter.snapshotProvider) {
+        try {
+          previousState = await adapter.snapshotProvider(ctx);
+          if (previousState !== null && previousState !== undefined) {
+            // Persist alongside the running-state hop so rollback (auto or
+            // manual) can read it back from the row at any later point.
+            await this.deps.repository.transition(task.id, "running", "running", {
+              previous_state: previousState as Record<string, unknown>,
+            });
+            // ^ no-op transition — persistence layer's transition() with
+            // from===to is treated as a guarded patch by all repository
+            // implementations (Supabase eq filter still matches; in-memory
+            // helper short-circuits to a patch).
+          }
+        } catch (e) {
+          const detail = e instanceof Error ? e.message : String(e);
+          this.currentSinkErrors.push(
+            `${ROLLBACK_ERROR_CODES.SNAPSHOT_THREW}:${detail}`,
+          );
+          console.warn("[orchestrator-v2] snapshotProvider threw:", detail);
+        }
+      }
+
       let adapterResult: AdapterResult;
       try {
-        adapterResult = await adapter.execute({
-          task,
-          lockKey,
-          ownerId: this.deps.ownerId,
-          attempt: task.attempt_count + 1,
-          startedAt: this.now().toISOString(),
-        });
+        adapterResult = await adapter.execute(ctx);
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         await this.deps.repository.transition(task.id, "running", "failed", {
@@ -327,6 +361,9 @@ export class ExecutionOrchestratorV2 {
           errorCode: ORCHESTRATOR_ERROR_CODES.ADAPTER_THREW,
           errorMessage: message,
         });
+        // L3: auto-rollback fires AFTER the failed-state write so observers
+        // see failed→rolling_back, never running→rolling_back.
+        await this.maybeAutoRollback(task, adapter, previousState, null, message);
         outcome = this.outcome(task, "failed", startedAt, {
           errorCode: ORCHESTRATOR_ERROR_CODES.ADAPTER_THREW,
           errorMessage: message,
@@ -350,6 +387,13 @@ export class ExecutionOrchestratorV2 {
           errorCode: code,
           errorMessage: message,
         });
+        await this.maybeAutoRollback(
+          task,
+          adapter,
+          previousState,
+          adapterResult.output ?? null,
+          message,
+        );
         outcome = this.outcome(task, "failed", startedAt, {
           errorCode: code,
           errorMessage: message,
@@ -649,5 +693,359 @@ export class ExecutionOrchestratorV2 {
       sinkErrors: this.currentSinkErrors.slice(),
       ...extras,
     };
+  }
+
+  // ── L3 (#811) — Rollback path ────────────────────────────────────────────
+
+  /**
+   * runRollback — public manual-rollback entry point. Picks up a task that
+   * is ALREADY in `rolling_back` (typically transitioned there by the
+   * `system.request_rollback` RPC or by the execution-loop poller) and
+   * walks it through `adapter.rollback` to a terminal `rolled_back`
+   * (success) or non-terminal `rollback_failed` (must be human-resolved).
+   *
+   * Returns an OrchestrationOutcome whose `finalStatus` is one of
+   * `succeeded` (legacy field name re-purposed) | `failed` | `blocked`,
+   * mapped from the SQL terminal:
+   *   rolled_back     → finalStatus="succeeded"
+   *   rollback_failed → finalStatus="failed"
+   *   blocked         → finalStatus="blocked"  (no adapter / illegal status)
+   */
+  async runRollback(taskId: string): Promise<OrchestrationOutcome> {
+    const startedAt = Date.now();
+    this.currentSinkErrors = [];
+
+    const task = await this.deps.repository.loadTask(taskId);
+    if (!task) {
+      return {
+        taskId,
+        finalStatus: "blocked",
+        errorCode: ORCHESTRATOR_ERROR_CODES.TASK_NOT_FOUND,
+        errorMessage: `Task ${taskId} not found`,
+        durationMs: Date.now() - startedAt,
+        sinkErrors: this.currentSinkErrors.slice(),
+      };
+    }
+
+    if (task.status !== "rolling_back" && task.status !== "rollback_failed") {
+      return this.outcome(task, "blocked", startedAt, {
+        errorCode: ORCHESTRATOR_ERROR_CODES.ILLEGAL_STATUS,
+        errorMessage:
+          `runRollback refuses task in status "${task.status}"; ` +
+          `only "rolling_back" or "rollback_failed" are accepted`,
+      });
+    }
+
+    // From `rollback_failed` we MUST first transition back to
+    // `rolling_back` (the matrix mandates the hop) so the row carries a
+    // fresh `rollback_started_at`.
+    if (task.status === "rollback_failed") {
+      const re = await this.deps.repository.transition(
+        task.id,
+        "rollback_failed",
+        "rolling_back",
+      );
+      if (!re) {
+        return this.outcome(task, "blocked", startedAt, {
+          errorCode: ORCHESTRATOR_ERROR_CODES.PERSIST_FAILED,
+          errorMessage: "Could not re-enter rolling_back from rollback_failed",
+        });
+      }
+      task.status = "rolling_back";
+    }
+
+    const adapter = this.deps.registry.get(task.domain, task.type);
+    if (!adapter || !adapter.rollback) {
+      const code = ROLLBACK_ERROR_CODES.NO_ROLLBACK_HANDLER;
+      const message = !adapter
+        ? `No adapter registered for (${task.domain}, ${task.type})`
+        : `Adapter ${adapter.domain}.${adapter.taskType} declares no rollback handler`;
+      // Fail-loud: leave row in rollback_failed for human resolution.
+      await this.deps.repository.transition(task.id, "rolling_back", "rollback_failed", {
+        error_code: code,
+        rollback_result: { error: message, success: false },
+      });
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED, {
+        errorCode: code,
+        errorMessage: message,
+      });
+      return this.outcome(task, "failed", startedAt, {
+        errorCode: code,
+        errorMessage: message,
+      });
+    }
+
+    // ── L3 defense-in-depth: contract guard for succeeded-origin rollbacks
+    // The DB RPC `system.request_rollback` validates governance, but the
+    // orchestrator MUST also refuse if the operator forced the row into
+    // rolling_back via a direct UPDATE that bypassed the RPC. We detect a
+    // succeeded-origin rollback by inspecting `previous_state IS NOT NULL`
+    // (always set pre-mutation) AND `rollback_reason` indicating manual
+    // intent — but the source of truth is the adapter contract: if the
+    // forward task was previously `succeeded`, only adapters that opt in
+    // via `allow_rollback_after_success` may be rolled back.
+    if (
+      task.previous_state !== null &&
+      task.rollback_reason &&
+      adapter.allow_rollback_after_success !== true &&
+      // `previous_state` from a forward execute() implies the task DID
+      // mutate — for success-origin rollbacks the prior status would have
+      // been `succeeded`. We mark this here by the absence of an
+      // `error_code` on the row (a failed-origin row carries one).
+      (task as unknown as { error_code?: string | null }).error_code == null
+    ) {
+      const code = ROLLBACK_ERROR_CODES.ROLLBACK_NOT_ALLOWED;
+      const message =
+        `Adapter ${adapter.domain}.${adapter.taskType} does not declare ` +
+        `allow_rollback_after_success; refusing succeeded-origin rollback`;
+      await this.deps.repository.transition(task.id, "rolling_back", "rollback_failed", {
+        error_code: code,
+        rollback_result: { error: message, success: false },
+      });
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED, {
+        errorCode: code,
+        errorMessage: message,
+      });
+      return this.outcome(task, "failed", startedAt, {
+        errorCode: code,
+        errorMessage: message,
+      });
+    }
+
+    const lockKey = adapter.getLockKey ? adapter.getLockKey(task) : defaultLockKey(task);
+    const acquired = await this.deps.locks.acquire(
+      lockKey,
+      this.deps.ownerId,
+      this.lockTtlSeconds,
+    );
+    if (!acquired) {
+      // Treat as transient — leave the row in rolling_back so the next
+      // poller tick retries. We surface the fact via sinkErrors.
+      const message = `Could not acquire lock "${lockKey}" for rollback within TTL`;
+      this.currentSinkErrors.push(`ROLLBACK_LOCK_TIMEOUT:${lockKey}`);
+      return this.outcome(task, "blocked", startedAt, {
+        errorCode: ORCHESTRATOR_ERROR_CODES.LOCK_TIMEOUT,
+        errorMessage: message,
+      });
+    }
+
+    try {
+      // Legacy fallback: pre-L3 adapters embedded their snapshot inside
+      // `execution_result.output.previous_state` (marketplace pre-L3
+      // behaviour) — that column is not on the canonical ExecutionTask
+      // type but IS on the underlying row, so we cast through `unknown`.
+      const legacyOutput =
+        ((task as unknown as {
+          execution_result?: { output?: Record<string, unknown> | null } | null;
+        }).execution_result?.output ?? null) as Record<string, unknown> | null;
+      const previousState =
+        task.previous_state ??
+        (legacyOutput?.previous_state ?? null);
+      const reason = task.rollback_reason ?? "manual rollback request";
+      const result = await this.performRollback(
+        task,
+        adapter,
+        previousState as unknown,
+        null,
+        reason,
+        "manual",
+      );
+      return this.outcome(task, result.success ? "succeeded" : "failed", startedAt, {
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage,
+        result: result.result,
+      });
+    } finally {
+      try {
+        await this.deps.locks.release(lockKey, this.deps.ownerId);
+      } catch (e) {
+        const detail = e instanceof Error ? e.message : String(e);
+        this.currentSinkErrors.push(`UNLOCK_FAILED:${lockKey}:${detail}`);
+      }
+      this.pingHeartbeat();
+    }
+  }
+
+  /**
+   * Auto-rollback hook called from the run() failure paths. The task row
+   * has ALREADY been written to `failed` by the caller; this method
+   * transitions failed→rolling_back→{rolled_back|rollback_failed}.
+   *
+   * Pre-conditions:
+   *   - adapter.rollback_strategy === "auto"
+   *   - adapter.rollback is registered (registry guarantees this)
+   *   - we hold the lock for the duration of the call (run() guarantees
+   *     this in its finally block)
+   *
+   * Failures here NEVER mask the original execution failure — the outer
+   * outcome still reports `failed` with the original error_code; rollback
+   * progress lives in `rollback_result` and the rollback canonical events.
+   */
+  private async maybeAutoRollback(
+    task: ExecutionTask,
+    adapter: DomainAdapter,
+    previousState: unknown | null,
+    output: unknown | null,
+    failureReason: string,
+  ): Promise<void> {
+    if (adapter.rollback_strategy !== "auto") return;
+    if (!adapter.rollback) {
+      // Should be impossible (registry validates), but fail loudly.
+      console.warn(
+        `[orchestrator-v2] auto-rollback requested but no handler on ${adapter.domain}.${adapter.taskType}`,
+      );
+      return;
+    }
+    await this.performRollback(
+      task,
+      adapter,
+      previousState,
+      output,
+      failureReason,
+      "auto",
+    );
+  }
+
+  /**
+   * performRollback — common rollback driver shared by auto + manual paths.
+   * Owns the entire rolling_back → terminal transition and event emission.
+   * Returns a normalized verdict for the caller.
+   */
+  private async performRollback(
+    task: ExecutionTask,
+    adapter: DomainAdapter,
+    previousState: unknown | null,
+    output: unknown | null,
+    failureReason: string,
+    trigger: "auto" | "manual",
+  ): Promise<{
+    success: boolean;
+    errorCode?: string;
+    errorMessage?: string;
+    result?: Record<string, unknown>;
+  }> {
+    const lockKey = adapter.getLockKey ? adapter.getLockKey(task) : defaultLockKey(task);
+
+    // For auto-rollback the row is currently `failed`; for manual it is
+    // already `rolling_back`. Normalize to `rolling_back` before invoking
+    // the handler.
+    if (trigger === "auto") {
+      const claimed = await this.deps.repository.transition(
+        task.id,
+        "failed",
+        "rolling_back",
+        { rollback_reason: failureReason },
+      );
+      if (!claimed) {
+        // Someone else (operator?) already moved the row. Be permissive —
+        // the manual path will pick up the work.
+        return {
+          success: false,
+          errorCode: ROLLBACK_ERROR_CODES.ROLLBACK_NOT_ALLOWED,
+          errorMessage:
+            `Auto-rollback could not transition failed→rolling_back for ${task.id}`,
+        };
+      }
+      task.status = "rolling_back";
+    }
+
+    await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_STARTED, {
+      trigger,
+      lockKey,
+      failureReason,
+      hasSnapshot: previousState !== null && previousState !== undefined,
+    });
+
+    const invocation: RollbackInvocation = {
+      previousState,
+      output,
+      failureReason,
+      trigger,
+    };
+
+    let rb: RollbackResult;
+    try {
+      rb = await adapter.rollback!(
+        {
+          task,
+          lockKey,
+          ownerId: this.deps.ownerId,
+          attempt: 1,
+          startedAt: this.now().toISOString(),
+        },
+        invocation,
+      );
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      await this.deps.repository.transition(task.id, "rolling_back", "rollback_failed", {
+        error_code: ROLLBACK_ERROR_CODES.ROLLBACK_THREW,
+        rollback_result: {
+          success: false,
+          error: message,
+          trigger,
+        },
+      });
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED, {
+        errorCode: ROLLBACK_ERROR_CODES.ROLLBACK_THREW,
+        errorMessage: message,
+        trigger,
+      });
+      return {
+        success: false,
+        errorCode: ROLLBACK_ERROR_CODES.ROLLBACK_THREW,
+        errorMessage: message,
+      };
+    }
+
+    if (rb.success) {
+      const ok = await this.deps.repository.transition(
+        task.id,
+        "rolling_back",
+        "rolled_back",
+        {
+          rollback_result: {
+            success: true,
+            output: rb.output ?? null,
+            logs: rb.logs ?? [],
+            trigger,
+          },
+          error_code: null,
+        },
+      );
+      if (!ok) {
+        return {
+          success: false,
+          errorCode: ORCHESTRATOR_ERROR_CODES.PERSIST_FAILED,
+          errorMessage: "Could not transition rolling_back→rolled_back",
+        };
+      }
+      await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK, {
+        trigger,
+        output: rb.output ?? null,
+      });
+      return {
+        success: true,
+        result: { output: rb.output ?? null, logs: rb.logs ?? [], trigger },
+      };
+    }
+
+    const code = rb.errorCode ?? ROLLBACK_ERROR_CODES.ROLLBACK_FAILED;
+    const message = rb.errorMessage ?? "Rollback handler reported failure";
+    await this.deps.repository.transition(task.id, "rolling_back", "rollback_failed", {
+      error_code: code,
+      rollback_result: {
+        success: false,
+        error: message,
+        output: rb.output ?? null,
+        logs: rb.logs ?? [],
+        trigger,
+      },
+    });
+    await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED, {
+      errorCode: code,
+      errorMessage: message,
+      trigger,
+    });
+    return { success: false, errorCode: code, errorMessage: message };
   }
 }

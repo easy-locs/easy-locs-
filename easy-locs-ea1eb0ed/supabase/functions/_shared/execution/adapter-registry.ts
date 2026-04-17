@@ -87,6 +87,39 @@ export class AdapterRegistry {
           `${adapter.domain}.${adapter.taskType} to declare an "agent" ref`,
       );
     }
+
+    // ── Sovereign Agent Control · L3 (task #811): rollback contract ─────
+    // Validate the declared rollback posture against the adapter shape.
+    // The check is intentionally strict — silently accepting a mismatched
+    // posture is exactly how rollback paths drift out of policy.
+    const strategy = adapter.rollback_strategy ?? "none";
+    if (strategy !== "auto" && strategy !== "manual" && strategy !== "none") {
+      throw new Error(
+        `AdapterRegistry: adapter ${adapter.domain}.${adapter.taskType} ` +
+          `declares unknown rollback_strategy "${strategy}" ` +
+          `(expected: auto | manual | none)`,
+      );
+    }
+    if ((strategy === "auto" || strategy === "manual") && !adapter.rollback) {
+      throw new Error(
+        `AdapterRegistry: adapter ${adapter.domain}.${adapter.taskType} ` +
+          `declares rollback_strategy="${strategy}" but provides no rollback() handler`,
+      );
+    }
+    if (strategy === "none" && adapter.rollback) {
+      throw new Error(
+        `AdapterRegistry: adapter ${adapter.domain}.${adapter.taskType} ` +
+          `declares rollback_strategy="none" but ALSO provides a rollback() handler. ` +
+          `Either drop the handler or change the strategy.`,
+      );
+    }
+    if (adapter.allow_rollback_after_success && strategy === "none") {
+      throw new Error(
+        `AdapterRegistry: adapter ${adapter.domain}.${adapter.taskType} ` +
+          `sets allow_rollback_after_success=true but rollback_strategy="none"`,
+      );
+    }
+
     const key = AdapterRegistry.keyOf(adapter.domain, adapter.taskType);
     if (this.adapters.has(key) && !opts?.overwrite) {
       throw new Error(
