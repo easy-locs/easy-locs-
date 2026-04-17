@@ -1,0 +1,68 @@
+name: Edge Function Contract Matrix
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  contract-matrix:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Regenerate contract matrix
+        run: npm run contracts:matrix
+
+      - name: Build PR comment body
+        if: always()
+        run: npx tsx scripts/edge-function-contract-matrix-comment.ts ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Ensure comment body exists
+        if: always()
+        run: |
+          if [ ! -s "${{ github.workspace }}/edge-fn-contract-comment.md" ]; then
+            cat > "${{ github.workspace }}/edge-fn-contract-comment.md" <<EOF
+          ## Edge Function Contract Matrix
+
+          The contract matrix workflow did not produce a report for this commit.
+          See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          EOF
+          fi
+
+      - name: Post sticky PR comment
+        if: always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: edge-fn-contract-matrix
+          path: ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Run contract matrix CI gate
+        run: npm run contracts:matrix:ci
+
+      - name: Upload regenerated matrix
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: edge-fn-contract-matrix
+          path: |
+            easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.md
+            easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.json
