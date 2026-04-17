@@ -371,6 +371,9 @@ Kinds that fail CI: `orphan`, `method`, `missing-field`, `missing-body`, `missin
   - **method** at `src/pages/admin/AdminDldBackfillPage.tsx:56`: caller uses POST but handler accepts GET,OPTIONS
   - **method** at `src/pages/admin/AdminDldBackfillPage.tsx:64`: caller uses POST but handler accepts GET,OPTIONS
 
+  - **method** at `src/pages/admin/AdminDldBackfillPage.tsx:56`: caller uses POST but handler accepts GET,OPTIONS
+  - **method** at `src/pages/admin/AdminDldBackfillPage.tsx:64`: caller uses POST but handler accepts GET,OPTIONS
+
 ### `dlq-ingest`
 
 - `src/lib/dlq/dlq-client.ts:19` — invoke · POST · body · no-headers · keys=[source_system,operation_type,payload,error]
