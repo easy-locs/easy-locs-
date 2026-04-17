@@ -7,10 +7,18 @@ set -u
 
 GIT_AUTHOR_NAME_TARGET="jstarbuzz"
 GIT_AUTHOR_EMAIL_TARGET="jstarbuzz@gmail.com"
+EXPECTED_ORIGIN_HOST_PATH="github.com/easy-locs/easy-locs-.git"
+STATUS_FILE="/tmp/auto-push-github.status"
 BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+
+write_status() {
+  # $1 = ok|fail  $2 = message
+  printf '%s\t%s\t%s\t%s\n' "$1" "$(date -u +%FT%TZ)" "$(git rev-parse HEAD 2>/dev/null || echo unknown)" "$2" > "${STATUS_FILE}" 2>/dev/null || true
+}
 
 if [ -z "${BRANCH}" ] || [ "${BRANCH}" = "HEAD" ]; then
   echo "[auto-push] detached HEAD, skipping push"
+  write_status ok "detached HEAD, skipped"
   exit 0
 fi
 
@@ -18,6 +26,19 @@ if [ -n "${AUTO_PUSH_SKIP:-}" ]; then
   echo "[auto-push] AUTO_PUSH_SKIP set, skipping"
   exit 0
 fi
+
+# Preflight: confirm origin URL points at the expected GitHub repo.
+ORIGIN_URL="$(git config --get remote.origin.url 2>/dev/null || true)"
+case "${ORIGIN_URL}" in
+  *"${EXPECTED_ORIGIN_HOST_PATH}"*) : ;;
+  *)
+    msg="origin remote is '${ORIGIN_URL}', expected to contain '${EXPECTED_ORIGIN_HOST_PATH}' — refusing to push"
+    echo "[auto-push] ${msg}"
+    write_status fail "${msg}"
+    # Exit 0 by design: never block the commit, but surface via status file.
+    exit 0
+    ;;
+esac
 
 # Ensure local identity is correct (idempotent)
 git config user.email "${GIT_AUTHOR_EMAIL_TARGET}" >/dev/null
@@ -64,10 +85,14 @@ fi
 echo "[auto-push] pushing ${BRANCH} -> origin"
 if git push origin "${BRANCH}"; then
   echo "[auto-push] push OK"
+  write_status ok "pushed ${BRANCH}"
   exit 0
 else
   rc=$?
-  echo "[auto-push] push FAILED (exit ${rc}). Run manually:"
-  echo "  bash scripts/auto-push-github.sh"
-  exit 0  # never block the commit
+  msg="push FAILED (exit ${rc}) — run: bash scripts/auto-push-github.sh"
+  echo "[auto-push] ${msg}"
+  write_status fail "${msg}"
+  # Never block the commit. post-merge.sh checks ${STATUS_FILE} and surfaces
+  # failures loudly in the merge log.
+  exit 0
 fi
