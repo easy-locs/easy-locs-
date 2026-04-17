@@ -40,6 +40,9 @@ import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.t
 import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
 import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/marketplace/bootstrap.ts";
 import { bootstrapAiAdapters } from "../_shared/execution/adapters/ai/bootstrap.ts";
+// L7 P1 (#926) — payments + wallet governed adapters, behind feature flags
+import { bootstrapPaymentsAdapters } from "../_shared/execution/adapters/payments/bootstrap.ts";
+import { bootstrapWalletAdapters } from "../_shared/execution/adapters/wallet/bootstrap.ts";
 // LC2 (#872) — dev-pipeline code.tool adapters
 import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/bootstrap.ts";
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
@@ -216,7 +219,16 @@ async function validateTask(
   if (task.payload !== null && typeof task.payload !== "object") {
     return { ok: false, reason: "INVALID_PAYLOAD: payload must be a JSON object" };
   }
-  // Phase-1 strict allowlist: CRITICAL never executes via the loop.
+  // V2-registered governed adapters bypass the Phase-1 strict allowlist.
+  // Payments + wallet (#926) are CRITICAL by classification but execute via
+  // ExecutionOrchestratorV2 with verifier + rollback + feature-flag gating, so
+  // the unconditional CRITICAL hard-reject (a Phase-1-only safety net) must
+  // step aside when the orchestrator owns the path. Without this branch the
+  // newly registered FINANCIAL_* / WALLET_* adapters are unreachable.
+  if (globalAdapterRegistry.has(task.domain, task.type)) {
+    return { ok: true };
+  }
+  // Phase-1 strict allowlist: CRITICAL never executes via the legacy loop.
   if (task.risk_level === "CRITICAL") {
     return {
       ok: false,
@@ -329,6 +341,11 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       // inside each bootstrap function).
       await bootstrapMarketplaceAdapters(sb);
       await bootstrapAiAdapters(sb);
+      // L7 P1 (#926) — payments + wallet adapters. Each refuses with
+      // ADAPTER_DISABLED when its `agent.{payments,wallet}.enabled`
+      // feature flag is off (canary off in production by default).
+      await bootstrapPaymentsAdapters(sb);
+      await bootstrapWalletAdapters(sb);
       // LC2 (#872) — dev pipeline. Each bootstrap reconciles its own
       // agent rows in `system.agents`; in production a failed reconcile
       // hard-fails the boot, in dev/preview it logs and continues.
