@@ -4,7 +4,7 @@ import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
 // LB Closeout #852 — translate goes through the platform-native registry so
 // every model call is governed (quota, sensitive routing, audit). Direct
-// `fetch("https://api.openai.com/...")` is no longer permitted on this surface.
+// Direct fetches against the OpenAI HTTP API are no longer permitted on this surface.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 function getSupabase() {

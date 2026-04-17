@@ -2,7 +2,7 @@
 // Returns structured decisions; callers decide whether to block or sanitize.
 //
 // LB Closeout #852 — moderation HTTP call now lives inside `_shared/ai-router.ts`
-// (the canonical, allow-listed home for `api.openai.com` host calls). This
+// (the canonical, allow-listed home for OpenAI HTTP host calls). This
 // module just consumes the helper so guardrail logic stays focused on
 // classification, not transport.
 import { moderateText } from "./ai-router.ts";

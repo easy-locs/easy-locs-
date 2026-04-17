@@ -2,7 +2,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 // LB1 Track 1 (#841) — embedding generation goes through the platform agent
-// registry. Direct `fetch("https://api.openai.com/v1/embeddings")` is no
+// registry. Direct fetches against the OpenAI embeddings HTTP endpoint are no
 // longer permitted; the AI_EMBEDDING adapter handles provider selection,
 // quota and ai_interactions persistence.
 import { dispatchAiEmbedding } from "../_shared/execution/ai-dispatch.ts";

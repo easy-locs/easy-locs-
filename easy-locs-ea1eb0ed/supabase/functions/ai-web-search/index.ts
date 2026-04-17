@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 // LB Closeout #852 — ai-web-search routes through the platform agent
 // registry so every model call is governed (quota, sensitive routing, audit).
-// Direct `fetch("https://api.openai.com/...")` and the parallel
+// Direct fetches against the OpenAI HTTP API and the parallel
 // `_shared/ai-model-router.ts` helper are no longer permitted on this surface.
 // Streaming clients still receive `text/event-stream`, but because the
 // dispatch contract is poll-based the body is delivered as a single SSE

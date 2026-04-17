@@ -1,5 +1,5 @@
 // LB Closeout #852 — embedding-client is now a thin shim over the platform
-// agent registry. Direct `fetch("https://api.openai.com/v1/embeddings")` is
+// agent registry. Direct fetches against the OpenAI embeddings HTTP endpoint are
 // no longer permitted; the AI_EMBEDDING adapter handles provider selection,
 // quota and `ai_interactions` persistence. The exported API shape is
 // preserved so downstream callers (vector-embed, ai-recommendations, ai-rag,
