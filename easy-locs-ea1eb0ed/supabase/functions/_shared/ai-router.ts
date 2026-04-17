@@ -48,9 +48,12 @@ export interface AIRouterOptions {
   tools?: unknown[];
   tool_choice?: unknown;
   response_format?: unknown;
-  /** @deprecated — model + provider chain are sourced from the agent
-   *  registry. Retained so legacy callers compile, but ignored when
-   *  invoked via `aiRouteForAgent`. */
+  /** @deprecated LB1 follow-up 4 (#837) — provider selection is now driven
+   *  exclusively by `metadata.router.primary` + `fallbacks` on the
+   *  registered AI agent. This field is ACCEPTED for source compatibility
+   *  but IGNORED at runtime (including by the legacy `aiRoute()` wrapper).
+   *  Callers that need to pin a provider must register a separate agent
+   *  with the desired primary in `metadata.router`. */
   preferredProvider?: "openai" | "anthropic" | "auto";
 }
 
