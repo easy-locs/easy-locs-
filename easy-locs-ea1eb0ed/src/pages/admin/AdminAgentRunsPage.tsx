@@ -7,19 +7,18 @@
  * other domain. Surfaces prompt/response, model, cost, latency, sensitive
  * holds and the release control.
  *
- * The page is intentionally read-mostly: the only mutation is releasing a
- * held AI response, which delegates to the admin-only RPC
- * `system.release_held_ai_response`.
+ * The page is read-only. Sensitive holds are now decided through the
+ * canonical approvals inbox at `/admin/approvals` via the shared
+ * `system.decide_task_approval` RPC (LB1 follow-up #834); this page
+ * deep-links there instead of carrying its own release controls.
  */
 import { useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Loader2, ArrowLeft, ShieldAlert, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Loader2, ArrowLeft, ShieldAlert, CheckCircle2, XCircle, Clock, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsRepo, type AgentRunRichRow } from "@/lib/admin/agents-repo";
-import { toast } from "@/hooks/use-toast";
 
 function fmtMs(ms: number | null): string {
   if (ms == null) return "—";
@@ -40,7 +39,6 @@ function statusTone(status: string): string {
 
 export default function AdminAgentRunsPage() {
   const { slug = "" } = useParams<{ slug: string }>();
-  const qc = useQueryClient();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const agentQuery = useQuery({
@@ -64,21 +62,6 @@ export default function AdminAgentRunsPage() {
     queryFn: () => agentsRepo.listAgentRunsRich(agent!.id, domain, 100),
     enabled: !!agent,
     refetchInterval: 15_000,
-  });
-
-  const releaseMut = useMutation({
-    mutationFn: ({ taskId, decision }: { taskId: string; decision: "approved" | "rejected" }) =>
-      agentsRepo.releaseHeldAiResponse(taskId, decision),
-    onSuccess: (_d, vars) => {
-      toast({
-        title: vars.decision === "approved" ? "Response released" : "Response rejected",
-        description: `Task ${vars.taskId.slice(0, 8)}… marked ${vars.decision}.`,
-      });
-      qc.invalidateQueries({ queryKey: ["admin-agent-runs-rich"] });
-    },
-    onError: (e: Error) => {
-      toast({ title: "Release failed", description: e.message, variant: "destructive" });
-    },
   });
 
   const selected = runsQuery.data?.find((r) => r.task_id === selectedId) ?? null;
@@ -179,13 +162,7 @@ export default function AdminAgentRunsPage() {
                 Pick a run on the left to inspect prompt, response, cost, latency, and sensitive-output gates.
               </div>
             ) : (
-              <RunDetail
-                run={selected}
-                onRelease={(decision) =>
-                  releaseMut.mutate({ taskId: selected.task_id, decision })
-                }
-                releasing={releaseMut.isPending}
-              />
+              <RunDetail run={selected} />
             )}
           </CardContent>
         </Card>
@@ -194,15 +171,7 @@ export default function AdminAgentRunsPage() {
   );
 }
 
-function RunDetail({
-  run,
-  onRelease,
-  releasing,
-}: {
-  run: AgentRunRichRow;
-  onRelease: (decision: "approved" | "rejected") => void;
-  releasing: boolean;
-}) {
+function RunDetail({ run }: { run: AgentRunRichRow }) {
   return (
     <>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
@@ -224,26 +193,18 @@ function RunDetail({
           {run.held_reason ? (
             <p className="text-xs text-muted-foreground">Reason: {run.held_reason}</p>
           ) : null}
-          {run.released_at ? (
-            <p className="text-xs flex items-center gap-1 text-success">
-              <CheckCircle2 className="w-3 h-3" /> Released at {new Date(run.released_at).toLocaleString()}
-            </p>
-          ) : (
-            <div className="flex gap-2">
-              <Button size="sm" disabled={releasing} onClick={() => onRelease("approved")}>
-                {releasing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <CheckCircle2 className="w-3 h-3 mr-1" />}
-                Release response
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={releasing}
-                onClick={() => onRelease("rejected")}
-              >
-                <XCircle className="w-3 h-3 mr-1" /> Reject
-              </Button>
-            </div>
-          )}
+          <Link
+            to={`/admin/approvals?taskId=${run.task_id}`}
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            Review in approvals inbox <ExternalLink className="w-3 h-3" />
+          </Link>
+        </div>
+      ) : run.released_at ? (
+        <div className="rounded border border-success/40 bg-success/5 p-3">
+          <p className="text-xs flex items-center gap-1 text-success">
+            <CheckCircle2 className="w-3 h-3" /> Decided at {new Date(run.released_at).toLocaleString()}
+          </p>
         </div>
       ) : null}
 

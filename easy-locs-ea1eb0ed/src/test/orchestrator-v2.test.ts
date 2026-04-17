@@ -93,11 +93,11 @@ class MemoryRepository implements TaskRepository {
   // Allowed transitions mirror the SQL state machine (subset relevant here).
   private readonly allowed: Record<ExecutionTaskStatus, ExecutionTaskStatus[]> = {
     draft: ["pending_review", "approved", "queued", "cancelled"],
-    pending_review: ["approved", "rejected", "cancelled"],
+    pending_review: ["approved", "rejected", "succeeded", "failed", "cancelled"],
     approved: ["queued", "cancelled"],
     rejected: ["draft", "cancelled"],
     queued: ["running", "blocked", "cancelled"],
-    running: ["succeeded", "failed", "blocked", "running"],
+    running: ["succeeded", "failed", "blocked", "pending_review", "running"],
     failed: ["queued", "blocked", "rolled_back", "rolling_back", "cancelled"],
     succeeded: ["rolled_back", "rolling_back"],
     blocked: ["queued", "cancelled"],
@@ -158,6 +158,9 @@ function makeOrchestrator(opts: {
   defaultSnapshotter?: (
     task: ExecutionTask,
   ) => Promise<Record<string, unknown> | null>;
+  agentQuotaGate?: import(
+    "../../supabase/functions/_shared/execution/orchestrator-v2.ts"
+  ).AgentQuotaGate;
 }) {
   const registry = opts.registry ?? new AdapterRegistry();
   const repo = opts.repo ?? new MemoryRepository();
@@ -177,6 +180,7 @@ function makeOrchestrator(opts: {
     ownerId: "test-orch",
     lockTtlSeconds: 30,
     defaultSnapshotter: opts.defaultSnapshotter,
+    agentQuotaGate: opts.agentQuotaGate,
   });
   return { orch, registry, repo, locks, idem, sink, verifiers };
 }
@@ -1117,5 +1121,118 @@ describe("AdapterRegistry", () => {
     });
     expect(registry.get("marketplace", "PUBLISH_LISTING")).not.toBeNull();
     expect(registry.has("MARKETPLACE", "publish_listing")).toBe(true);
+  });
+});
+
+// ── LB1 follow-up #834 — orchestrator quota gate + held-for-review hold ──
+describe("ExecutionOrchestratorV2 · LB1 #834 quota gate + canonical hold", () => {
+  it("blocks the task with QUOTA_EXCEEDED when the agentQuotaGate refuses, and never invokes the adapter", async () => {
+    const task = buildTask({ agent_id: "agent-xyz" });
+    let invocations = 0;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => {
+        invocations++;
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo, sink, locks } = makeOrchestrator({
+      agentQuotaGate: {
+        peek: async () => ({
+          ok: false,
+          reason: "rate_limit",
+          window: "minute",
+          currentCount: 600,
+          limitCount: 600,
+        }),
+      },
+    });
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(invocations).toBe(0);
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBe("QUOTA_EXCEEDED");
+    expect(repo.tasks.get(task.id)?.status).toBe("blocked");
+    // Lock must NEVER be acquired when the quota gate refuses upstream of it.
+    expect(locks.has("test:TEST_ACTION")).toBe(false);
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_BLOCKED);
+    expect(sink.names()).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_LOCKED);
+  });
+
+  it("skips the gate (and proceeds to execute) when the task carries no agent_id", async () => {
+    const task = buildTask(); // no agent_id
+    let invocations = 0;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => {
+        invocations++;
+        return { success: true };
+      },
+    };
+    let peeked = 0;
+    const { orch, registry, repo, verifiers } = makeOrchestrator({
+      agentQuotaGate: {
+        peek: async () => {
+          peeked++;
+          return { ok: false, reason: "should_not_be_called", window: "minute" };
+        },
+      },
+    });
+    registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER(task.domain, task.type));
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(peeked).toBe(0);
+    expect(invocations).toBe(1);
+    expect(outcome.finalStatus).toBe("succeeded");
+  });
+
+  it("transitions running→pending_review on flaggedSensitive and writes blocked_reason; finalStatus is blocked/REVIEW_HOLD", async () => {
+    const task = buildTask({ agent_id: "agent-ai-1" });
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      execute: async () => ({
+        success: true,
+        output: {
+          text: "redacted",
+          flaggedSensitive: true,
+          flaggedReason: "pii.ssn",
+          cost_usd: 0.0021,
+          latency_ms: 142,
+        },
+      }),
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({
+      agentQuotaGate: { peek: async () => ({ ok: true }) },
+    });
+    registry.register(adapter);
+    verifiers.register(PASSING_VERIFIER(task.domain, task.type));
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBe("REVIEW_HOLD");
+    expect(outcome.errorMessage).toBe("pii.ssn");
+
+    const stored = repo.tasks.get(task.id)!;
+    expect(stored.status).toBe("pending_review");
+    expect(stored.blocked_reason).toBe("pii.ssn");
+    expect(stored.execution_result).toBeTruthy();
+    expect((stored as unknown as { cost_usd: number }).cost_usd).toBe(0.0021);
+    expect((stored as unknown as { latency_ms: number }).latency_ms).toBe(142);
+
+    // Verified telemetry fires before the hold; canonical TASK_SUCCEEDED
+    // does NOT (the run is held, not delivered).
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED);
+    expect(sink.names()).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
   });
 });
