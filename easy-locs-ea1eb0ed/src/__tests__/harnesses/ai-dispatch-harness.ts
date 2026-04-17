@@ -34,6 +34,7 @@
 
 import {
   AdapterRegistry,
+  isStrictAgentRegistration,
   setStrictAgentRegistration,
 } from "../../../supabase/functions/_shared/execution/adapter-registry.ts";
 import {
@@ -345,11 +346,17 @@ export function createDispatchHarness(opts: {
   validator?: ValidationGate;
 }): DispatchHarness {
   // The adapters declare an `agent` ref but bypass agent registration —
-  // mirrors the opt-out used by `orchestrator-v2.test.ts`.
+  // mirrors the opt-out used by `orchestrator-v2.test.ts`. Save and
+  // restore the global so we never leak the relaxed mode to suites that
+  // run after this one.
+  const previousStrict = isStrictAgentRegistration();
   setStrictAgentRegistration(false);
-
   const registry = new AdapterRegistry();
-  for (const a of opts.adapters) registry.register(a);
+  try {
+    for (const a of opts.adapters) registry.register(a);
+  } finally {
+    setStrictAgentRegistration(previousStrict);
+  }
 
   const verifierRegistry = new VerifierRegistry();
   for (const v of opts.verifiers ?? []) verifierRegistry.register(v);
