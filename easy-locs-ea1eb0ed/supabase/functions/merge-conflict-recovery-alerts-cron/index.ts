@@ -1,5 +1,5 @@
 /**
- * merge-conflict-recovery-alerts-cron (task #973)
+ * merge-conflict-recovery-alerts-cron (task #973, #980)
  *
  * Scheduled check that aggregates the last 14 days of
  * `merge_conflict_recovery` audit envelopes (the same data the operator
@@ -20,6 +20,11 @@
  * Setting any threshold to 0 disables that alert family, which is the
  * documented escape hatch for operators who only want a subset.
  *
+ * Each dispatched alert appends a deep link back to the operator
+ * dashboard (`/admin/merge-conflict-recovery`, base from the `APP_URL`
+ * env var) so on-call can jump straight to the live projection
+ * without searching through the admin nav (task #980).
+ *
  * The pure projection + evaluator logic lives in
  * `src/repositories/merge-conflict-recovery.repository.ts` and is unit
  * tested under `src/__tests__/lc4-merge-conflict-recovery-*.test.ts`.
@@ -34,6 +39,16 @@ import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const INTERNAL_SECRET = Deno.env.get("INTERNAL_NOTIFICATION_SECRET") ?? "";
+const APP_URL = (Deno.env.get("APP_URL") || "https://www.easy-locs.com").replace(/\/+$/, "");
+const DASHBOARD_PATH = "/admin/merge-conflict-recovery";
+
+export function buildDashboardLink(appUrl: string = APP_URL): string {
+  return `${appUrl.replace(/\/+$/, "")}${DASHBOARD_PATH}`;
+}
+
+export function appendDashboardLink(message: string, appUrl: string = APP_URL): string {
+  return `${message}\n\nView dashboard: ${buildDashboardLink(appUrl)}`;
+}
 
 const LOOKBACK_DAYS = 14;
 const PAGE_SIZE = 500;
@@ -259,7 +274,7 @@ async function dispatch(alert: Alert): Promise<{ ok: boolean; status: number }> 
     alert_type: `merge_conflict_recovery.${alert.kind}`,
     severity: alert.severity,
     title: alert.title,
-    message: alert.message,
+    message: appendDashboardLink(alert.message),
     source_system: "merge-conflict-recovery-alerts-cron",
   };
   try {
