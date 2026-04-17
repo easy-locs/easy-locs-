@@ -1,4 +1,4 @@
-# CREATE TRIGGER (file:line)
+# CREATE TRIGGER (relative_path:line:full_match)
 supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:230:CREATE TRIGGER on_auth_user_created
 supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:245:CREATE TRIGGER update_profiles_updated_at
 supabase/migrations/20260226002630_4a0acf18-be6d-4547-a243-87a28c3bf309.sql:35:CREATE TRIGGER update_subscriptions_updated_at

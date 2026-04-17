@@ -1,4 +1,4 @@
-# Page files under src/pages/
+# Page files (one per line, sorted)
 src/pages/AccountingEntries.tsx
 src/pages/Accounting.tsx
 src/pages/AccountShowcase.tsx
@@ -35,6 +35,7 @@ src/pages/admin/AdminMarketplaceOpsPage.tsx
 src/pages/admin/AdminMasterControlPage.tsx
 src/pages/admin/AdminMerchantApprovalQueuePage.tsx
 src/pages/admin/AdminMerchantHealthPage.tsx
+src/pages/admin/AdminMergeConflictRecoveryPage.tsx
 src/pages/admin/AdminNotificationLabPage.tsx
 src/pages/admin/AdminNotificationOpsPage.tsx
 src/pages/admin/AdminOpsDashboardPage.tsx
