@@ -1,43 +1,37 @@
-Fix over-long meta descriptions to re-enable strict SEO build gate
+Task #742: Purge revoked Supabase admin token from git history
 
-Task #959 — the SEO validate plugin was reporting ~10,400 prerendered
-pages with meta descriptions over the 155-char limit (most flagged at
-~195 chars), so both the bundle-size-gate workflow and Vercel had been
-silently bypassing the gate.
+Summary
+- Purged the revoked Supabase admin token (already rotated in Task #723)
+  from the full git history using `git filter-repo --replace-text`.
+- Replaced every historical occurrence of the literal token value (across
+  all commits, branches, and refs) with the sentinel string
+  `REDACTED_SUPABASE_TOKEN_TASK723`.
 
-Root cause
-- `esc155(s)` in vite-plugin-prerender.ts did `esc(s.slice(0, 155))`:
-  it sliced the *raw* description to 155 chars, then HTML-escaped it.
-  Many service labels contain `&` ("Tours & Activities", "Beauty & Hair",
-  etc.), and `&` → `&amp;` adds 4 chars per occurrence, easily pushing
-  the final HTML attribute past 155 chars (the value the SEO validator
-  actually measures via `[^"]*`).
+Procedure
+1. Enumerated affected commits with `git log --all -p -S "<token>"`
+   (9 commits across `.replit` and doc references).
+2. Wrote replacement rule to `/tmp/replacements.txt`.
+3. Ran `git filter-repo --replace-text /tmp/replacements.txt --force`
+   (17,123 commits parsed; history rewritten in ~33s; full repack ~53s).
+4. Verified: `git log --all -p -S "<token>"` returns no matches;
+   working-tree grep for the token also returns no matches.
 
-Fix
-- Rewrote esc155 to escape *first* then truncate the escaped output to
-  155 chars, with a guard that never splits an HTML entity in half
-  (backs the cut up to before any unclosed `&…;`).
-- esc155 output is now mathematically guaranteed ≤155 chars, so the
-  gate's "Description exceeds 155 chars" issue count drops to 0.
+Documentation
+- Updated `easy-locs-ea1eb0ed/docs/credentials-scan-2026-04-16.md`:
+  replaced the earlier "won't fix" note with a "Git history purge —
+  completed" section describing the procedure, verification, collaborator
+  reset steps (re-clone / hard-reset / rebase in-flight PRs / invalidate
+  CI caches), and confirming regression prevention via
+  `scripts/secret-scan.sh`.
 
-Bypass cleanup
-- Removed `SEO_GATE_BYPASS: '1'` env from .github/workflows/bundle-
-  size-gate.yml (and the long comment justifying it).
-- Removed the `process.env.VERCEL === "1"` auto-bypass in
-  vite-plugin-seo-validate.ts; only the manual SEO_GATE_BYPASS=1
-  emergency switch remains, with a comment explaining its scope.
+Notes / deviations
+- `git filter-repo` also rewrote the Task #732 scan doc's historical
+  reference to the literal token to the sentinel; the working-tree doc
+  has been edited to describe the token by prefix/suffix only.
+- `filter-repo` removed the `origin` remote by design; the canonical
+  force-push is handled by the Replit platform merge, not from this
+  isolated environment.
+- No code, config, or runtime behavior changed — only history rewrite
+  and documentation.
 
-Verification
-- Unit-tested the new esc155 against worst-case inputs (heavy `&`
-  density, entity-on-boundary, long pure-ASCII): output stays ≤155 in
-  every case and never emits a split entity.
-- A full `npm run build` was attempted but OOM'd in this environment
-  during chunk rendering for the 12k+ prerendered pages, so end-to-end
-  validation will happen on the next CI/Vercel build. The fix is
-  provably correct by construction (every meta/og/twitter description
-  in vite-plugin-prerender.ts routes through esc155).
-
-Follow-up #964 proposes a fast unit test so this regression is caught
-in seconds instead of after a full production build.
-
-Replit-Task-Id: a16b7dec-efa3-4edf-b9aa-928f27fcd8da
+Replit-Task-Id: cb69e885-2b31-40e4-8bb5-d382adea9818
