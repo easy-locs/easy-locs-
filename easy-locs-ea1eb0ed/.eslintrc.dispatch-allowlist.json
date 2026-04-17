@@ -1322,6 +1322,14 @@
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
     },
     {
+      "pattern": "src/pages/admin/control/sections/AutonomySection.tsx",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "src/pages/CommandCenter.tsx",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
       "pattern": "src/pages/customer/CustomerAddressBookPage.tsx",
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
     },
@@ -2050,6 +2058,14 @@
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
     },
     {
+      "pattern": "supabase/functions/dev-builder/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/dev-planner/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
       "pattern": "supabase/functions/disconnect-stripe/index.ts",
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
     },
@@ -2100,6 +2116,10 @@
     {
       "pattern": "supabase/functions/execution-loop/index.ts",
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
+    },
+    {
+      "pattern": "supabase/functions/execution-runner-callback/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
     },
     {
       "pattern": "supabase/functions/expire-listings/index.ts",
@@ -2172,6 +2192,14 @@
     {
       "pattern": "supabase/functions/generate-rent-receipt/index.ts",
       "reason": "L7 migration sweep pending — pre-L1 mutation site, will be routed via dispatchExecutionTask."
+    },
+    {
+      "pattern": "supabase/functions/goal-create/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/goal-planner/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
     },
     {
       "pattern": "supabase/functions/guest-session/index.ts",

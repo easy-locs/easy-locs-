@@ -103,7 +103,7 @@ function installErrorWatcher(): void {
     log('error', 'runtime', `Uncaught: ${msg} at ${source}:${line}:${col}`);
 
     if (originalOnError) {
-      return (originalOnError as Function)(message, source, line, col, error);
+      return (originalOnError as (...a: unknown[]) => unknown)(message, source, line, col, error);
     }
     return false;
   };
@@ -115,7 +115,7 @@ function installErrorWatcher(): void {
     log('error', 'runtime', `Unhandled rejection: ${msg}`);
 
     if (originalUnhandled) {
-      (originalUnhandled as Function)(event);
+      (originalUnhandled as (e: PromiseRejectionEvent) => unknown)(event);
     }
   };
 }
