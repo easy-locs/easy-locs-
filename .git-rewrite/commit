@@ -1,0 +1,35 @@
+tree d7c59a0a69bbd370de93e29fc43868feb7f81f5d
+parent dab2597b90358ff923f02150f573a80b15f02025
+author jstarbuzz <jstarbuzz@gmail.com> 1776372389 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776372389 +0000
+
+Add GitHub Actions secret scanner workflow (Task #741)
+
+Original task: extend the existing fast secret scanner
+(scripts/secret-scan.sh, added in Task #732, currently only run via
+scripts/post-merge.sh after Replit merges) to also run as a GitHub
+Actions check on every pull request and on pushes to main, so leaks
+are caught before reaching the main branch.
+
+Changes:
+- New workflow .github/workflows/secret-scan.yml
+  - Triggers: pull_request, push to main, workflow_dispatch
+  - Single job on ubuntu-latest that checks out the repo
+    (fetch-depth: 0 so git ls-files in the scanner sees the full
+    tracked file set) and runs `bash scripts/secret-scan.sh`
+  - The scanner exits 1 on any match, which fails the job and
+    produces a red required check on the PR.
+- New SECURITY.md at repo root documenting:
+  - What the scanner detects
+  - Where it runs (post-merge locally + GitHub Actions on PRs/main)
+  - What contributors should do on a failure (remove + rotate, or
+    narrow the pattern / add a SKIP_REGEX exclusion)
+  - How to run it locally
+
+Verification:
+- Ran `bash scripts/secret-scan.sh` locally — clean
+  (5465 files scanned, no findings) with the new files in place.
+
+No deviations from the task spec.
+
+Replit-Task-Id: 6b27687c-14ee-4e1e-9052-27e8ea51278c
