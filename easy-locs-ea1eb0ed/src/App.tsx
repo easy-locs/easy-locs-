@@ -34,14 +34,26 @@ const SentryRouteTracker = lazy(() => import("@/components/system/SentryRouteTra
 const AnalyticsRouteTracker = lazy(() => import("@/components/system/AnalyticsRouteTracker"));
 const CookieConsentBannerLazy = lazy(() => import("@/components/system/CookieConsentBanner"));
 const GlobalSearchTrigger = lazy(() => import("@/components/search/GlobalSearchTrigger"));
+const MissingIntegrationsBanner = lazy(() => import("@/components/dev/MissingIntegrationsBanner"));
 
-bootstrapAppRuntime();
+// Bootstrap may register listeners and idle callbacks. Wrapped so a single
+// failing setup helper cannot abort module evaluation and blank the screen —
+// the GlobalErrorBoundary inside CoreProviders is still the last safety net.
+try {
+  bootstrapAppRuntime();
+} catch (err) {
+  // eslint-disable-next-line no-console
+  console.warn("[boot] bootstrapAppRuntime failed", err);
+}
 
 const App = () => (
   <CoreProviders>
     <Toaster />
     <Sonner />
     <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
+    {import.meta.env.DEV && (
+      <Suspense fallback={null}><MissingIntegrationsBanner /></Suspense>
+    )}
     <AuthProvider>
       <SplashScreen>
         <DeferredServicesProvider>

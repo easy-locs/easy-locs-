@@ -71,7 +71,10 @@ export const INTEGRATION_REGISTRY: Record<IntegrationId, IntegrationDefinition> 
     // for setups still using the legacy `VITE_MAPBOX_ACCESS_TOKEN` name.
     requiredEnvAnyOf: [["VITE_MAPBOX_TOKEN", "VITE_MAPBOX_ACCESS_TOKEN"]],
     optionalEnv: [],
-    enforceInDev: true,
+    // Demoted to warn-only: maps degrade to MapLibre when missing, never blocks
+    // the rest of the app from rendering. Use `pnpm validate:integrations` in
+    // CI to enforce strict presence.
+    enforceInDev: false,
   },
   aws: {
     id: "aws",
@@ -79,7 +82,9 @@ export const INTEGRATION_REGISTRY: Record<IntegrationId, IntegrationDefinition> 
     description: "S3, SES, SQS and Lambda (region required for client signing)",
     requiredEnv: ["VITE_AWS_REGION"],
     optionalEnv: ["VITE_CLOUDFRONT_URL"],
-    enforceInDev: true,
+    // Demoted to warn-only: only signed uploads / direct S3 calls fail when
+    // missing — should not blank the entire UI in dev.
+    enforceInDev: false,
   },
   sentry: {
     id: "sentry",
@@ -87,7 +92,9 @@ export const INTEGRATION_REGISTRY: Record<IntegrationId, IntegrationDefinition> 
     description: "Crash reporting & performance tracing",
     requiredEnv: ["VITE_SENTRY_DSN"],
     optionalEnv: [],
-    enforceInDev: true,
+    // Demoted to warn-only: Sentry already no-ops gracefully when DSN is
+    // absent — no need to crash boot for a missing observability key.
+    enforceInDev: false,
   },
   posthog: {
     id: "posthog",
@@ -95,7 +102,9 @@ export const INTEGRATION_REGISTRY: Record<IntegrationId, IntegrationDefinition> 
     description: "Product analytics & experiments",
     requiredEnv: ["VITE_POSTHOG_KEY", "VITE_POSTHOG_HOST"],
     optionalEnv: [],
-    enforceInDev: true,
+    // Demoted to warn-only: analytics is optional in dev and the snippet in
+    // index.html is feature-gated on window.__POSTHOG_KEY__.
+    enforceInDev: false,
   },
   capacitor: {
     id: "capacitor",
