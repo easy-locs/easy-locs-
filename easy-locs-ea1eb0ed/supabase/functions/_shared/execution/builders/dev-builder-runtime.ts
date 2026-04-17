@@ -39,6 +39,11 @@ import {
   type OpenPrResult,
   openGithubPullRequest,
 } from "./github-open-pr.ts";
+import type { BranchChanges } from "../drift-detector.ts";
+import {
+  type ComputeCurrentChangesFn,
+  createMergeConflictPreMergeCheck,
+} from "./merge-conflict-recovery.ts";
 
 /** Minimal subset of `OrchestrationOutcome` we depend on. The real
  *  type lives in `_shared/execution/orchestrator-v2.ts`; we accept any
@@ -85,6 +90,17 @@ export interface RunDevBuilderForPlanOptions {
    *  into a transient verifier red, which fires the `request_dev_replan`
    *  RPC with a `merge_conflict:<reason>` cause — fully auditable. */
   readonly preMergeCheck?: PreMergeCheckFn;
+  /** When supplied, the runtime composes the canonical merge-conflict
+   *  recovery wiring (task #924): each iteration's pre-merge gate runs
+   *  through `runDevBuilderMerge` with `createMergeConflictRecoveryHandler`
+   *  bound to (`sb`, `builderTaskId`). A hard overlap is converted to a
+   *  transient verifier red so the existing `request_dev_replan` path
+   *  fires without operator intervention. Ignored when an explicit
+   *  `preMergeCheck` is provided (escape hatch for tests). */
+  readonly merge?: {
+    readonly fetchOthers: (currentBranch: string) => Promise<BranchChanges[]>;
+    readonly computeCurrentChanges?: ComputeCurrentChangesFn;
+  };
   readonly github: {
     readonly pat: string;
     readonly repo: string;
@@ -217,11 +233,25 @@ export async function runDevBuilderForPlan(
   const orchestrationByChild = new Map<string, OrchestrationOutcomeLike>();
   let lastPrResult: OpenPrResult | undefined;
 
+  // Compose the canonical merge-conflict recovery gate when the caller
+  // supplied a `merge` config and did not override `preMergeCheck`.
+  // Explicit `preMergeCheck` always wins (test escape hatch).
+  const preMergeCheck = opts.preMergeCheck ??
+    (opts.merge
+      ? createMergeConflictPreMergeCheck({
+        sb,
+        builderTaskId,
+        currentBranch: github.headBranch,
+        fetchOthers: opts.merge.fetchOthers,
+        computeCurrentChanges: opts.merge.computeCurrentChanges,
+      })
+      : undefined);
+
   const result = await runDevBuilderLoop({
     builderTaskId,
     initialPlan,
     maxIterations,
-    preMergeCheck: opts.preMergeCheck,
+    preMergeCheck,
 
     dispatchChildTask: async ({ builderTaskId: parentId, step }) => {
       const taskType = STEP_KIND_TO_TASK_TYPE[step.kind];
