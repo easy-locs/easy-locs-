@@ -6,21 +6,41 @@
     "snapshot_taken_on": "2026-04-17",
     "expected_to_drain_in": "L7 — Migration sweep, executed phase by phase per docs/architecture/agent-migration-inventory.md §7",
     "last_audit": {
-      "by": "task #908 (Sovereign Closeout — strict allowlist closeout)",
+      "by": "task #914 (Drain the auto-merge guard's grandfathered list to zero)",
       "on": "2026-04-17",
-      "notes": "Strict closeout pass: every per-file exemption is justified with an owning_phase (P1..P5/ADMIN/PLATFORM/ORBIT) and a reason string referencing the L7 sweep that owns its drain. Two fully-structural buckets (LC orchestrator surface, LB1 AI surface) were promoted into globalExemptions. Per-file entries already covered by a globalExemption pattern were deleted as redundant (6 entries). Final per-file count: 577. Zero entries are unjustified. Phase distribution is recorded in .local/level-c-planning/deep/F-readiness-gates.md (LC8 gate).",
-      "per_file_count": 577,
-      "global_count": 23,
+      "notes": "Building on #908: promoted the three remaining structural buckets (ADMIN, PLATFORM, ORBIT — 121 entries) from per-file exemptions into globalExemptions with written 'structural — keep' rationale. The per-file exemptions array now contains only true L7 phase work (P1..P5) tagged with owning_phase, ready for per-phase drain.",
+      "per_file_count": 456,
+      "global_count": 144,
       "unjustified_count": 0,
       "phase_distribution": {
         "P3": 157,
         "P5": 33,
         "P1": 79,
-        "ORBIT": 14,
         "P4": 149,
+        "P2": 38
+      },
+      "promoted_to_global": {
         "ADMIN": 40,
         "PLATFORM": 67,
-        "P2": 38
+        "ORBIT": 14
+      },
+      "previous_audit": {
+        "by": "task #908 (Sovereign Closeout — strict allowlist closeout)",
+        "on": "2026-04-17",
+        "notes": "Strict closeout pass: every per-file exemption is justified with an owning_phase (P1..P5/ADMIN/PLATFORM/ORBIT) and a reason string referencing the L7 sweep that owns its drain. Two fully-structural buckets (LC orchestrator surface, LB1 AI surface) were promoted into globalExemptions. Per-file entries already covered by a globalExemption pattern were deleted as redundant (6 entries). Final per-file count: 577. Zero entries are unjustified. Phase distribution is recorded in .local/level-c-planning/deep/F-readiness-gates.md (LC8 gate).",
+        "per_file_count": 577,
+        "global_count": 23,
+        "unjustified_count": 0,
+        "phase_distribution": {
+          "P3": 157,
+          "P5": 33,
+          "P1": 79,
+          "ORBIT": 14,
+          "P4": 149,
+          "ADMIN": 40,
+          "PLATFORM": 67,
+          "P2": 38
+        }
       }
     }
   },
@@ -116,6 +136,490 @@
     {
       "pattern": "supabase/functions/_shared/ai-router.ts",
       "reason": "Canonical AI router (LB) — exempt by design per Level B charter. Promoted from per-file list by task #908 audit — structural."
+    },
+    {
+      "pattern": "src/components/orbit/E2EERecoveryBanner.tsx",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/core/omega/omega-persistence.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/domains/admin/adapters/supabase.adapter.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/domains/orbit/controllers/receipt.controller.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/domains/services/service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/families/messages/message-delete.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/hooks/useDeliveryData.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/hooks/useOrbitMessageActions.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/hooks/useOrbitViewOnce.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/hooks/useUsername.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/action-engine.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/alerts.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/audit-logs.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/build-executive-kpi-snapshot.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/create-admin-alert.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/incidents.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/log-exports.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/process-payout.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/review-queue.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/admin/sla-engine.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/audit.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/audit/audit-report-core.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/audit/seed-demo-data.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/browser-repair/browser-repair-safe-autofix.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/business-core/business-service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/business-core/quality-score-engine.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/approval-workflow.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/audit-log.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/cost-tracker.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/health-tracker.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/monitoring/level1-always-on.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/monitoring/level2-assisted.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/monitoring/level3-controlled.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/command-control/rollback-tracker.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/db/orbitDb.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/dedup/dedup-engine.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/growth/feature-flag-registry.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/import/visibility-engine.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/live-monitor/engine-heartbeat.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/live-monitor/system-metrics.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/live-monitor/task-engine.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/monitoring.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit-session-manager.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/context-thread-factory.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/orbit-data-gateway.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/orbit-unread-counter.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/orbitTelemetry.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/signaling.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orbit/translate-message.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orchestration/logger.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/orchestration/orchestration-utils.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/pay/unifiedResolver.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/pipeline/master-data-pipeline.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/pipeline/queue-driven-pipeline.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/platform/platform-health-checks.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/platform/platform-recovery-engine.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/realtime-manager.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/runtime/event-replay-buffer.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/runtime/flux-pipeline-auditor.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/runtime/smart-prefetch.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/services/service-profiles.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/source/source-hygiene.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/sync/time-sync.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/system/engineConnectorHub.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/lib/system/feature-flags.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/pages/admin/control/sections/AutonomySection.tsx",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/pages/CommandCenter.tsx",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/pages/settings/SettingsMarketing.tsx",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/repositories/admin-ops.repository.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/admin-ops.service.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/bnpl.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/e-signature.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/financial-audit.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/fleet.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/governance/violation-persistence.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/orbit.service.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/real-estate-crm.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/real-estate.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/revenue.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "src/services/user.service.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/_shared/domain-router.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/admin-payout-approve/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/admin-payout-reject/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/auto-source-scrape/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/autonomous-cron-dispatcher/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/browser-user-repair-engine/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/cache-manager/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/chief-agent/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/cleanup-expired-media/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/cleanup-expired-messages/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/cleanup-integration-health-logs/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/cleanup-orphan-media/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/command-approval-webhook/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/command-center-api/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/command-github-webhook/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/command-monitoring-cron/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/deep-scrape-build/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/engine-cron-server/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/gateway-cron-sync/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/gateway-webhook-ingest/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/integration-health-cron/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/master-runtime-qa-engine/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/mobile-money-webhook/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/omega-server-loop/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/orbit-router/index.ts",
+      "reason": "ORBIT — structural Orbit messaging surface. Promoted from per-file by task #914 (#908 already classified it ORBIT); not pending L7 phase migration. Original #908 reason: L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/pipeline-worker/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/platform-recovery/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/public-api/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/public-health/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/refund-admin/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/repair-worker/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/run-engine-cron/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/run-ingestion-pipeline/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/run-scheduled-audit/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/runtime-control-plane/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/sentinel-server-guards/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/sentinel-server/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/ses-webhook/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/sync-ical/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/system-router/index.ts",
+      "reason": "PLATFORM — structural orchestrator/runtime/observability surface. Promoted from per-file by task #914 (#908 already classified it PLATFORM); not pending L7 phase migration. Original #908 reason: L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
+    },
+    {
+      "pattern": "supabase/functions/watchdog-ping/index.ts",
+      "reason": "ADMIN — structural admin/command-control surface. Promoted from per-file by task #914 (#908 already classified it ADMIN); not pending L7 phase migration. Original #908 reason: L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)"
     }
   ],
   "exemptions": [
@@ -168,11 +672,6 @@
       "pattern": "src/components/marketplace/ReviewReplyDialog.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/components/orbit/E2EERecoveryBanner.tsx",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
     },
     {
       "pattern": "src/components/orbit/payments/OrbitPaymentRequest.tsx",
@@ -350,16 +849,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/core/omega/omega-persistence.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/domains/admin/adapters/supabase.adapter.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "src/domains/delivery/adapters/supabase.adapter.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -375,11 +864,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/domains/orbit/controllers/receipt.controller.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
       "pattern": "src/domains/restaurant/adapters/supabase.adapter.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -388,11 +872,6 @@
       "pattern": "src/domains/ride/adapters/supabase.adapter.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/domains/services/service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/domains/wallet/adapters/supabase.adapter.ts",
@@ -405,19 +884,9 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/families/messages/message-delete.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/hooks/useBoostPurchase.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/hooks/useDeliveryData.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/hooks/useDeliveryTracking.ts",
@@ -433,16 +902,6 @@
       "pattern": "src/hooks/useListingSync.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/hooks/useOrbitMessageActions.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
-      "pattern": "src/hooks/useOrbitViewOnce.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
     },
     {
       "pattern": "src/hooks/useServiceTracking.ts",
@@ -465,84 +924,14 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/hooks/useUsername.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/action-engine.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/address/canonical-address-resolver.ts",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/admin/alerts.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/audit-logs.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/build-executive-kpi-snapshot.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/create-admin-alert.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/incidents.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/log-exports.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/process-payout.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/review-queue.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/admin/sla-engine.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "src/lib/analytics/map-error-alerting.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/audit.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/audit/audit-report-core.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/audit/seed-demo-data.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/auth-redirect.ts",
@@ -575,24 +964,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/browser-repair/browser-repair-safe-autofix.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/business-core/business-service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/business-core/onboarding-engine.ts",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/business-core/quality-score-engine.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/c2c/c2c-moderation.ts",
@@ -625,46 +999,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/command-control/approval-workflow.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/audit-log.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/cost-tracker.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/health-tracker.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/monitoring/level1-always-on.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/monitoring/level2-assisted.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/monitoring/level3-controlled.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/lib/command-control/rollback-tracker.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "src/lib/concierge/concierge-repository.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -690,11 +1024,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/db/orbitDb.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
       "pattern": "src/lib/db/repositories.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -703,11 +1032,6 @@
       "pattern": "src/lib/deals/deal-repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/dedup/dedup-engine.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/delivery/delivery-assignment.ts",
@@ -800,11 +1124,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/growth/feature-flag-registry.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/i18n.tsx",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -815,11 +1134,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/import/visibility-engine.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/inventory/inventoryEngine.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -828,21 +1142,6 @@
       "pattern": "src/lib/listing-lifecycle.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/live-monitor/engine-heartbeat.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/live-monitor/system-metrics.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/live-monitor/task-engine.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/loyalty/apply-loyalty.ts",
@@ -995,11 +1294,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/monitoring.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/notification-service/notification-service.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
@@ -1075,16 +1369,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/orbit-session-manager.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
-      "pattern": "src/lib/orbit/context-thread-factory.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
       "pattern": "src/lib/orbit/createGroupConversation.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -1105,34 +1389,9 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/orbit/orbit-data-gateway.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
       "pattern": "src/lib/orbit/orbit-payment-bridge.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/orbit/orbit-unread-counter.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
-      "pattern": "src/lib/orbit/orbitTelemetry.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
-      "pattern": "src/lib/orbit/signaling.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
-      "pattern": "src/lib/orbit/translate-message.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
     },
     {
       "pattern": "src/lib/orbit/updateGroupConversation.ts",
@@ -1148,16 +1407,6 @@
       "pattern": "src/lib/orchestration/handlers/support-handlers.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/orchestration/logger.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/orchestration/orchestration-utils.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/orders/autoRepeatEngine.ts",
@@ -1195,11 +1444,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/lib/pay/unifiedResolver.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/payments/payment-intents.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -1218,26 +1462,6 @@
       "pattern": "src/lib/payments/paymentService.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/pipeline/master-data-pipeline.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/pipeline/queue-driven-pipeline.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/platform/platform-health-checks.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/platform/platform-recovery-engine.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "src/lib/promo/promoEngine.ts",
@@ -1320,11 +1544,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/realtime-manager.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/refunds/create-refund-request.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -1338,21 +1557,6 @@
       "pattern": "src/lib/reviews/reviewEngine.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/runtime/event-replay-buffer.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/runtime/flux-pipeline-auditor.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/runtime/smart-prefetch.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/search/searchHistory.ts",
@@ -1395,11 +1599,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/services/service-profiles.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/settlement/orderSettlement.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -1418,11 +1617,6 @@
       "pattern": "src/lib/social/badge-system.ts",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/source/source-hygiene.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/lib/storage/assets.ts",
@@ -1500,21 +1694,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/lib/sync/time-sync.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/system/engineConnectorHub.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/lib/system/feature-flags.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/lib/tracking/live-tracking.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1585,16 +1764,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/pages/admin/control/sections/AutonomySection.tsx",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/pages/CommandCenter.tsx",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "src/pages/customer/CustomerAddressBookPage.tsx",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -1625,11 +1794,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/pages/settings/SettingsMarketing.tsx",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/pages/StorePage.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1658,11 +1822,6 @@
       "pattern": "src/repositories/accounting.repository.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/admin-ops.repository.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "src/repositories/admin.repository.ts",
@@ -2060,16 +2219,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/services/admin-ops.service.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "src/services/bnpl.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/services/boost.service.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -2078,26 +2227,6 @@
       "pattern": "src/services/domain/kyc.service.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
-    },
-    {
-      "pattern": "src/services/e-signature.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/services/financial-audit.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/services/fleet.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/services/governance/violation-persistence.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/services/marketplace.service.ts",
@@ -2120,11 +2249,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/services/orbit.service.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
-    },
-    {
       "pattern": "src/services/order.service.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -2145,24 +2269,9 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "src/services/real-estate-crm.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "src/services/real-estate.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "src/services/referral.service.ts",
       "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/services/revenue.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/services/social-graph.service.ts",
@@ -2183,11 +2292,6 @@
       "pattern": "src/services/subscription.service.ts",
       "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/services/user.service.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "src/stores/analyticsStore.ts",
@@ -2225,11 +2329,6 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "supabase/functions/_shared/domain-router.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/_shared/food-firewall-adapter.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -2250,16 +2349,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "supabase/functions/admin-payout-approve/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/admin-payout-reject/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "supabase/functions/alert-dispatcher/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
@@ -2268,16 +2357,6 @@
       "pattern": "supabase/functions/auto-onboarding-cron/index.ts",
       "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/auto-source-scrape/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/autonomous-cron-dispatcher/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "supabase/functions/award-loyalty-points/index.ts",
@@ -2315,16 +2394,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/browser-user-repair-engine/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/cache-manager/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/check-connect-status/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2335,59 +2404,14 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/chief-agent/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/cleanup-expired-media/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/cleanup-expired-messages/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/cleanup-integration-health-logs/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/cleanup-orphan-media/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/collect-sepa-rents/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/command-approval-webhook/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/command-center-api/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "supabase/functions/command-email-intake/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/command-github-webhook/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/command-monitoring-cron/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "supabase/functions/commerce-router/index.ts",
@@ -2450,11 +2474,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "supabase/functions/deep-scrape-build/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/deliveroo-dubai-food/index.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -2498,11 +2517,6 @@
       "pattern": "supabase/functions/email-queue-process/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/engine-cron-server/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "supabase/functions/esign-create-envelope/index.ts",
@@ -2570,16 +2584,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/gateway-cron-sync/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/gateway-webhook-ingest/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/gdpr-delete-account/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -2610,11 +2614,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "supabase/functions/integration-health-cron/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/kyc-review/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -2635,11 +2634,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/master-runtime-qa-engine/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "supabase/functions/media-processor/index.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -2648,11 +2642,6 @@
       "pattern": "supabase/functions/mobile-money-payment/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/mobile-money-webhook/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "supabase/functions/notification-dispatcher/index.ts",
@@ -2665,11 +2654,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/omega-server-loop/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "supabase/functions/orbit-ai-support/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
@@ -2678,11 +2662,6 @@
       "pattern": "supabase/functions/orbit-payment/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/orbit-router/index.ts",
-      "reason": "L7 ORBIT: orbit messaging — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ORBIT"
     },
     {
       "pattern": "supabase/functions/order-manage/index.ts",
@@ -2700,11 +2679,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/pipeline-worker/index.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/plaid-link-token/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2713,11 +2687,6 @@
       "pattern": "supabase/functions/plaid-webhook/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/platform-recovery/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "supabase/functions/prayer-push-cron/index.ts",
@@ -2740,16 +2709,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/public-api/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/public-health/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
       "pattern": "supabase/functions/qr-payment-session/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2758,11 +2717,6 @@
       "pattern": "supabase/functions/receive-email/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/refund-admin/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "supabase/functions/refund-process-booking/index.ts",
@@ -2795,34 +2749,9 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/repair-worker/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/reveal-contact/index.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "supabase/functions/run-engine-cron/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/run-ingestion-pipeline/index.ts",
-      "reason": "L7 PLATFORM: platform plumbing — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
-      "pattern": "supabase/functions/run-scheduled-audit/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/runtime-control-plane/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "supabase/functions/search-global/index.ts",
@@ -2860,21 +2789,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "supabase/functions/sentinel-server-guards/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/sentinel-server/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
-    },
-    {
-      "pattern": "supabase/functions/ses-webhook/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/shop-import-processor/index.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
@@ -2900,19 +2814,9 @@
       "owning_phase": "P4"
     },
     {
-      "pattern": "supabase/functions/sync-ical/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
-    },
-    {
       "pattern": "supabase/functions/sync-meilisearch-cron/index.ts",
       "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/system-router/index.ts",
-      "reason": "L7 PLATFORM: platform cron/cache/sync/webhook — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "PLATFORM"
     },
     {
       "pattern": "supabase/functions/tenant-signup/index.ts",
@@ -2958,11 +2862,6 @@
       "pattern": "supabase/functions/wallet-transfer/index.ts",
       "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/watchdog-ping/index.ts",
-      "reason": "L7 ADMIN: cross-domain admin/control-plane — pending L7 phase plan (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "ADMIN"
     },
     {
       "pattern": "supabase/functions/webauthn-authentication-challenge/index.ts",

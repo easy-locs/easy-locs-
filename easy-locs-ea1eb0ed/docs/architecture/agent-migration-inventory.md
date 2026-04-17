@@ -13,7 +13,7 @@
 | Domains still running direct mutations | **10** (payments, wallet, marketplace, kyc/identity, rides/logistics, content/storefront, contacts, notifications, otp, ai) |
 | Adapters **bootstrapped at runtime** today | **1 domain** — only `bootstrapMarketplaceAdapters` is invoked by `supabase/functions/execution-loop/index.ts` |
 | Adapters **implemented but not yet bootstrapped** | **1 domain** — `github-runner` (`SMOKE_NOOP`) has bootstrap + verifier code in `_shared/execution/adapters/github-runner/` but no live call site |
-| `dispatch-allowlist.json` exemption entries | **626** patterns (file is **2516 lines**) |
+| `dispatch-allowlist.json` exemption entries | **456** per-file (P1..P5) + **144** structural globalExemptions — re-organised by task #908 (phase tagging) and task #914 (ADMIN/PLATFORM/ORBIT promotion) on 2026-04-17. |
 | `(domain, task_type)` pairs governed at runtime today | **2** (`marketplace.MARKETPLACE.LISTING.PUBLISH`, `marketplace.MARKETPLACE.LISTING.UNPUBLISH`) of an estimated **~30** required by end of L7 |
 
 The platform is roughly **10 %** governed at runtime. The remaining 90 %
@@ -42,11 +42,39 @@ sovereign control plane today. That bypass is what L7 closes.
 
 ## 3. Lint allow-list snapshot
 
-`easy-locs-ea1eb0ed/.eslintrc.dispatch-allowlist.json` (2516 lines, **626
-exemption patterns**) is the L6 escape hatch — every pattern in this
-file is a known direct-mutation site that the lint rule
-(`@easylocs/dispatch-guard`) tolerates. The L7 success criterion is to
-prune this file down to **only the structural exemptions** below.
+`easy-locs-ea1eb0ed/.eslintrc.dispatch-allowlist.json` is the L6 escape
+hatch. After two consecutive cleanups it now holds **456 per-file
+patterns + 144 structural `globalExemptions`** (down from 626 raw
+entries):
+
+- **Task #908** (Sovereign Closeout) tagged every per-file entry with
+  an `owning_phase` (P1..P5/ADMIN/PLATFORM/ORBIT) and promoted the LC
+  + LB1 buckets into `globalExemptions`.
+- **Task #914** built on that by promoting the remaining ADMIN
+  (40), PLATFORM (67) and ORBIT (14) entries — 121 total — out of the
+  per-file list and into `globalExemptions` with written
+  "structural — keep" rationale.
+
+What remains in `exemptions` is exclusively L7 phase work (P1..P5).
+Each per-phase task can grep its `owning_phase` and retire the entries
+it owns:
+
+| Bucket | Count | Disposition |
+| --- | --- | --- |
+| P1 (payments + wallet) | 79 | per-file, retires when payments+wallet adapters land |
+| P2 (KYC + identity) | 38 | per-file, retires when KYC+identity adapters land |
+| P3 (rides + marketplace) | 157 | per-file, retires when rides+marketplace adapters land |
+| P4 (content + contacts) | 149 | per-file, retires when content+contacts adapters land |
+| P5 (notifications + OTP) | 33 | per-file, retires when notifications+OTP adapters land |
+| ADMIN | 40 | promoted to `globalExemptions` (admin/command-control surface) |
+| PLATFORM | 67 | promoted to `globalExemptions` (orchestrator/runtime/observability) |
+| ORBIT | 14 | promoted to `globalExemptions` (Orbit messaging stack) |
+| LC | already promoted by #908 | command-control + dev-builder + execution-loop surface |
+| LB1 | already promoted by #908 | AI router (out of L7 scope — task #815) |
+
+The L7 success criterion is to prune this file down to **only the
+structural exemptions** below — i.e. drain the **456** P1..P5 per-file
+entries to **zero**, phase by phase.
 
 ### 3a. Structural exemptions (must remain)
 
