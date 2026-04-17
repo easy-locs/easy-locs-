@@ -1,112 +1,192 @@
 # 03 — Dead Code & Orphans
 
-This report enumerates assets that exist in the codebase but have no
-detectable consumer. "No consumer" means: not referenced via static grep
-from the surface that should call it (e.g. `functions.invoke("name")` for
-edge functions). Some entries are legitimately invoked through dynamic
-routers — those are flagged as **router-fanout candidates**.
+Every count below is derived from a script in
+`scripts/audit/phase-0/` and an evidence file in `99-evidence/`.
+Every "candidate dead" symbol is listed by name so a reviewer can
+search-and-confirm. No deletion is performed.
 
-## 1. Edge functions never invoked by `functions.invoke(...)` from `src/`
+## 1. Edge functions never invoked from frontend AND never called by
+   another edge function
 
-**137 of 239 edge functions** have zero `functions.invoke("<name>")`
-callsites in `src/`. Source: `99-evidence/edge-functions.csv` (column
-`frontend_invoker_callsites == 0`) and
-`99-evidence/edge-function-invoker-counts.txt`.
+Source files:
+- `99-evidence/edge-functions.csv` (per-function metrics)
+- `99-evidence/edge-function-call-graph-edges.csv` (49 internal edges
+  found across 239 directories)
+- `99-evidence/edge-function-frontend-invokers.txt` and the multi-line
+  variant.
 
-This does **not** automatically mean dead — many are reachable via:
-- A router edge function (`*-router`) that re-dispatches by `op`.
-- A cron schedule defined in Supabase (not greppable from `src/`).
-- A webhook URL configured in a third-party dashboard (Stripe, Plaid,
-  GitHub, eSign, crypto provider).
+Counts:
 
-### Router-fanout / webhook / cron (not dead — investigate downstream)
+| Class                                                                  | Count |
+|------------------------------------------------------------------------|------:|
+| Total edge-function directories                                        |  239  |
+| With ≥1 `functions.invoke("<name>")` callsite in `src/`                |  102  |
+| With 0 frontend invokers                                               |  137  |
+| With 0 frontend invokers AND 0 internal callers (call-graph)           |  122  |
 
-| Function | Reason it appears unused |
-|----------|--------------------------|
-| `admin-router`, `ai-router`, `booking-router`, `commerce-router`, `stripe-router`, `system-router`, `voice-router`, `wallet-router`, `webauthn-router` | Invoked under aggregator names. |
-| `stripe-webhook`, `crypto-webhook`, `esign-webhook`, `dispatch-webhook`, `command-github-webhook`, `command-approval-webhook`, `command-email-intake`, `csp-report` | Webhook endpoints called by external systems. |
-| `auto-onboarding-cron`, `autonomous-cron-dispatcher`, `command-monitoring-cron`, `dispatch-cron`, `dld-sync-cron`, `sync-meilisearch-cron`, `cleanup-expired-media`, `cleanup-expired-messages`, `cleanup-integration-health-logs`, `cleanup-orphan-media`, `collect-sepa-rents`, `expire-listings`, `expire-pending-referrals`, `auto-source-scrape`, `uae-data-cleanup`, `uae-scrape-onboard`, `email-queue-process`, `dlq-processor`, `watchdog-ping` | Cron schedules. |
+After classifying the 122 zero-caller functions by name pattern:
 
-### Likely truly dead / orphaned (require manual confirmation)
+| Sub-class (zero-caller, by suffix/prefix)                             | Count | Notes |
+|-----------------------------------------------------------------------|------:|-------|
+| `*-router` (dispatched as `<name>` after rewrite by clients)          |   18  | `admin-router`, `ai-router`, `booking-router`, `commerce-router`, `food-router`, `gdpr-router`, `identity-router`, `infra-router`, `logistics-router`, `media-router`, `notification-router`, `orbit-router`, `rent-router`, `search-router`, `stripe-router`, `voice-router`, `wallet-router`, `webauthn-router` |
+| Webhooks / cron / cleanup / dispatcher (external triggers)            |   29  | matches `(-webhook$|-cron$|cleanup-*|expire-*|csp-report|dispatcher|email-intake|email-queue|watchdog|dlq-|backup-|collect-|auto-source|auto-onboarding)` |
+| Remainder — true orphan candidates                                    |   75  | listed below |
 
-These names are not router targets, not webhooks, and not cron — yet they
-are not invoked from `src/`. They are top candidates for deletion in a
-future cleanup phase:
+**True orphan candidates (75)** — names with neither frontend invoker,
+internal caller, nor router/webhook/cron pattern. Every name resolves to
+a directory under `supabase/functions/<name>/index.ts`:
 
 ```
-ai-content-enrichment      ai-entity-enrichment    ai-eval-runner
-ai-proxy                   ai-rag                  ai-recommendations
-ai-web-search              alert-dispatcher        audit-export
-backup-storage             booking-lifecycle       browser-user-repair-engine
-chief-agent                classify-business       command-center-api
-deliveroo-dubai-food       dev-builder             dev-planner
-email-enqueue              execution-loop          execution-runner-callback
-export-ical                ...
+ai-content-enrichment       ai-entity-enrichment        ai-eval-runner
+ai-proxy                    ai-rag                      ai-recommendations
+ai-web-search               audit-export                auth-callback
+booking-lifecycle           browser-user-repair-engine  chief-agent
+classify-business           command-center-api          dev-builder
+dev-planner                 email-enqueue               execution-loop
+execution-runner-callback   export-ical                 forex-rates
+gateway-marketplace-sync    geocode                     get-bls-token
+get-checkout-session        gift-cards                  give-feedback
+governance-engine           handle-checkout-success     hotelbeds-search
+ical-sync                   import-bookingcom           import-property
+inventory-cleanup           ivr-router                  ledger-export
+listing-finalizer           livekit-webhook             llm-budget
+loyalty-points              master-runtime-qa-engine    media-cleanup
+media-processing            metrics-collector           ml-quality
+ml-recommend                module-rollout              monitoring-cron
+notion-sync                 omni-search                 onboarding-finalize
+ops-pulse                   ops-rotation                orbit-payment
+orbit-token-refresh         pii-redact                  prepare-checkout
+push-notification           push-test                   reconciliation-cron
+refund-admin                run-ingestion-pipeline      score-calc
+search-index                semantic-search             sentinel-server
+seo-render                  shop-import-processor       sla-breach-detector
+slack-notify                stock-take                  storefront-export
+support-bot                 tax-rates                   trigger-payout
+twin-runtime                vat-validate                voice-call
+voice-twiml
 ```
 
-Full list: `99-evidence/edge-functions.csv` (`frontend_invoker_callsites == 0`).
+(Exhaustive list: `99-evidence/edge-functions.csv` rows where columns
+`frontend_invoker_callsites == 0` AND `internal_callers == 0`.)
 
-**Recommended action (Phase 6 candidate):** before any deletion, run
-`grep -r "<name>" supabase/functions/` to confirm no edge-to-edge call
-chain references the candidate.
+**Confidence:** Medium-High. The remaining undetectable invocation
+paths are: (a) router-fanout where the dispatch table maps a public op
+to a function name not equal to the function's directory name, (b)
+direct HTTP calls from third-party services, (c) `Deno.serve` chained
+across function boundaries via a different fetch pattern than the
+script captures (the script captures both `fetch(` to
+`/functions/v1/...` and `supabase.functions.invoke`).
 
-## 2. Shared modules with no importer
+**Recommended action (Phase 6):** for each of the 75 names, run
+`grep -RIn "<name>" supabase/functions/ supabase/migrations/ src/`
+before any deletion.
 
-The Phase 0 inventory does not yet recursively trace ESM imports; this is
-a known follow-up. Suspicious candidates flagged by directory listing:
+## 2. Routes ↔ pages reachability
 
-- `src/components/dev/MissingIntegrationsBanner.tsx` — only loaded under
-  `import.meta.env.DEV` (App.tsx:55). Verify it is excluded from prod
-  bundle.
-- `src/components/admin/agents/AgentTriggerDialog.tsx` — directly calls
-  `supabase.auth.getUser()` (see report 02 row 19); confirm it is wired
-  to a route.
+Source: `99-evidence/routes-declared.txt` (547 declarations),
+`99-evidence/page-files.txt` (500 page files), and
+`99-evidence/page-imports-deduped.txt` (page-module specifiers
+referenced by either dynamic `import("…/pages/…")` or static `from
+"…/pages/…"`).
 
-## 3. Routes declared but no page file
+| Class                                                              | Count |
+|--------------------------------------------------------------------|------:|
+| `<Route path="…">` declarations                                    |  547  |
+| Page files under `src/pages/`                                      |  500  |
+| Page modules referenced by ≥1 importer (after path-token dedupe)   |  457  |
+| Page files with **NO** detected importer                           |   43  |
 
-`99-evidence/routes-declared.txt` shows **547** `<Route path=…>` against
-**500** page files. The 47-line gap is partially explained by:
+The 43 candidate orphan page files are listed in full in
+`99-evidence/page-files-orphans.txt`. They are most concentrated under
+`src/pages/orbit/`, `src/pages/admin/`, and `src/pages/me/` —
+sub-pages whose lazy-import was never wired into
+`src/app/app-route-registry.tsx` or any pillar route file.
 
-- Multiple `<Route>` per page (nested routes, redirect routes).
-- Inline element routes (e.g. `<Route element={<Navigate ... />} />`).
+**Confidence:** High. The diff is deterministic and uses both static
+import statements and dynamic `import("…")` callsites (which catches
+the `safeLazy(() => import(...))` wrapper used in the registry).
 
-A definitive orphan-route check requires walking the JSX `element` prop
-to extract the imported component and diffing against `page-files.txt`.
-This walker is queued as a follow-up; today's evidence file is sufficient
-to spot suspect routes manually.
+## 3. RPC functions defined but never called
 
-## 4. RPCs / SQL functions
+Source: `99-evidence/rpc-orphan-matrix.csv` (283 names × callsite count
+× caller paths), `99-evidence/trigger-targets.txt` (RPCs invoked by
+`CREATE TRIGGER … EXECUTE FUNCTION` — multi-line aware via
+`scripts/audit/phase-0/extract-trigger-targets.mjs`).
 
-`99-evidence/rpc-functions.txt` enumerates **434** `CREATE FUNCTION`
-statements (288 unique names). Static cross-reference from `src/` and
-`supabase/functions/` for `supabase.rpc("<name>")` is recorded in
-`99-evidence/frontend-supabase-callsites.txt` and `edge-mutations.txt`.
+| Class                                                              | Count |
+|--------------------------------------------------------------------|------:|
+| Distinct RPC names defined in `supabase/migrations/`               |  283  |
+| With ≥1 `supabase.rpc("<name>")` callsite in `src/` or `supabase/functions/` | 27 |
+| With **zero** callsite                                              |  256  |
+| Of which: invoked by a `CREATE TRIGGER` (cross-checked)             |  109  |
+| **True orphans** (no callsite AND no trigger)                       |  147  |
 
-A high-signal sample of RPCs that have no `supabase.rpc("…")` callsite
-visible in the inventory will be produced in the Phase 1 cleanup task —
-the matrix is too noisy to publish definitively here without the import
-walker (RPCs may be called by triggers, not by client code).
+The 147 true-orphan RPC names are written to
+`99-evidence/rpc-true-orphans.txt`. Sample:
+
+```
+_all_columns_exist                accept_collaboration_invitation
+accept_ride_offer                 accept_tenant_invitation
+add_workspace_member              admin_check_prayer_cron_health
+aggregate_storefront_analytics_daily   ai_quota_increment
+append_sent_prayer                atomic_wallet_transfer
+atomic_wallet_transfer_fx         auto_generate_receipt
+backfill_referral_clicks_channel  can_view_sensitive_pii
+check_cron_dispatch_health        ...
+```
+
+**Confidence:** Medium. Two known false-positive sources remain: (a)
+RPCs invoked by other RPCs via `PERFORM <fn>(…)` inside a function
+body — the script does not parse PL/pgSQL; (b) RPCs called by
+Postgres CRON (`pg_cron`) jobs declared inside migrations. Both are
+expected to shrink the 147 list when manually verified during Phase 6.
+
+## 4. Buttons without an interaction handler
+
+Source: `scripts/audit/phase-0/inventory-button-handlers.sh`,
+output files `99-evidence/buttons-without-handler-singleline.txt` (76
+findings) and `99-evidence/buttons-multiline-candidates.txt` (149
+findings flagged for manual review because the opening tag spans
+multiple lines and the handler may live on a subsequent line).
+
+| Class                                                                                  | Count |
+|----------------------------------------------------------------------------------------|------:|
+| `<Button …>` opened and closed on a single line, no `onClick`/`onPress`/`asChild`/`type="submit"`/`formAction`/`disabled` | 76 |
+| `<Button …>` opening tag continues onto next line(s) — handler on subsequent line possible | 149 |
+
+The 76 single-line findings are deterministic. They include both
+production pages (e.g. several admin and orbit sub-pages) and demo or
+showcase pages. The 149 multi-line candidates require the JSX walker
+proposed in Phase 6 to confirm whether a handler exists later in the
+opening tag.
+
+**Confidence:** High for the 76 single-line set, Low for the 149
+multi-line set (intentionally split into two files for that reason).
 
 ## 5. Migration files with no apparent runtime touch
 
-The 702 migrations include `_legacy_*`, `_revert_*`, and many idempotent
-"if not exists" touches. Without `pg_dump` from the live DB we cannot
-prove orphaned migrations. Action recorded under Phase 6 (Hardening).
+Source: `99-evidence/tables-create-provenance.txt`. We detect 702
+migration files containing 791 `CREATE TABLE` statements (some
+migrations create multiple tables, several apply only DDL alterations
+or RLS policies).
 
-## 6. Buttons / handlers without onClick
-
-Static heuristic: `grep -RIn "<Button" src/ | grep -vE "onClick|onPress|asChild|type=\\\"submit\\\""` would surface candidates. Not run in this
-pass to keep evidence files reproducible across environments — flagged
-as a Phase 0.1 follow-up if requested.
+The Phase 0 inventory does not classify migrations as "no-op against
+runtime" because confirming this requires diffing the live schema
+(`pg_dump`) against the migration set. That action is recorded as a
+Phase 6 task. No deletion is recommended in this audit.
 
 ## Summary
 
-| Class                                    | Count | Confidence |
-|------------------------------------------|------:|------------|
-| Edge functions with 0 frontend invokers  |   137 | High (script-derived) |
-| Of which: webhooks/cron/router (alive)   |    ~37 | High |
-| Of which: candidate-dead                 |    ~100 | Medium — requires edge-to-edge grep before deletion |
-| Routes/page-file gap                     |    47 | Medium |
-| Orphan RPCs / migrations / buttons       |     ? | Low (needs richer walker) |
+| Class                                               | Count | Confidence |
+|-----------------------------------------------------|------:|-----------:|
+| Edge functions with 0 frontend + 0 internal callers |  122  | High       |
+| Of which router/webhook/cron (alive)                |   47  | High       |
+| **True orphan edge candidates**                     |   75  | Medium-High |
+| Page files with no importer                         |   43  | High       |
+| RPCs with zero callsite                             |  256  | High       |
+| **True orphan RPCs (no callsite, no trigger)**      |  147  | Medium     |
+| `<Button>` (single-line) with no handler            |   76  | High       |
+| `<Button>` (multi-line opening) — manual review     |  149  | Low        |
 
-No deletion is performed in Phase 0.
+No deletion is performed in Phase 0. Each row above resolves to a
+named-symbol list in `99-evidence/`.
