@@ -213,13 +213,22 @@ export function createMergeConflictAuditHandler(
 ): (report: DriftReport) => Promise<void> {
   const { sb, builderTaskId } = opts;
   return async function onBlocked(report: DriftReport): Promise<void> {
+    const overlapList = Array.isArray(report.overlaps) ? report.overlaps : [];
+    const fileSet = new Set<string>();
+    for (const o of overlapList) {
+      if (o && typeof (o as { file?: unknown }).file === "string") {
+        fileSet.add((o as { file: string }).file);
+      }
+    }
+    const files = Array.from(fileSet);
     const audit = {
       kind: "merge_conflict_recovery" as const,
       at: new Date().toISOString(),
       builder_task_id: builderTaskId,
       severity: report.severity,
-      overlaps: report.overlaps?.length ?? 0,
-      reason: `hard_overlap:${report.overlaps?.length ?? 0}`,
+      overlaps: overlapList.length,
+      files,
+      reason: `hard_overlap:${overlapList.length}`,
     };
     try {
       const { data: row } = await sb

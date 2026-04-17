@@ -489,6 +489,7 @@ export const CommandCenterPage = safeLazy(() => import("@/pages/admin/CommandCen
 export const AdminIntegrationHealthPage = safeLazy(() => import("@/pages/admin/AdminIntegrationHealthPage"), "AdminIntegrationHealthPage");
 export const AdminClientIntegrationDiagnosticsPage = safeLazy(() => import("@/pages/admin/AdminClientIntegrationDiagnosticsPage"), "AdminClientIntegrationDiagnosticsPage");
 export const AdminMapErrorDashboardPage = safeLazy(() => import("@/pages/admin/AdminMapErrorDashboardPage"), "AdminMapErrorDashboardPage");
+export const AdminMergeConflictRecoveryPage = safeLazy(() => import("@/pages/admin/AdminMergeConflictRecoveryPage"), "AdminMergeConflictRecoveryPage");
 export const StatementDashboardPage = safeLazy(() => import("@/pages/admin/StatementDashboardPage"), "StatementDashboardPage");
 export const DeveloperPortalDocs = safeLazy(() => import("@/pages/DeveloperPortalDocs"), "DeveloperPortalDocs");
 

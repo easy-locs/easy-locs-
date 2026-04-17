@@ -5,10 +5,14 @@ import { projectOpsDashboard } from "@/families/dashboard/dashboard.read-model";
 import { useMemo } from "react";
 import { useWalletStore } from "@/stores/walletStore";
 import { getWalletDefaultCurrency } from "@/lib/wallet/wallet-config";
-import { Loader2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, AlertTriangle, RefreshCw, GitMerge, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
+import {
+  fetchMergeConflictRecoveryEvents,
+  projectMergeConflictRecoverySummary,
+} from "@/repositories/merge-conflict-recovery.repository";
 
 export default function AdminOpsDashboardPage() {
   useUiEngine("admin-adminopsdashboardpage");
@@ -58,8 +62,59 @@ export default function AdminOpsDashboardPage() {
           ))}
         </div>
       )}
+
+      <MergeConflictRecoveryWidget onOpen={() => navigate("/admin/merge-conflict-recovery")} />
       </div>
     </SubPageShell>
+  );
+}
+
+function MergeConflictRecoveryWidget({ onOpen }: { onOpen: () => void }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-merge-conflict-recovery-summary"],
+    queryFn: fetchMergeConflictRecoveryEvents,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+  const summary = useMemo(
+    () => projectMergeConflictRecoverySummary(data ?? []),
+    [data],
+  );
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="w-full text-left rounded-2xl border border-border/40 bg-card p-4 hover:border-primary/40 transition-colors"
+    >
+      <div className="flex items-start gap-3">
+        <GitMerge className="h-4 w-4 mt-0.5 text-muted-foreground" />
+        <div className="flex-1">
+          <p className="text-[0.6875rem] uppercase tracking-wider text-muted-foreground font-medium">
+            Merge-conflict recovery (14d)
+          </p>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground mt-1">Loading…</p>
+          ) : (
+            <div className="mt-1 flex items-baseline gap-3">
+              <span className="text-xl font-bold tabular-nums">
+                {summary.totalEvents}
+              </span>
+              <span className="text-xs text-muted-foreground">events</span>
+              <span className="text-xs text-muted-foreground">
+                · {summary.affectedTasks} task{summary.affectedTasks === 1 ? "" : "s"}
+              </span>
+            </div>
+          )}
+          {!isLoading && summary.topFiles.length > 0 && (
+            <p className="text-[11px] text-muted-foreground mt-1 truncate">
+              Top: <code className="font-mono">{summary.topFiles[0].file}</code>
+              {" "}({summary.topFiles[0].count})
+            </p>
+          )}
+        </div>
+        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+      </div>
+    </button>
   );
 }
 
