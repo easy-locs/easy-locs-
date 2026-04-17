@@ -483,7 +483,7 @@ Deno.serve(async (req) => {
     // Dynamic AI translation for unsupported locales (e.g., Thai, Vietnamese, Hindi, Russian...)
     // Provider-key resolution lives in the registered AI router metadata; on
     // dispatch failure we keep the English/French fallback template (same UX
-    // as the legacy "no OPENAI_API_KEY" path).
+    // as the legacy "no provider key configured" path).
     if (!hasNativeTemplate && locale !== "en" && locale !== "fr") {
       {
         const LOCALE_NAMES: Record<string, string> = {

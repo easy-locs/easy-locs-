@@ -161,9 +161,14 @@ const OPENAI_KEY_ENV_ALLOWLIST = new Set<string>([
 // No SDK exception is permitted.
 const ORCHESTRATOR_SDK_ALLOWLIST: ReadonlySet<string> = new Set();
 
+// `orchestrator/` is listed defensively so that if anyone later
+// reintroduces the deleted standalone Express tree it is automatically
+// scanned without needing a test edit. `walk()` silently skips
+// directories that don't exist.
 const SCAN_ROOTS = [
   "supabase/functions",
   "lambda-handlers",
+  "orchestrator",
   "src",
 ];
 
