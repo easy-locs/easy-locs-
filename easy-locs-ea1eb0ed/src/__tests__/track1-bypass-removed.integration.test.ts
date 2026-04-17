@@ -168,7 +168,6 @@ const ORCHESTRATOR_SDK_ALLOWLIST: ReadonlySet<string> = new Set();
 const SCAN_ROOTS = [
   "supabase/functions",
   "lambda-handlers",
-  "orchestrator",
   "src",
 ];
 
