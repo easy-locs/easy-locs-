@@ -1,0 +1,40 @@
+Task #925: Run the merge-conflict smoke against the live sandbox
+
+Original task: execute the staged operator smoke that #915 was supposed
+to deliver, against a real sandbox Supabase project, and capture the
+audit row proving `payload.last_replan.reason` is stored verbatim and
+starts with `merge_conflict:overlap_with:`.
+
+Scope deviations (cleared with the user beforehand):
+- The script #915 was meant to deliver did not exist in this branch.
+  Wrote `easy-locs-ea1eb0ed/scripts/smoke-merge-conflict-recovery.ts`
+  from scratch as part of this task.
+- No throwaway GitHub repo was provisioned. The pre-merge drift hook ->
+  loop -> request_dev_replan chain is already proven end-to-end
+  in-memory by the LC9 scenario 4b integration test. The only piece
+  needing real infra was the SQL RPC's audit-trail behaviour against a
+  real Postgres, which the smoke validates directly. This kept us
+  inside the user's "do not overbuild" constraint.
+
+What ran:
+- Provisioned an ephemeral Supabase free-tier project
+  (smoke-task-925, ref rskjyebxodnsxawtvhrc, ap-southeast-1) via the
+  Management API.
+- Applied a minimal bootstrap (system schema, app_role enum, has_role
+  stub, minimal system.execution_tasks table) plus the actual LC4
+  migration `20260501100000_lc4_dev_replan_rpc.sql` verbatim.
+- Exposed `system` via PostgREST and granted service_role privileges.
+- Ran the new smoke script: all 9 assertions passed, exit code 0.
+- The captured audit row's `payload.last_replan.reason` was
+  `"merge_conflict:overlap_with:agent-task-A"` — verbatim, with the
+  required prefix.
+- Tore the sandbox project down via the Management API. No persistent
+  infra remains on the user's account.
+
+Artifacts:
+- easy-locs-ea1eb0ed/scripts/smoke-merge-conflict-recovery.ts (new)
+- .local/artifacts/smoke-merge-conflict-recovery.log.json (run log)
+- .local/artifacts/task-925-notes.md (run-book / archive)
+
+Follow-up proposed (#934): wire this smoke into release sign-off so
+regressions in the RPC or PostgREST exposure are caught automatically.
