@@ -503,6 +503,16 @@ export class ExecutionOrchestratorV2 {
           errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
           errorMessage: decision.error,
         });
+        // L3: mutation already happened (verifier runs post-execute) — auto-
+        // rollback per adapter contract so we never leave the domain in a
+        // half-committed state.
+        await this.maybeAutoRollback(
+          task,
+          adapter,
+          previousState,
+          adapterPayload.output ?? null,
+          decision.error,
+        );
         outcome = this.outcome(task, "failed", startedAt, {
           errorCode: VERIFICATION_ERROR_CODES.VERIFIER_THREW,
           errorMessage: decision.error,
@@ -532,6 +542,16 @@ export class ExecutionOrchestratorV2 {
           errorCode: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
           errorMessage: mismatchMessage,
         });
+        // L3: mutation already happened (verifier runs post-execute) —
+        // compensate via auto-rollback per the adapter's declared
+        // contract.
+        await this.maybeAutoRollback(
+          task,
+          adapter,
+          previousState,
+          adapterPayload.output ?? null,
+          mismatchMessage,
+        );
         outcome = this.outcome(task, "failed", startedAt, {
           errorCode: VERIFICATION_ERROR_CODES.VERIFICATION_MISMATCH,
           errorMessage: mismatchMessage,
