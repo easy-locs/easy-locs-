@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Easy-Locs — Emergency Control Panel</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0a0e27;color:#e6e8ef;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;min-height:100dvh}
+  body{padding:24px 18px 80px;max-width:720px;margin:0 auto;line-height:1.45}
+  h1{font-size:1.5rem;margin:0 0 4px;color:#ffd700}
+  .sub{color:#9aa3b8;font-size:.9rem;margin-bottom:24px}
+  h2{font-size:1.05rem;margin:28px 0 10px;color:#ffd700;border-bottom:1px solid #1f2742;padding-bottom:6px}
+  .card{background:#10173a;border:1px solid #1f2742;border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .row{display:flex;justify-content:space-between;gap:12px;font-size:.88rem;padding:4px 0}
+  .row .k{color:#9aa3b8}
+  .row .v{color:#e6e8ef;font-family:ui-monospace,Menlo,monospace;word-break:break-all;text-align:right}
+  .ok{color:#4ade80}.warn{color:#fbbf24}.err{color:#f87171}
+  a.btn,button.btn{display:block;width:100%;padding:14px 16px;border-radius:10px;border:1px solid transparent;font-size:1rem;font-weight:600;text-align:center;text-decoration:none;cursor:pointer;margin-bottom:10px;font-family:inherit}
+  .btn-primary{background:#ffd700;color:#0a0e27;border-color:#ffd700}
+  .btn-secondary{background:#1f2742;color:#e6e8ef;border-color:#2a3461}
+  .btn-danger{background:#7f1d1d;color:#fee2e2;border-color:#991b1b}
+  .btn-link{background:transparent;color:#7dd3fc;border-color:#1f2742}
+  pre{background:#070b20;border:1px solid #1f2742;border-radius:8px;padding:10px;overflow:auto;max-height:240px;font-size:.78rem;color:#cbd5e1;white-space:pre-wrap;word-break:break-all}
+  .small{font-size:.78rem;color:#9aa3b8;margin-top:6px}
+</style>
+</head>
+<body>
+<h1>🛟 Easy-Locs — Emergency Control Panel</h1>
+<p class="sub">Page statique inkillable. Aucun JavaScript de l'app n'est requis. Si tu vois cette page, le serveur est joignable.</p>
+
+<div class="card">
+  <div class="row"><span class="k">Hôte</span><span class="v" id="host">—</span></div>
+  <div class="row"><span class="k">URL</span><span class="v" id="url">—</span></div>
+  <div class="row"><span class="k">Date</span><span class="v" id="now">—</span></div>
+  <div class="row"><span class="k">User-Agent</span><span class="v" id="ua">—</span></div>
+  <div class="row"><span class="k">Service Worker</span><span class="v" id="sw">—</span></div>
+  <div class="row"><span class="k">Cache Storage</span><span class="v" id="cs">—</span></div>
+  <div class="row"><span class="k">localStorage</span><span class="v" id="ls">—</span></div>
+  <div class="row"><span class="k">IndexedDB</span><span class="v" id="idb">—</span></div>
+  <div class="row"><span class="k">Online</span><span class="v" id="online">—</span></div>
+</div>
+
+<h2>🚨 Réparer l'app bloquée</h2>
+<button class="btn btn-danger" onclick="hardReset()">Hard Reset (purge SW + caches + storage)</button>
+<button class="btn btn-secondary" onclick="softReset()">Soft Reset (vider caches uniquement)</button>
+<p class="small">Le Hard Reset règle 99% des écrans de chargement bloqués. Tu seras redirigé vers la page d'accueil après.</p>
+
+<h2>🎛 Accès direct au dashboard</h2>
+<a class="btn btn-primary" href="/admin/control">Admin Control (/admin/control)</a>
+<a class="btn btn-secondary" href="/admin/merge-conflict-recovery">Merge-Conflict Recovery</a>
+<a class="btn btn-secondary" href="/admin/super-dashboard">Super Dashboard</a>
+<a class="btn btn-secondary" href="/admin">Admin Index</a>
+<a class="btn btn-secondary" href="/dashboard">User Dashboard</a>
+<a class="btn btn-link" href="/login">Se connecter / Déconnecter (/login)</a>
+
+<h2>🩺 Diagnostic réseau</h2>
+<button class="btn btn-secondary" onclick="probe()">Tester /api/health, /index.html, Supabase</button>
+<pre id="probe">(clique sur le bouton)</pre>
+
+<h2>📋 Build info</h2>
+<pre id="buildInfo">chargement…</pre>
+
+<script>
+(function(){
+  document.getElementById('host').textContent = location.host;
+  document.getElementById('url').textContent = location.href;
+  document.getElementById('now').textContent = new Date().toISOString();
+  document.getElementById('ua').textContent = (navigator.userAgent||'').slice(0,80);
+  document.getElementById('online').textContent = navigator.onLine ? '✅ true' : '❌ false';
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then(function(rs){
+      document.getElementById('sw').textContent = rs.length ? (rs.length + ' enregistré(s)') : 'aucun';
+    }).catch(function(e){document.getElementById('sw').textContent = 'err: '+e.message});
+  } else { document.getElementById('sw').textContent = 'non supporté'; }
+
+  if (window.caches) {
+    caches.keys().then(function(k){document.getElementById('cs').textContent = k.length ? (k.length + ' cache(s)') : 'vide'});
+  } else { document.getElementById('cs').textContent = 'non supporté'; }
+
+  try { document.getElementById('ls').textContent = Object.keys(localStorage).length + ' clés'; }
+  catch(e){ document.getElementById('ls').textContent = 'err: '+e.message; }
+
+  if (window.indexedDB && indexedDB.databases) {
+    indexedDB.databases().then(function(dbs){document.getElementById('idb').textContent = dbs.length + ' DB(s)'});
+  } else { document.getElementById('idb').textContent = 'non listable'; }
+
+  fetch('/index.html', {cache:'no-store'}).then(function(r){return r.text()}).then(function(html){
+    var hash = (html.match(/assets\/index-([A-Za-z0-9_-]+)\.js/)||[])[1] || '?';
+    var meta = (html.match(/<meta name="generator" content="([^"]+)"/)||[])[1] || '';
+    document.getElementById('buildInfo').textContent =
+      'index.html bundle hash: ' + hash + '\n' +
+      'generator: ' + meta + '\n' +
+      'served at: ' + new Date().toISOString();
+  }).catch(function(e){document.getElementById('buildInfo').textContent = 'err: '+e.message});
+})();
+
+function softReset(){
+  if (!confirm('Vider TOUS les caches du navigateur pour ce site ?')) return;
+  var done = function(){ alert('✅ Caches vidés. La page va se recharger.'); location.replace('/?_r='+Date.now()); };
+  if (window.caches) {
+    caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).then(done).catch(function(e){alert('Erreur: '+e.message); done();});
+  } else { done(); }
+}
+
+function hardReset(){
+  if (!confirm('Purger TOUT (Service Workers + caches + localStorage + cookies + IndexedDB) ?\n\nCa va te déconnecter et tout réinitialiser.')) return;
+  var jobs = [];
+  if ('serviceWorker' in navigator) {
+    jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister()}))}).catch(function(){}));
+  }
+  if (window.caches) {
+    jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}))}).catch(function(){}));
+  }
+  try { localStorage.clear(); } catch(e){}
+  try { sessionStorage.clear(); } catch(e){}
+  try {
+    document.cookie.split(';').forEach(function(c){
+      var n = c.split('=')[0].trim();
+      document.cookie = n+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+      document.cookie = n+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain='+location.hostname;
+    });
+  } catch(e){}
+  if (window.indexedDB && indexedDB.databases) {
+    jobs.push(indexedDB.databases().then(function(dbs){return Promise.all(dbs.map(function(d){return new Promise(function(res){var r=indexedDB.deleteDatabase(d.name);r.onsuccess=r.onerror=r.onblocked=function(){res()}})}))}).catch(function(){}));
+  }
+  Promise.all(jobs).then(function(){
+    alert('✅ Hard Reset terminé. La page va se recharger sur l\'accueil.');
+    location.replace('/?_r='+Date.now());
+  });
+}
+
+function probe(){
+  var out = document.getElementById('probe');
+  out.textContent = 'Probing…\n';
+  var tests = [
+    ['/index.html', {cache:'no-store'}],
+    ['/api/health', {cache:'no-store'}],
+    ['/manifest.json', {cache:'no-store'}],
+    ['/sw.js', {cache:'no-store'}],
+    ['/admin/control', {cache:'no-store', redirect:'manual'}]
+  ];
+  tests.forEach(function(t){
+    var t0 = Date.now();
+    fetch(t[0], t[1]).then(function(r){
+      out.textContent += t[0] + ' → ' + r.status + ' ('+(Date.now()-t0)+'ms)\n';
+    }).catch(function(e){
+      out.textContent += t[0] + ' → ERR ' + e.message + '\n';
+    });
+  });
+}
+</script>
+</body>
+</html>
