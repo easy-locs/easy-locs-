@@ -37,7 +37,9 @@ if command -v pgrep >/dev/null 2>&1; then
   # Scope to vite processes whose cmdline references THIS project dir, so we
   # don't terminate unrelated vite instances in multi-project environments.
   PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-  PIDS=$(pgrep -f "node .*${PROJECT_DIR}/node_modules/.*vite" 2>/dev/null | sort -u)
+  # Only kill dev servers (no "build" arg) so production builds running in
+  # parallel aren't aborted by a dev-server restart.
+  PIDS=$(pgrep -f "node .*${PROJECT_DIR}/node_modules/.*vite$" 2>/dev/null | sort -u)
   kill_pids "$PIDS"
 fi
 
