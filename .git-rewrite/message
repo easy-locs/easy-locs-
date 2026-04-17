@@ -1,9 +1,1 @@
-Add comparison content to website feeds and improve URL routing
-
-Update vite-plugin-feeds.ts to include comparison entries and adjust URL patterns for better routing.
-
-Replit-Commit-Author: Agent
-Replit-Commit-Session-Id: 01e87756-e7a8-4912-b6e0-4a07e75906d9
-Replit-Commit-Checkpoint-Type: full_checkpoint
-Replit-Commit-Event-Id: 0f785b46-258d-4c5f-9a0c-9e074711a69f
-Replit-Helium-Checkpoint-Created: true
+Merge remote-tracking branch 'origin/main'
