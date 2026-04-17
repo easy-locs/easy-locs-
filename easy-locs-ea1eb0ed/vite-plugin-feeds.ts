@@ -94,6 +94,28 @@ export function feedsPlugin(): Plugin {
           globalItems.push(rssItem(title, link, svc.description, buildDate));
           globalAtomEntries.push(atomEntry(title, link, svc.description, `${CONTENT_LASTMOD.services}T00:00:00Z`));
         }
+        for (const city of cities.slice(0, 15)) {
+          const gTitle = `Guide: Living, Working & Visiting ${city.name}`;
+          const gLink = `${BASE_URL}/guide/${city.slug}`;
+          const gDesc = `In-depth guide to ${city.name}, ${city.countryName}: services, costs, transit, neighborhoods and tips.`;
+          globalItems.push(rssItem(gTitle, gLink, gDesc, buildDate));
+          globalAtomEntries.push(atomEntry(gTitle, gLink, gDesc, `${CONTENT_LASTMOD.guides}T00:00:00Z`));
+
+          const topSvc = BUILD_SERVICE_CATEGORIES[0];
+          if (topSvc) {
+            const bTitle = `Best ${topSvc.label} in ${city.name}`;
+            const bLink = `${BASE_URL}/best/${topSvc.slug}/in/${city.slug}`;
+            const bDesc = `Top-rated ${topSvc.label.toLowerCase()} providers in ${city.name}, vetted and ranked by Easy-Locs.`;
+            globalItems.push(rssItem(bTitle, bLink, bDesc, buildDate));
+            globalAtomEntries.push(atomEntry(bTitle, bLink, bDesc, `${CONTENT_LASTMOD.best}T00:00:00Z`));
+
+            const cTitle = `Compare ${topSvc.label} options in ${city.name}`;
+            const cLink = `${BASE_URL}/compare/${topSvc.slug}/in/${city.slug}`;
+            const cDesc = `Side-by-side comparison of ${topSvc.label.toLowerCase()} providers in ${city.name} — pricing, ratings, and availability.`;
+            globalItems.push(rssItem(cTitle, cLink, cDesc, buildDate));
+            globalAtomEntries.push(atomEntry(cTitle, cLink, cDesc, `${CONTENT_LASTMOD.compare}T00:00:00Z`));
+          }
+        }
 
         const globalFeed = [
           rssHeader("Easy-Locs — Updates", "Latest cities, services, and marketplace updates from Easy-Locs", `${BASE_URL}/feed.xml`, buildDate),
@@ -161,7 +183,7 @@ export function feedsPlugin(): Plugin {
         ].join("\n");
         fs.writeFileSync(path.resolve(feedDir, "services-atom.xml"), servicesAtom, "utf-8");
 
-        console.log(`[feeds] ✓ Generated 3 RSS feeds + 3 Atom feeds (feed.xml, feed/atom.xml, feed/cities.xml, feed/cities-atom.xml, feed/services.xml, feed/services-atom.xml)`);
+        console.log(`[feeds] ✓ Generated 3 RSS feeds + 3 Atom feeds (feed.xml: ${globalItems.length} items, cities.xml: ${cityItems.length}, services.xml: ${svcItems.length}) + Atom variants`);
       },
     },
   };
