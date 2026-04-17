@@ -1,0 +1,37 @@
+tree 34489b5dd4399841d59f906aa6e6597b44946720
+parent f4956368c8e287f36d6aa515aa3ec708036fe4e7
+author jstarbuzz <jstarbuzz@gmail.com> 1776462332 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776462332 +0000
+
+Fix frontend HTTP verbs against Edge Functions (Task #922)
+
+The contract matrix flagged frontend call sites that POSTed to handlers
+which only consult URL query params/headers, never the request body.
+While Supabase's invoke layer accepted these calls, they were
+semantically wrong and risked breaking under stricter validation.
+
+Changes:
+- src/hooks/useCurrencyConversion.ts: fx-rates fetch switched POST → GET
+  and the unused `body: "null"` / Content-Type removed.
+- src/repositories/payments.repository.ts: `invokeFXRate` rewritten to
+  send GET with query params (matches the fx-rates handler contract).
+- src/services/data/forex-data-service.ts: invoke fx-rates with
+  `{ method: "GET" }` instead of `{ body: null }`.
+- src/lib/engines/backend-connectivity-engine.ts: health-check probe
+  switched to `{ method: "GET" }` (handler ignores body).
+- src/pages/admin/AdminDldBackfillPage.tsx: dld-analytics
+  `backfill-status` (read) switched to GET; `backfill` (mutation) kept
+  POST and now also includes a body for parity with intent.
+- supabase/functions/_contracts.ts: `health-check` declared methods
+  changed from ["POST"] to ["GET"] to reflect the only real caller and
+  the GET-style handler semantics.
+- docs/edge-functions-contract-matrix.{md,json}: regenerated.
+
+Verification:
+  npx tsx scripts/edge-function-contract-matrix.ts --ci
+  ✓ 257 call sites · 0 method/body/auth/orphan mismatches.
+
+Note: usePaymentFX.ts was listed in the task but already used GET; no
+edits needed.
+
+Replit-Task-Id: 98ffcf34-e5fc-48e5-97cf-ea18581785c6
