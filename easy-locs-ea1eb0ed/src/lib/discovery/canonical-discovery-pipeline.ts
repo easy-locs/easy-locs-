@@ -22,11 +22,9 @@ import {
   strictGetParentVertical as getParentVertical,
 } from "@/lib/taxonomy/world-class-taxonomy";
 
-let _aliasCache: Awaited<ReturnType<typeof _load>> | null = null;
-const _load = () => import("@/lib/taxonomy/taxonomy-aliases");
+import * as _taxonomyAliasesModule from "@/lib/taxonomy/taxonomy-aliases";
 async function aliases() {
-  if (!_aliasCache) _aliasCache = await _load();
-  return _aliasCache;
+  return _taxonomyAliasesModule;
 }
 import { fetchOSMPlaces, osmCategoryToRadarCategory } from "@/lib/geo/osm-places-engine";
 import type { RadarPoint, RadarCategory, UserGeoPoint } from "@/lib/radar/types";

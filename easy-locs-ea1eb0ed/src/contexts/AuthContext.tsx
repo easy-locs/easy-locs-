@@ -28,6 +28,7 @@ import { structuredLogger } from "@/lib/observability/structured-logger";
 import { clearReferralCaches } from "@/lib/referral-cache";
 import { setProfileCountry } from "@/lib/wallet/wallet-config";
 import { autoDetectAndSwitchLocale } from "@/domains/i18n/pipelines/locale-switch.pipeline";
+import { setUserContext as sentrySetUserContext, clearUserContext as sentryClearUserContext } from "@/lib/analytics/sentry";
 import { queryClient } from "@/lib/query-client";
 
 type UserType = "landlord" | "tenant" | "client";
@@ -551,7 +552,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (_event === "SIGNED_IN" && nextSession?.user) {
         logAudit({ userId: nextSession.user.id, action: "user_login" });
-        void import("@/lib/analytics/sentry").then(m => m.setUserContext(nextSession.user.id, nextSession.user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined })).catch(() => {});
+        try { sentrySetUserContext(nextSession.user.id, nextSession.user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined }); } catch {}
         void import("@/lib/auth/profile")
           .then((m) => m.ensureUserProfile(nextSession.user.id, {
             fullName: nextSession.user.user_metadata?.full_name,
@@ -566,7 +567,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
       if (_event === "SIGNED_OUT") {
         logAudit({ action: "user_logout" });
-        void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
+        try { sentryClearUserContext(); } catch {}
         clearReferralCaches();
       }
       // Drop any cached role/admin lookup so the next render reflects the
@@ -620,9 +621,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!user?.id) return;
-    void import("@/lib/analytics/sentry").then(m => {
-      m.setUserContext(user.id, user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined });
-    }).catch(() => {});
+    try {
+      sentrySetUserContext(user.id, user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined });
+    } catch {}
   }, [user?.id, user?.email, activeRole, orgId]);
 
   const sessionValue = useMemo(() => ({

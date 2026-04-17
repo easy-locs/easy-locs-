@@ -1,7 +1,7 @@
 import { db as supabase } from "@/services/db";
 import type { Vertical } from "@/lib/taxonomy/world-class-taxonomy";
 import { checkNewShopDuplicate } from "@/lib/dedup/dedup-engine";
-import { pickDiverseHero } from "@/lib/image/hero-diversity-guard";
+import { pickDiverseHero, validateHeroUniqueness } from "@/lib/image/hero-diversity-guard";
 
 function slugify(input: string) {
   return input
@@ -52,7 +52,6 @@ export async function createMerchantDraft(params: {
     insertPayload.cover_image = diverseHero;
     insertPayload.logo_image = diverseHero;
   } else if (insertPayload.cover_image && params.subcategory) {
-    const { validateHeroUniqueness } = await import("@/lib/image/hero-diversity-guard");
     const check = await validateHeroUniqueness(insertPayload.cover_image, params.subcategory);
     if (!check.ok && check.suggestedAlternative) {
       console.warn(`[HERO-GUARD] Replacing duplicate hero for "${params.name}" with diverse alternative`);
