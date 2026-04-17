@@ -150,6 +150,39 @@ export function AdminRoutes() {
       <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
       <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
 
+      {/* ACP · /admin/control unified shell (#861).
+          Sensitive sections (agents/runs/command/approvals/master) are wrapped
+          ProtectedRoute > SuperAdminGate so non-admins still see the shared
+          AdminAccessDenied screen and admins fall through to SuperAdminGate.
+          Explicit paths take precedence over the `:section` catch-all (v6).
+          Note (#863): /admin/command-center is intentionally NOT defined as a
+          real route here — it is registered below as a legacy redirect into
+          /admin/control/command. */}
+      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+      {/* ══ ACP Agent 3 (#863) · Legacy admin URL redirects → /admin/control/* ══
+          Old URLs (bookmarks, external links, in-app navigation) keep working
+          and land on the matching section of the unified control plane. Query
+          strings are preserved; for /admin/agents/:slug/runs the :slug is
+          promoted to ?agent=:slug. While Agents 5–9 ship their sections, the
+          target route falls back to Agent 1's shell — no 404, no white screen.
+          The original page components remain in app-route-registry (not
+          deleted) per task #863 scope. */}
+      <Route path="/admin/agents/:slug/runs" element={<LegacyAgentRunsRedirect />} />
+      <Route path="/admin/agents" element={<LegacyControlRedirect to="/admin/control/agents" />} />
+      <Route path="/admin/command-center" element={<LegacyControlRedirect to="/admin/control/command" />} />
+      <Route path="/admin/approvals" element={<LegacyControlRedirect to="/admin/control/approvals" />} />
+      <Route path="/admin/autonomy" element={<LegacyControlRedirect to="/admin/control/autonomy" />} />
+      <Route path="/admin/control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+      <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+      <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
+
       {/* ══ Internal Labs ══ */}
       <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/performance-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPerformanceLabPage /></FeatureErrorBoundary></ProtectedRoute>} />

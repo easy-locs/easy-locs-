@@ -18,6 +18,8 @@ import AdminAccessDenied from "@/components/auth/AdminAccessDenied";
 
 const PROFILE_LOAD_TIMEOUT_MS = 8000;
 
+const PROFILE_LOAD_TIMEOUT_MS = 8000;
+
 function GateSkeleton() {
   return (
     <div className="min-h-[100dvh] bg-background px-4 pt-6">
