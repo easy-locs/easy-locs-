@@ -75,6 +75,9 @@ function buildTask(overrides: Partial<ExecutionTask> = {}): ExecutionTask {
     rollback_result: null,
     rollback_reason: null,
     rollback_strategy: "none",
+    pre_rollback_status: null,
+    error_code: null,
+    execution_result: null,
     ...overrides,
   };
 }
@@ -581,6 +584,7 @@ describe("ExecutionOrchestratorV2 · rollback contract", () => {
       status: "rolling_back",
       previous_state: { snap: "ok" },
       rollback_reason: "operator changed their mind",
+      pre_rollback_status: "succeeded",
     });
     let handlerCalled = false;
     const adapter: DomainAdapter = {
@@ -611,6 +615,7 @@ describe("ExecutionOrchestratorV2 · rollback contract", () => {
       status: "rolling_back",
       previous_state: { snap: "ok" },
       rollback_reason: "operator opt-in",
+      pre_rollback_status: "succeeded",
     });
     let handlerCalled = false;
     const adapter: DomainAdapter = {

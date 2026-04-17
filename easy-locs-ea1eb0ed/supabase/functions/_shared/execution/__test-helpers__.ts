@@ -142,5 +142,8 @@ export function makeTask(overrides: Partial<ExecutionTask> = {}): ExecutionTask 
     rollback_result: overrides.rollback_result ?? null,
     rollback_reason: overrides.rollback_reason ?? null,
     rollback_strategy: overrides.rollback_strategy ?? "manual",
+    pre_rollback_status: overrides.pre_rollback_status ?? null,
+    error_code: overrides.error_code ?? null,
+    execution_result: overrides.execution_result ?? null,
   };
 }

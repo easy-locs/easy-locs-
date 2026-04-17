@@ -99,58 +99,118 @@ BEGIN
 END $$;
 
 -- ── 5. request_rollback RPC ───────────────────────────────────────────────
+-- The RPC now enforces the adapter contract server-side by reading
+-- `system.agents.metadata->>'rollback_strategy'` and
+-- `metadata->>'allow_rollback_after_success'`. We therefore stand up two
+-- synthetic agents in the registry and probe both contracts.
 DO $$
 DECLARE
-  v_id  UUID;
-  v_row system.execution_tasks;
+  v_id           UUID;
+  v_row          system.execution_tasks;
+  v_agent_manual UUID;
+  v_agent_none   UUID;
 BEGIN
-  -- failed task → rolling_back via request_rollback (service_role path)
+  -- Manual-rollback-eligible agent (data, ANALYSIS).
+  -- NOTE: schema requires `agent_kind` to match `^[a-z][a-z0-9_]*\.[a-z][a-z0-9_]*$`.
+  INSERT INTO system.agents (
+    slug, display_name, agent_kind, owner_team, status, metadata
+  ) VALUES (
+    'l3-test-analysis', 'L3 Test Analysis', 'business.test', 'l3-test', 'active',
+    jsonb_build_object(
+      'rollback_strategy', 'manual',
+      'allow_rollback_after_success', false
+    )
+  ) RETURNING id INTO v_agent_manual;
+  INSERT INTO system.agent_capabilities (agent_id, domain, task_type)
+    VALUES (v_agent_manual, 'data', 'ANALYSIS');
+
+  -- Non-rollbackable agent (data, NOROLL).
+  INSERT INTO system.agents (
+    slug, display_name, agent_kind, owner_team, status, metadata
+  ) VALUES (
+    'l3-test-noroll', 'L3 Test NoRoll', 'business.test', 'l3-test', 'active',
+    jsonb_build_object('rollback_strategy', 'none')
+  ) RETURNING id INTO v_agent_none;
+  INSERT INTO system.agent_capabilities (agent_id, domain, task_type)
+    VALUES (v_agent_none, 'data', 'NOROLL');
+
+  -- (a) failed task → rolling_back, pre_rollback_status='failed'
   INSERT INTO system.execution_tasks (type, domain, risk_level, status)
   VALUES ('ANALYSIS','data','SAFE','failed')
   RETURNING id INTO v_id;
-  v_row := system.request_rollback(v_id, 'operator-test', FALSE);
-  IF v_row.status <> 'rolling_back' THEN RAISE EXCEPTION 'FAIL: request_rollback should land in rolling_back, got %', v_row.status; END IF;
+  v_row := system.request_rollback(v_id, 'operator-test');
+  IF v_row.status <> 'rolling_back' THEN RAISE EXCEPTION 'FAIL: should land in rolling_back, got %', v_row.status; END IF;
   IF v_row.rollback_reason <> 'operator-test' THEN RAISE EXCEPTION 'FAIL: rollback_reason not stamped'; END IF;
   IF v_row.rollback_requested_by IS NULL THEN RAISE EXCEPTION 'FAIL: rollback_requested_by not stamped'; END IF;
+  IF v_row.pre_rollback_status <> 'failed' THEN RAISE EXCEPTION 'FAIL: pre_rollback_status not stamped to failed, got %', v_row.pre_rollback_status; END IF;
+  IF v_row.rollback_strategy <> 'manual' THEN RAISE EXCEPTION 'FAIL: rollback_strategy not mirrored from agent metadata, got %', v_row.rollback_strategy; END IF;
 
-  -- succeeded task: requires allow_after_success=TRUE
+  -- (b) succeeded task with agent NOT opted-in → rejected
   INSERT INTO system.execution_tasks (type, domain, risk_level, status)
   VALUES ('ANALYSIS','data','SAFE','succeeded')
   RETURNING id INTO v_id;
-
   BEGIN
-    PERFORM system.request_rollback(v_id, 'try-succeeded', FALSE);
-    RAISE EXCEPTION 'FAIL: request_rollback on succeeded should require allow_after_success';
+    PERFORM system.request_rollback(v_id, 'try-succeeded');
+    RAISE EXCEPTION 'FAIL: succeeded task without allow_after_success should be rejected';
   EXCEPTION
     WHEN sqlstate '22023' THEN
       RAISE NOTICE 'PASS: succeeded without allow_after_success rejected';
   END;
 
-  v_row := system.request_rollback(v_id, 'try-succeeded', TRUE);
+  -- (c) flip the agent's metadata to allow_after_success=true → succeeded passes
+  UPDATE system.agents
+     SET metadata = jsonb_set(metadata, '{allow_rollback_after_success}', 'true'::jsonb)
+   WHERE id = v_agent_manual;
+  v_row := system.request_rollback(v_id, 'try-succeeded');
   IF v_row.status <> 'rolling_back' THEN RAISE EXCEPTION 'FAIL: succeeded→rolling_back via opt-in flag'; END IF;
+  IF v_row.pre_rollback_status <> 'succeeded' THEN RAISE EXCEPTION 'FAIL: pre_rollback_status should be succeeded, got %', v_row.pre_rollback_status; END IF;
 
-  -- queued task is ineligible
+  -- (d) agent declares rollback_strategy='none' → rejected
+  INSERT INTO system.execution_tasks (type, domain, risk_level, status)
+  VALUES ('NOROLL','data','SAFE','failed')
+  RETURNING id INTO v_id;
+  BEGIN
+    PERFORM system.request_rollback(v_id, 'try-none');
+    RAISE EXCEPTION 'FAIL: rollback_strategy=none agent should reject';
+  EXCEPTION
+    WHEN sqlstate '22023' THEN
+      RAISE NOTICE 'PASS: rollback_strategy=none rejected';
+  END;
+
+  -- (e) queued task is ineligible (status gate)
   INSERT INTO system.execution_tasks (type, domain, risk_level, status)
   VALUES ('ANALYSIS','data','SAFE','queued')
   RETURNING id INTO v_id;
   BEGIN
-    PERFORM system.request_rollback(v_id, 'try-queued', TRUE);
+    PERFORM system.request_rollback(v_id, 'try-queued');
     RAISE EXCEPTION 'FAIL: queued is not rollback-eligible';
   EXCEPTION
     WHEN sqlstate '22023' THEN
       RAISE NOTICE 'PASS: queued task rejected';
   END;
 
-  -- empty reason rejected
+  -- (f) empty reason rejected
   INSERT INTO system.execution_tasks (type, domain, risk_level, status)
   VALUES ('ANALYSIS','data','SAFE','failed')
   RETURNING id INTO v_id;
   BEGIN
-    PERFORM system.request_rollback(v_id, '   ', FALSE);
+    PERFORM system.request_rollback(v_id, '   ');
     RAISE EXCEPTION 'FAIL: empty reason should be rejected';
   EXCEPTION
     WHEN sqlstate '22023' THEN
       RAISE NOTICE 'PASS: empty reason rejected';
+  END;
+
+  -- (g) unregistered (domain, type) → rejected (no agent owner)
+  INSERT INTO system.execution_tasks (type, domain, risk_level, status)
+  VALUES ('UNKNOWN','ghost','SAFE','failed')
+  RETURNING id INTO v_id;
+  BEGIN
+    PERFORM system.request_rollback(v_id, 'no-owner');
+    RAISE EXCEPTION 'FAIL: unregistered (domain,type) should reject';
+  EXCEPTION
+    WHEN sqlstate '22023' THEN
+      RAISE NOTICE 'PASS: unregistered (domain,type) rejected';
   END;
 
   RAISE NOTICE 'PASS: request_rollback RPC';

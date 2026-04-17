@@ -197,16 +197,60 @@ Columns added to `system.execution_tasks`:
 
 | column                | role                                                   |
 |-----------------------|--------------------------------------------------------|
-| `previous_state`      | snapshot captured by the agent pre-execute (JSONB)     |
-| `rollback_strategy`   | declared strategy at dispatch time                     |
-| `rollback_reason`     | free-text trigger reason (operator note OR failure)    |
-| `rollback_started_at` | timestamp the loop entered `rolling_back`              |
-| `rollback_result`     | `{ success, output, logs, error?, trigger }` (JSONB)   |
+| `previous_state`        | snapshot captured by the agent pre-execute (JSONB)   |
+| `rollback_strategy`     | declared strategy at dispatch time                   |
+| `rollback_reason`       | free-text trigger reason (operator note OR failure)  |
+| `rollback_started_at`   | timestamp the loop entered `rolling_back`            |
+| `rollback_result`       | `{ success, output, logs, error?, trigger }` (JSONB) |
+| `pre_rollback_status`   | status the row held immediately before `rolling_back`, used by orchestrator's contract guard |
 
-RPC `system.request_rollback(task_id, reason)` is the **only** sanctioned
-operator entry point — it transitions `succeeded|failed → rolling_back`
-inside an audited row update so the execution-loop poller picks the row
-up on its next tick.
+### `system.request_rollback(task_id, reason)` — sanctioned entry point
+
+This RPC is the **only** sanctioned operator entry point. Governance is
+enforced **server-side** so a direct UPDATE that bypasses the RPC cannot
+trigger a rollback the adapter has not opted into.
+
+The RPC:
+
+1. Verifies the caller (super_admin or service_role).
+2. Verifies the task is in `failed` or `succeeded`.
+3. Looks up the agent that owns `(domain, task_type)` via
+   `system.agent_capabilities → system.agents` and reads
+   `agents.metadata->>'rollback_strategy'` and
+   `agents.metadata->>'allow_rollback_after_success'` — these are mirrored
+   from the in-process adapter declarations by the `agent-reconciler`.
+4. Refuses if `rollback_strategy='none'` or if the task is `succeeded`
+   without `allow_rollback_after_success=true`.
+5. Stamps `pre_rollback_status` with the prior status, updates
+   `rollback_strategy`, `rollback_reason`, `rollback_requested_by`, and
+   transitions to `rolling_back` so the execution-loop poller picks it up.
+
+The orchestrator's `runRollback` re-checks the contract using
+`task.pre_rollback_status === 'succeeded' && !adapter.allow_rollback_after_success`
+as a defense-in-depth guard.
+
+### Generic snapshot capture (kind-agnostic default)
+
+When `rollback_strategy` is `auto` or `manual` and the adapter does not
+declare an explicit `snapshotProvider`, the orchestrator captures a
+**default structural snapshot** before invoking `execute`:
+
+```json
+{
+  "kind": "default",
+  "captured_at": "<iso8601>",
+  "domain": "<task.domain>",
+  "task_type": "<task.type>",
+  "entity_type": "<task.entity_type>",
+  "entity_id":   "<task.entity_id>",
+  "payload":     { /* task.payload */ }
+}
+```
+
+This guarantees that **every** rollback-eligible task carries an identity
+envelope on the row at rollback time, even for adapters that drive their
+rollback purely from `(entity_type, entity_id, payload)`. Adapters that
+need richer state can still override `snapshotProvider`.
 
 ## 3. The DomainAdapter contract
 

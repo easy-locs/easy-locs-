@@ -325,9 +325,29 @@ export class ExecutionOrchestratorV2 {
         attempt: task.attempt_count + 1,
         startedAt: this.now().toISOString(),
       };
-      if (adapter.snapshotProvider) {
+      // L3 — Generic snapshot capture. Adapters may declare an explicit
+      // `snapshotProvider`; if they don't, the orchestrator falls back to
+      // a kind-agnostic structural snapshot so EVERY task has at least an
+      // identity envelope on the row at rollback time. This satisfies the
+      // contract requirement that snapshot capture works without per-
+      // adapter wiring.
+      if (adapter.rollback_strategy === "auto" || adapter.rollback_strategy === "manual") {
         try {
-          previousState = await adapter.snapshotProvider(ctx);
+          if (adapter.snapshotProvider) {
+            previousState = await adapter.snapshotProvider(ctx);
+          } else {
+            // Default snapshot — sufficient for adapters whose rollback
+            // can be driven from (entity_type, entity_id, payload) alone.
+            previousState = {
+              kind: "default",
+              captured_at: ctx.startedAt,
+              domain: task.domain,
+              task_type: task.type,
+              entity_type: task.entity_type,
+              entity_id: task.entity_id,
+              payload: task.payload ?? null,
+            } as Record<string, unknown>;
+          }
           if (previousState !== null && previousState !== undefined) {
             // Persist alongside the running-state hop so rollback (auto or
             // manual) can read it back from the row at any later point.
@@ -344,7 +364,7 @@ export class ExecutionOrchestratorV2 {
           this.currentSinkErrors.push(
             `${ROLLBACK_ERROR_CODES.SNAPSHOT_THREW}:${detail}`,
           );
-          console.warn("[orchestrator-v2] snapshotProvider threw:", detail);
+          console.warn("[orchestrator-v2] snapshot capture threw:", detail);
         }
       }
 
@@ -775,24 +795,16 @@ export class ExecutionOrchestratorV2 {
       });
     }
 
-    // ── L3 defense-in-depth: contract guard for succeeded-origin rollbacks
+    // ── L3 defense-in-depth: contract guard for succeeded-origin rollbacks.
     // The DB RPC `system.request_rollback` validates governance, but the
     // orchestrator MUST also refuse if the operator forced the row into
-    // rolling_back via a direct UPDATE that bypassed the RPC. We detect a
-    // succeeded-origin rollback by inspecting `previous_state IS NOT NULL`
-    // (always set pre-mutation) AND `rollback_reason` indicating manual
-    // intent — but the source of truth is the adapter contract: if the
-    // forward task was previously `succeeded`, only adapters that opt in
-    // via `allow_rollback_after_success` may be rolled back.
+    // rolling_back via a direct UPDATE that bypassed the RPC. The source
+    // of truth is `pre_rollback_status`, populated by the RPC and the
+    // auto-rollback path. If it equals "succeeded", only adapters that
+    // opt in via `allow_rollback_after_success` may proceed.
     if (
-      task.previous_state !== null &&
-      task.rollback_reason &&
-      adapter.allow_rollback_after_success !== true &&
-      // `previous_state` from a forward execute() implies the task DID
-      // mutate — for success-origin rollbacks the prior status would have
-      // been `succeeded`. We mark this here by the absence of an
-      // `error_code` on the row (a failed-origin row carries one).
-      (task as unknown as { error_code?: string | null }).error_code == null
+      task.pre_rollback_status === "succeeded" &&
+      adapter.allow_rollback_after_success !== true
     ) {
       const code = ROLLBACK_ERROR_CODES.ROLLBACK_NOT_ALLOWED;
       const message =
@@ -934,7 +946,13 @@ export class ExecutionOrchestratorV2 {
         task.id,
         "failed",
         "rolling_back",
-        { rollback_reason: failureReason },
+        {
+          rollback_reason: failureReason,
+          // Origin marker for the contract guard in runRollback() and
+          // any downstream observers — auto-rollback always originates
+          // from `failed`.
+          pre_rollback_status: "failed",
+        },
       );
       if (!claimed) {
         // Someone else (operator?) already moved the row. Be permissive —

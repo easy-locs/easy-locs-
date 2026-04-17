@@ -67,11 +67,19 @@ END $$;
 -- ── 2. Governance + observability columns ────────────────────────────────
 ALTER TABLE system.execution_tasks
   ADD COLUMN IF NOT EXISTS previous_state        JSONB,
-  ADD COLUMN IF NOT EXISTS rollback_strategy     TEXT NOT NULL DEFAULT 'manual',
+  -- Default `none` so any task created BEFORE the agent registry stamps
+  -- a strategy is treated as non-rollbackable (fail-closed). The dispatch
+  -- RPC overwrites this from the adapter's declared rollback_strategy.
+  ADD COLUMN IF NOT EXISTS rollback_strategy     TEXT NOT NULL DEFAULT 'none',
   ADD COLUMN IF NOT EXISTS rollback_requested_by TEXT,
   ADD COLUMN IF NOT EXISTS rollback_reason       TEXT,
   ADD COLUMN IF NOT EXISTS rollback_started_at   TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS rollback_failed_at    TIMESTAMPTZ;
+  ADD COLUMN IF NOT EXISTS rollback_failed_at    TIMESTAMPTZ,
+  -- Source-of-truth for the row's status immediately BEFORE entering
+  -- `rolling_back`. Set by `system.request_rollback` and the auto-
+  -- rollback path. Lets the orchestrator detect succeeded-origin
+  -- rollbacks without inferring from heuristics.
+  ADD COLUMN IF NOT EXISTS pre_rollback_status   system.execution_task_status;
 
 DO $$ BEGIN
   ALTER TABLE system.execution_tasks
@@ -185,17 +193,19 @@ CREATE TRIGGER trg_execution_tasks_state_machine
 -- into `rollback_failed` with code ROLLBACK_NOT_ALLOWED.
 CREATE OR REPLACE FUNCTION system.request_rollback(
   p_task_id              UUID,
-  p_reason               TEXT,
-  p_allow_after_success  BOOLEAN DEFAULT FALSE
+  p_reason               TEXT
 ) RETURNS system.execution_tasks
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, system
 AS $$
 DECLARE
-  v_caller    UUID := auth.uid();
-  v_task      system.execution_tasks;
-  v_requester TEXT;
+  v_caller     UUID := auth.uid();
+  v_task       system.execution_tasks;
+  v_requester  TEXT;
+  v_strategy   TEXT;
+  v_allow_succ BOOLEAN;
+  v_meta       JSONB;
 BEGIN
   IF p_task_id IS NULL THEN
     RAISE EXCEPTION 'request_rollback: task_id is required' USING ERRCODE = '22023';
@@ -222,22 +232,60 @@ BEGIN
     RAISE EXCEPTION 'request_rollback: task % not found', p_task_id USING ERRCODE = 'P0002';
   END IF;
 
-  IF v_task.status = 'failed' THEN
-    NULL; -- always rollback-eligible
-  ELSIF v_task.status = 'succeeded' THEN
-    IF NOT p_allow_after_success THEN
-      RAISE EXCEPTION 'request_rollback: task % is succeeded but allow_after_success=false', p_task_id
-        USING ERRCODE = '22023';
-    END IF;
-  ELSE
-    RAISE EXCEPTION 'request_rollback: task % is in status % (only failed/succeeded eligible)', p_task_id, v_task.status
+  -- ── Source-status eligibility ─────────────────────────────────────
+  IF v_task.status NOT IN ('failed', 'succeeded') THEN
+    RAISE EXCEPTION 'request_rollback: task % is in status % (only failed/succeeded eligible)',
+      p_task_id, v_task.status
       USING ERRCODE = '22023';
   END IF;
 
+  -- ── Adapter contract enforcement (server-side, single source of truth) ─
+  -- Look up the rollback policy declared by the agent that owns this
+  -- (domain, task_type) at registration time. Stored in
+  -- `system.agents.metadata` under `rollback_strategy` and
+  -- `allow_rollback_after_success` (written by reconcile_agent during
+  -- bootstrap).
+  SELECT a.metadata
+    INTO v_meta
+    FROM system.agent_capabilities ac
+    JOIN system.agents a ON a.id = ac.agent_id
+   WHERE ac.domain = v_task.domain
+     AND ac.task_type = v_task.type
+   LIMIT 1;
+
+  IF v_meta IS NULL THEN
+    RAISE EXCEPTION 'request_rollback: no registered agent owns (%, %)', v_task.domain, v_task.type
+      USING ERRCODE = '22023';
+  END IF;
+
+  v_strategy   := COALESCE(v_meta->>'rollback_strategy', v_task.rollback_strategy, 'none');
+  v_allow_succ := COALESCE((v_meta->>'allow_rollback_after_success')::boolean, FALSE);
+
+  IF v_strategy = 'none' THEN
+    RAISE EXCEPTION 'request_rollback: agent for (%, %) declared rollback_strategy=none',
+      v_task.domain, v_task.type
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF v_strategy NOT IN ('auto', 'manual') THEN
+    RAISE EXCEPTION 'request_rollback: agent for (%, %) declared invalid rollback_strategy=%',
+      v_task.domain, v_task.type, v_strategy
+      USING ERRCODE = '22023';
+  END IF;
+
+  IF v_task.status = 'succeeded' AND NOT v_allow_succ THEN
+    RAISE EXCEPTION 'request_rollback: task % is succeeded but agent does not declare allow_rollback_after_success',
+      p_task_id
+      USING ERRCODE = '22023';
+  END IF;
+
+  -- ── Transition with audit + origin stamp ──────────────────────────
   UPDATE system.execution_tasks
      SET status                = 'rolling_back',
+         pre_rollback_status   = v_task.status,
          rollback_requested_by = v_requester,
-         rollback_reason       = BTRIM(p_reason)
+         rollback_reason       = BTRIM(p_reason),
+         rollback_strategy     = v_strategy
    WHERE id = p_task_id
    RETURNING * INTO v_task;
 
@@ -245,6 +293,6 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION system.request_rollback(UUID, TEXT, BOOLEAN) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION system.request_rollback(UUID, TEXT, BOOLEAN)
+REVOKE ALL ON FUNCTION system.request_rollback(UUID, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION system.request_rollback(UUID, TEXT)
   TO authenticated, service_role;

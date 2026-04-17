@@ -15,7 +15,8 @@ const TASK_COLUMNS =
   "id,type,domain,risk_level,status,payload,approved_by,attempt_count,max_attempts," +
   "parent_task_id,requested_by,idempotency_key,lock_key,entity_type,entity_id," +
   "correlation_id,root_task_id,requires_approval,approval_policy," +
-  "previous_state,rollback_result,rollback_reason,rollback_strategy";
+  "previous_state,rollback_result,rollback_reason,rollback_strategy," +
+  "pre_rollback_status,error_code,execution_result";
 
 /**
  * Repository contract used by ExecutionOrchestratorV2.
@@ -35,7 +36,7 @@ export interface TaskRepository {
   ): Promise<boolean>;
 }
 
-function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
+export function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
   return {
     id: String(row.id),
     type: String(row.type),
@@ -59,8 +60,20 @@ function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
     previous_state: (row.previous_state as Record<string, unknown> | null) ?? null,
     rollback_result: (row.rollback_result as Record<string, unknown> | null) ?? null,
     rollback_reason: (row.rollback_reason as string | null) ?? null,
+    // L3: default to 'none' (fail-closed). Adapters that want rollback
+    // MUST opt in via their declared `rollback_strategy` and that posture
+    // is mirrored onto the row at dispatch time.
     rollback_strategy:
-      (row.rollback_strategy as ExecutionTask["rollback_strategy"]) ?? "manual",
+      (row.rollback_strategy as ExecutionTask["rollback_strategy"]) ?? "none",
+    // L3 contract guard inputs — MUST be hydrated so `runRollback()` can
+    // refuse a succeeded-origin rollback for adapters that haven't opted
+    // into `allow_rollback_after_success`. Missing this mapping silently
+    // bypasses the guard in production.
+    pre_rollback_status:
+      (row.pre_rollback_status as ExecutionTaskStatus | null) ?? null,
+    error_code: (row.error_code as string | null) ?? null,
+    execution_result:
+      (row.execution_result as Record<string, unknown> | null) ?? null,
   };
 }
 
