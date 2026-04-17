@@ -182,3 +182,37 @@ export function projectMergeConflictRecoverySummary(
     topFiles,
   };
 }
+
+/**
+ * Per-file conflict counts inside a sliding time window. Used by the
+ * dashboard's spike-detection panel to decide whether a single file
+ * path is being storm-hit (e.g. two agents racing on the same file).
+ *
+ * Pure projection — caller decides the window size and the alert
+ * threshold so the same primitive can drive both UI proximity bars
+ * and threshold-crossing alerts.
+ */
+export function summarizeFileBurstsWithinWindow(
+  events: MergeConflictRecoveryEvent[],
+  windowMs: number,
+  now: number = Date.now(),
+): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
+  const cutoff = now - windowMs;
+  const counts = new Map<string, { count: number; lastAt: string }>();
+  for (const e of events) {
+    const t = Date.parse(e.at);
+    if (!Number.isFinite(t) || t < cutoff) continue;
+    for (const f of e.files) {
+      const cur = counts.get(f);
+      if (!cur) {
+        counts.set(f, { count: 1, lastAt: e.at });
+      } else {
+        cur.count += 1;
+        if (e.at > cur.lastAt) cur.lastAt = e.at;
+      }
+    }
+  }
+  return Array.from(counts.entries())
+    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
+    .sort((a, b) => b.count - a.count);
+}
