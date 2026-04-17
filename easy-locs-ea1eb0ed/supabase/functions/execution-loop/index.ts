@@ -822,12 +822,27 @@ async function processRollback(
 ): Promise<{ outcome: "SUCCESS" | "FAILED" | "BLOCKED"; error?: string }> {
   ensureAdaptersBootstrapped(getSupabase());
   if (!globalAdapterRegistry.has(task.domain, task.type)) {
-    // No V2 adapter for this (domain, type). Leave the row in rolling_back
-    // for human triage rather than silently swallowing.
-    return {
-      outcome: "BLOCKED",
-      error: `No V2 adapter registered for (${task.domain}, ${task.type}); rollback requires a registered handler`,
-    };
+    // No V2 adapter for this (domain, type). Fail-loud: drive the row to
+    // `rollback_failed` so it shows up red in the operator inbox instead
+    // of silently lingering in `rolling_back` (which the heartbeat /
+    // dashboards can mis-read as "in progress").
+    const reason =
+      `No V2 adapter registered for (${task.domain}, ${task.type}); ` +
+      `rollback requires a registered handler`;
+    try {
+      const sb = getSupabase();
+      await sb.schema("system").from("execution_tasks").update({
+        status: "rollback_failed",
+        error_code: "NO_ADAPTER",
+        rollback_result: { error: reason, success: false, trigger: "execution_loop" },
+      }).eq("id", task.id).eq("status", "rolling_back");
+    } catch (e) {
+      console.warn(
+        "[execution-loop] failed to mark rollback_failed for unregistered adapter:",
+        e instanceof Error ? e.message : String(e),
+      );
+    }
+    return { outcome: "FAILED", error: reason };
   }
   _inFlight++;
   try {

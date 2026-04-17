@@ -491,6 +491,92 @@ describe("ExecutionOrchestratorV2 · rollback contract", () => {
     expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
   });
 
+  it("auto-rolls-back when the verifier reports VERIFICATION_MISMATCH (mutation already happened)", async () => {
+    // Critical L3 invariant: verification runs AFTER execute(), so a
+    // mismatch means the domain has been mutated. The orchestrator MUST
+    // compensate via the adapter's auto-rollback contract or we leak a
+    // half-committed state.
+    const task = buildTask({ entity_type: "listing", entity_id: "L-77" });
+    let rollbackCalled = false;
+    let rollbackInvocation: unknown = null;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => ({ snap: "pre-mutate" }),
+      execute: async () => ({
+        success: true,
+        output: { listingId: "L-77", published: true },
+      }),
+      rollback: async (_ctx, inv) => {
+        rollbackCalled = true;
+        rollbackInvocation = inv;
+        return { success: true };
+      },
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => ({
+        ok: false,
+        expected: { published: true },
+        actual: { published: false },
+        mismatchPath: "published",
+      }),
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({});
+    registry.register(adapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    await orch.run(task.id);
+
+    expect(rollbackCalled).toBe(true);
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+    expect(rollbackInvocation).toMatchObject({
+      previousState: { snap: "pre-mutate" },
+    });
+    const names = sink.names();
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_VERIFICATION_FAILED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_FAILED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_STARTED);
+    expect(names).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
+  });
+
+  it("auto-rolls-back when the verifier itself throws (mutation already happened)", async () => {
+    const task = buildTask();
+    let rollbackCalled = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => ({ snap: "pre-mutate" }),
+      execute: async () => ({ success: true, output: { ok: true } }),
+      rollback: async () => {
+        rollbackCalled = true;
+        return { success: true };
+      },
+    };
+    const verifier: TaskVerifier = {
+      domain: task.domain,
+      taskType: task.type,
+      verify: async () => {
+        throw new Error("verifier dependency unavailable");
+      },
+    };
+    const { orch, registry, repo, sink, verifiers } = makeOrchestrator({});
+    registry.register(adapter);
+    verifiers.register(verifier);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.errorCode).toBe("VERIFIER_THREW");
+    expect(rollbackCalled).toBe(true);
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
+  });
+
   it("manual runRollback drives a rolling_back row to rolled_back", async () => {
     const task = buildTask({
       status: "rolling_back",
