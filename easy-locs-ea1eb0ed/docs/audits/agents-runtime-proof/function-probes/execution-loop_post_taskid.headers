@@ -1,0 +1,18 @@
+HTTP/2 500 
+date: Fri, 17 Apr 2026 00:01:24 GMT
+content-type: text/plain;charset=UTF-8
+cf-ray: 9ed727ad58f6a6dc-BOM
+cf-cache-status: DYNAMIC
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+sb-error-code: EDGE_FUNCTION_ERROR
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98be-085a-7b9c-8475-f628b165936b
+x-deno-execution-id: 3625d44a-1292-46f1-a543-62d0250f7dab
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=UuewdF1YQH8RFEbEEka5yr_HAelnnO3F03.uUnfpHD8-1776384084-1.0.1.1-._IS.Uj5StnAYfRPeHiFB.gNblh8Uy5TUyZgz0TKirMMM3bHX6CuTRY5i6A3Gqms3SShXv_JGavwbsdBSi9EQwMU0dzWkzw_4.935wrsis8; path=/; expires=Fri, 17-Apr-26 00:31:24 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+

@@ -1,0 +1,1 @@
+UPDATE system.execution_tasks SET status='running'::system.execution_task_status, locked_by='lease-workflow:audit', lock_key='execution-task:dfee2ccc-6710-4fdb-9324-c1ccea12f9be', execution_state='in_progress', attempt_count=attempt_count+1 WHERE id='dfee2ccc-6710-4fdb-9324-c1ccea12f9be' RETURNING id,status,locked_by,attempt_count,updated_at;

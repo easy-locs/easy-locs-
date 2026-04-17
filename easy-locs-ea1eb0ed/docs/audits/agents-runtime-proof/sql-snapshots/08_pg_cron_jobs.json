@@ -1,0 +1,1 @@
+{"message":"Failed to run sql query: ERROR:  42P01: relation \"cron.job\" does not exist\nLINE 1: SELECT jobname, schedule, active FROM cron.job WHERE jobname ILIKE 'execution%' OR jobname ILIKE 'autonomous%' OR jobname ILIKE 'agent%' ORDER BY jobname;\n                                              ^\n"}

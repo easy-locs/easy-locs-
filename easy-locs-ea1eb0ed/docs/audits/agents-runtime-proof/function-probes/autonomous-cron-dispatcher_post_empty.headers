@@ -1,0 +1,18 @@
+HTTP/2 403 
+date: Fri, 17 Apr 2026 00:00:50 GMT
+content-type: application/json
+cf-ray: 9ed726cf6e2f8b82-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98bd-7da4-7270-b9b9-9a6ddf40dc56
+x-deno-execution-id: f49a224b-0e95-46ce-aff1-6b678c18f5fc
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=4WoIHTmz1pqf0Wm.758.mDWwzYKy3a57nrhOOCZi9JA-1776384050-1.0.1.1-nC75o_A3RRZyiQ5Nr5h0g.pu3sMpih0R9NojaTZ4eAtiSteG2AYOyOSnZf1PdLMm132S1SZovB.YrzhZWxLfTbATxcMyRIjFk8vxcqT9Ark; path=/; expires=Fri, 17-Apr-26 00:30:50 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+

@@ -1,0 +1,1 @@
+{"message":"Failed to run sql query: ERROR:  42702: column reference \"lock_key\" is ambiguous\nDETAIL:  It could refer to either a PL/pgSQL variable or a table column.\nQUERY:  SELECT *                     FROM system.execution_locks\n   WHERE lock_key = v_key\n   FOR UPDATE\nCONTEXT:  PL/pgSQL function try_acquire_execution_lock(text,text,integer) line 32 at SQL statement\n"}

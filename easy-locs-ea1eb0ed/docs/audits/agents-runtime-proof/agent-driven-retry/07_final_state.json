@@ -1,0 +1,1 @@
+[{"id":"db573878-98ba-499a-99a9-c3d44f4b03dc","status":"succeeded","attempt_count":2,"result":{"logs":["[system-agent] handling ANALYSIS task=db573878-98ba-499a-99a9-c3d44f4b03dc","[system-agent] last hour: 16 runs, 1 errors"],"agent":"system-agent","output":{"total":16,"errors":1,"errorRate":0.0625},"duration_ms":350,"actions_taken":["log_analysis"]}}]
