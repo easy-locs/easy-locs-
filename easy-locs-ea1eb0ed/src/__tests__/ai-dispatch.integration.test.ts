@@ -291,6 +291,56 @@ describe("LB1 #836 — AI dispatch sensitive path (purpose=contract)", () => {
     expect(h.sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.APPROVAL_DECIDED);
   });
 
+  it("classifier flags PII in completion output ⇒ pending_review, inbox-visible, releasable via approval", async () => {
+    // No purpose=contract / sensitive caller hint — the heuristic
+    // classifier must catch the email pattern in the runner output.
+    const h = buildAiDispatchHarness({
+      verifiers: ALL_AI_PASSING_VERIFIERS,
+      completionText: "Sure — please email me at user@example.com to confirm.",
+    });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "how do i reach you?" }],
+      },
+    });
+
+    const outcome = await h.orchestrator.run(handle.taskId);
+
+    // Classifier flagged → orchestrator returns blocked / REVIEW_HOLD and
+    // parks the row in pending_review with the matched-pattern reason.
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBe("REVIEW_HOLD");
+
+    const heldRow = h.repo.snapshot(handle.taskId);
+    expect(heldRow?.status).toBe("pending_review");
+    expect(heldRow?.blocked_reason).toMatch(/pii/);
+
+    // Held output preserved so the reviewer can see it before releasing.
+    const heldResult = heldRow?.execution_result as
+      | { output?: { flaggedSensitive?: boolean; text?: string } }
+      | null
+      | undefined;
+    expect(heldResult?.output?.flaggedSensitive).toBe(true);
+    expect(heldResult?.output?.text).toContain("user@example.com");
+
+    // Approvals-inbox query surface picks up the row.
+    expect(h.listApprovalsInbox().map((r) => r.id)).toContain(handle.taskId);
+
+    // Release via the simulated decide_task_approval RPC (post-execute
+    // hold branch ⇒ pending_review → succeeded).
+    const decision = await h.simulateDecideTaskApproval(handle.taskId, "approved", {
+      reviewer: "admin-1",
+    });
+    expect(decision.post_execute_hold).toBe(true);
+    expect(decision.task_status).toBe("succeeded");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("succeeded");
+    expect(h.listApprovalsInbox().map((r) => r.id)).not.toContain(handle.taskId);
+  });
+
   it("decide_task_approval(rejected) on a held row terminates as failed/REVIEW_REJECTED", async () => {
     const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
 
