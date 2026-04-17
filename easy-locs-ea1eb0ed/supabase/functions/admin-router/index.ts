@@ -88,4 +88,9 @@ router.post("/ops-ai-chat", async (req) => {
   return proxyToFunction(req, "ops-ai-chat", cors);
 });
 
+router.post("/merge-conflict-recovery", async (req) => {
+  const cors = getCorsHeaders(req);
+  return proxyToFunction(req, "admin-merge-conflict-recovery", cors);
+});
+
 Deno.serve(router.serve());
