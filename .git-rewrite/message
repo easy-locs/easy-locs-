@@ -1,26 +1,30 @@
-Make Vercel build robust + stop per-push security audit emails
+Task #966: Add RSS/Atom feeds so SEO score reaches 100
 
-Vercel
-- New scripts/vercel-build.sh: defensive build that detects whether
-  Vercel runs us from the repo root (and we must `cd easy-locs-ea1eb0ed`)
-  or directly from inside the inner project, runs install + build in the
-  right cwd, then symlinks dist/ to the start dir so the output is
-  visible regardless of Vercel's 'Root Directory' setting.
-- vercel.json now calls the script and uses outputDirectory: 'dist',
-  which resolves correctly in both layouts (the symlink covers the case
-  where Root Directory is the repo root).
-- Replaces the previous `cd easy-locs-ea1eb0ed && npm install && npm run build`
-  inline command, which broke as soon as the project's Root Directory
-  was nudged off the repo root.
-- Self-tested locally: simulated repo-root cwd, build artifact lands at
-  both ./easy-locs-ea1eb0ed/dist and (via symlink) ./dist.
+The validator (vite-plugin-seo-validate.ts) checks for 6 feed files:
+feed.xml, feed/cities.xml, feed/services.xml, feed/atom.xml,
+feed/cities-atom.xml, feed/services-atom.xml. The feedsPlugin already
+existed and was wired into vite.config.ts, but only listed cities and
+services — content hub coverage was missing per the task spec.
 
-Security Audit workflow
-- Removed the `push: branches: [main]` trigger. The four jobs
-  (npm audit gate, Semgrep SAST, Orbit E2EE crypto tests, edge-fn
-  inventory drift) were already failing on main BEFORE these
-  closeouts and were emailing the maintainer on every commit.
-- Pull-request runs still gate merges; the weekly cron + manual
-  workflow_dispatch keep the audit safety net in place.
-- Re-enabling `push` belongs to sibling LB task #846 (the actual
-  fix-the-failing-jobs work).
+Changes
+- vite-plugin-feeds.ts: extended the global RSS + Atom feed to include
+  per-city content hub entries (/guide/<city> and
+  /best/<service>/in/<city> using BUILD_SERVICE_CATEGORIES[0]) for the
+  first 15 phase-1 cities. URLs match the real prerender routes in
+  vite-plugin-prerender.ts (verified against /best/:service/in/:city).
+  Timestamps use CONTENT_LASTMOD.guides / CONTENT_LASTMOD.best.
+- Updated the [feeds] log line to report item counts per feed for build
+  visibility.
+
+Verification
+- Ran the plugin standalone via tsx; all 6 expected files were written
+  to dist/ (feed.xml ~27KB / 70 items, feed/cities.xml ~25KB / 53 items,
+  feed/services.xml ~25KB / 67 items, plus 3 Atom variants).
+- Validator's missing-feeds check will now report 0 missing feeds, so
+  the 10-point feeds component of the SEO score is fully earned.
+
+No deviations from the task scope. Did not run a full vite build (it
+exceeds the 2-minute tool timeout in this env); the plugin is exercised
+by the same code path on every production build.
+
+Replit-Task-Id: 6e76887e-99e4-4d26-8bd5-0ec135cd1ecc
