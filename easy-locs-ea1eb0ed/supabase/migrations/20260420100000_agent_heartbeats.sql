@@ -260,12 +260,17 @@ BEGIN
 END;
 $$;
 
+-- SECURITY: heartbeats are a CONTROL-PLANE write — granting EXECUTE to any
+-- authenticated user would let an end-user spoof an adapter's liveness and
+-- spam health-transition events. Restrict to service_role only. The
+-- function does its own admin/service guard so an admin-gated UI surface
+-- (L4) can call through `system._assert_admin_or_service` if needed.
 REVOKE ALL ON FUNCTION system.record_agent_heartbeat(
   TEXT, TEXT, INT, INT, REAL, INT, TEXT, JSONB, TEXT
-) FROM PUBLIC;
+) FROM PUBLIC, authenticated, anon;
 GRANT EXECUTE ON FUNCTION system.record_agent_heartbeat(
   TEXT, TEXT, INT, INT, REAL, INT, TEXT, JSONB, TEXT
-) TO authenticated, service_role;
+) TO service_role;
 
 -- ── 6. Health-transition trigger ─────────────────────────────────────────
 -- After every heartbeat insert, compare derived status to the cached
@@ -447,8 +452,33 @@ REVOKE ALL ON FUNCTION system.prune_agent_heartbeats(INT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION system.prune_agent_heartbeats(INT)
   TO authenticated, service_role;
 
--- ── 9. pg_cron jobs ──────────────────────────────────────────────────────
--- Stale sweep every 30 seconds; daily prune at 03:30 UTC.
+-- ── 9. Sweep wrapper — fires twice within a single minute window ─────────
+-- pg_cron's smallest schedule granularity is one minute. We need ≤30s
+-- detection latency for stale → down transitions, so wrap the sweep in a
+-- plpgsql function that runs the sweep, waits 30s, and runs it again.
+-- (PERFORM is plpgsql-only — it CANNOT live in a pg_cron command string,
+-- which is plain SQL. Wrapping it in a plpgsql function is the correct
+-- shape and what the previous review flagged as missing.)
+CREATE OR REPLACE FUNCTION system.run_agent_health_sweep_twice()
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, system
+AS $$
+DECLARE v_total INT := 0; v_one INT;
+BEGIN
+  v_one := system.sweep_agent_health(); v_total := v_total + v_one;
+  PERFORM pg_sleep(30);
+  v_one := system.sweep_agent_health(); v_total := v_total + v_one;
+  RETURN v_total;
+END;
+$$;
+REVOKE ALL ON FUNCTION system.run_agent_health_sweep_twice() FROM PUBLIC, authenticated, anon;
+GRANT EXECUTE ON FUNCTION system.run_agent_health_sweep_twice() TO service_role;
+
+-- ── 10. pg_cron jobs ─────────────────────────────────────────────────────
+-- Stale sweep every minute (with a 30s mid-cycle re-sweep ⇒ ≤30s latency);
+-- daily prune at 03:30 UTC.
 DO $cron_heartbeats$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron') THEN
@@ -457,28 +487,47 @@ BEGIN
     BEGIN PERFORM cron.unschedule('agent-heartbeats-prune');
     EXCEPTION WHEN OTHERS THEN NULL; END;
 
-    -- pg_cron's smallest atomic schedule is 1 minute, but it accepts a
-    -- comma-separated second-level expression by wrapping the call in two
-    -- jobs that fire 30s apart via pg_sleep. The semantics required by L2
-    -- are "no longer than 30s detection latency", which we satisfy by
-    -- running the sweep at minute boundaries and at minute+30s.
     PERFORM cron.schedule(
       'agent-heartbeats-sweep',
       '* * * * *',
-      $cron_body$
-        SELECT system.sweep_agent_health();
-        PERFORM pg_sleep(30);
-        SELECT system.sweep_agent_health();
-      $cron_body$
+      $cron_body$SELECT system.run_agent_health_sweep_twice();$cron_body$
     );
 
     PERFORM cron.schedule(
       'agent-heartbeats-prune',
       '30 3 * * *',
-      $cron_body$SELECT system.prune_agent_heartbeats(7)$cron_body$
+      $cron_body$SELECT system.prune_agent_heartbeats(7);$cron_body$
     );
   END IF;
 EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'agent-heartbeats cron schedule failed: %', SQLERRM;
 END;
 $cron_heartbeats$;
+
+-- ── 11. Seed the worker-process agent ────────────────────────────────────
+-- The execution-loop edge function emits a process-level heartbeat against
+-- this slug. Kind-agnostic: the same registration shape will be used for
+-- a future dev/build agent or ASIS cognitive module.
+DO $seed_loop_agent$
+BEGIN
+  PERFORM system.register_agent(
+    p_slug         => 'system.execution_loop',
+    p_display_name => 'Execution Loop Worker',
+    p_agent_kind   => 'system.internal',
+    p_initial_version => '1.0.0',
+    p_owner_team   => 'platform-execution',
+    p_status       => 'active',
+    p_metadata     => jsonb_build_object(
+      'heartbeat', jsonb_build_object(
+        'cadence_ms',       15000,
+        'stale_multiplier', 2,
+        'down_multiplier',  5
+      )
+    ),
+    p_capabilities => '[]'::jsonb,
+    p_changelog    => 'Seeded by L2 heartbeat migration.'
+  );
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'system.execution_loop seed skipped: %', SQLERRM;
+END;
+$seed_loop_agent$;
