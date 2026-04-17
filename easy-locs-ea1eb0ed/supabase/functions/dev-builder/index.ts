@@ -31,6 +31,7 @@ import {
   type DevPlan,
   runDevBuilderForPlan,
 } from "../_shared/execution/builders/dev-builder-runtime.ts";
+import { createGithubFetchOthers } from "../_shared/execution/builders/github-fetch-others.ts";
 import {
   ExecutionOrchestratorV2,
   type OrchestratorDeps,
@@ -189,17 +190,35 @@ Deno.serve(async (req) => {
   };
   const orchestrator = new ExecutionOrchestratorV2(orchestratorDeps);
 
+  const headBranch = `agent-task-${builderRow.id}`;
+  // Conservative branch-cut bound: any commit landed on the merge base
+  // since the request entered the dev-builder is treated as a potential
+  // conflict. The drift detector only blocks on hard hunk overlap, so
+  // an over-wide window is safe.
+  const branchCutAt = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const loopResult = await runDevBuilderForPlan({
     sb,
     orchestrator,
     builderTaskId: builderRow.id,
     initialPlan: plan,
     maxIterations,
+    // LC4 #924 — wire merge-conflict recovery into the production loop
+    // so a hard overlap detected on the merge step automatically drives
+    // the builder to a rev-2 plan via `request_dev_replan`.
+    merge: {
+      fetchOthers: createGithubFetchOthers({
+        pat: githubToken,
+        repo: githubRepo,
+        currentBranch: headBranch,
+        branchCutAt,
+        defaultBranch: githubBase,
+      }),
+    },
     github: {
       pat: githubToken,
       repo: githubRepo,
       baseBranch: githubBase,
-      headBranch: `agent-task-${builderRow.id}`,
+      headBranch,
     },
   });
 
