@@ -153,7 +153,7 @@ export class HarnessTaskRepository implements TaskRepository {
 /** Matches the shape of `src/lib/execution/dispatch.ts#DispatchedTaskHandle`. */
 export interface DispatchedTaskHandle {
   taskId: string;
-  status: "queued" | "approved" | "blocked" | "pending_review";
+  status: "queued" | "approved" | "blocked";
   agentId: string | null;
   agentVersionId: string | null;
   blockedReason: string | null;
@@ -171,21 +171,41 @@ export interface SimulateDispatchInput {
   agentId?: string | null;
 }
 
+/** Optional domain-specific resolver — derives `agent_id` from the
+ *  dispatch input. Defaults to `null` (the orchestrator / adapter will
+ *  resolve via its own deps). The AI builder below plugs in a slug-based
+ *  resolver matching `commonAgentRef()` in `ai-adapter.ts`. */
+export type AgentIdResolver = (input: SimulateDispatchInput) => string | null;
+
 /**
  * Simulates `system.dispatch_execution_task`. Inserts a fully-shaped
  * `system.execution_tasks` row into the harness repo and returns the
  * handle the production helper would return.
+ *
+ * Domain-agnostic: any `agent_id` derivation belongs in the caller's
+ * resolver to keep the generic harness portable across domains.
  */
-export function makeSimulateDispatch(repo: HarnessTaskRepository) {
+export function makeSimulateDispatch(
+  repo: HarnessTaskRepository,
+  resolveAgentId: AgentIdResolver = () => null,
+) {
   return function simulateDispatch(input: SimulateDispatchInput): DispatchedTaskHandle {
-    const status: ExecutionTask["status"] = input.requiresApproval
+    // Production: `requires_approval=true` returns a `blocked` handle
+    // (the dispatch helper's typed status union excludes pending_review).
+    // The row itself lives in pending_review until decide_task_approval
+    // runs; the harness mirrors the helper's wire shape here.
+    const rowStatus: ExecutionTask["status"] = input.requiresApproval
       ? "pending_review"
       : "queued";
+    const handleStatus: DispatchedTaskHandle["status"] = input.requiresApproval
+      ? "blocked"
+      : "queued";
+
     const row = makeTask({
       domain: input.domain,
       type: input.taskType,
       risk_level: input.riskLevel ?? "MEDIUM",
-      status,
+      status: rowStatus,
       payload: input.payload ?? {},
       approved_by: input.approvedBy ?? "admin-1",
       requested_by: input.requestedBy ?? "system",
@@ -193,28 +213,15 @@ export function makeSimulateDispatch(repo: HarnessTaskRepository) {
       requires_approval: input.requiresApproval ?? false,
       rollback_strategy: "none",
     });
-    // Adapter resolves agent id from the slug; we stamp the row with the
-    // same convention used by the harness resolveAgentId default below.
-    const agentId =
-      input.agentId ??
-      `agent-${input.taskType === AI_TASK_TYPES.COMPLETION
-        ? AI_AGENT_SLUGS.AI_COMPLETION
-        : input.taskType === AI_TASK_TYPES.EMBEDDING
-          ? AI_AGENT_SLUGS.AI_EMBEDDING
-          : input.taskType === AI_TASK_TYPES.RAG
-            ? AI_AGENT_SLUGS.AI_RAG
-            : input.taskType === AI_TASK_TYPES.TOOL_USE
-              ? AI_AGENT_SLUGS.AI_TOOL_USE
-              : input.domain
-        }`;
+    const agentId = input.agentId ?? resolveAgentId(input);
     const stamped: ExecutionTask = { ...row, agent_id: agentId } as ExecutionTask;
     repo.upsert(stamped);
     return {
       taskId: stamped.id,
-      status,
+      status: handleStatus,
       agentId,
       agentVersionId: null,
-      blockedReason: null,
+      blockedReason: input.requiresApproval ? "requires_approval" : null,
     };
   };
 }
@@ -344,6 +351,8 @@ export function createDispatchHarness(opts: {
   verifiers?: TaskVerifier[];
   agentQuotaGate?: AgentQuotaGate;
   validator?: ValidationGate;
+  /** Domain-specific agent-id derivation from dispatch input. */
+  resolveAgentId?: AgentIdResolver;
 }): DispatchHarness {
   // The adapters declare an `agent` ref but bypass agent registration —
   // mirrors the opt-out used by `orchestrator-v2.test.ts`. Save and
@@ -377,7 +386,7 @@ export function createDispatchHarness(opts: {
     agentQuotaGate: opts.agentQuotaGate,
   });
 
-  const simulateDispatch = makeSimulateDispatch(repo);
+  const simulateDispatch = makeSimulateDispatch(repo, opts.resolveAgentId);
   const simulateDecideTaskApproval = makeSimulateDecideTaskApproval(repo, sink);
 
   return {
@@ -570,10 +579,26 @@ export function buildAiDispatchHarness(opts: AiHarnessOpts = {}): AiDispatchHarn
     createAiToolUseAdapter(adapterDeps),
   ];
 
+  // AI-specific agent-id derivation — mirrors `commonAgentRef()` in
+  // `ai-adapter.ts` and the default `resolveAgentId` plugged into the
+  // adapter deps above. Kept inside the AI builder so the generic
+  // `simulateDispatch` stays domain-agnostic.
+  const aiResolveAgentId: AgentIdResolver = (input) => {
+    if (input.domain !== AI_DOMAIN) return null;
+    const slug = ({
+      [AI_TASK_TYPES.COMPLETION]: AI_AGENT_SLUGS.AI_COMPLETION,
+      [AI_TASK_TYPES.EMBEDDING]: AI_AGENT_SLUGS.AI_EMBEDDING,
+      [AI_TASK_TYPES.RAG]: AI_AGENT_SLUGS.AI_RAG,
+      [AI_TASK_TYPES.TOOL_USE]: AI_AGENT_SLUGS.AI_TOOL_USE,
+    } as Record<string, string>)[input.taskType];
+    return slug ? `agent-${slug}` : null;
+  };
+
   const base = createDispatchHarness({
     adapters,
     verifiers: opts.verifiers,
     agentQuotaGate: opts.agentQuotaGate,
+    resolveAgentId: aiResolveAgentId,
   });
 
   return {
