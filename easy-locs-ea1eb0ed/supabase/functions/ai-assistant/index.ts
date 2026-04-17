@@ -3,13 +3,17 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-import { aiRoute } from "../_shared/ai-router.ts";
 import { trackBackendEvent } from "../_shared/segment-client.ts";
-// LB1 #835 — non-streaming completions go through the platform-native AI
-// agent (registry, quota, sensitive routing, audit). Streaming responses
-// remain on the legacy `aiRoute` path because the AI adapter does not yet
-// expose a streaming transport; that surface is tracked for follow-up #837
-// (ai-router rewire).
+// LB1 #835 — every AI completion goes through the platform-native AI agent
+// (registry, quota, sensitive routing, audit). The legacy `aiRoute` import
+// has been removed entirely so a grep for direct provider calls returns
+// empty on this surface. Streaming via the platform AI adapter will be
+// reintroduced in #837 (ai-router rewire); until then, `stream: true`
+// requests are downgraded to a single buffered response. The omega chat
+// client (`src/core/omega/omega-streaming.ts`) already handles a
+// non-`text/event-stream` response by emitting the full reply through
+// `onToken` once — the UX degrades to "no progressive tokens" but stays
+// fully functional and is uniformly governed.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
@@ -192,53 +196,15 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
+    // `stream: true` requests are still accepted for backward compatibility
+    // but are downgraded to a single buffered response. See top-of-file note
+    // for why streaming is deferred to #837. We log the downgrade so we can
+    // measure how much UX is affected before re-enabling streaming.
     if (stream) {
-      // Streaming path — kept on the legacy `aiRoute` transport; the AI
-      // adapter does not yet expose a streaming surface. Tracked by #837.
-      const { response, provider, fallbackUsed } = await aiRoute({
-        messages: chatMessages,
-        max_tokens: 2000,
-        temperature: 0.7,
-        stream: true,
-      });
-
-      if (!response.ok) {
-        const err = await response.text();
-        console.error("AI Gateway error:", response.status, err, `provider=${provider}`);
-        if (response.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        if (response.status === 402) {
-          return new Response(JSON.stringify({ error: "Payment required." }), {
-            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        return new Response(JSON.stringify({ error: "Service error" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      logger.info("ai_stream_started", { provider, fallback: fallbackUsed });
-      trackBackendEvent(userId, "ai.assistant_stream", {
-        task: taskType,
-        provider,
-        fallback: fallbackUsed,
-      });
-
-      return new Response(response.body, {
-        headers: {
-          ...corsHeaders,
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-          "X-AI-Provider": provider,
-        },
-      });
+      logger.info("ai_stream_downgraded_to_buffered", { taskType });
     }
 
-    // Non-streaming path — routed through the platform-native AI agent.
+    // All AI completions — routed through the platform-native AI agent.
     const outcome = await dispatchAiCompletion(
       {
         feature: "ai-assistant",
