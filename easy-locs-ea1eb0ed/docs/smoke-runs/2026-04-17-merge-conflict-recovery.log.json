@@ -1,0 +1,91 @@
+{
+  "started_at": "2026-04-17T21:41:31.849Z",
+  "reason": "merge_conflict:overlap_with:agent-task-A",
+  "supabase_url": "https://rskjyebxodnsxawtvhrc.supabase.co",
+  "steps": [
+    {
+      "step": "seed_builder_row",
+      "ok": true,
+      "detail": {
+        "builder_task_id": "bc53d7b3-d191-4cec-af10-afb670d27160"
+      }
+    },
+    {
+      "step": "invoke_request_dev_replan",
+      "ok": true,
+      "detail": {
+        "requested_at": "2026-04-17T21:41:32.325676+00:00",
+        "parent_task_id": "bc53d7b3-d191-4cec-af10-afb670d27160",
+        "replan_task_id": "2861d9af-5ebc-4b61-989a-c378440726f7"
+      }
+    },
+    {
+      "step": "read_parent_row",
+      "ok": true,
+      "detail": {
+        "last_replan": {
+          "reason": "merge_conflict:overlap_with:agent-task-A",
+          "requested_at": "2026-04-17T21:41:32.325676+00:00",
+          "replan_task_id": "2861d9af-5ebc-4b61-989a-c378440726f7"
+        }
+      }
+    },
+    {
+      "step": "assert_reason_captured",
+      "ok": true,
+      "detail": {
+        "reason": "merge_conflict:overlap_with:agent-task-A"
+      }
+    },
+    {
+      "step": "assert_reason_verbatim",
+      "ok": true,
+      "detail": {
+        "reason": "merge_conflict:overlap_with:agent-task-A"
+      }
+    },
+    {
+      "step": "assert_reason_prefix",
+      "ok": true,
+      "detail": {
+        "reason": "merge_conflict:overlap_with:agent-task-A"
+      }
+    },
+    {
+      "step": "assert_replan_child_id_returned",
+      "ok": true,
+      "detail": {
+        "replan_task_id": "2861d9af-5ebc-4b61-989a-c378440726f7"
+      }
+    },
+    {
+      "step": "read_replan_child",
+      "ok": true,
+      "detail": {
+        "id": "2861d9af-5ebc-4b61-989a-c378440726f7",
+        "type": "LC3.PLAN.PRODUCE",
+        "status": "queued",
+        "parent_task_id": "bc53d7b3-d191-4cec-af10-afb670d27160"
+      }
+    },
+    {
+      "step": "assert_replan_child_shape",
+      "ok": true,
+      "detail": {
+        "id": "2861d9af-5ebc-4b61-989a-c378440726f7",
+        "type": "LC3.PLAN.PRODUCE",
+        "status": "queued",
+        "parent_task_id": "bc53d7b3-d191-4cec-af10-afb670d27160"
+      }
+    }
+  ],
+  "final": {
+    "ok": true,
+    "builder_task_id": "bc53d7b3-d191-4cec-af10-afb670d27160",
+    "last_replan": {
+      "reason": "merge_conflict:overlap_with:agent-task-A",
+      "requested_at": "2026-04-17T21:41:32.325676+00:00",
+      "replan_task_id": "2861d9af-5ebc-4b61-989a-c378440726f7"
+    }
+  }
+}
