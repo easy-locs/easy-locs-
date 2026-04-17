@@ -1,14 +1,6 @@
-tree e7ab1b4b88b2cfeab36156657180e637d70b5d4c
-parent e251dadc4b6cf2fb7d7a515b649ab6afa8134aac
-author jstarbuzz <jstarbuzz@gmail.com> 1776466280 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776466280 +0000
+tree 9465ec324098bb6903333208b662d3f657f48e3b
+parent 989f66924eb9bfdc6829eea334bbd608b3d710ae
+author jstarbuzz <jstarbuzz@gmail.com> 1776469405 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776469405 +0000
 
-Add comparison content to website feeds and improve URL routing
-
-Update vite-plugin-feeds.ts to include comparison entries and adjust URL patterns for better routing.
-
-Replit-Commit-Author: Agent
-Replit-Commit-Session-Id: 01e87756-e7a8-4912-b6e0-4a07e75906d9
-Replit-Commit-Checkpoint-Type: full_checkpoint
-Replit-Commit-Event-Id: 0f785b46-258d-4c5f-9a0c-9e074711a69f
-Replit-Helium-Checkpoint-Created: true
+Git commit prior to rebase
