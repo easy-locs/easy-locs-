@@ -4,36 +4,34 @@
  * stamps onto `system.execution_tasks.payload` whenever a hard
  * overlap is detected and the loop auto-replans (task #940).
  *
- * The audit shape (see
- * `supabase/functions/_shared/execution/builders/merge-conflict-recovery.ts`):
- *   {
- *     kind: "merge_conflict_recovery",
- *     at: ISO8601 string,
- *     builder_task_id: string,
- *     severity: "hard" | "soft" | "none",
- *     overlaps: number,           // count of overlap entries
- *     files: string[],            // unique conflicting paths
- *     reason: "hard_overlap:<n>",
- *   }
+ * The projection logic (`normalizeAudit`,
+ * `projectMergeConflictRecoverySummary`) lives in the runtime-agnostic
+ * shared module under `supabase/functions/_shared/` so this file and
+ * the `admin-merge-conflict-recovery` edge function cannot drift
+ * (task #979). This file owns the React/Supabase data-access layer and
+ * the alert evaluator.
  */
-import { db, domainDb } from "@/services/db";
+import { domainDb } from "@/services/db";
+import {
+  MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
+  type MergeConflictRecoveryAudit,
+  type MergeConflictRecoveryEvent,
+  type MergeConflictRecoverySummary,
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+} from "../../supabase/functions/_shared/merge-conflict-recovery-projection.ts";
 
-export interface MergeConflictRecoveryAudit {
-  readonly kind: "merge_conflict_recovery";
-  readonly at: string;
-  readonly builder_task_id: string;
-  readonly severity: "hard" | "soft" | "none";
-  readonly overlaps: number;
-  readonly files: string[];
-  readonly reason: string;
-}
+export {
+  MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+};
+export type {
+  MergeConflictRecoveryAudit,
+  MergeConflictRecoveryEvent,
+  MergeConflictRecoverySummary,
+};
 
-export interface MergeConflictRecoveryEvent extends MergeConflictRecoveryAudit {
-  /** Source row id — same as `builder_task_id` but kept for clarity. */
-  readonly task_id: string;
-}
-
-const LOOKBACK_DAYS = 14;
 const PAGE_SIZE = 500;
 /** Hard ceiling so a runaway scan can never hang the page. Reached only
  *  if more than 50 000 builder tasks recorded recovery in 14 days. */
@@ -53,7 +51,9 @@ const MAX_PAGES = 100;
 export async function fetchMergeConflictRecoveryEvents(): Promise<
   MergeConflictRecoveryEvent[]
 > {
-  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+  const since = new Date(
+    Date.now() - MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
+  );
   const sinceIso = since.toISOString();
 
   const events: MergeConflictRecoveryEvent[] = [];
@@ -96,91 +96,6 @@ export async function fetchMergeConflictRecoveryEvents(): Promise<
   }
   events.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
   return events;
-}
-
-function normalizeAudit(
-  raw: unknown,
-  rowId: string,
-): MergeConflictRecoveryEvent | null {
-  if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
-  if (r.kind !== "merge_conflict_recovery") return null;
-  const at = typeof r.at === "string" ? r.at : null;
-  if (!at) return null;
-  const builder_task_id = typeof r.builder_task_id === "string"
-    ? r.builder_task_id
-    : rowId;
-  const severity = (r.severity === "hard" || r.severity === "soft" ||
-      r.severity === "none")
-    ? r.severity
-    : "hard";
-  const overlaps = typeof r.overlaps === "number" ? r.overlaps : 0;
-  const files = Array.isArray(r.files)
-    ? r.files.filter((f): f is string => typeof f === "string")
-    : [];
-  const reason = typeof r.reason === "string"
-    ? r.reason
-    : `hard_overlap:${overlaps}`;
-  return {
-    kind: "merge_conflict_recovery",
-    task_id: rowId,
-    builder_task_id,
-    at,
-    severity,
-    overlaps,
-    files,
-    reason,
-  };
-}
-
-export interface MergeConflictRecoverySummary {
-  readonly events: MergeConflictRecoveryEvent[];
-  readonly totalEvents: number;
-  readonly affectedTasks: number;
-  /** Counts per UTC day for the last 14 days, oldest → newest. */
-  readonly perDay: ReadonlyArray<{ day: string; count: number }>;
-  /** Top 5 most-conflicting file paths (descending). */
-  readonly topFiles: ReadonlyArray<{ file: string; count: number }>;
-}
-
-/** Pure projection so the page stays a thin shell. */
-export function projectMergeConflictRecoverySummary(
-  events: MergeConflictRecoveryEvent[],
-): MergeConflictRecoverySummary {
-  const perDayMap = new Map<string, number>();
-  // Seed the last 14 days so empty days still render.
-  const today = new Date();
-  for (let i = LOOKBACK_DAYS - 1; i >= 0; i--) {
-    const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-    perDayMap.set(d.toISOString().slice(0, 10), 0);
-  }
-  const fileCounts = new Map<string, number>();
-  const taskIds = new Set<string>();
-  for (const e of events) {
-    const day = e.at.slice(0, 10);
-    if (perDayMap.has(day)) {
-      perDayMap.set(day, (perDayMap.get(day) ?? 0) + 1);
-    }
-    taskIds.add(e.builder_task_id);
-    for (const f of e.files) {
-      fileCounts.set(f, (fileCounts.get(f) ?? 0) + 1);
-    }
-  }
-  const perDay = Array.from(perDayMap.entries()).map(([day, count]) => ({
-    day,
-    count,
-  }));
-  const topFiles = Array.from(fileCounts.entries())
-    .map(([file, count]) => ({ file, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-  return {
-    events,
-    totalEvents: events.length,
-    affectedTasks: taskIds.size,
-    perDay,
-    topFiles,
-  };
 }
 
 // ── Threshold-based alerting (task #973) ──────────────────────────────────
