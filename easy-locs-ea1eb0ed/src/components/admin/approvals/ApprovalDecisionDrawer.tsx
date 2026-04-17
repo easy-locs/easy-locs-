@@ -148,10 +148,45 @@ export function ApprovalDecisionDrawer({
         payload: unknown;
         previous_state?: unknown;
         result: unknown;
+        execution_result?: unknown;
         blocked_reason?: string | null;
+        agent_id?: string | null;
       })
     | null
     | undefined;
+
+  /**
+   * LB1 #834 — AI metadata surface.
+   *
+   * Held AI runs land in the same approvals inbox as every other agent
+   * kind, so reviewers must be able to see the AI-specific signals
+   * (purpose, tool calls, verifier outcome, generated response) without
+   * spelunking raw JSON. We pull from `execution_result` first (canonical
+   * post-execute payload written by the AI adapter) and fall back to
+   * `payload` for legacy rows.
+   */
+  const aiMeta = useMemo(() => {
+    const src =
+      (task?.execution_result as Record<string, unknown> | undefined) ??
+      (task?.payload as Record<string, unknown> | undefined);
+    if (!src) return null;
+    const purpose =
+      (src.purpose as string | undefined) ??
+      ((task?.payload as Record<string, unknown> | undefined)?.purpose as
+        | string
+        | undefined);
+    const verification = src.verification as
+      | Record<string, unknown>
+      | undefined;
+    const tools = (src.tools_used ?? src.tools) as
+      | Array<unknown>
+      | undefined;
+    const response =
+      (src.response as string | undefined) ??
+      (src.output_text as string | undefined);
+    if (!purpose && !verification && !tools && !response) return null;
+    return { purpose, verification, tools, response };
+  }, [task]);
 
   /**
    * Diff sourcing contract (L5):
@@ -264,6 +299,50 @@ export function ApprovalDecisionDrawer({
                 <div className="text-xs text-warning-foreground bg-warning/10 border border-warning/30 rounded px-2 py-1.5 mb-2">
                   <span className="font-semibold">Blocked reason:</span>{" "}
                   {task.blocked_reason}
+                </div>
+              )}
+              {aiMeta && (
+                <div
+                  data-testid="ai-metadata-panel"
+                  className="mb-3 rounded-lg border border-border/40 bg-muted/20 p-3 space-y-2 text-xs"
+                >
+                  <div className="font-semibold text-foreground">
+                    AI run metadata
+                  </div>
+                  {aiMeta.purpose && (
+                    <div>
+                      <span className="text-muted-foreground">Purpose: </span>
+                      <span className="font-mono">{aiMeta.purpose}</span>
+                    </div>
+                  )}
+                  {aiMeta.verification && (
+                    <div className="space-y-1">
+                      <div className="text-muted-foreground">Verifier</div>
+                      <pre className="font-mono text-[0.625rem] bg-background/60 border border-border/40 rounded p-1.5 overflow-x-auto">
+                        {JSON.stringify(aiMeta.verification, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  {aiMeta.tools && aiMeta.tools.length > 0 && (
+                    <div className="space-y-1">
+                      <div className="text-muted-foreground">
+                        Tools used ({aiMeta.tools.length})
+                      </div>
+                      <pre className="font-mono text-[0.625rem] bg-background/60 border border-border/40 rounded p-1.5 overflow-x-auto max-h-32">
+                        {JSON.stringify(aiMeta.tools, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                  {aiMeta.response && (
+                    <div className="space-y-1">
+                      <div className="text-muted-foreground">
+                        Generated response (held for review)
+                      </div>
+                      <div className="whitespace-pre-wrap text-foreground bg-background/60 border border-border/40 rounded p-2 max-h-48 overflow-y-auto">
+                        {aiMeta.response}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
               {diffKind === "text" ? (

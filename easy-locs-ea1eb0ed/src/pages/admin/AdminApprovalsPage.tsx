@@ -12,7 +12,8 @@
  * Sheet so the queue stays scannable on mobile and the keyboard focus
  * stays on the comment box while reviewing.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Inbox, RefreshCcw } from "lucide-react";
 import SubPageShell from "@/components/layout/SubPageShell";
@@ -56,8 +57,29 @@ function formatAge(iso: string): string {
 
 export default function AdminApprovalsPage() {
   useUiEngine("admin-adminapprovalspage");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // LB1 #834 — deep-link contract: `/admin/approvals?taskId=<uuid>` opens
+  // the decision drawer pre-loaded with that task. Used by the agent runs
+  // page (and any other surface) to route held AI runs straight into the
+  // canonical reviewer cockpit instead of duplicating the controls.
+  useEffect(() => {
+    const linked = searchParams.get("taskId");
+    if (linked && linked !== selectedTaskId) {
+      setSelectedTaskId(linked);
+      setDrawerOpen(true);
+    }
+  }, [searchParams, selectedTaskId]);
+
+  const clearTaskQueryParam = () => {
+    if (searchParams.has("taskId")) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("taskId");
+      setSearchParams(next, { replace: true });
+    }
+  };
 
   const queueQuery = useQuery({
     queryKey: ["admin-approvals", "queue"],
@@ -195,7 +217,10 @@ export default function AdminApprovalsPage() {
         open={drawerOpen}
         onOpenChange={(o) => {
           setDrawerOpen(o);
-          if (!o) setSelectedTaskId(null);
+          if (!o) {
+            setSelectedTaskId(null);
+            clearTaskQueryParam();
+          }
         }}
       />
     </SubPageShell>
