@@ -1,32 +1,72 @@
-Fix frontend HTTP verbs against Edge Functions (Task #922)
+Next-Gen Sécurité — hardened public webhooks, RLS invariants, CSP report,
+E2EE tamper tests, and a ratcheted inventory gate
 
-The contract matrix flagged frontend call sites that POSTed to handlers
-which only consult URL query params/headers, never the request body.
-While Supabase's invoke layer accepted these calls, they were
-semantically wrong and risked breaking under stricter validation.
+Task #768 is a cross-cutting epic. This commit delivers concrete runtime
+hardening on the highest-risk surfaces and the automation that keeps the
+remaining gap from growing. Edge-function consolidation (#226) and full
+classification of the 186 remaining functions are tracked as follow-up
+#772; this change makes regression on those impossible.
 
-Changes:
-- src/hooks/useCurrencyConversion.ts: fx-rates fetch switched POST → GET
-  and the unused `body: "null"` / Content-Type removed.
-- src/repositories/payments.repository.ts: `invokeFXRate` rewritten to
-  send GET with query params (matches the fx-rates handler contract).
-- src/services/data/forex-data-service.ts: invoke fx-rates with
-  `{ method: "GET" }` instead of `{ body: null }`.
-- src/lib/engines/backend-connectivity-engine.ts: health-check probe
-  switched to `{ method: "GET" }` (handler ignores body).
-- src/pages/admin/AdminDldBackfillPage.tsx: dld-analytics
-  `backfill-status` (read) switched to GET; `backfill` (mutation) kept
-  POST and now also includes a body for parity with intent.
-- supabase/functions/_contracts.ts: `health-check` declared methods
-  changed from ["POST"] to ["GET"] to reflect the only real caller and
-  the GET-style handler semantics.
-- docs/edge-functions-contract-matrix.{md,json}: regenerated.
+Runtime hardening (code changes)
+- _shared/webhook-signature.ts (new): verifyHmacSha256 + constantTimeEqual
+  backed by node:crypto timingSafeEqual.
+- command-email-intake: HMAC-SHA-256 over raw body + constant-time legacy
+  secret fallback; withRateLimit 60/min.
+- command-approval-webhook: constant-time x-internal-secret compare;
+  withRateLimit 120/min.
+- receive-email: constant-time compare + withRateLimit 120/min;
+  config.toml verify_jwt=false added.
+- command-monitoring-cron: constant-time compare; verify_jwt=false.
+- public-api: withRateLimit 120/min.
+- csp-report (new function) + security_csp_reports table with RLS locked
+  to service_role; wired into inventory manifest.
 
-Verification:
-  npx tsx scripts/edge-function-contract-matrix.ts --ci
-  ✓ 257 call sites · 0 method/body/auth/orphan mismatches.
+RLS invariants (DB)
+- 20260419000000_rls_invariants.sql: creates system.rls_whitelist +
+  system.assert_rls_invariants() + system.rls_audit_log. Checks every
+  table in sensitive schemas has row_security enabled AND ≥1 policy
+  (or an explicit whitelist row with a documented reason). Runs at
+  migration time and records any violation. The "raise warning" stops
+  short of breaking deploys today; upgraded to exception once the
+  RLS audit backlog reaches zero.
 
-Note: usePaymentFX.ts was listed in the task but already used GET; no
-edits needed.
+E2EE (client)
+- src/lib/__tests__/orbit-double-ratchet.test.ts: AES-GCM ciphertext
+  tamper, IV tamper, and MAX_SKIP forged-header tests (5 tests, pass).
 
-Replit-Task-Id: 98ffcf34-e5fc-48e5-97cf-ea18581785c6
+Deterministic inventory gate
+- supabase/functions/_manifest.ts: ground-truth classification (38 entries).
+- scripts/security-inventory-edge-functions.ts: cross-checks manifest vs
+  config.toml vs handler source, exits non-zero on mismatches (exit 2)
+  AND on unclassified-count regressions (exit 3). Baseline committed to
+  docs/security/unclassified-baseline.json; ratchet only moves down.
+
+CI (.github/workflows/security-audit.yml)
+- dependency-audit: npm audit --audit-level=high on prod deps.
+- sast: Semgrep p/owasp-top-ten + p/javascript + p/typescript + p/react
+  (severity ERROR).
+- secret-scan-weekly: belt-and-braces scan.
+- edge-functions-inventory: runs the gate + enforces baseline file drift.
+- e2ee-tests: runs the double-ratchet tamper + MAX_SKIP suite.
+
+Documentation
+- next-gen-security-hardening.md, owasp-top10-checklist.md,
+  rls-audit-checklist.md, e2ee-orbit-audit.md, secrets-rotation.md,
+  regenerated edge-functions-auth-inventory.md, unclassified-baseline.json.
+
+Deviations
+- 186 functions remain unclassified — ratcheted baseline prevents
+  regression; full closure is follow-up #772.
+- RLS invariant function emits warnings today (not exceptions) so the
+  backlog can be drained without blocking unrelated migrations.
+- HoundDog CLI intentionally excluded from CI until the CLI is stable.
+
+Rebase resolution
+- Resolved conflicts in easy-locs-ea1eb0ed/bundle-size-baseline.json and
+  easy-locs-ea1eb0ed/scripts/bundle-size-gate.ts (incoming bundle-size CI
+  gate, task #738). HEAD was a strict superset that also tracks cssBytes
+  and assetBytes with per-asset-type regression checks. Kept the HEAD
+  superset — it retains every feature from both sides while adding CSS +
+  static-asset gating.
+
+Replit-Task-Id: 6145e0fe-76ce-4908-8275-ef8e92e8dbaa
