@@ -84,7 +84,9 @@ interface ExecutionTaskRow {
     | "succeeded"
     | "failed"
     | "blocked"
+    | "rolling_back"
     | "rolled_back"
+    | "rollback_failed"
     | "cancelled";
   payload: Record<string, unknown> | null;
   approved_by: string | null;
