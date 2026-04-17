@@ -33,27 +33,23 @@ import type { RealtimeChannel } from "@supabase/supabase-js";
 // ── Execution-task row (system.execution_tasks) — only the columns this
 // page actually reads. Avoids leaking the entire wide row type.
 //
-// NOTE: `system.execution_tasks` carries TWO writer-path-specific JSONB
-// + error columns:
+// Both writer paths now agree on the V2 columns:
 //   • Orchestrator V2 (LB1) writes `execution_result` + `error_code`.
-//   • The GitHub runner callback (`execution-runner-callback`) still
-//     writes the legacy `result` + `error` columns inherited from the
-//     agent_tasks era (see migration 20260418500000_execution_tasks_v2.sql,
-//     which kept both shapes during the transition window).
-// We therefore read BOTH and the projection in `projectTask()` prefers the
-// V2 columns and falls back to the legacy ones — so SMOKE_NOOP runs
-// dispatched via trigger-github surface their logs/conclusion correctly.
+//   • The GitHub runner callback (`execution-runner-callback`) was
+//     migrated to the same V2 shape (task #848); the legacy
+//     `result` / `error` columns from the agent_tasks era are no
+//     longer written, and a backfill migration copied any old
+//     in-flight rows forward, so the projection only has to read
+//     the canonical columns.
 export interface ExecutionTaskRow {
   id: string;
   type: string;
   status: string;
   payload: Record<string, unknown> | null;
   execution_result: Record<string, unknown> | null;
-  result: Record<string, unknown> | null;
   external_run_url: string | null;
   blocked_reason: string | null;
   error_code: string | null;
-  error: string | null;
   requested_by: string;
   created_at: string;
   updated_at: string;
@@ -143,13 +139,12 @@ function asString(v: unknown): string | null {
 
 export function projectTask(row: ExecutionTaskRow): TaskView {
   const payload = (row.payload ?? {}) as Record<string, unknown>;
-  // Prefer the V2 column written by the orchestrator; fall back to the
-  // legacy `result` column written by execution-runner-callback for
-  // GitHub-runner tasks. Either may be null.
+  // Single canonical source: the V2 `execution_result` column. Both
+  // writer paths (orchestrator V2 and the GitHub runner callback) write
+  // here (task #848); the legacy `result` / `error` columns are no
+  // longer read.
   const v2 = (row.execution_result ?? {}) as Record<string, unknown>;
-  const legacy = (row.result ?? {}) as Record<string, unknown>;
-  const merged: Record<string, unknown> = { ...legacy, ...v2 };
-  const output = (merged.output ?? {}) as Record<string, unknown>;
+  const output = (v2.output ?? {}) as Record<string, unknown>;
 
   // Run-id parsed from external_run_url tail when present
   // (e.g. https://github.com/owner/repo/actions/runs/1234567 → 1234567).
@@ -161,21 +156,20 @@ export function projectTask(row: ExecutionTaskRow): TaskView {
   }
 
   // Logs: the GitHub runner callback writes `logs: string[]` directly on
-  // the legacy `result` column; the orchestrator's adapters typically
-  // surface text on `output.text` / `output.output_text`. Coalesce.
-  const logsArr = Array.isArray(merged.logs) ? merged.logs as unknown[] : [];
+  // `execution_result`; the orchestrator's adapters typically surface
+  // text on `output.text` / `output.output_text`. Coalesce.
+  const logsArr = Array.isArray(v2.logs) ? v2.logs as unknown[] : [];
   const logs = logsArr.length > 0 ? logsArr.map(String).join("\n") : null;
-  const errMsg = asString(merged.errorMessage)
-    ?? asString(merged.error)
-    ?? row.error
+  const errMsg = asString(v2.errorMessage)
+    ?? asString(v2.error)
     ?? row.blocked_reason
     ?? row.error_code;
 
-  // The github runner callback writes `github_status` on the legacy
-  // `result` column; the orchestrator's github runner adapter writes it
-  // under `execution_result.output.github_status`.
+  // The github runner callback writes `github_status` directly on
+  // `execution_result`; the orchestrator's github runner adapter writes
+  // it under `execution_result.output.github_status`.
   const conclusion = asString(output.github_status)
-    ?? asString(merged.github_status);
+    ?? asString(v2.github_status);
 
   return {
     id: row.id,
@@ -189,7 +183,7 @@ export function projectTask(row: ExecutionTaskRow): TaskView {
     github_branch: asString(output.ref) ?? asString(payload.ref) ?? "main",
     github_conclusion: conclusion,
     logs: logs ?? errMsg,
-    result: asString(output.output_text) ?? asString(merged.output_text) ?? null,
+    result: asString(output.output_text) ?? asString(v2.output_text) ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

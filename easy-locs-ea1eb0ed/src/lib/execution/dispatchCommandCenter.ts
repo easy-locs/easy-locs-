@@ -35,7 +35,7 @@ export interface TriggerGithubResponse {
  * Matches the `ExecutionTaskRow` shape in `DashboardCommandCenter.tsx`.
  */
 export const COMMAND_CENTER_TASK_COLUMNS =
-  "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at";
+  "id,type,status,payload,execution_result,external_run_url,blocked_reason,error_code,requested_by,created_at,updated_at";
 
 export type DispatchCommandCenterResult =
   | { ok: true; taskId: string; status: string; row: Record<string, unknown> | null }
