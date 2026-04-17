@@ -43,6 +43,7 @@ import { getSection } from "../sections";
 import { AutoHighlight, JsonHighlight } from "./syntax";
 import { ToolDag } from "./ToolDag";
 import ReplayDialog from "./ReplayDialog";
+import DevRunDetail from "@/components/admin/DevRunDetail";
 
 type StatusFilter =
   | "all"
@@ -232,11 +233,18 @@ export default function RunsExplorer() {
                 />
               </div>
               <div className="col-span-12 lg:col-span-7">
-                <RunDetailPane
-                  run={selected}
-                  domain={domain}
-                  onReplay={() => setReplayOpen(true)}
-                />
+                {domain === "code" && selected ? (
+                  <DevRunDetail
+                    run={selected}
+                    onReplay={() => setReplayOpen(true)}
+                  />
+                ) : (
+                  <RunDetailPane
+                    run={selected}
+                    domain={domain}
+                    onReplay={() => setReplayOpen(true)}
+                  />
+                )}
               </div>
             </div>
           </>
