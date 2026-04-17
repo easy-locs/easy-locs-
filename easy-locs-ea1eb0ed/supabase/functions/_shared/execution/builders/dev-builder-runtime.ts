@@ -29,6 +29,7 @@ import {
   type LoopChildTaskRecord,
   type LoopIterationRecord,
   type LoopResult,
+  type PreMergeCheckFn,
   runDevBuilderLoop,
   type StepOutcome,
   type VerifierVerdict,
@@ -79,6 +80,11 @@ export interface RunDevBuilderForPlanOptions {
   readonly replanTickMs?: number;
   /** Hard cap on the replan plan-ready wait. Default 30000ms. */
   readonly replanWaitMs?: number;
+  /** Optional LC7 pre-merge drift check. When supplied, the loop runs
+   *  it BEFORE every PR open. A `drift_conflict` verdict is converted
+   *  into a transient verifier red, which fires the `request_dev_replan`
+   *  RPC with a `merge_conflict:<reason>` cause — fully auditable. */
+  readonly preMergeCheck?: PreMergeCheckFn;
   readonly github: {
     readonly pat: string;
     readonly repo: string;
@@ -215,6 +221,7 @@ export async function runDevBuilderForPlan(
     builderTaskId,
     initialPlan,
     maxIterations,
+    preMergeCheck: opts.preMergeCheck,
 
     dispatchChildTask: async ({ builderTaskId: parentId, step }) => {
       const taskType = STEP_KIND_TO_TASK_TYPE[step.kind];
