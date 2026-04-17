@@ -45,6 +45,8 @@ import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/boot
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
 import { bootstrapDeployPreviewAdapters } from "../_shared/execution/adapters/deploy/preview/bootstrap.ts";
 import { bootstrapDeployProdAdapters } from "../_shared/execution/adapters/deploy/prod/bootstrap.ts";
+// LC1 (#871) — code.edit primitive used by Level-C build agents.
+import { bootstrapCodeEditAdapter } from "../_shared/execution/adapters/code/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import {
@@ -327,6 +329,8 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       await bootstrapTestAdapters(sb);
       await bootstrapDeployPreviewAdapters(sb);
       await bootstrapDeployProdAdapters(sb);
+      // LC1 (#871): code.edit primitive for Level-C build agents.
+      await bootstrapCodeEditAdapter(sb);
     })().catch((e) => {
       _bootstrapPromise = null;
       throw e;
