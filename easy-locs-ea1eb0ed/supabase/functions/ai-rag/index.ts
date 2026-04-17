@@ -237,7 +237,13 @@ ${formatContext(citations)}`;
     }
 
     const interaction = aiOutcome.output.interaction;
-    const provider = interaction.provider === "internal" ? "openai" : interaction.provider;
+    // logAiInteraction's `provider` column is constrained to "openai" |
+    // "anthropic" by historical schema. The dispatch interaction can also
+    // emit "internal" (the new internal_router transport), so we map it
+    // back to "openai" — the underlying provider behind that transport —
+    // to keep the legacy per-user audit row schema stable.
+    const provider: "openai" | "anthropic" =
+      interaction.provider === "anthropic" ? "anthropic" : "openai";
     const fallbackUsed = interaction.fallbackUsed;
     const model = interaction.model;
     const promptTokens = interaction.promptTokens;
