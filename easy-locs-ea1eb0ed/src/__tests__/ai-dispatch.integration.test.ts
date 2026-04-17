@@ -1,138 +1,58 @@
 /**
  * LB1 follow-up #836 — End-to-end integration tests for the AI dispatch flow.
  *
- * Scope: prove the full chain holds together with no live Supabase.
+ * Scope: prove the full chain holds together with no live Supabase, starting
+ * from the canonical dispatch entrypoint:
  *
- *   queued task row
+ *   simulateDispatch({domain:'ai', taskType:'AI_*', payload})
+ *     → mirrors `system.dispatch_execution_task` (writes a queued row,
+ *       returns a `DispatchedTaskHandle` shaped like the production
+ *       `src/lib/execution/dispatch.ts` helper)
  *     → ExecutionOrchestratorV2 (validate / authorize / lock /
  *       agent-quota peek / execute / verify / persist)
- *     → createAiCompletionAdapter (validate payload / call LLMRunner /
- *       record ai_interactions / quota.consume)
+ *     → real ai-adapters (createAiCompletionAdapter, ...Embedding,
+ *       ...Rag, ...ToolUse — all four wired in via the shared harness)
  *     → terminal status (succeeded | pending_review | failed | blocked)
- *     → simulated `system.decide_task_approval` (transition
- *       pending_review → approved → queued and re-run the orchestrator)
+ *     → simulateDecideTaskApproval — mirrors `system.decide_task_approval`
+ *       SQL, including the post-execute hold release path.
  *
- * The harness is a deliberate, lightweight composition of the same
- * in-memory fakes used by `src/test/orchestrator-v2.test.ts` plus stub
- * implementations of the AI adapter's three external dependencies
- * (LLMRunner, QuotaGate, InteractionSink). No production code is
- * duplicated — we wire the real `createAiCompletionAdapter` and the
- * real `ExecutionOrchestratorV2` and let them run end-to-end.
+ * The harness lives in `src/__tests__/harnesses/ai-dispatch-harness.ts`
+ * and is reusable across domains: it exposes the generic
+ * `createDispatchHarness({adapters, verifiers, ...})` plus the
+ * AI-specific `buildAiDispatchHarness({...})` layered on top.
  */
 
-import { beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
-  AdapterRegistry,
-  setStrictAgentRegistration,
-} from "../../supabase/functions/_shared/execution/adapter-registry.ts";
-import {
+  buildAiDispatchHarness,
   CANONICAL_EXECUTION_EVENTS,
-  InMemoryEventSink,
-} from "../../supabase/functions/_shared/execution/canonical-events.ts";
-import {
-  MemoryIdempotencyService,
-} from "../../supabase/functions/_shared/execution/idempotency-service.ts";
-import {
-  MemoryLockService,
-} from "../../supabase/functions/_shared/execution/lock-service.ts";
-import {
-  ExecutionOrchestratorV2,
-  type AgentQuotaGate,
-  type ValidationGate,
-} from "../../supabase/functions/_shared/execution/orchestrator-v2.ts";
-import {
-  TaskVerificationService,
-} from "../../supabase/functions/_shared/execution/verification-service.ts";
-import {
-  VerifierRegistry,
-  type TaskVerifier,
-} from "../../supabase/functions/_shared/execution/verifier-registry.ts";
-import {
-  createAiCompletionAdapter,
-  type AiAdapterDeps,
-  type InteractionSink,
-  type LLMRunner,
-  type QuotaGate,
-} from "../../supabase/functions/_shared/execution/adapters/ai/ai-adapter.ts";
+} from "./harnesses/ai-dispatch-harness.ts";
+import type { TaskVerifier } from "../../supabase/functions/_shared/execution/verifier-registry.ts";
+import type { AgentQuotaGate } from "../../supabase/functions/_shared/execution/orchestrator-v2.ts";
 import {
   AI_AGENT_SLUGS,
   AI_DOMAIN,
   AI_ERROR_CODES,
   AI_TASK_TYPES,
-  type AiInteractionRecord,
 } from "../../supabase/functions/_shared/execution/adapters/ai/types.ts";
-import type {
-  ExecutionTask,
-  ExecutionTaskStatus,
-} from "../../supabase/functions/_shared/execution/types.ts";
-import type { TaskRepository } from "../../supabase/functions/_shared/execution/persistence.ts";
-import { makeTask } from "../../supabase/functions/_shared/execution/__test-helpers__.ts";
 
-// Local in-memory repository — mirrors the SQL state machine for the
-// hops used by the AI dispatch flow (including running → pending_review
-// for the sensitive-output hold). The shared `MemoryTaskRepository`
-// helper in `__test-helpers__.ts` predates LB1 and rejects that hop, so
-// we use a more permissive fake that matches `system.execution_tasks`.
-const ALLOWED: Record<ExecutionTaskStatus, ExecutionTaskStatus[]> = {
-  draft: ["pending_review", "approved", "queued", "cancelled"],
-  pending_review: ["approved", "rejected", "succeeded", "failed", "cancelled"],
-  approved: ["queued", "cancelled"],
-  rejected: ["draft", "cancelled"],
-  queued: ["running", "blocked", "cancelled"],
-  running: ["succeeded", "failed", "blocked", "pending_review", "running"],
-  failed: ["queued", "blocked", "rolled_back", "rolling_back", "cancelled"],
-  succeeded: ["rolled_back", "rolling_back"],
-  blocked: ["queued", "cancelled"],
-  rolling_back: ["rolled_back", "rollback_failed"],
-  rolled_back: [],
-  rollback_failed: ["rolling_back", "blocked", "cancelled"],
-  cancelled: [],
-};
-
-class LocalRepo implements TaskRepository {
-  private rows = new Map<string, ExecutionTask>();
-  upsert(t: ExecutionTask) { this.rows.set(t.id, { ...t }); }
-  async loadTask(id: string): Promise<ExecutionTask | null> {
-    const r = this.rows.get(id);
-    return r ? { ...r } : null;
-  }
-  async transition(
-    id: string,
-    from: ExecutionTaskStatus,
-    to: ExecutionTaskStatus,
-    patch: Record<string, unknown> = {},
-  ): Promise<boolean> {
-    const r = this.rows.get(id);
-    if (!r) return false;
-    if (r.status !== from) return false;
-    if (from !== to && !ALLOWED[from].includes(to)) return false;
-    this.rows.set(id, { ...r, ...patch, status: to } as ExecutionTask);
-    return true;
-  }
-  snapshot(id: string): ExecutionTask | null {
-    const r = this.rows.get(id);
-    return r ? { ...r } : null;
-  }
-}
-
-// The AI adapter declares an `agent` ref (registered in production via the
-// agent reconciler), but we wire it manually here without going through
-// agent registration. Strict mode would refuse the bare `register()` call
-// — the same opt-out used by `orchestrator-v2.test.ts`.
-beforeAll(() => setStrictAgentRegistration(false));
-
-// ── Harness ───────────────────────────────────────────────────────────────
-
-const PASSING_VALIDATOR: ValidationGate = { validate: async () => ({ ok: true }) };
-
-const PASSING_VERIFIER: TaskVerifier = {
+// Per-task-type passing verifiers — the orchestrator requires one for each
+// (domain, task_type) pair or the run is blocked with `NO_VERIFIER`.
+const passingVerifier = (taskType: string): TaskVerifier => ({
   domain: AI_DOMAIN,
-  taskType: AI_TASK_TYPES.COMPLETION,
+  taskType,
   verify: async () => ({ ok: true }),
-};
+});
 
-const MISMATCH_VERIFIER: TaskVerifier = {
+const ALL_AI_PASSING_VERIFIERS: TaskVerifier[] = [
+  passingVerifier(AI_TASK_TYPES.COMPLETION),
+  passingVerifier(AI_TASK_TYPES.EMBEDDING),
+  passingVerifier(AI_TASK_TYPES.RAG),
+  passingVerifier(AI_TASK_TYPES.TOOL_USE),
+];
+
+const MISMATCH_COMPLETION_VERIFIER: TaskVerifier = {
   domain: AI_DOMAIN,
   taskType: AI_TASK_TYPES.COMPLETION,
   verify: async () => ({
@@ -143,233 +63,50 @@ const MISMATCH_VERIFIER: TaskVerifier = {
   }),
 };
 
-interface RecordedInteraction {
-  taskId: string;
-  interaction: AiInteractionRecord;
-}
+// ── Happy path: all four AI task types ────────────────────────────────────
 
-interface ConsumeCall {
-  agentId: string;
-  tokens: number;
-  costUsd: number;
-}
+describe("LB1 #836 — AI dispatch happy path (all four task types)", () => {
+  it("AI_COMPLETION: dispatch → execute → ai_interactions linked → quota incremented exactly once", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
 
-function makeRunner(opts: { text?: string; throws?: Error } = {}): {
-  runner: LLMRunner;
-  callCount: () => number;
-} {
-  let calls = 0;
-  return {
-    runner: {
-      completion: async ({ payload }) => {
-        calls++;
-        if (opts.throws) throw opts.throws;
-        return {
-          text: opts.text ?? "Hello world",
-          interaction: {
-            feature: payload.feature,
-            provider: "openai",
-            model: "gpt-4o-mini",
-            promptTokens: 12,
-            completionTokens: 30,
-            costUsd: 0.000123,
-            latencyMs: 220,
-            fallbackUsed: false,
-            status: "ok",
-            metadata: {},
-          },
-        };
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "hi" }],
       },
-      embedding: async () => {
-        throw new Error("not used in this suite");
-      },
-      rag: async () => {
-        throw new Error("not used in this suite");
-      },
-    },
-    callCount: () => calls,
-  };
-}
+    });
 
-function makeQuotaGate(opts: {
-  consumeOk?: boolean;
-  consumeBlockedReason?: string;
-} = {}): { gate: QuotaGate; consumes: ConsumeCall[] } {
-  const consumes: ConsumeCall[] = [];
-  return {
-    gate: {
-      // Adapter no longer calls peek — orchestrator owns that. Provide a
-      // permissive impl anyway so the contract remains satisfied.
-      peek: async () => ({ ok: true }),
-      consume: async ({ agentId, tokens, costUsd }) => {
-        consumes.push({ agentId, tokens, costUsd });
-        return opts.consumeOk === false
-          ? {
-              ok: false as const,
-              blockedReason: opts.consumeBlockedReason ?? "daily_budget_exhausted",
-              blockedWindow: "day",
-              currentCount: 999,
-              limitCount: 999,
-            }
-          : { ok: true as const };
-      },
-    },
-    consumes,
-  };
-}
+    // Dispatch entrypoint produced a typed handle (matches the production
+    // `dispatchExecutionTask` shape) and persisted a queued row.
+    expect(handle.taskId).toBeTruthy();
+    expect(handle.status).toBe("queued");
+    expect(handle.agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_COMPLETION}`);
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("queued");
 
-function makeInteractionSink(opts: { throws?: Error } = {}): {
-  sink: InteractionSink;
-  recorded: RecordedInteraction[];
-} {
-  const recorded: RecordedInteraction[] = [];
-  return {
-    sink: {
-      record: async ({ task, interaction }) => {
-        if (opts.throws) throw opts.throws;
-        recorded.push({ taskId: task.id, interaction });
-      },
-    },
-    recorded,
-  };
-}
+    const outcome = await h.orchestrator.run(handle.taskId);
 
-interface BuiltHarness {
-  orchestrator: ExecutionOrchestratorV2;
-  registry: AdapterRegistry;
-  repo: LocalRepo;
-  sink: InMemoryEventSink;
-  locks: MemoryLockService;
-  verifierRegistry: VerifierRegistry;
-  runnerCalls: () => number;
-  consumes: ConsumeCall[];
-  recorded: RecordedInteraction[];
-}
-
-function buildHarness(opts: {
-  runnerText?: string;
-  runnerThrows?: Error;
-  consumeOk?: boolean;
-  consumeBlockedReason?: string;
-  recordThrows?: Error;
-  agentQuotaGate?: AgentQuotaGate;
-  verifier?: TaskVerifier | null;
-  resolveAgentId?: (slug: string) => Promise<string | null>;
-} = {}): BuiltHarness {
-  const { runner, callCount } = makeRunner({
-    text: opts.runnerText,
-    throws: opts.runnerThrows,
-  });
-  const { gate: quota, consumes } = makeQuotaGate({
-    consumeOk: opts.consumeOk,
-    consumeBlockedReason: opts.consumeBlockedReason,
-  });
-  const { sink: interactions, recorded } = makeInteractionSink({
-    throws: opts.recordThrows,
-  });
-
-  const adapterDeps: AiAdapterDeps = {
-    runner,
-    quota,
-    interactions,
-    resolveAgentId:
-      opts.resolveAgentId ?? (async (slug) => `agent-${slug}`),
-  };
-  const adapter = createAiCompletionAdapter(adapterDeps);
-
-  const registry = new AdapterRegistry();
-  registry.register(adapter);
-
-  const verifierRegistry = new VerifierRegistry();
-  if (opts.verifier !== null) {
-    verifierRegistry.register(opts.verifier ?? PASSING_VERIFIER);
-  }
-
-  const repo = new LocalRepo();
-  const sink = new InMemoryEventSink();
-
-  const orchestrator = new ExecutionOrchestratorV2({
-    registry,
-    repository: repo,
-    locks: new MemoryLockService(),
-    idempotency: new MemoryIdempotencyService(),
-    validator: PASSING_VALIDATOR,
-    verification: new TaskVerificationService(verifierRegistry),
-    sink,
-    ownerId: "test-orch-ai",
-    lockTtlSeconds: 30,
-    agentQuotaGate: opts.agentQuotaGate,
-  });
-
-  return {
-    orchestrator,
-    registry,
-    repo,
-    sink,
-    locks: new MemoryLockService(), // unused here; orchestrator owns its own
-    verifierRegistry,
-    runnerCalls: callCount,
-    consumes,
-    recorded,
-  };
-}
-
-function makeAiTask(overrides: Partial<ExecutionTask> = {}): ExecutionTask {
-  // Build the base via `makeTask`, then layer overrides on top so an
-  // explicit `agent_id` always survives (avoids the spread-of-undefined
-  // gotcha that previously cleared the field set in the helper).
-  const base = makeTask({
-    domain: AI_DOMAIN,
-    type: AI_TASK_TYPES.COMPLETION,
-    risk_level: "MEDIUM",
-    status: "queued",
-    rollback_strategy: "none",
-    payload: {
-      feature: "support_chat",
-      messages: [{ role: "user", content: "hi" }],
-    },
-  });
-  return {
-    ...base,
-    ...overrides,
-    agent_id: overrides.agent_id ?? `agent-${AI_AGENT_SLUGS.AI_COMPLETION}`,
-    payload: overrides.payload ?? base.payload,
-  };
-}
-
-// ── Tests ─────────────────────────────────────────────────────────────────
-
-describe("LB1 #836 — AI dispatch end-to-end (happy path)", () => {
-  it("dispatch → execute → ai_interactions linked → quota incremented exactly once", async () => {
-    const h = buildHarness();
-    const task = makeAiTask();
-    h.repo.upsert(task);
-
-    const outcome = await h.orchestrator.run(task.id);
-
-    // Orchestrator outcome
     expect(outcome.finalStatus).toBe("succeeded");
     expect(outcome.errorCode).toBeUndefined();
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("succeeded");
 
-    // Persistence
-    const row = h.repo.snapshot(task.id);
-    expect(row?.status).toBe("succeeded");
+    // Provider invoked exactly once on the completion endpoint.
+    expect(h.runnerCalls()).toEqual({ completion: 1, embedding: 0, rag: 0 });
 
-    // Provider was invoked exactly once
-    expect(h.runnerCalls()).toBe(1);
-
-    // ai_interactions row was written and is linked back to the task id
+    // ai_interactions row was written and is linked back to the task id.
     expect(h.recorded).toHaveLength(1);
-    expect(h.recorded[0].taskId).toBe(task.id);
+    expect(h.recorded[0].taskId).toBe(handle.taskId);
+    expect(h.recorded[0].domainTaskType).toBe(AI_TASK_TYPES.COMPLETION);
     expect(h.recorded[0].interaction.feature).toBe("support_chat");
 
-    // Quota was bumped exactly once with real token + cost figures
+    // Quota was bumped exactly once with real token + cost figures.
     expect(h.consumes).toHaveLength(1);
     expect(h.consumes[0].agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_COMPLETION}`);
     expect(h.consumes[0].tokens).toBe(42);
     expect(h.consumes[0].costUsd).toBeCloseTo(0.000123, 6);
 
-    // Canonical events fired in the documented order
+    // Canonical events fired in the documented order.
     expect(h.sink.names()).toEqual([
       CANONICAL_EXECUTION_EVENTS.TASK_QUEUED,
       CANONICAL_EXECUTION_EVENTS.TASK_LOCKED,
@@ -379,64 +116,212 @@ describe("LB1 #836 — AI dispatch end-to-end (happy path)", () => {
       CANONICAL_EXECUTION_EVENTS.TASK_UNLOCKED,
     ]);
   });
+
+  it("AI_EMBEDDING: dispatch → execute → vectors persisted, quota bumped once, no completion call", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.EMBEDDING,
+      payload: {
+        feature: "search.indexing",
+        input: ["hello", "world"],
+      },
+    });
+
+    expect(handle.agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_EMBEDDING}`);
+
+    const outcome = await h.orchestrator.run(handle.taskId);
+
+    expect(outcome.finalStatus).toBe("succeeded");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("succeeded");
+
+    // Only the embedding endpoint was hit.
+    expect(h.runnerCalls()).toEqual({ completion: 0, embedding: 1, rag: 0 });
+
+    // ai_interactions row stamped with the EMBEDDING task type.
+    expect(h.recorded).toHaveLength(1);
+    expect(h.recorded[0].domainTaskType).toBe(AI_TASK_TYPES.EMBEDDING);
+    expect(h.recorded[0].interaction.feature).toBe("search.indexing");
+
+    // Quota bumped once with the embedding usage figures from the runner.
+    expect(h.consumes).toHaveLength(1);
+    expect(h.consumes[0].agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_EMBEDDING}`);
+    expect(h.consumes[0].tokens).toBe(8);
+
+    // Embeddings never trigger the sensitive classifier — succeeds straight
+    // through without a pending_review hop.
+    expect(h.sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_SUCCEEDED);
+    expect(h.sink.names()).not.toContain("approval.requested");
+  });
+
+  it("AI_RAG: dispatch → execute → answer + citations persisted, quota bumped once", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.RAG,
+      payload: {
+        feature: "kb.lookup",
+        query: "how do I cancel a booking",
+        collection: "support-docs",
+      },
+    });
+
+    expect(handle.agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_RAG}`);
+
+    const outcome = await h.orchestrator.run(handle.taskId);
+
+    expect(outcome.finalStatus).toBe("succeeded");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("succeeded");
+
+    expect(h.runnerCalls()).toEqual({ completion: 0, embedding: 0, rag: 1 });
+    expect(h.recorded).toHaveLength(1);
+    expect(h.recorded[0].domainTaskType).toBe(AI_TASK_TYPES.RAG);
+    expect(h.consumes).toHaveLength(1);
+    expect(h.consumes[0].agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_RAG}`);
+    expect(h.consumes[0].tokens).toBe(75);
+
+    // Result row carries the answer + citations exactly as built by the
+    // adapter — proves the orchestrator persisted execution_result intact.
+    const persisted = h.repo.snapshot(handle.taskId)?.execution_result as
+      | { output?: { answer?: string; citations?: Array<{ id: string }> } }
+      | null
+      | undefined;
+    expect(persisted?.output?.answer).toMatch(/RAG answer for/);
+    expect(persisted?.output?.citations?.[0]?.id).toBe("doc-1");
+  });
+
+  it("AI_TOOL_USE: dispatch → execute → ALWAYS held for approval (flaggedSensitive=true)", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.TOOL_USE,
+      payload: {
+        feature: "agent.tool",
+        proposedDomain: "marketplace",
+        proposedTaskType: "MARKETPLACE.LISTING.PUBLISH",
+        proposedPayload: { listingId: "list-42" },
+        rationale: "user asked to publish",
+      },
+    });
+
+    expect(handle.agentId).toBe(`agent-${AI_AGENT_SLUGS.AI_TOOL_USE}`);
+
+    const outcome = await h.orchestrator.run(handle.taskId);
+
+    // Tool use ALWAYS holds for approval — orchestrator sees the
+    // flaggedSensitive signal and transitions running → pending_review.
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBe("REVIEW_HOLD");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("pending_review");
+
+    // No model call (tool-use bypasses the LLM) but interaction still
+    // recorded for audit, and quota.consume bumped with zero usage.
+    expect(h.runnerCalls()).toEqual({ completion: 0, embedding: 0, rag: 0 });
+    expect(h.recorded).toHaveLength(1);
+    expect(h.recorded[0].domainTaskType).toBe(AI_TASK_TYPES.TOOL_USE);
+    expect(h.consumes).toHaveLength(1);
+    expect(h.consumes[0].tokens).toBe(0);
+    expect(h.consumes[0].costUsd).toBe(0);
+
+    // Held row appears in the approvals inbox query surface.
+    const inbox = h.listApprovalsInbox();
+    expect(inbox.map((r) => r.id)).toContain(handle.taskId);
+    expect(inbox.find((r) => r.id === handle.taskId)?.type).toBe(
+      AI_TASK_TYPES.TOOL_USE,
+    );
+  });
 });
 
+// ── Sensitive output → approval-inbox release path ────────────────────────
+
 describe("LB1 #836 — AI dispatch sensitive path (purpose=contract)", () => {
-  it("transitions running → pending_review and a simulated approval releases the response", async () => {
-    const h = buildHarness();
-    const task = makeAiTask({
+  it("running → pending_review → simulated decide_task_approval(approved) releases the response", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
       payload: {
         feature: "loan.contract",
         purpose: "contract",
         messages: [{ role: "user", content: "draft a loan contract" }],
       },
     });
-    h.repo.upsert(task);
 
-    const outcome = await h.orchestrator.run(task.id);
+    const outcome = await h.orchestrator.run(handle.taskId);
 
-    // Orchestrator returns blocked / REVIEW_HOLD when the adapter flags
-    // the output sensitive (status itself is pending_review on the row).
+    // Adapter flagged the output sensitive → orchestrator returns
+    // blocked / REVIEW_HOLD with the row landing in pending_review.
     expect(outcome.finalStatus).toBe("blocked");
     expect(outcome.errorCode).toBe("REVIEW_HOLD");
 
-    const heldRow = h.repo.snapshot(task.id);
+    const heldRow = h.repo.snapshot(handle.taskId);
     expect(heldRow?.status).toBe("pending_review");
     expect(heldRow?.blocked_reason).toMatch(/purpose:contract/);
 
     // The held output is preserved on the row so the approval drawer can
     // show the reviewer what they are about to release.
-    const heldResult = heldRow?.execution_result as { output?: { flaggedSensitive?: boolean } } | null | undefined;
+    const heldResult = heldRow?.execution_result as
+      | { output?: { flaggedSensitive?: boolean } }
+      | null
+      | undefined;
     expect(heldResult?.output?.flaggedSensitive).toBe(true);
 
-    // The approvals inbox query (production: `system.decide_task_approval`)
-    // walks pending_review → approved → queued. We simulate the same hops
-    // through the in-memory repository so the row is eligible for re-run.
-    const toApproved = await h.repo.transition(task.id, "pending_review", "approved", {
-      approved_by: "admin-1",
-    });
-    expect(toApproved).toBe(true);
-    const toQueued = await h.repo.transition(task.id, "approved", "queued");
-    expect(toQueued).toBe(true);
+    // The approvals-inbox query surface picks up the held row.
+    const inboxBefore = h.listApprovalsInbox();
+    expect(inboxBefore.map((r) => r.id)).toContain(handle.taskId);
 
-    // Re-running the orchestrator on the released task succeeds. The
-    // sensitive-purpose flag is still present, so the adapter would flag
-    // it again and the run would re-hold; for the integration test we
-    // strip the sensitive purpose to model "approver edited and released"
-    // (the production approval path persists the reviewer-edited output).
-    h.repo.upsert({
-      ...(h.repo.snapshot(task.id) as ExecutionTask),
+    // Production: `system.decide_task_approval(approved)` on a held row
+    // releases via the post-execute branch (pending_review → succeeded).
+    const decision = await h.simulateDecideTaskApproval(handle.taskId, "approved", {
+      reviewer: "admin-1",
+    });
+    expect(decision.ok).toBe(true);
+    expect(decision.post_execute_hold).toBe(true);
+    expect(decision.task_status).toBe("succeeded");
+
+    // Inbox is now empty for this task.
+    const inboxAfter = h.listApprovalsInbox();
+    expect(inboxAfter.map((r) => r.id)).not.toContain(handle.taskId);
+
+    // approval.decided canonical event fired alongside the orchestrator events.
+    expect(h.sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.APPROVAL_DECIDED);
+  });
+
+  it("decide_task_approval(rejected) on a held row terminates as failed/REVIEW_REJECTED", async () => {
+    const h = buildAiDispatchHarness({ verifiers: ALL_AI_PASSING_VERIFIERS });
+
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
       payload: {
         feature: "loan.contract",
-        messages: [{ role: "user", content: "approved release" }],
+        purpose: "contract",
+        messages: [{ role: "user", content: "draft a loan contract" }],
       },
     });
 
-    const releaseOutcome = await h.orchestrator.run(task.id);
-    expect(releaseOutcome.finalStatus).toBe("succeeded");
-    expect(h.repo.snapshot(task.id)?.status).toBe("succeeded");
+    await h.orchestrator.run(handle.taskId);
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("pending_review");
+
+    const decision = await h.simulateDecideTaskApproval(handle.taskId, "rejected", {
+      reason: "policy violation",
+      reviewer: "admin-1",
+    });
+    expect(decision.task_status).toBe("failed");
+    expect(decision.post_execute_hold).toBe(true);
+
+    const final = h.repo.snapshot(handle.taskId);
+    expect(final?.status).toBe("failed");
+    expect(final?.error_code).toBe("REVIEW_REJECTED");
+    expect(final?.blocked_reason).toBe("policy violation");
   });
 });
+
+// ── Failure-path coverage ─────────────────────────────────────────────────
 
 describe("LB1 #836 — AI dispatch failure paths", () => {
   it("orchestrator agent-quota peek refuses ⇒ blocked / QUOTA_EXCEEDED, runner never called, no consume", async () => {
@@ -449,43 +334,60 @@ describe("LB1 #836 — AI dispatch failure paths", () => {
         limitCount: 600,
       }),
     };
-    const h = buildHarness({ agentQuotaGate: blockingGate });
-    const task = makeAiTask();
-    h.repo.upsert(task);
+    const h = buildAiDispatchHarness({
+      verifiers: ALL_AI_PASSING_VERIFIERS,
+      agentQuotaGate: blockingGate,
+    });
 
-    const outcome = await h.orchestrator.run(task.id);
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "hi" }],
+      },
+    });
+
+    const outcome = await h.orchestrator.run(handle.taskId);
 
     expect(outcome.finalStatus).toBe("blocked");
     expect(outcome.errorCode).toBe("QUOTA_EXCEEDED");
-    expect(h.repo.snapshot(task.id)?.status).toBe("blocked");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("blocked");
 
     // Adapter never reached: provider not invoked, no interaction row,
     // no consume bump.
-    expect(h.runnerCalls()).toBe(0);
+    expect(h.runnerCalls()).toEqual({ completion: 0, embedding: 0, rag: 0 });
     expect(h.recorded).toHaveLength(0);
     expect(h.consumes).toHaveLength(0);
 
-    // Lock was never acquired because the gate fires before lock.
     expect(h.sink.names()).not.toContain(CANONICAL_EXECUTION_EVENTS.TASK_LOCKED);
     expect(h.sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_BLOCKED);
   });
 
   it("ai_interactions persist failure ⇒ failed / PERSIST_INTERACTION_FAILED, no quota bump", async () => {
-    const h = buildHarness({
+    const h = buildAiDispatchHarness({
+      verifiers: ALL_AI_PASSING_VERIFIERS,
       recordThrows: new Error("ai_interactions insert failed: simulated"),
     });
-    const task = makeAiTask();
-    h.repo.upsert(task);
 
-    const outcome = await h.orchestrator.run(task.id);
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "hi" }],
+      },
+    });
+
+    const outcome = await h.orchestrator.run(handle.taskId);
 
     expect(outcome.finalStatus).toBe("failed");
     expect(outcome.errorCode).toBe(AI_ERROR_CODES.PERSIST_INTERACTION_FAILED);
-    expect(h.repo.snapshot(task.id)?.status).toBe("failed");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("failed");
 
     // Provider was invoked, but persistence failed BEFORE the quota bump
     // — the adapter must not double-count when traceability is broken.
-    expect(h.runnerCalls()).toBe(1);
+    expect(h.runnerCalls()).toEqual({ completion: 1, embedding: 0, rag: 0 });
     expect(h.consumes).toHaveLength(0);
 
     expect(h.sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_FAILED);
@@ -493,19 +395,28 @@ describe("LB1 #836 — AI dispatch failure paths", () => {
   });
 
   it("verifier mismatch ⇒ failed / VERIFICATION_MISMATCH (interaction recorded + quota bumped before verifier ran)", async () => {
-    const h = buildHarness({ verifier: MISMATCH_VERIFIER });
-    const task = makeAiTask();
-    h.repo.upsert(task);
+    const h = buildAiDispatchHarness({
+      verifiers: [MISMATCH_COMPLETION_VERIFIER],
+    });
 
-    const outcome = await h.orchestrator.run(task.id);
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "hi" }],
+      },
+    });
+
+    const outcome = await h.orchestrator.run(handle.taskId);
 
     expect(outcome.finalStatus).toBe("failed");
     expect(outcome.errorCode).toBe("VERIFICATION_MISMATCH");
-    expect(h.repo.snapshot(task.id)?.status).toBe("failed");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("failed");
 
-    // The adapter reported success — interaction was recorded and quota
-    // was consumed before the verifier rejected the run.
-    expect(h.runnerCalls()).toBe(1);
+    // The adapter reported success — interaction recorded and quota
+    // consumed before the verifier rejected the run.
+    expect(h.runnerCalls()).toEqual({ completion: 1, embedding: 0, rag: 0 });
     expect(h.recorded).toHaveLength(1);
     expect(h.consumes).toHaveLength(1);
 
@@ -516,22 +427,32 @@ describe("LB1 #836 — AI dispatch failure paths", () => {
   });
 
   it("adapter throws (provider unreachable) ⇒ failed / PROVIDER_FAILED, no interaction, no consume", async () => {
-    const h = buildHarness({
-      runnerThrows: new Error("provider 503 unavailable"),
+    const h = buildAiDispatchHarness({
+      verifiers: ALL_AI_PASSING_VERIFIERS,
+      runnerThrows: {
+        method: "completion",
+        error: new Error("provider 503 unavailable"),
+      },
     });
-    const task = makeAiTask();
-    h.repo.upsert(task);
 
-    const outcome = await h.orchestrator.run(task.id);
+    const handle = h.simulateDispatch({
+      domain: AI_DOMAIN,
+      taskType: AI_TASK_TYPES.COMPLETION,
+      payload: {
+        feature: "support_chat",
+        messages: [{ role: "user", content: "hi" }],
+      },
+    });
+
+    const outcome = await h.orchestrator.run(handle.taskId);
 
     // The AI adapter catches provider throws and returns a structured
-    // failure with PROVIDER_FAILED — orchestrator therefore marks the
-    // task failed via the "adapter reported failure" branch (ADAPTER_FAILED
-    // never fires because errorCode is set on the result).
+    // failure with PROVIDER_FAILED — orchestrator marks the task failed
+    // via the "adapter reported failure" branch.
     expect(outcome.finalStatus).toBe("failed");
     expect(outcome.errorCode).toBe(AI_ERROR_CODES.PROVIDER_FAILED);
     expect(outcome.errorMessage).toMatch(/provider 503/);
-    expect(h.repo.snapshot(task.id)?.status).toBe("failed");
+    expect(h.repo.snapshot(handle.taskId)?.status).toBe("failed");
 
     expect(h.recorded).toHaveLength(0);
     expect(h.consumes).toHaveLength(0);
