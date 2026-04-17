@@ -1,0 +1,12 @@
+# Violation counts by top-level src subdir
+     26 src/lib
+      7 src/services
+      7 src/repositories
+      7 src/hooks
+      5 src/test
+      4 src/__tests__
+      4 src/stores
+      4 src/families
+      4 src/contexts
+      2 src/pages
+      2 src/components
