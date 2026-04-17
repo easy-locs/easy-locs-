@@ -1,0 +1,60 @@
+P4 (#945): content + contacts adapter framework
+
+Ships the adapter framework needed to drain the 149 P4-tagged
+dispatch-allowlist entries (task #938).
+
+Content (`supabase/functions/_shared/execution/adapters/content/`):
+- types.ts — domain enum, allowlisted write tables, payload validators
+- policy.ts — per-row + per-pipeline lock + idempotency keys (FNV-1a)
+- row-repository.ts — DI seam over generic table CRUD
+- content-row-adapter.ts — generic per-row adapter (insert/update/
+  upsert/delete) registered as NON_CRITICAL_DATA_FIX with auto
+  rollback via snapshot
+- bulk-pipeline-adapter.ts — factory producing food/search/shop/media
+  bulk adapters as NON_SENSITIVE_BULK_UPDATE with manual rollback;
+  no-op runners ship registered with loud warnings, NO_COMPENSATING_RUN
+  if no compensator (no silent rollback success)
+- content-verifier.ts — row + bulk verifiers
+- bootstrap.ts — registers verifiers first, adapters with overwrite,
+  reconciles against system.agents (prod throws, dev warns)
+
+Contacts (`supabase/functions/_shared/execution/adapters/contacts/`):
+- types.ts — sync + upsert payloads, CONTACTS_TABLE_ALLOWLIST
+- policy.ts — per-provider + per-(table,source) locks
+- contacts-repository.ts — upsertMany + countWhere DI seam
+- contacts-adapter.ts — sync + upsert adapters, both registered as
+  NON_SENSITIVE_BULK_UPDATE, manual rollback via per-provider /
+  per-source compensators (NO_COMPENSATING_RUN otherwise)
+- contacts-verifier.ts — sync rows-affected + upsert count verifiers
+- bootstrap.ts — same shape as content bootstrap; ships no-op runners
+  for all 17 P4 sync providers
+
+Wiring (`supabase/functions/execution-loop/index.ts`):
+- imports both bootstraps inside `ensureAdaptersBootstrapped`
+- new `isAgentContentEnabled()` / `isAgentContactsEnabled()` helpers
+  read AGENT_CONTENT_ENABLED / AGENT_CONTACTS_ENABLED env flags
+- when a flag is OFF the bootstrap is skipped (and a console.warn
+  fires) — tasks then fail loudly with NO_ADAPTER. No silent fallback
+  to direct mutation.
+
+Docs:
+- `docs/audits/agent-migration/p4-content-contacts.md` — phase plan
+  documenting scope, flags, drain gate, and §6 mechanical drain
+  command for task #938
+
+Sub-domains chosen so registry keys stay unique while sharing the
+canonical task types from src/core/execution/risk-classification.ts:
+content.row | content.food/search/shop/media | contacts.sync/upsert.
+
+Rebase resolution notes:
+- execution-loop/index.ts: incoming P1 (#926) payments + wallet
+  bootstrap imports + calls coexist with the P4 content + contacts
+  imports + flag-gated calls. Both adopted in full (additive, no
+  conflict in semantics).
+- docs/audits/agent-migration/p4-content-contacts.md: incoming HEAD
+  carried the post-#938 "drain complete" version of the doc, which
+  supersedes the original phase plan this task drafted. Kept HEAD's
+  drain-complete version verbatim so the §7 drain history stays the
+  source of truth.
+
+Replit-Task-Id: efd47a50-55a7-4e7f-a65e-040ca39adfe3
