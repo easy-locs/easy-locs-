@@ -12,6 +12,10 @@
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import {
+  buildMethodNotAllowedResponse,
+  isAllowedTriggerGithubMethod,
+} from "./method-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,6 +32,15 @@ Deno.serve(async (req) => {
 
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Lock the endpoint to POST-only requests. This Edge Function dispatches a
+  // real workflow run on every successful call, so any other method (GET,
+  // HEAD, PUT, PATCH, DELETE, …) — including stray health probes or
+  // accidental browser navigations — must be rejected with 405 before we
+  // touch auth, RPCs or the runner.
+  if (!isAllowedTriggerGithubMethod(req.method)) {
+    return buildMethodNotAllowedResponse(corsHeaders);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
