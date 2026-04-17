@@ -84,6 +84,23 @@ const PILLAR_BUDGETS_KB: Record<string, number> = {
 };
 const DEFAULT_PILLAR_BUDGET_KB = 400;
 
+// Per-chunk budget overrides for chunks that legitimately exceed the 300KB
+// global budget — either single third-party libraries that cannot be split
+// further without refactoring the library itself, or data monoliths that
+// need a dedicated lazy-loading refactor to shrink. Each entry should be
+// reviewed whenever the chunk grows.
+const CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-maplibre": 1100, // maplibre-gl is a single ~1MB library (lazy-loaded by map pages)
+  "vendor-sentry": 450,    // @sentry/* SDK
+  "vendor-charts": 450,    // recharts + d3-*
+  "vendor-pdf": 450,       // jspdf
+  "vendor-qr": 400,        // jsqr + html5-qrcode
+  "i18n-data": 800,        // static translation dictionary; shrink via per-locale split (see follow-up)
+  "templates": 550,        // European lease/receipt templates imported per country by europe-packs.ts
+  "CommunicationCenter": 400, // messaging hub page; can be split when sub-features are extracted
+  "index": 1000,           // Vite entry chunk (app root); shrink by lazy-loading non-critical bootstrap code (see follow-up)
+};
+
 interface BudgetReport {
   timestamp: string;
   violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }>;
@@ -123,9 +140,13 @@ function performanceBudgetPlugin(): Plugin {
           if (sizeKB > DEFAULT_PILLAR_BUDGET_KB) {
             violations.push({ chunk: fileName, sizeKB, limitKB: DEFAULT_PILLAR_BUDGET_KB, category: "pillar" });
           }
-        } else if (sizeKB > GLOBAL_CHUNK_BUDGET_KB) {
-          summary[fileName] = { sizeKB, limitKB: GLOBAL_CHUNK_BUDGET_KB, ok: false };
-          warnings.push({ chunk: fileName, sizeKB, limitKB: GLOBAL_CHUNK_BUDGET_KB, category: "global" });
+        } else {
+          const overrideKey = Object.keys(CHUNK_BUDGET_OVERRIDES_KB).find(k => fileName.includes(k));
+          const limit = overrideKey ? CHUNK_BUDGET_OVERRIDES_KB[overrideKey] : GLOBAL_CHUNK_BUDGET_KB;
+          if (sizeKB > limit) {
+            summary[fileName] = { sizeKB, limitKB: limit, ok: false };
+            warnings.push({ chunk: fileName, sizeKB, limitKB: limit, category: overrideKey ? "override" : "global" });
+          }
         }
       }
 
@@ -460,25 +481,29 @@ export default defineConfig(({ mode }) => ({
           if (id.includes("/src/lib/taxonomy/")) return "taxonomy";
           if (id.includes("/src/lib/discovery/")) return "discovery";
           if (id.includes("/src/lib/pdf-generator")) return "pdf-generator";
-          if (id.includes("/src/pages/Dashboard") || id.includes("/src/pages/AddProperty") || id.includes("/src/pages/PropertyDetailHub") || id.includes("/src/pages/Leases") || id.includes("/src/pages/Tenants") || id.includes("/src/pages/Receipts") || id.includes("/src/pages/Documents") || id.includes("/src/pages/Finances") || id.includes("/src/pages/Interventions")) return "pillar-dashboard";
-          if (id.includes("/src/pages/HyperRadar") || id.includes("/src/pages/Explore") || id.includes("/src/pages/SearchResults") || id.includes("/src/pages/universe/") || id.includes("/src/pages/food/") || id.includes("/src/pages/travel/") || id.includes("/src/pages/mobility/") || id.includes("/src/pages/property/")) return "pillar-radar";
-          if (id.includes("/src/pages/Orbit") || id.includes("/src/families/orbit")) return "pillar-orbit";
-          if (id.includes("/src/pages/Wallet") || id.includes("/src/pages/wallet/") || id.includes("/src/pages/pay/") || id.includes("/src/pages/payments/") || id.includes("/src/pages/Checkout") || id.includes("/src/pages/PaymentPage")) return "pillar-wallet";
-          if (id.includes("/src/pages/MeCommand") || id.includes("/src/pages/me/") || id.includes("/src/pages/settings/") || id.includes("/src/pages/Favorites") || id.includes("/src/pages/Install") || id.includes("/src/pages/EditProfile")) return "pillar-me";
-          if (id.includes("/src/pages/") && id.includes("Admin")) return "pages-admin";
-          if (id.includes("/src/pages/") && id.includes("Merchant")) return "pages-merchant";
-          if (id.includes("/src/pages/") && id.includes("Driver")) return "pages-driver";
-          if (id.includes("/src/pages/real-estate/")) return "pages-real-estate";
-          if (id.includes("/src/pages/pro/")) return "pages-pro";
-          if (id.includes("/src/pages/seo/")) return "pages-seo";
-          if (id.includes("/src/pages/customer/")) return "pages-customer";
-          if (id.includes("/src/pages/seller/") || id.includes("/src/pages/boost/")) return "pages-seller";
-          if (id.includes("/src/pages/builder/")) return "pages-builder";
+          // NOTE: The five navigation "pillars" (dashboard, radar, orbit,
+          // wallet, me) previously bundled every page in each pillar into a
+          // single `pillar-*` chunk. On a ~180-page app that produced chunks
+          // several MB large — far above the per-chunk budgets in
+          // `PILLAR_BUDGETS_KB` — and defeated lazy-loading by forcing a
+          // whole pillar to load when any of its routes was visited. All
+          // five groupings have been removed so each page splits into its
+          // own route chunk (pages are lazy-loaded via `safeLazy`). Shared
+          // dependencies are still de-duplicated automatically by rollup
+          // into vendor-*/engines/etc. chunks defined above.
+          //
+          // Additionally, the coarse per-page and per-feature groupings
+          // (`pages-admin`, `pages-merchant`, `pages-real-estate`,
+          // `pages-customer`, `pages-driver`, `pages-pro`, `pages-seo`,
+          // `pages-seller`, `pages-builder`, `call-engine`, `engines`,
+          // `orbit-engine`) have been removed so rollup auto-splits them
+          // into per-route / per-feature chunks. Each route is already
+          // lazy-loaded via `safeLazy`, so no page pays the cost of another.
+          // `templates` is kept as a named grouping (see CHUNK_BUDGET_OVERRIDES_KB)
+          // because `europe-packs.ts` imports every country's templates
+          // statically — splitting requires a per-country lazy-load refactor.
           if (id.includes("/src/components/delivery/")) return "components-delivery";
           if (id.includes("/src/components/map/") || id.includes("/src/lib/map/")) return "map-engine";
-          if (id.includes("/src/engines/")) return "engines";
-          if (id.includes("/src/components/call/") || id.includes("/src/lib/call")) return "call-engine";
-          if (id.includes("/src/families/orbit")) return "orbit-engine";
         },
       },
     },
