@@ -39,6 +39,7 @@ import { globalAdapterRegistry } from "../_shared/execution/adapter-registry.ts"
 import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.ts";
 import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
 import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/marketplace/bootstrap.ts";
+import { bootstrapAiAdapters } from "../_shared/execution/adapters/ai/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import {
@@ -307,7 +308,14 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
     // Cache the promise so concurrent callers await the same reconcile;
     // a thrown reconcile (production hard-fail) is re-cached so the next
     // call retries — better than poisoning the loop forever.
-    _bootstrapPromise = bootstrapMarketplaceAdapters(sb).catch((e) => {
+    _bootstrapPromise = (async () => {
+      // LB1 (#815): AI adapters share the same registry as business adapters.
+      // Both reconcile against system.agents; in production a failed reconcile
+      // is a hard boot-fail, in dev/preview we log and continue (handled
+      // inside each bootstrap function).
+      await bootstrapMarketplaceAdapters(sb);
+      await bootstrapAiAdapters(sb);
+    })().catch((e) => {
       _bootstrapPromise = null;
       throw e;
     });

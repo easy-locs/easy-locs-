@@ -244,6 +244,120 @@ export const agentsRepo = {
     if (error) throw new Error(`setAgentStatus failed: ${error.message}`);
     return data;
   },
+
+  /**
+   * LB1 (#815) — Conversation explorer. For domain="ai", reads
+   * `system.v_ai_runs` (joins execution_tasks ↔ ai_interactions ↔ agents).
+   * For other domains, falls back to `execution_tasks` with the same
+   * shape so the UI stays uniform.
+   */
+  async listAgentRunsRich(
+    agentId: string,
+    domain: string,
+    limit = 100,
+  ): Promise<AgentRunRichRow[]> {
+    if (domain === "ai") {
+      const { data, error } = await domainDb.system
+        .from("v_ai_runs")
+        .select("*")
+        .eq("agent_id", agentId)
+        .order("task_created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw new Error(`listAgentRunsRich(ai) failed: ${error.message}`);
+      return ((data ?? []) as AiRunViewRow[]).map((r) => ({
+        task_id: r.task_id,
+        type: r.task_type,
+        status: r.task_status,
+        risk_level: r.risk_level ?? "UNKNOWN",
+        cost_usd: r.cost_usd,
+        latency_ms: r.latency_ms,
+        held_for_review: r.held_for_review ?? false,
+        held_reason: r.held_reason ?? null,
+        released_at: r.released_at ?? null,
+        created_at: r.task_created_at,
+        prompt: r.prompt ?? null,
+        response: r.response ?? null,
+        model: r.model ?? null,
+        provider: r.provider ?? null,
+        error: r.error ?? null,
+      }));
+    }
+    const { data, error } = await domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, status, risk_level, cost_usd, latency_ms, held_for_review, held_reason, released_at, error, blocked_reason, created_at, payload, execution_result",
+      )
+      .eq("agent_id", agentId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(`listAgentRunsRich failed: ${error.message}`);
+    return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+      task_id: r.id as string,
+      type: r.type as string,
+      status: r.status as string,
+      risk_level: (r.risk_level as string) ?? "UNKNOWN",
+      cost_usd: (r.cost_usd as number) ?? null,
+      latency_ms: (r.latency_ms as number) ?? null,
+      held_for_review: (r.held_for_review as boolean) ?? false,
+      held_reason: (r.held_reason as string) ?? null,
+      released_at: (r.released_at as string) ?? null,
+      created_at: r.created_at as string,
+      prompt: null,
+      response: null,
+      model: null,
+      provider: null,
+      error: ((r.error ?? r.blocked_reason) as string) ?? null,
+    }));
+  },
+
+  /**
+   * Releases a held AI response after admin review. RPC is admin-only.
+   */
+  async releaseHeldAiResponse(taskId: string, decision: "approved" | "rejected") {
+    const { data, error } = await systemRpc().rpc("release_held_ai_response", {
+      p_task_id: taskId,
+      p_decision: decision,
+    });
+    if (error) throw new Error(`releaseHeldAiResponse failed: ${error.message}`);
+    return data;
+  },
 };
+
+export interface AgentRunRichRow {
+  task_id: string;
+  type: string;
+  status: string;
+  risk_level: string;
+  cost_usd: number | null;
+  latency_ms: number | null;
+  held_for_review: boolean;
+  held_reason: string | null;
+  released_at: string | null;
+  created_at: string;
+  prompt: string | null;
+  response: string | null;
+  model: string | null;
+  provider: string | null;
+  error: string | null;
+}
+
+interface AiRunViewRow {
+  task_id: string;
+  task_type: string;
+  task_status: string;
+  task_created_at: string;
+  risk_level: string | null;
+  cost_usd: number | null;
+  latency_ms: number | null;
+  held_for_review: boolean | null;
+  held_reason: string | null;
+  released_at: string | null;
+  prompt: string | null;
+  response: string | null;
+  model: string | null;
+  provider: string | null;
+  error: string | null;
+  agent_id: string;
+}
 
 export type AgentsRepo = typeof agentsRepo;
