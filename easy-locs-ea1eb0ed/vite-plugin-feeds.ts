@@ -5,11 +5,25 @@ import {
   getBuildPhase1Cities, CONTENT_LASTMOD,
 } from "./vite-seo-data";
 
+const DEFAULT_WEBSUB_HUBS = [
+  "https://pubsubhubbub.appspot.com/",
+  "https://pubsubhubbub.superfeedr.com/",
+];
+
+function getWebSubHubs(): string[] {
+  const raw = process.env.WEBSUB_HUBS || process.env.WEBSUB_HUB;
+  if (!raw) return DEFAULT_WEBSUB_HUBS;
+  return raw.split(",").map(s => s.trim()).filter(Boolean);
+}
+
 function escXml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function rssHeader(title: string, description: string, link: string, buildDate: string): string {
+function rssHeader(title: string, description: string, link: string, buildDate: string, hubs: string[]): string {
+  const hubLinks = hubs
+    .map(h => `  <atom:link href="${h}" rel="hub" />`)
+    .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
@@ -19,6 +33,7 @@ function rssHeader(title: string, description: string, link: string, buildDate: 
   <language>en</language>
   <lastBuildDate>${buildDate}</lastBuildDate>
   <atom:link href="${link}" rel="self" type="application/rss+xml" />
+${hubLinks}
   <generator>Easy-Locs SEO Build</generator>`;
 }
 
@@ -32,7 +47,10 @@ function rssItem(title: string, link: string, description: string, pubDate: stri
   </item>`;
 }
 
-function atomHeader(title: string, id: string, updated: string, selfHref: string): string {
+function atomHeader(title: string, id: string, updated: string, selfHref: string, hubs: string[]): string {
+  const hubLinks = hubs
+    .map(h => `  <link href="${h}" rel="hub" />`)
+    .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>${escXml(title)}</title>
@@ -40,6 +58,7 @@ function atomHeader(title: string, id: string, updated: string, selfHref: string
   <updated>${updated}</updated>
   <link href="${selfHref}" rel="self" type="application/atom+xml" />
   <link href="${BASE_URL}" rel="alternate" type="text/html" />
+${hubLinks}
   <author><name>Easy-Locs</name><uri>${BASE_URL}</uri></author>
   <generator>Easy-Locs SEO Build</generator>`;
 }
@@ -52,6 +71,22 @@ function atomEntry(title: string, link: string, summary: string, updated: string
     <updated>${updated}</updated>
     <summary>${escXml(summary)}</summary>
   </entry>`;
+}
+
+async function pingWebSubHub(hub: string, feedUrl: string): Promise<{ hub: string; feedUrl: string; status: number; ok: boolean; error?: string }> {
+  const body = new URLSearchParams({ "hub.mode": "publish", "hub.url": feedUrl }).toString();
+  try {
+    const response = await fetch(hub, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(10000),
+    });
+    return { hub, feedUrl, status: response.status, ok: response.ok };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { hub, feedUrl, status: 0, ok: false, error: message };
+  }
 }
 
 export function feedsPlugin(): Plugin {
@@ -75,6 +110,8 @@ export function feedsPlugin(): Plugin {
         const atomDate = now.toISOString();
         const feedDir = path.resolve(distDir, "feed");
         fs.mkdirSync(feedDir, { recursive: true });
+
+        const hubs = getWebSubHubs();
 
         const cities = getBuildPhase1Cities();
 
@@ -117,15 +154,17 @@ export function feedsPlugin(): Plugin {
           }
         }
 
+        const globalFeedUrl = `${BASE_URL}/feed.xml`;
         const globalFeed = [
-          rssHeader("Easy-Locs — Updates", "Latest cities, services, and marketplace updates from Easy-Locs", `${BASE_URL}/feed.xml`, buildDate),
+          rssHeader("Easy-Locs — Updates", "Latest cities, services, and marketplace updates from Easy-Locs", globalFeedUrl, buildDate, hubs),
           ...globalItems,
           "</channel>\n</rss>",
         ].join("\n");
         fs.writeFileSync(path.resolve(distDir, "feed.xml"), globalFeed, "utf-8");
 
+        const globalAtomUrl = `${BASE_URL}/feed/atom.xml`;
         const globalAtom = [
-          atomHeader("Easy-Locs — Updates", `${BASE_URL}/feed/atom.xml`, atomDate, `${BASE_URL}/feed/atom.xml`),
+          atomHeader("Easy-Locs — Updates", globalAtomUrl, atomDate, globalAtomUrl, hubs),
           ...globalAtomEntries,
           "</feed>",
         ].join("\n");
@@ -140,15 +179,17 @@ export function feedsPlugin(): Plugin {
           cityItems.push(rssItem(title, link, desc, buildDate));
           cityAtomEntries.push(atomEntry(title, link, desc, `${CONTENT_LASTMOD.cities}T00:00:00Z`));
         }
+        const citiesFeedUrl = `${BASE_URL}/feed/cities.xml`;
         const citiesFeed = [
-          rssHeader("Easy-Locs — Cities", "City coverage updates from Easy-Locs", `${BASE_URL}/feed/cities.xml`, buildDate),
+          rssHeader("Easy-Locs — Cities", "City coverage updates from Easy-Locs", citiesFeedUrl, buildDate, hubs),
           ...cityItems,
           "</channel>\n</rss>",
         ].join("\n");
         fs.writeFileSync(path.resolve(feedDir, "cities.xml"), citiesFeed, "utf-8");
 
+        const citiesAtomUrl = `${BASE_URL}/feed/cities-atom.xml`;
         const citiesAtom = [
-          atomHeader("Easy-Locs — Cities", `${BASE_URL}/feed/cities-atom.xml`, atomDate, `${BASE_URL}/feed/cities-atom.xml`),
+          atomHeader("Easy-Locs — Cities", citiesAtomUrl, atomDate, citiesAtomUrl, hubs),
           ...cityAtomEntries,
           "</feed>",
         ].join("\n");
@@ -169,21 +210,58 @@ export function feedsPlugin(): Plugin {
           svcItems.push(rssItem(title, link, desc, buildDate));
           svcAtomEntries.push(atomEntry(title, link, desc, `${CONTENT_LASTMOD.activities}T00:00:00Z`));
         }
+        const servicesFeedUrl = `${BASE_URL}/feed/services.xml`;
         const servicesFeed = [
-          rssHeader("Easy-Locs — Services", "Service and activity updates from Easy-Locs", `${BASE_URL}/feed/services.xml`, buildDate),
+          rssHeader("Easy-Locs — Services", "Service and activity updates from Easy-Locs", servicesFeedUrl, buildDate, hubs),
           ...svcItems,
           "</channel>\n</rss>",
         ].join("\n");
         fs.writeFileSync(path.resolve(feedDir, "services.xml"), servicesFeed, "utf-8");
 
+        const servicesAtomUrl = `${BASE_URL}/feed/services-atom.xml`;
         const servicesAtom = [
-          atomHeader("Easy-Locs — Services", `${BASE_URL}/feed/services-atom.xml`, atomDate, `${BASE_URL}/feed/services-atom.xml`),
+          atomHeader("Easy-Locs — Services", servicesAtomUrl, atomDate, servicesAtomUrl, hubs),
           ...svcAtomEntries,
           "</feed>",
         ].join("\n");
         fs.writeFileSync(path.resolve(feedDir, "services-atom.xml"), servicesAtom, "utf-8");
 
         console.log(`[feeds] ✓ Generated 3 RSS feeds + 3 Atom feeds (feed.xml: ${globalItems.length} items, cities.xml: ${cityItems.length}, services.xml: ${svcItems.length}) + Atom variants`);
+
+        const feedUrls = [
+          globalFeedUrl,
+          globalAtomUrl,
+          citiesFeedUrl,
+          citiesAtomUrl,
+          servicesFeedUrl,
+          servicesAtomUrl,
+        ];
+
+        if (process.env.WEBSUB_SKIP === "true") {
+          console.log(`[websub] Skipped hub notifications (WEBSUB_SKIP=true). Hubs advertised: ${hubs.join(", ")}`);
+          return;
+        }
+
+        console.log(`[websub] Advertising ${hubs.length} hub(s): ${hubs.join(", ")}`);
+        console.log(`[websub] Pinging hubs for ${feedUrls.length} feed URLs...`);
+        const pings = hubs.flatMap(hub => feedUrls.map(url => pingWebSubHub(hub, url)));
+        const results = await Promise.allSettled(pings);
+        let okCount = 0;
+        let failCount = 0;
+        for (const r of results) {
+          if (r.status === "fulfilled") {
+            const { hub, feedUrl, status, ok, error } = r.value;
+            if (ok) {
+              okCount++;
+            } else {
+              failCount++;
+              console.warn(`[websub] ✗ ${hub} ← ${feedUrl} (HTTP ${status}${error ? `, ${error}` : ""})`);
+            }
+          } else {
+            failCount++;
+          }
+        }
+        console.log(`[websub] ✓ ${okCount} hub notifications succeeded, ${failCount} failed`);
       },
     },
   };
