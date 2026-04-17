@@ -56,26 +56,41 @@ jobs:
           BUNDLE_SIZE_THRESHOLD: '0.10'
           BUNDLE_SIZE_BASELINE_REF: 'origin/main'
 
-      - name: Refresh baseline on main
+      - name: Append snapshot to bundle size history (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm run bundle:history
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF: ${{ github.ref }}
+
+      - name: Check long-term bundle size trend (main only)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        run: npm run bundle:trend
+        env:
+          BUNDLE_SIZE_TREND_THRESHOLD: '0.25'
+          BUNDLE_SIZE_TREND_WINDOW_DAYS: '30'
+
+      - name: Refresh baseline + history on main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         continue-on-error: true
         run: |
           set -e
           npm run bundle:gate -- update
-          if git diff --quiet -- bundle-size-baseline.json; then
-            echo 'Baseline unchanged — nothing to commit.'
+          if git diff --quiet -- bundle-size-baseline.json bundle-size-history.json; then
+            echo 'Baseline & history unchanged — nothing to commit.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add bundle-size-baseline.json
-          git commit -m 'chore(ci): refresh bundle size baseline [skip ci]'
+          git add bundle-size-baseline.json bundle-size-history.json
+          git commit -m 'chore(ci): refresh bundle size baseline + history [skip ci]'
           # Rebase against any concurrent pushes, then push with retry.
           for attempt in 1 2 3; do
             git fetch origin main
             if git rebase origin/main; then
               if git push origin HEAD:main; then
-                echo "Baseline refreshed (attempt ${attempt})."
+                echo "Baseline + history refreshed (attempt ${attempt})."
                 exit 0
               fi
             else
@@ -84,7 +99,7 @@ jobs:
             fi
             sleep 5
           done
-          echo "Could not refresh baseline after 3 attempts; gate result is preserved (this step is non-blocking)."
+          echo "Could not refresh baseline/history after 3 attempts; gate result is preserved (this step is non-blocking)."
           exit 0
 
       - name: Upload baseline artifact (audit trail)
@@ -94,3 +109,11 @@ jobs:
           name: bundle-size-baseline-${{ github.sha }}
           path: easy-locs-ea1eb0ed/bundle-size-baseline.json
           retention-days: 30
+
+      - name: Upload bundle size history (audit trail)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-size-history-${{ github.sha }}
+          path: easy-locs-ea1eb0ed/bundle-size-history.json
+          retention-days: 90
