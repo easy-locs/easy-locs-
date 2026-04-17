@@ -1,4 +1,5 @@
-# Frontend functions.invoke() callsites (file:line:match)
+# Frontend functions.invoke() callsites (strict: name on same line)
+# Format: file:line:match
 src/components/admin/SearchSyncStatusWidget.tsx:118:      const { error: invokeErr } = await supabase.functions.invoke("sync-meilisearch-cron", {
 src/components/orbit/support/OrbitAISupportChat.tsx:256:      const { data: fn } = await db.functions.invoke("orbit-ai-support", {
 src/domains/restaurant/service.ts:276:                  const { data: dispatchResult } = await supaDb.functions.invoke("dispatch-delivery", {
@@ -201,7 +202,6 @@ src/repositories/rental.repository.ts:535:  const { data, error } = await db.fun
 src/repositories/rental.repository.ts:577:  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
 src/repositories/seasonal.repository.ts:117:  const { data, error } = await db.functions.invoke("send-email", { body });
 src/repositories/seasonal.repository.ts:124:  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
-src/repositories/security-pin.repository.ts" },
 src/repositories/security-pin.repository.ts:100:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
 src/repositories/security-pin.repository.ts:61:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
 src/repositories/settings.repository.ts:104:  const { data, error } = await db.functions.invoke("stripe-connect-login", { body: { org_id: orgId } });

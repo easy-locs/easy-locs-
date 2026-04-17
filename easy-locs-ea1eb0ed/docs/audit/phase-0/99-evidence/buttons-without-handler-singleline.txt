@@ -1,0 +1,79 @@
+# <Button> usages with NO onClick / onPress / type="submit" / asChild / formAction on the same line.
+# Heuristic: a true unhandled button. Multi-line button props are reported in the second file.
+# Format: file:line:tag
+src/components/admin/CronJobHistoryWidget.tsx:114:          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+src/components/admin/CronJobHistoryWidget.tsx:131:          <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+src/components/delivery/AddressBookManager.tsx:88:              <Button size="sm" className="flex-1 text-xs h-8" style={{ background: "hsl(var(--info))", color: "#fff" }}>
+src/components/delivery/FleetManagementSystem.tsx:162:            <Button size="sm" className="w-full text-xs h-8" style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+src/components/delivery/MaintenanceScheduler.tsx:113:            <Button size="sm" className="w-full text-xs h-8" style={{ background: "hsl(var(--warning) / 0.12)", color: "hsl(var(--warning))" }}>
+src/components/delivery/OrderBundlingEngine.tsx:208:                <Button size="sm" className="w-full text-xs h-7" style={{ background: "hsl(var(--hud-cyan) / 0.12)", color: "hsl(var(--hud-cyan))" }}>
+src/components/delivery/PromoCouponsEngine.tsx:121:            <Button size="sm" className="w-full text-xs h-9" style={{ background: "hsl(var(--warning))", color: "#fff" }}>
+src/components/delivery/WarehouseManagement.tsx:161:            <Button size="sm" className="w-full text-xs h-8" style={{ background: "hsl(var(--info) / 0.12)", color: "hsl(var(--info))" }}>
+src/components/landing/ExplorePreview.tsx:213:            <Button size="lg" className="rounded-2xl gap-2 px-8 shadow-lg">
+src/components/marketplace/ServiceCard.tsx:238:                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0" style={{ color: "hsl(var(--muted-foreground))" }}>
+src/components/public/ShareButtons.tsx:100:        <Button variant="outline" size={compact ? "icon" : "sm"} className={compact ? "h-8 w-8" : "gap-2 text-xs"}>
+src/components/storefront/BuyerDashboard.tsx:171:          <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/components/storefront/BuyerDashboard.tsx:176:          <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/components/storefront/BuyerOrderTracker.tsx:268:                    <Button size="sm" variant="outline" className="h-7 text-[0.625rem] gap-1">
+src/components/storefront/CatalogManager.tsx:223:            <Button size="sm" className="gap-1.5 text-xs">
+src/components/storefront/GiftCardManager.tsx:208:                  <Button size="icon" variant="ghost" className="h-7 w-7" title="Send to friend">
+src/components/storefront/MultiCurrencyTax.tsx:214:                    <Button size="icon" variant="ghost" className="h-6 w-6">
+src/components/storefront/ShopShareEngine.tsx:50:        <Button size="sm" variant="outline" className="gap-1.5 text-xs">
+src/components/storefront/UniversalShareEngine.tsx:87:        <Button size="sm" variant="outline" className={triggerClassName || "gap-1.5 text-xs"}>
+src/components/ui/EmptyState.tsx:36:          <Button variant="outline" size="sm" className="mt-2 rounded-xl">
+src/pages/AccountShowcase.tsx:161:      <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]">Browse all properties</Button></Link>
+src/pages/CallDriverPage.tsx:28:            <Button variant="outline" className="flex-1 rounded-xl">
+src/pages/CallDriverPage.tsx:31:            <Button className="flex-1 rounded-xl">
+src/pages/CallDriverPage.tsx:34:            <Button variant="destructive" className="flex-1 rounded-xl">
+src/pages/ChannelManager.tsx:224:                <Button><Plus className="h-4 w-4 mr-2" />{t("channel.add_connection") || "Add Connection"}</Button>
+src/pages/Collaboration.tsx:102:                <Button><UserPlus className="h-4 w-4 mr-2" />Invite team member</Button>
+src/pages/deep-link/GuestPaymentSuccess.tsx:79:                    <Button className="w-full gap-2" size="sm">
+src/pages/deep-link/GuestPaymentSuccess.tsx:84:                    <Button variant="ghost" className="w-full gap-2 text-xs" size="sm">
+src/pages/deep-link/LivePage.tsx:47:            <Button className="flex-1 h-11 gap-2">
+src/pages/deep-link/LivePage.tsx:50:            <Button variant="outline" className="h-11 gap-2">
+src/pages/deep-link/PayPage.tsx:103:                  <Button className="w-full h-12 text-base gap-2 font-semibold">
+src/pages/deep-link/PayPage.tsx:64:                <Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Back</Button>
+src/pages/deep-link/PayRequestPage.tsx:58:        <Button variant="ghost" className="w-full text-xs" size="sm">
+src/pages/deep-link/PayRequestPage.tsx:98:            <Link to="/discover"><Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Back</Button></Link>
+src/pages/deep-link/ProductPage.tsx:140:            <Button variant="outline" size="icon" className="h-11 w-11">
+src/pages/deep-link/ProductPage.tsx:145:            <Button className="w-full h-11 gap-2 font-semibold">
+src/pages/deep-link/ProductPage.tsx:48:            <Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Discover</Button>
+src/pages/deep-link/QrResolvePage.tsx:55:            <Link to="/discover"><Button variant="outline" size="sm">Back</Button></Link>
+src/pages/deep-link/QrResolvePage.tsx:75:            <Link to="/discover"><Button variant="outline" size="sm">Back</Button></Link>
+src/pages/deep-link/ShortLinkResolvePage.tsx:82:            <Link to="/discover"><Button variant="outline" size="sm">Go to Discover</Button></Link>
+src/pages/deep-link/UserProfilePage.tsx:103:                <Button size="sm" className="gap-1.5">
+src/pages/deep-link/UserProfilePage.tsx:108:                <Button size="sm" variant="outline" className="gap-1.5">
+src/pages/deep-link/UserProfilePage.tsx:55:            <Button variant="outline" size="sm"><ArrowLeft className="h-3 w-3 mr-1" /> Discover</Button>
+src/pages/DeveloperPortal.tsx:129:                <Button variant="outline"><Webhook className="h-4 w-4 mr-2" />New webhook</Button>
+src/pages/DeveloperPortal.tsx:166:                <Button><Plus className="h-4 w-4 mr-2" />New API key</Button>
+src/pages/PropertyCalendar.tsx:657:                              <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+src/pages/PropertyCalendar.tsx:663:                            <Button variant="outline" size="sm" className="w-full gap-1.5 text-xs h-9">
+src/pages/property/PropertyDetailPage.tsx:99:            <Button variant="outline" size="sm" className="h-7 text-[0.625rem] gap-1">
+src/pages/provider/ProviderDashboardPage.tsx:196:            <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/pages/provider/ProviderDashboardPage.tsx:201:            <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/pages/provider/ProviderDashboardPage.tsx:206:            <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/pages/provider/ProviderDashboardPage.tsx:211:            <Button variant="outline" className="w-full h-10 text-xs gap-1.5">
+src/pages/PublicRealEstateListing.tsx:217:      <Link to="/properties"><Button variant="outline" className="rounded-lg min-h-[44px]"><ArrowLeft className="h-4 w-4 mr-2" /> Browse properties</Button></Link>
+src/pages/real-estate/LeaseDetailPage.tsx:103:                <Button variant="outline" className="w-full gap-2 h-11 border-border/50">
+src/pages/real-estate/LeaseDetailPage.tsx:97:                <Button variant="outline" className="w-full gap-2 h-11 border-border/50">
+src/pages/real-estate/PropertyDetailPage.tsx:75:                <Button variant="outline" className="w-full gap-2 h-11 border-border/50">
+src/pages/real-estate/PropertyDetailPage.tsx:81:                <Button variant="outline" className="w-full gap-2 h-11 border-border/50">
+src/pages/ShopCategoryPage.tsx:219:                        <Button size="sm"><ExternalLink className="h-3 w-3 mr-1" /> Book</Button>
+src/pages/travel/TravelFlightDetail.tsx:118:          <Button size="sm" className="font-bold">Book Flight</Button>
+src/pages/travel/TravelFlights.tsx:66:          <Button variant="outline" size="sm" className="h-7 text-[0.625rem]">
+src/pages/travel/TravelHotelDetail.tsx:301:                <Button variant="outline" size="sm" className={cn("justify-start text-left text-xs", !checkIn && "text-muted-foreground")}>
+src/pages/travel/TravelHotelDetail.tsx:317:                <Button variant="outline" size="sm" className={cn("justify-start text-left text-xs", !checkOut && "text-muted-foreground")}>
+src/pages/travel/TravelStayDetail.tsx:125:          <Button size="sm" className="font-bold">Reserve</Button>
+src/pages/travel/TravelStayDetail.tsx:47:          <Button variant="outline" size="sm" className="h-7 text-[0.625rem]">Contact</Button>
+src/stories/Button.stories.tsx:71:      <Button variant="default"><Mail className="w-4 h-4" /> Send Email</Button>
+src/stories/Button.stories.tsx:72:      <Button variant="premium"><ArrowRight className="w-4 h-4" /> Get Started</Button>
+src/stories/Button.stories.tsx:73:      <Button variant="success"><Check className="w-4 h-4" /> Approve</Button>
+src/stories/Button.stories.tsx:74:      <Button variant="destructive"><Trash2 className="w-4 h-4" /> Remove</Button>
+src/stories/Button.stories.tsx:82:      <Button size="sm">Small</Button>
+src/stories/Button.stories.tsx:83:      <Button size="default">Default</Button>
+src/stories/Button.stories.tsx:84:      <Button size="lg">Large</Button>
+src/stories/Button.stories.tsx:85:      <Button size="icon"><Plus className="w-4 h-4" /></Button>
+src/stories/Button.stories.tsx:94:        <Button key={v} variant={v}>{v.charAt(0).toUpperCase() + v.slice(1)} Button</Button>
+src/stories/MobilePageHeader.stories.tsx:45:        <Button size="icon" variant="ghost"><Filter className="w-4 h-4" /></Button>
+src/stories/MobilePageHeader.stories.tsx:46:        <Button size="icon" variant="ghost"><Plus className="w-4 h-4" /></Button>
+src/stories/MobilePageHeader.stories.tsx:56:    actions: <Button size="icon" variant="ghost"><Settings className="w-4 h-4" /></Button>,
