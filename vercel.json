@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd easy-locs-ea1eb0ed && npm install && npm run build",
-  "outputDirectory": "easy-locs-ea1eb0ed/dist",
+  "buildCommand": "bash scripts/vercel-build.sh",
+  "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
     { "source": "/share/:type/:slug", "destination": "/api/share?type=:type&slug=:slug" },
