@@ -25,13 +25,18 @@ import {
   fetchMergeConflictRecoveryAlertLog,
   fetchMergeConflictRecoveryEvents,
   loadMergeConflictAlertThreshold,
-  type MergeConflictRecoveryAlertLogEntry,
+  loadMergeConflictRecoveryAlertThresholds,
   MAX_THRESHOLD_WINDOW_MINUTES,
   type MergeConflictAlertThreshold,
+  type MergeConflictRecoveryAlertThresholds,
+  type MergeConflictRecoveryAlertThresholdsRecord,
+  MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS,
   MIN_THRESHOLD_COUNT,
   MIN_THRESHOLD_WINDOW_MINUTES,
+  normalizeMergeConflictRecoveryAlertThresholds,
   projectMergeConflictRecoverySummary,
   saveMergeConflictAlertThreshold,
+  saveMergeConflictRecoveryAlertThresholds,
   summarizeFileBurstsWithinWindow,
 } from "@/repositories/merge-conflict-recovery.repository";
 
@@ -216,13 +221,7 @@ export default function AdminMergeConflictRecoveryPage() {
               alertingFiles={alertingFiles}
             />
 
-            <RecentAlertLogCard
-              isLoading={alertLogQuery.isLoading}
-              isFetching={alertLogQuery.isFetching}
-              error={alertLogQuery.error}
-              entries={alertLogQuery.data ?? []}
-              onRefresh={() => alertLogQuery.refetch()}
-            />
+            <CronAlertThresholdsCard />
 
             <Card>
               <CardHeader>
@@ -732,144 +731,248 @@ function SpikeDetectionCard({
 // The dashboard only renders threshold + proximity now, which means ops
 // gets paged whether or not anyone has this page open.
 
-interface RecentAlertLogCardProps {
-  isLoading: boolean;
-  isFetching: boolean;
-  error: unknown;
-  entries: ReadonlyArray<MergeConflictRecoveryAlertLogEntry>;
-  onRefresh: () => void;
-}
+/**
+ * CronAlertThresholdsCard (#981) — edits the four thresholds that the
+ * scheduled `merge-conflict-recovery-alerts-cron` evaluates each hour.
+ * Persisted in `public.merge_conflict_alert_thresholds`. Writes are
+ * RLS-restricted to admin roles; non-admins still see the current
+ * values but the Save call will be rejected by RLS, which we surface
+ * as an error toast.
+ */
+function CronAlertThresholdsCard() {
+  const queryClient = useQueryClient();
+  const recordQuery = useQuery({
+    queryKey: ["admin-merge-conflict-cron-thresholds"],
+    queryFn: loadMergeConflictRecoveryAlertThresholds,
+    staleTime: 30_000,
+  });
+  const recordMutation = useMutation({
+    mutationFn: saveMergeConflictRecoveryAlertThresholds,
+    onSuccess: (saved) => {
+      queryClient.setQueryData(
+        ["admin-merge-conflict-cron-thresholds"],
+        saved,
+      );
+      toast.success("Cron alert thresholds saved");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to save cron thresholds: ${msg}`);
+    },
+  });
 
-const ALERT_TYPE_PREFIX = "merge_conflict_recovery.";
+  const record: MergeConflictRecoveryAlertThresholdsRecord | undefined =
+    recordQuery.data;
+  const [draft, setDraft] = useState<MergeConflictRecoveryAlertThresholds | null>(
+    null,
+  );
+  useEffect(() => {
+    if (record) setDraft(record.thresholds);
+  }, [record]);
 
-function formatAlertKind(alertType: string): string {
-  const tail = alertType.startsWith(ALERT_TYPE_PREFIX)
-    ? alertType.slice(ALERT_TYPE_PREFIX.length)
-    : alertType;
-  return tail.replace(/_/g, " ");
-}
-
-function statusBadgeVariant(
-  status: string,
-): "default" | "destructive" | "secondary" | "outline" {
-  switch (status) {
-    case "sent":
-      return "default";
-    case "throttled":
-      return "secondary";
-    case "flood_suppressed":
-      return "outline";
-    case "failed":
-      return "destructive";
-    default:
-      return "secondary";
+  if (recordQuery.isLoading || !record || !draft) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-muted-foreground" />
+            Cron alert thresholds
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
-}
-
-function severityBadgeVariant(
-  severity: string,
-): "default" | "destructive" | "secondary" | "outline" {
-  switch (severity) {
-    case "critical":
-    case "high":
-      return "destructive";
-    case "medium":
-      return "secondary";
-    case "low":
-      return "outline";
-    default:
-      return "secondary";
+  if (recordQuery.error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-destructive" />
+            Cron alert thresholds
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-destructive flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              Failed to load cron thresholds:{" "}
+              {(recordQuery.error as Error).message}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
-}
 
-function RecentAlertLogCard({
-  isLoading,
-  isFetching,
-  error,
-  entries,
-  onRefresh,
-}: RecentAlertLogCardProps) {
+  const dirty =
+    draft.dailyEventThreshold !== record.thresholds.dailyEventThreshold ||
+    draft.totalEventsThreshold !== record.thresholds.totalEventsThreshold ||
+    draft.topFileMinEvents !== record.thresholds.topFileMinEvents ||
+    draft.topFileDominanceRatio !== record.thresholds.topFileDominanceRatio;
+  const bounds = MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS;
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base flex items-center justify-between gap-2">
-          <span className="flex items-center gap-2">
-            <Bell className="h-4 w-4 text-muted-foreground" />
-            Recent merge-conflict alerts ({entries.length})
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onRefresh}
-            disabled={isFetching}
-            className="gap-2"
-          >
-            <RefreshCw
-              className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`}
-            />
-            Refresh
-          </Button>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Siren className="h-4 w-4 text-muted-foreground" />
+          Cron alert thresholds
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        ) : error ? (
-          <div className="px-6 py-6 text-sm text-destructive flex items-start gap-2">
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-            <span>
-              Failed to load alert log: {(error as Error).message}
-            </span>
-          </div>
-        ) : entries.length === 0 ? (
-          <p className="px-6 py-8 text-sm text-muted-foreground text-center">
-            No merge-conflict alerts have fired recently.
+      <CardContent className="space-y-4">
+        <p className="text-xs text-muted-foreground">
+          The hourly recovery-alerts cron reads these on every run. Changes
+          take effect on the next run — no redeploy required. Setting any
+          field to <code className="font-mono">0</code> disables that alert
+          family.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <ThresholdField
+            id="mcr-cron-daily"
+            label="Daily event threshold"
+            help="Fire when ANY day in the 14d window has at least this many events."
+            min={bounds.dailyEventThresholdMin}
+            max={bounds.dailyEventThresholdMax}
+            step={1}
+            value={draft.dailyEventThreshold}
+            onChange={(n) => setDraft({ ...draft, dailyEventThreshold: n })}
+            unit="events / day"
+          />
+          <ThresholdField
+            id="mcr-cron-total"
+            label="14-day total threshold"
+            help="Fire when the rolling 14-day total reaches this value."
+            min={bounds.totalEventsThresholdMin}
+            max={bounds.totalEventsThresholdMax}
+            step={1}
+            value={draft.totalEventsThreshold}
+            onChange={(n) => setDraft({ ...draft, totalEventsThreshold: n })}
+            unit="events / 14d"
+          />
+          <ThresholdField
+            id="mcr-cron-file-count"
+            label="Top-file minimum events"
+            help="Top file must have at least this many events to qualify for the dominance alert."
+            min={bounds.topFileMinEventsMin}
+            max={bounds.topFileMinEventsMax}
+            step={1}
+            value={draft.topFileMinEvents}
+            onChange={(n) => setDraft({ ...draft, topFileMinEvents: n })}
+            unit="events"
+          />
+          <ThresholdField
+            id="mcr-cron-file-ratio"
+            label="Top-file dominance ratio"
+            help="Top file must account for at least this share of total events (0–1)."
+            min={bounds.topFileDominanceRatioMin}
+            max={bounds.topFileDominanceRatioMax}
+            step={0.05}
+            value={draft.topFileDominanceRatio}
+            onChange={(n) => setDraft({ ...draft, topFileDominanceRatio: n })}
+            unit="ratio (0–1)"
+            allowDecimals
+          />
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            {record.updatedAt
+              ? `Last updated ${new Date(record.updatedAt).toLocaleString()}.`
+              : "Defaults in use."}
+            {" "}Writes are restricted to admins.
           </p>
-        ) : (
-          <ul className="divide-y">
-            {entries.map((entry) => (
-              <li
-                key={entry.id}
-                className="px-4 py-3 flex items-start justify-between gap-4 hover:bg-muted/40"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center flex-wrap gap-2 text-xs">
-                    <span className="text-muted-foreground tabular-nums">
-                      {new Date(entry.createdAt).toLocaleString()}
-                    </span>
-                    <Badge
-                      variant={severityBadgeVariant(entry.severity)}
-                      className="text-[10px]"
-                    >
-                      {entry.severity}
-                    </Badge>
-                    <Badge
-                      variant={statusBadgeVariant(entry.status)}
-                      className="text-[10px]"
-                    >
-                      {entry.status}
-                    </Badge>
-                    <span className="text-muted-foreground capitalize">
-                      {formatAlertKind(entry.alertType)}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm font-medium truncate">
-                    {entry.title}
-                  </p>
-                  {entry.message && (
-                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                      {entry.message}
-                    </p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!dirty || recordMutation.isPending}
+              onClick={() => setDraft(record.thresholds)}
+            >
+              Reset
+            </Button>
+            <Button
+              size="sm"
+              variant={dirty ? "default" : "outline"}
+              disabled={!dirty || recordMutation.isPending}
+              onClick={() =>
+                recordMutation.mutate(
+                  normalizeMergeConflictRecoveryAlertThresholds(draft),
+                )
+              }
+              className="gap-2"
+            >
+              {recordMutation.isPending && (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              )}
+              Save
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
+  );
+}
+
+interface ThresholdFieldProps {
+  id: string;
+  label: string;
+  help: string;
+  min: number;
+  max: number;
+  step: number;
+  value: number;
+  onChange: (next: number) => void;
+  unit: string;
+  allowDecimals?: boolean;
+}
+
+function ThresholdField({
+  id,
+  label,
+  help,
+  min,
+  max,
+  step,
+  value,
+  onChange,
+  unit,
+  allowDecimals,
+}: ThresholdFieldProps) {
+  return (
+    <div className="space-y-1">
+      <Label htmlFor={id} className="text-xs">
+        {label}
+      </Label>
+      <div className="flex items-center gap-2">
+        <Input
+          id={id}
+          type="number"
+          inputMode={allowDecimals ? "decimal" : "numeric"}
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => {
+            const raw = Number(e.target.value);
+            if (!Number.isFinite(raw)) {
+              onChange(min);
+              return;
+            }
+            const adjusted = allowDecimals ? raw : Math.floor(raw);
+            const clamped = Math.min(max, Math.max(min, adjusted));
+            onChange(clamped);
+          }}
+          className="h-8 w-28"
+        />
+        <span className="text-xs text-muted-foreground">{unit}</span>
+      </div>
+      <p className="text-[11px] text-muted-foreground">{help}</p>
+    </div>
   );
 }
 
