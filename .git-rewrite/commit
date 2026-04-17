@@ -1,49 +1,65 @@
-tree 9e45b484960b2b261a152153e093552ca14fc2f1
-parent 1e300274847f24329af72cc390c35d8dbba0d897
-author jstarbuzz <jstarbuzz@gmail.com> 1776446776 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776446776 +0000
+tree 0d14981e1a23b72b13a1d7883f26260cbfd2d305
+parent 682972f640f0e904364ccc2a073fdf5f016fd6c4
+author jstarbuzz <jstarbuzz@gmail.com> 1776464639 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776464639 +0000
 
-ACP Agent 3 (#863) — Legacy admin URL redirects → /admin/control/*
+P4 (#945): content + contacts adapter framework
 
-Implements task #863: every legacy admin agent URL now redirects into the
-unified Agent 1 control shell (Agent 4+ will replace its UI). No 404, no white
-screen, query strings preserved, :slug promoted to ?agent=:slug.
+Ships the adapter framework needed to drain the 149 P4-tagged
+dispatch-allowlist entries (task #938).
 
-Changes (easy-locs-ea1eb0ed/src/routes/admin.routes.tsx)
-- Added LegacyControlRedirect wrapper preserving location.search.
-- Added LegacyAgentRunsRedirect promoting :slug → ?agent=:slug while keeping
-  any pre-existing query params.
-- Removed the 8 legacy <Route> declarations and re-registered them as Navigate
-  redirects placed AFTER the /admin/control shell routes:
-    /admin/agents              -> /admin/control/agents
-    /admin/agents/:slug/runs   -> /admin/control/runs?agent=:slug
-    /admin/command-center      -> /admin/control/command
-    /admin/approvals           -> /admin/control/approvals
-    /admin/autonomy            -> /admin/control/autonomy
-    /admin/control-room        -> /admin/control/engines
-    /admin/engine-control-room -> /admin/control/engines
-    /admin/master-control      -> /admin/control/master
-- All redirects use replace to avoid back-button loops.
+Content (`supabase/functions/_shared/execution/adapters/content/`):
+- types.ts — domain enum, allowlisted write tables, payload validators
+- policy.ts — per-row + per-pipeline lock + idempotency keys (FNV-1a)
+- row-repository.ts — DI seam over generic table CRUD
+- content-row-adapter.ts — generic per-row adapter (insert/update/
+  upsert/delete) registered as NON_CRITICAL_DATA_FIX with auto
+  rollback via snapshot
+- bulk-pipeline-adapter.ts — factory producing food/search/shop/media
+  bulk adapters as NON_SENSITIVE_BULK_UPDATE with manual rollback;
+  no-op runners ship registered with loud warnings, NO_COMPENSATING_RUN
+  if no compensator (no silent rollback success)
+- content-verifier.ts — row + bulk verifiers
+- bootstrap.ts — registers verifiers first, adapters with overwrite,
+  reconciles against system.agents (prod throws, dev warns)
 
-Rebase resolution
-- Conflict in admin.routes.tsx around the /admin/control shell block: upstream
-  (HEAD) added an expanded shell comment and explicit per-section routes
-  (/admin/control/agents, /runs, /command, /approvals, /master) wrapped in
-  ProtectedRoute > SuperAdminGate, and kept /admin/command-center as a real
-  SuperAdminGate route. Resolved by keeping all of upstream's new shell
-  routes/comment and dropping upstream's /admin/command-center real route in
-  favor of #863's redirect (the redirect now lands on the shell's gated
-  /admin/control/command, which is functionally equivalent and matches the
-  task's locked mapping). Added a note in the shell comment so the next agent
-  understands why /admin/command-center is missing from the shell block.
+Contacts (`supabase/functions/_shared/execution/adapters/contacts/`):
+- types.ts — sync + upsert payloads, CONTACTS_TABLE_ALLOWLIST
+- policy.ts — per-provider + per-(table,source) locks
+- contacts-repository.ts — upsertMany + countWhere DI seam
+- contacts-adapter.ts — sync + upsert adapters, both registered as
+  NON_SENSITIVE_BULK_UPDATE, manual rollback via per-provider /
+  per-source compensators (NO_COMPENSATING_RUN otherwise)
+- contacts-verifier.ts — sync rows-affected + upsert count verifiers
+- bootstrap.ts — same shape as content bootstrap; ships no-op runners
+  for all 17 P4 sync providers
 
-Notes / scope adherence
-- Per task scope ("Suppression des anciennes pages interdit"), the page
-  components themselves remain exported from app-route-registry; only the
-  route bindings were swapped. Destructured names left in place since
-  noUnusedLocals is off.
-- TypeScript build passed pre-rebase (npx tsc -p tsconfig.app.json --noEmit).
-- No follow-ups proposed: downstream task "ACP Agent 10 — QA final, build,
-  console, responsive" already covers verification.
+Wiring (`supabase/functions/execution-loop/index.ts`):
+- imports both bootstraps inside `ensureAdaptersBootstrapped`
+- new `isAgentContentEnabled()` / `isAgentContactsEnabled()` helpers
+  read AGENT_CONTENT_ENABLED / AGENT_CONTACTS_ENABLED env flags
+- when a flag is OFF the bootstrap is skipped (and a console.warn
+  fires) — tasks then fail loudly with NO_ADAPTER. No silent fallback
+  to direct mutation.
 
-Replit-Task-Id: 53249510-b7da-4ac9-ab68-a8512a96ed9e
+Docs:
+- `docs/audits/agent-migration/p4-content-contacts.md` — phase plan
+  documenting scope, flags, drain gate, and §6 mechanical drain
+  command for task #938
+
+Sub-domains chosen so registry keys stay unique while sharing the
+canonical task types from src/core/execution/risk-classification.ts:
+content.row | content.food/search/shop/media | contacts.sync/upsert.
+
+Rebase resolution notes:
+- execution-loop/index.ts: incoming P1 (#926) payments + wallet
+  bootstrap imports + calls coexist with the P4 content + contacts
+  imports + flag-gated calls. Both adopted in full (additive, no
+  conflict in semantics).
+- docs/audits/agent-migration/p4-content-contacts.md: incoming HEAD
+  carried the post-#938 "drain complete" version of the doc, which
+  supersedes the original phase plan this task drafted. Kept HEAD's
+  drain-complete version verbatim so the §7 drain history stays the
+  source of truth.
+
+Replit-Task-Id: efd47a50-55a7-4e7f-a65e-040ca39adfe3
