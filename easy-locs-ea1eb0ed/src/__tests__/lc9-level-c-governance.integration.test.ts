@@ -442,6 +442,173 @@ describe("LC9 · scenario 4 — drift detector blocks the second parallel task",
 });
 
 // ──────────────────────────────────────────────────────────────────────
+// Scenario 4b — LC4 hardening (#908): a real merge-conflict produced by
+// another dev task on the same hunk MUST flow through the loop's
+// pre-merge hook, get converted into a transient verifier red, fire
+// `request_dev_replan` with `merge_conflict:<reason>`, and resume from
+// the LC3 replan (PR opened on the second iteration). The whole chain
+// is end-to-end auditable.
+// ──────────────────────────────────────────────────────────────────────
+
+describe("LC9 · scenario 4b — LC4 builder loop absorbs a real merge conflict", () => {
+  it("two patches on the same hunk → drift conflict → request_dev_replan → loop resumes → PR opens", async () => {
+    const replanCalls: Array<{ reason: string; iteration: number }> = [];
+    const dispatched: string[] = [];
+    const verifierVerdicts: string[] = [];
+    const preMergeOutcomes: string[] = [];
+    let openedPr: { number: number; url: string } | null = null;
+
+    // Plan rev 1 touches src/foo.ts lines 10-20 — collides with the
+    // other dev task already merged. Plan rev 2 touches lines 100-110
+    // (post-replan) — clean.
+    const plan1: DevPlan = {
+      plan_id: "lc9-merge-conflict",
+      goal: "fix bug A on src/foo.ts",
+      revision: 1,
+      steps: [
+        { id: "s1", kind: "code.edit", payload: { changed_paths: ["src/foo.ts"], lines: [10, 20] } },
+        { id: "s2", kind: "build.run", payload: {} },
+        { id: "s3", kind: "test.run", payload: {} },
+      ],
+    };
+    const plan2: DevPlan = {
+      ...plan1,
+      revision: 2,
+      steps: [
+        { id: "s1b", kind: "code.edit", payload: { changed_paths: ["src/foo.ts"], lines: [100, 110] } },
+        { id: "s2b", kind: "build.run", payload: {} },
+        { id: "s3b", kind: "test.run", payload: {} },
+      ],
+    };
+
+    // Other dev task (already merged) holds src/foo.ts lines 10-20.
+    const others: BranchChanges[] = [
+      { ref: "agent-task-A", changes: [{ file: "src/foo.ts", startLine: 10, endLine: 20 }] },
+    ];
+
+    let currentPlan: DevPlan = plan1;
+
+    const result = await runDevBuilderLoop({
+      builderTaskId: "lc9-builder-merge-conflict",
+      initialPlan: plan1,
+      maxIterations: 3,
+
+      dispatchChildTask: async ({ step }) => {
+        resolveAgent(step.kind);
+        dispatched.push(`${currentPlan.revision}:${step.id}`);
+        return `child-${currentPlan.revision}-${step.id}`;
+      },
+
+      runStep: async () => ({ status: "succeeded", result: { ok: true } }),
+
+      runVerifier: async () => {
+        verifierVerdicts.push("green");
+        return { status: "green" };
+      },
+
+      preMergeCheck: async ({ planId: _planId }) => {
+        // Use the REAL drift detector, with the current plan's hunks.
+        const currentChanges: FileChange[] =
+          currentPlan === plan1
+            ? [{ file: "src/foo.ts", startLine: 10, endLine: 20 }]
+            : [{ file: "src/foo.ts", startLine: 100, endLine: 110 }];
+        const report = computeDriftReport(
+          "lc9-builder-branch",
+          currentChanges,
+          others,
+        );
+        if (report.severity === "hard") {
+          preMergeOutcomes.push("drift_conflict");
+          return {
+            status: "drift_conflict",
+            reason: `overlap_with:${report.overlaps[0].other_ref}`,
+          };
+        }
+        preMergeOutcomes.push("ok");
+        return { status: "ok" };
+      },
+
+      requestReplan: async ({ verifier, iteration }) => {
+        // The loop MUST forward the pre-merge reason verbatim into the
+        // request_dev_replan call. This is the contract the SQL RPC
+        // (`system.request_dev_replan`) audits onto the parent row.
+        replanCalls.push({ reason: verifier.reason, iteration });
+        // Simulate the LC3 pipeline producing a fresh plan rev 2.
+        currentPlan = plan2;
+        return plan2;
+      },
+
+      openPullRequest: async () => {
+        openedPr = { number: 9908, url: "https://example.invalid/pr/9908" };
+        return openedPr;
+      },
+    });
+
+    // Final outcome: merged on iteration 2, NOT iteration 1.
+    expect(result.status).toBe("merged");
+    expect(openedPr).toEqual({ number: 9908, url: "https://example.invalid/pr/9908" });
+    expect(result.iterations).toHaveLength(2);
+
+    // Iteration 1: verifier green → pre-merge drift_conflict → effective
+    // verifier red with `merge_conflict:` reason → replan fires.
+    expect(preMergeOutcomes[0]).toBe("drift_conflict");
+    expect(result.iterations[0].verifier.status).toBe("red");
+    expect(
+      (result.iterations[0].verifier as { reason: string }).reason,
+    ).toMatch(/^merge_conflict:overlap_with:agent-task-A$/);
+
+    // request_dev_replan MUST have been called exactly once with the
+    // merge-conflict reason carried verbatim from the pre-merge hook.
+    expect(replanCalls).toHaveLength(1);
+    expect(replanCalls[0].reason).toBe("merge_conflict:overlap_with:agent-task-A");
+    expect(replanCalls[0].iteration).toBe(1);
+
+    // Iteration 2 (post-replan): pre-merge ok → PR opened on rev 2.
+    expect(preMergeOutcomes[1]).toBe("ok");
+    expect(result.iterations[1].planRevision).toBe(2);
+    expect(result.iterations[1].verifier.status).toBe("green");
+
+    // Both plan revisions were dispatched through the registry — no
+    // out-of-band path (plan rev 1 attempted, plan rev 2 merged).
+    expect(dispatched.some((d) => d.startsWith("1:"))).toBe(true);
+    expect(dispatched.some((d) => d.startsWith("2:"))).toBe(true);
+  });
+
+  it("permanent verifier reject does NOT trigger merge_conflict replan path", async () => {
+    // Sanity: the new pre-merge plumbing must not interfere with the
+    // existing rejected_permanent terminal — this guards against a
+    // regression where the effectiveVerifier rewrite swallows the
+    // permanent flag.
+    const plan: DevPlan = {
+      plan_id: "lc9-permanent-fail",
+      goal: "buggy",
+      revision: 1,
+      steps: [{ id: "s1", kind: "code.edit", payload: {} }],
+    };
+    const result = await runDevBuilderLoop({
+      builderTaskId: "lc9-permanent",
+      initialPlan: plan,
+      maxIterations: 2,
+      dispatchChildTask: async () => "child-x",
+      runStep: async () => ({ status: "succeeded", result: {} }),
+      runVerifier: async () => ({
+        status: "red",
+        reason: "broken_forever",
+        permanent: true,
+      }),
+      // Pre-merge hook is wired but should NEVER run on a red verifier.
+      preMergeCheck: async () => {
+        throw new Error("pre-merge hook must not run on a red verifier");
+      },
+      requestReplan: async () => null,
+      openPullRequest: async () => ({ number: 0, url: "" }),
+    });
+    expect(result.status).toBe("rejected_permanent");
+    expect(result.reason).toBe("broken_forever");
+  });
+});
+
+// ──────────────────────────────────────────────────────────────────────
 // Scenario 5 — deploy.prod fails health check → revert_pr rollback.
 // ──────────────────────────────────────────────────────────────────────
 
