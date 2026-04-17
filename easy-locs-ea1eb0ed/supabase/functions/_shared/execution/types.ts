@@ -122,6 +122,16 @@ export interface ExecutionTask {
   rollback_reason: string | null;
   /** Adapter-declared posture, mirrored from `system.execution_tasks`. */
   rollback_strategy: "auto" | "manual" | "none";
+  /** Status the row held immediately before transitioning to
+   *  `rolling_back`. Set by `system.request_rollback` and the auto-
+   *  rollback path; null on rows that have never been rolled back. */
+  pre_rollback_status: ExecutionTaskStatus | null;
+  /** Last terminal error code (set on failed transitions). Read by the
+   *  orchestrator's succeeded-rollback eligibility guard. */
+  error_code: string | null;
+  /** Forward-execute output blob — surfaced so legacy adapters that
+   *  embedded `previous_state` in here can still drive rollback. */
+  execution_result: Record<string, unknown> | null;
 }
 
 /**

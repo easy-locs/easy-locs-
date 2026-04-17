@@ -71,6 +71,20 @@ export interface ExecutionTaskRow {
   failed_at: string | null;
   rolled_back_at: string | null;
   next_retry_at: string | null;
+
+  // ── L3 (#811) — typed rollback contract ─────────────────────────────────
+  /** Snapshot captured by the adapter before mutation; restored on rollback. */
+  previous_state: Record<string, unknown> | null;
+  /** Adapter-declared rollback posture, mirrored at dispatch time. */
+  rollback_strategy: "auto" | "manual" | "none";
+  /** Operator-supplied note when triggered via `system.request_rollback`. */
+  rollback_reason: string | null;
+  /** Status the row held immediately before transitioning to `rolling_back`. */
+  pre_rollback_status: ExecutionTaskStatus | null;
+  /** Audit columns auto-stamped by the state-machine trigger. */
+  rollback_started_at: string | null;
+  rollback_failed_at: string | null;
+  rollback_requested_by: string | null;
 }
 
 /** Structured failure-class enum surfaced in engine_run_logs metadata. */

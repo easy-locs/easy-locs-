@@ -149,11 +149,31 @@ export class AdapterRegistry {
       if (!a) continue;
       const existing = bySlug.get(a.slug);
       const cap = { domain: adapter.domain, task_type: adapter.taskType };
+      // L3 (#811): mirror rollback contract into the agent metadata so the
+      // server-side `system.request_rollback` RPC can enforce the adapter's
+      // declared posture without a round-trip back to the in-process
+      // registry. The RPC reads `agents.metadata->>'rollback_strategy'`
+      // and `agents.metadata->>'allow_rollback_after_success'`.
+      const rollbackMeta = {
+        rollback_strategy: adapter.rollback_strategy ?? "none",
+        allow_rollback_after_success: adapter.allow_rollback_after_success === true,
+      };
       if (existing) {
         if (!existing.capabilities.some(
           (c) => c.domain === cap.domain && c.task_type === cap.task_type,
         )) {
           existing.capabilities.push(cap);
+        }
+        // When multiple adapters share a slug, prefer the strongest posture
+        // (auto > manual > none) so the registry never under-reports
+        // rollback capability.
+        const order: Record<string, number> = { auto: 2, manual: 1, none: 0 };
+        const cur = String(existing.metadata.rollback_strategy ?? "none");
+        if ((order[rollbackMeta.rollback_strategy] ?? 0) > (order[cur] ?? 0)) {
+          existing.metadata.rollback_strategy = rollbackMeta.rollback_strategy;
+        }
+        if (rollbackMeta.allow_rollback_after_success) {
+          existing.metadata.allow_rollback_after_success = true;
         }
       } else {
         bySlug.set(a.slug, {
@@ -164,7 +184,7 @@ export class AdapterRegistry {
           owner_team: a.ownerTeam ?? null,
           policy_profile: a.policyProfile ?? null,
           quotas: a.quotas ?? {},
-          metadata: a.metadata ?? {},
+          metadata: { ...(a.metadata ?? {}), ...rollbackMeta },
           capabilities: [cap],
         });
       }
