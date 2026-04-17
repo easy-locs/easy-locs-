@@ -46,6 +46,8 @@ function makeDeps(opts: {
   recordedRef?: { count: number; last?: unknown };
   runnerCallsRef?: { count: number };
   resolveOk?: boolean;
+  consumeCallsRef?: { count: number };
+  recordThrows?: boolean;
 } = {}): AiAdapterDeps {
   const recorded = opts.recordedRef ?? { count: 0 };
   const runnerCalls = opts.runnerCallsRef ?? { count: 0 };
@@ -71,7 +73,7 @@ function makeDeps(opts: {
   return {
     runner,
     quota: {
-      consume: async () =>
+      peek: async () =>
         opts.quotaOk === false
           ? {
               ok: false,
@@ -81,9 +83,14 @@ function makeDeps(opts: {
               limitCount: 600,
             }
           : { ok: true },
+      consume: async () => {
+        opts.consumeCallsRef && (opts.consumeCallsRef.count = (opts.consumeCallsRef.count ?? 0) + 1);
+        return { ok: true };
+      },
     },
     interactions: {
       record: async (args) => {
+        if (opts.recordThrows) throw new Error("ai_interactions insert failed: simulated");
         recorded.count++;
         recorded.last = args;
       },
@@ -159,6 +166,47 @@ describe("AI completion adapter — LB1 (#815)", () => {
     const res = await adapter.execute(baseCtx());
     expect(res.success).toBe(false);
     if (!res.success) expect(res.errorCode).toBe(AI_ERROR_CODES.PROVIDER_FAILED);
+  });
+
+  it("counts quota exactly ONCE per run (no double-bump)", async () => {
+    const consume = { count: 0 };
+    const adapter = createAiCompletionAdapter(makeDeps({ consumeCallsRef: consume }));
+    const res = await adapter.execute(baseCtx());
+    expect(res.success).toBe(true);
+    expect(consume.count).toBe(1);
+  });
+
+  it("purpose=contract forces sensitive flag pre-execution", async () => {
+    const adapter = createAiCompletionAdapter(makeDeps());
+    const res = await adapter.execute(
+      baseCtx({
+        payload: {
+          feature: "loan.contract",
+          purpose: "contract",
+          messages: [{ role: "user", content: "draft a loan contract" }],
+        },
+      }),
+    );
+    expect(res.success).toBe(true);
+    if (res.success) {
+      expect(res.output?.flaggedSensitive).toBe(true);
+      expect(String(res.output?.flaggedReason)).toContain("purpose:contract");
+    }
+  });
+
+  it("ai_interactions persist failure ⇒ PERSIST_INTERACTION_FAILED (no silent loss)", async () => {
+    const consume = { count: 0 };
+    const adapter = createAiCompletionAdapter(
+      makeDeps({ recordThrows: true, consumeCallsRef: consume }),
+    );
+    const res = await adapter.execute(baseCtx());
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.errorCode).toBe(AI_ERROR_CODES.PERSIST_INTERACTION_FAILED);
+    }
+    // No quota bump when persistence fails — accounting only happens after
+    // a successful link.
+    expect(consume.count).toBe(0);
   });
 });
 

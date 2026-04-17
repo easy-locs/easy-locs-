@@ -254,6 +254,40 @@ function RunDetail({
         {run.response}
       </Section>
 
+      {run.purpose ? (
+        <div className="rounded border bg-muted/30 px-3 py-2 text-xs">
+          <span className="text-[10px] uppercase text-muted-foreground mr-2">Purpose</span>
+          <code className="font-mono">{run.purpose}</code>
+        </div>
+      ) : null}
+
+      {run.verification ? (
+        <div className="rounded border bg-muted/20 px-3 py-2">
+          <div className="text-[10px] uppercase text-muted-foreground mb-1">Verifier verdict</div>
+          <pre className="text-xs whitespace-pre-wrap font-mono">
+            {JSON.stringify(run.verification, null, 2)}
+          </pre>
+        </div>
+      ) : null}
+
+      {Array.isArray(run.tools_used) && run.tools_used.length > 0 ? (
+        <div className="rounded border bg-muted/20 px-3 py-2">
+          <div className="text-[10px] uppercase text-muted-foreground mb-1">
+            Tools used ({run.tools_used.length})
+          </div>
+          <ul className="text-xs space-y-1">
+            {(run.tools_used as Array<Record<string, unknown>>).map((t, i) => (
+              <li key={i} className="font-mono">
+                • {String(t.name ?? t.tool ?? `tool_${i}`)}
+                {t.description ? (
+                  <span className="text-muted-foreground"> — {String(t.description)}</span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {run.error ? (
         <div className="rounded border border-destructive/40 bg-destructive/5 p-3">
           <div className="text-destructive text-sm font-medium flex items-center gap-1">

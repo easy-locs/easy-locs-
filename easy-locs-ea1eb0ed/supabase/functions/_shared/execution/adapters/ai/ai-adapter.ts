@@ -33,8 +33,10 @@ import {
   AI_AGENT_SLUGS,
   AI_DOMAIN,
   AI_ERROR_CODES,
+  AI_SENSITIVE_PURPOSES,
   AI_TASK_TYPES,
   type AiCompletionPayload,
+  type AiCompletionPurpose,
   type AiCompletionResult,
   type AiEmbeddingPayload,
   type AiEmbeddingResult,
@@ -93,51 +95,62 @@ export interface LLMRunner {
 
 // ── Quota gate (DB RPC) ───────────────────────────────────────────────────
 
-export interface QuotaGate {
-  consume(args: {
-    agentId: string;
-    tokens: number;
-    costUsd: number;
-  }): Promise<{ ok: true } | {
+export type QuotaResult =
+  | { ok: true }
+  | {
     ok: false;
     blockedReason: string;
     blockedWindow: string;
     currentCount: number;
     limitCount: number;
-  }>;
+  };
+
+export interface QuotaGate {
+  /** Read-only pre-flight check. Never increments. */
+  peek(args: { agentId: string }): Promise<QuotaResult>;
+  /** Single post-call accounting bump with the actual usage. */
+  consume(args: { agentId: string; tokens: number; costUsd: number }): Promise<QuotaResult>;
+}
+
+function rowToQuotaResult(
+  row: { ok?: boolean; blocked_reason?: string; blocked_window?: string; current_count?: number; limit_count?: number } | null | undefined,
+): QuotaResult {
+  if (!row || row.ok !== true) {
+    return {
+      ok: false,
+      blockedReason: row?.blocked_reason ?? "unknown",
+      blockedWindow: row?.blocked_window ?? "unknown",
+      currentCount: row?.current_count ?? 0,
+      limitCount: row?.limit_count ?? 0,
+    };
+  }
+  return { ok: true };
 }
 
 export function createSupabaseQuotaGate(sb: SupabaseClient): QuotaGate {
+  const callRpc = async (fn: "peek_agent_quota" | "consume_agent_quota", args: Record<string, unknown>): Promise<QuotaResult> => {
+    const { data, error } = await sb.schema("system").rpc(fn, args);
+    if (error) {
+      // Conservative: if the RPC fails, fail closed — better to refuse a
+      // call than to silently bypass quota.
+      return {
+        ok: false,
+        blockedReason: `quota_rpc_error:${error.message}`,
+        blockedWindow: "rpc",
+        currentCount: 0,
+        limitCount: 0,
+      };
+    }
+    return rowToQuotaResult(Array.isArray(data) ? data[0] : data);
+  };
   return {
-    async consume({ agentId, tokens, costUsd }) {
-      const { data, error } = await sb.schema("system").rpc("consume_agent_quota", {
+    peek: ({ agentId }) => callRpc("peek_agent_quota", { p_agent_id: agentId }),
+    consume: ({ agentId, tokens, costUsd }) =>
+      callRpc("consume_agent_quota", {
         p_agent_id: agentId,
         p_tokens: tokens,
         p_cost_usd: costUsd,
-      });
-      if (error) {
-        // Conservative: if the RPC fails, fail closed — better to refuse a
-        // call than to silently bypass quota.
-        return {
-          ok: false,
-          blockedReason: `quota_rpc_error:${error.message}`,
-          blockedWindow: "rpc",
-          currentCount: 0,
-          limitCount: 0,
-        };
-      }
-      const row = Array.isArray(data) ? data[0] : data;
-      if (!row || row.ok !== true) {
-        return {
-          ok: false,
-          blockedReason: row?.blocked_reason ?? "unknown",
-          blockedWindow: row?.blocked_window ?? "unknown",
-          currentCount: row?.current_count ?? 0,
-          limitCount: row?.limit_count ?? 0,
-        };
-      }
-      return { ok: true };
-    },
+      }),
   };
 }
 
@@ -151,11 +164,19 @@ export interface InteractionSink {
   }): Promise<void>;
 }
 
+export class InteractionSinkError extends Error {
+  constructor(public readonly cause: string) {
+    super(`ai_interactions insert failed: ${cause}`);
+    this.name = "InteractionSinkError";
+  }
+}
+
 export function createSupabaseInteractionSink(sb: SupabaseClient): InteractionSink {
   return {
     async record({ task, interaction, domainTaskType }) {
+      let supabaseError: { message: string } | null = null;
       try {
-        await sb.from("ai_interactions").insert({
+        const { error } = await sb.from("ai_interactions").insert({
           user_id: task.requested_by ?? null,
           feature: interaction.feature,
           domain: AI_DOMAIN,
@@ -175,11 +196,16 @@ export function createSupabaseInteractionSink(sb: SupabaseClient): InteractionSi
             correlation_id: task.correlation_id ?? null,
           },
         });
+        supabaseError = error ? { message: error.message } : null;
       } catch (e) {
-        // Best-effort. Failure here MUST NOT fail the AI run — the run
-        // already happened. We log and let the orchestrator surface the
-        // adapter's logs in the run timeline.
-        console.warn("[ai-adapter] ai_interactions insert failed:", e);
+        supabaseError = { message: e instanceof Error ? e.message : String(e) };
+      }
+      if (supabaseError) {
+        // Deterministic failure: every AI call MUST be traceable end-to-end.
+        // The orchestrator catches this and stamps the run with
+        // PERSIST_INTERACTION_FAILED so operators can investigate.
+        console.error("[ai-adapter] ai_interactions insert failed:", supabaseError.message);
+        throw new InteractionSinkError(supabaseError.message);
       }
     },
   };
@@ -258,9 +284,10 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
   }
   logs.push(`[${ts()}] resolve.ok agent_id=${agentId}`);
 
-  // Step 2: quota pre-check (we book optimistically with 0 tokens; the real
-  // post-call cost is bumped via the same RPC after the provider returns).
-  const pre = await opts.deps.quota.consume({ agentId, tokens: 0, costUsd: 0 });
+  // Step 2: quota pre-check — READ-ONLY peek; the actual increment happens
+  // exactly ONCE in Step 5 with the real token/cost usage. Calling consume()
+  // here would double-count every run.
+  const pre = await opts.deps.quota.peek({ agentId });
   if (!pre.ok) {
     logs.push(`[${ts()}] quota.blocked ${pre.blockedReason} window=${pre.blockedWindow}`);
     return {
@@ -307,22 +334,43 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
       (interaction.fallbackUsed ? " fallback=true" : ""),
   );
 
-  // Step 4: persist ai_interactions linked to this run.
-  await opts.deps.interactions.record({
-    task: ctx.task,
-    interaction,
-    domainTaskType: opts.taskType,
-  });
-  logs.push(`[${ts()}] interaction.recorded`);
+  // Step 4: persist ai_interactions linked to this run. Failure to link is
+  // a deterministic error — we never lose end-to-end traceability silently.
+  try {
+    await opts.deps.interactions.record({
+      task: ctx.task,
+      interaction,
+      domainTaskType: opts.taskType,
+    });
+    logs.push(`[${ts()}] interaction.recorded`);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    logs.push(`[${ts()}] interaction.persist_failed ${msg}`);
+    return {
+      success: false,
+      errorCode: AI_ERROR_CODES.PERSIST_INTERACTION_FAILED,
+      errorMessage: msg,
+      output: {
+        provider: interaction.provider,
+        model: interaction.model,
+        tokens: interaction.promptTokens + interaction.completionTokens,
+        cost_usd: interaction.costUsd,
+      },
+      logs,
+    };
+  }
 
-  // Step 5: post-call quota top-up with the real cost / token counts.
-  // We deliberately do NOT block on the result: the rate-limit decision was
-  // already made in Step 2; this is an accounting bump, not a gate.
-  await opts.deps.quota.consume({
+  // Step 5: SINGLE post-call accounting bump with real cost / token counts.
+  // The rate-limit decision was already made in Step 2 (peek); this is the
+  // only call that increments counters.
+  const post = await opts.deps.quota.consume({
     agentId,
     tokens: interaction.promptTokens + interaction.completionTokens,
     costUsd: interaction.costUsd,
   });
+  if (!post.ok) {
+    logs.push(`[${ts()}] quota.consume_warning ${post.blockedReason}`);
+  }
 
   // Step 6: surface the sensitive signal in the result so the orchestrator's
   // post-execute hook can flip the task into pending_review.
@@ -373,19 +421,48 @@ export function createAiCompletionAdapter(deps: AiAdapterDeps): DomainAdapter {
                 logs: [`validate.failed ${v.reason}`],
               };
             }
+            // Purpose-driven sensitive routing — when a caller declares the
+            // call is for a contract / PII generation / moderation override,
+            // we engage the ai-sensitive policy BEFORE the model is called
+            // by force-flagging the run for approval. Heuristic output
+            // classification still runs as a second line of defence.
+            const purpose = (v.data.purpose ?? "general") as AiCompletionPurpose;
+            const purposeIsSensitive = AI_SENSITIVE_PURPOSES.includes(purpose);
             const out = await deps.runner.completion({ payload: v.data, task: c.task });
-            const sensitive = classifySensitiveOutput(out.text, {
-              callerHint: v.data.sensitive === true,
+            const heuristic = classifySensitiveOutput(out.text, {
+              callerHint: v.data.sensitive === true || purposeIsSensitive,
               feature: v.data.feature,
             });
+            const sensitive: SensitiveSignal = purposeIsSensitive
+              ? {
+                flagged: true,
+                reason: heuristic.flagged
+                  ? `purpose:${purpose}+${heuristic.reason ?? "heuristic"}`
+                  : `purpose:${purpose}`,
+                matchedPatterns: heuristic.matchedPatterns ?? [],
+              }
+              : heuristic;
             const built: AiCompletionResult = {
               text: out.text,
               json: out.json,
               interaction: out.interaction,
             };
+            // Lift tool calls into the result so v_ai_runs.tools_used can
+            // surface them to the conversation explorer without parsing the
+            // payload again.
+            const enriched: Record<string, unknown> = {
+              ...(built as unknown as Record<string, unknown>),
+              purpose,
+            };
+            if (Array.isArray(v.data.tools) && v.data.tools.length > 0) {
+              enriched.tools_used = v.data.tools.map((t) => ({
+                name: t.name,
+                description: t.description ?? null,
+              }));
+            }
             return {
               success: true as const,
-              result: built as unknown as Record<string, unknown> & { interaction: AiInteractionRecord },
+              result: enriched as Record<string, unknown> & { interaction: AiInteractionRecord },
               sensitive,
             };
           },
