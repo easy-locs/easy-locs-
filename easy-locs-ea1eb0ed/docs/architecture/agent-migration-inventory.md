@@ -13,7 +13,7 @@
 | Domains still running direct mutations | **10** (payments, wallet, marketplace, kyc/identity, rides/logistics, content/storefront, contacts, notifications, otp, ai) |
 | Adapters **bootstrapped at runtime** today | **1 domain** — only `bootstrapMarketplaceAdapters` is invoked by `supabase/functions/execution-loop/index.ts` |
 | Adapters **implemented but not yet bootstrapped** | **1 domain** — `github-runner` (`SMOKE_NOOP`) has bootstrap + verifier code in `_shared/execution/adapters/github-runner/` but no live call site |
-| `dispatch-allowlist.json` exemption entries | **456** per-file (P1..P5) + **144** structural globalExemptions — re-organised by task #908 (phase tagging) and task #914 (ADMIN/PLATFORM/ORBIT promotion) on 2026-04-17. |
+| `dispatch-allowlist.json` exemption entries | **307** per-file (P1..P3, P5) + **144** structural globalExemptions — re-organised by task #908 (phase tagging) and task #914 (ADMIN/PLATFORM/ORBIT promotion) on 2026-04-17, then drained of all 149 P4 entries by task #938 on 2026-04-17 (see `docs/audits/agent-migration/p4-content-contacts.md`). |
 | `(domain, task_type)` pairs governed at runtime today | **2** (`marketplace.MARKETPLACE.LISTING.PUBLISH`, `marketplace.MARKETPLACE.LISTING.UNPUBLISH`) of an estimated **~30** required by end of L7 |
 
 The platform is roughly **10 %** governed at runtime. The remaining 90 %
@@ -64,7 +64,7 @@ it owns:
 | P1 (payments + wallet) | 79 | per-file, retires when payments+wallet adapters land |
 | P2 (KYC + identity) | 38 | per-file, retires when KYC+identity adapters land |
 | P3 (rides + marketplace) | 157 | per-file, retires when rides+marketplace adapters land — phase plan + gating doc at `docs/audits/agent-migration/p3-rides-marketplace.md` (task #927) |
-| P4 (content + contacts) | 149 | per-file, retires when content+contacts adapters land |
+| P4 (content + contacts) | **0** | drained 2026-04-17 — see `docs/audits/agent-migration/p4-content-contacts.md` (task #938). Adapter framework + callsite migration tracked separately; until those land the dispatch-guard rules will report errors on the previously-exempt files (intended forcing function). |
 | P5 (notifications + OTP) | 33 | per-file, retires when notifications+OTP adapters land |
 | ADMIN | 40 | promoted to `globalExemptions` (admin/command-control surface) |
 | PLATFORM | 67 | promoted to `globalExemptions` (orchestrator/runtime/observability) |

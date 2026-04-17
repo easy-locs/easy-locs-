@@ -6,17 +6,16 @@
     "snapshot_taken_on": "2026-04-17",
     "expected_to_drain_in": "L7 — Migration sweep, executed phase by phase per docs/architecture/agent-migration-inventory.md §7",
     "last_audit": {
-      "by": "task #914 (Drain the auto-merge guard's grandfathered list to zero)",
+      "by": "task #938 (Drain the P4 (content + contacts) entries from the dispatch allow-list)",
       "on": "2026-04-17",
-      "notes": "Building on #908: promoted the three remaining structural buckets (ADMIN, PLATFORM, ORBIT — 121 entries) from per-file exemptions into globalExemptions with written 'structural — keep' rationale. The per-file exemptions array now contains only true L7 phase work (P1..P5) tagged with owning_phase, ready for per-phase drain.",
-      "per_file_count": 456,
+      "notes": "Drained the 149 owning_phase: \"P4\" per-file entries (126 storefront/content + 23 contacts/content) per the §7 mechanical procedure in docs/audits/agent-migration/p4-content-contacts.md. The drain is the forcing function for the L7 phase 4 sweep: callsite migration to dispatchExecutionTask and the content + contacts adapter framework remain to be built (tracked separately). Until that work lands, the easylocs/require-dispatch-execution-task, easylocs/no-direct-postgrest-mutation and easylocs/no-direct-rpc-mutation rules will report errors on the previously-exempt P4 files — that visibility is the intended outcome.",
+      "per_file_count": 307,
       "global_count": 144,
       "unjustified_count": 0,
       "phase_distribution": {
         "P3": 157,
         "P5": 33,
         "P1": 79,
-        "P4": 149,
         "P2": 38
       },
       "promoted_to_global": {
@@ -25,21 +24,41 @@
         "ORBIT": 14
       },
       "previous_audit": {
-        "by": "task #908 (Sovereign Closeout — strict allowlist closeout)",
+        "by": "task #914 (Drain the auto-merge guard's grandfathered list to zero)",
         "on": "2026-04-17",
-        "notes": "Strict closeout pass: every per-file exemption is justified with an owning_phase (P1..P5/ADMIN/PLATFORM/ORBIT) and a reason string referencing the L7 sweep that owns its drain. Two fully-structural buckets (LC orchestrator surface, LB1 AI surface) were promoted into globalExemptions. Per-file entries already covered by a globalExemption pattern were deleted as redundant (6 entries). Final per-file count: 577. Zero entries are unjustified. Phase distribution is recorded in .local/level-c-planning/deep/F-readiness-gates.md (LC8 gate).",
-        "per_file_count": 577,
-        "global_count": 23,
+        "notes": "Building on #908: promoted the three remaining structural buckets (ADMIN, PLATFORM, ORBIT — 121 entries) from per-file exemptions into globalExemptions with written 'structural — keep' rationale. The per-file exemptions array now contains only true L7 phase work (P1..P5) tagged with owning_phase, ready for per-phase drain.",
+        "per_file_count": 456,
+        "global_count": 144,
         "unjustified_count": 0,
         "phase_distribution": {
           "P3": 157,
           "P5": 33,
           "P1": 79,
-          "ORBIT": 14,
           "P4": 149,
+          "P2": 38
+        },
+        "promoted_to_global": {
           "ADMIN": 40,
           "PLATFORM": 67,
-          "P2": 38
+          "ORBIT": 14
+        },
+        "previous_audit": {
+          "by": "task #908 (Sovereign Closeout — strict allowlist closeout)",
+          "on": "2026-04-17",
+          "notes": "Strict closeout pass: every per-file exemption is justified with an owning_phase (P1..P5/ADMIN/PLATFORM/ORBIT) and a reason string referencing the L7 sweep that owns its drain. Two fully-structural buckets (LC orchestrator surface, LB1 AI surface) were promoted into globalExemptions. Per-file entries already covered by a globalExemption pattern were deleted as redundant (6 entries). Final per-file count: 577. Zero entries are unjustified. Phase distribution is recorded in .local/level-c-planning/deep/F-readiness-gates.md (LC8 gate).",
+          "per_file_count": 577,
+          "global_count": 23,
+          "unjustified_count": 0,
+          "phase_distribution": {
+            "P3": 157,
+            "P5": 33,
+            "P1": 79,
+            "ORBIT": 14,
+            "P4": 149,
+            "ADMIN": 40,
+            "PLATFORM": 67,
+            "P2": 38
+          }
         }
       }
     }
@@ -684,11 +703,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/components/pos/KitchenQueue.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/components/storefront/AdvancedCheckout.tsx",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -844,29 +858,14 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/components/wishlist/WishlistButton.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/domains/delivery/adapters/supabase.adapter.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/domains/hotel/service.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/domains/marketplace/adapters/supabase.adapter.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/domains/restaurant/adapters/supabase.adapter.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/domains/ride/adapters/supabase.adapter.ts",
@@ -879,11 +878,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/families/groups/group-update.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/hooks/useBoostPurchase.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -892,11 +886,6 @@
       "pattern": "src/hooks/useDeliveryTracking.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/hooks/useHotelBooking.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/hooks/useListingSync.ts",
@@ -922,11 +911,6 @@
       "pattern": "src/hooks/useStorefrontCoupon.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/address/canonical-address-resolver.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/analytics/map-error-alerting.ts",
@@ -964,11 +948,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/business-core/onboarding-engine.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/c2c/c2c-moderation.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -984,19 +963,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/call/call-recorder.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/call/call-rpc.ts",
       "reason": "L7 P5: otp/calls — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/cart/savedCarts.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/concierge/concierge-repository.ts",
@@ -1012,21 +981,6 @@
       "pattern": "src/lib/core/driverMatchingEngine.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/core/orderEscrowEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/coupons/couponEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/db/repositories.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/deals/deal-repository.ts",
@@ -1054,16 +1008,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/engines/hotel-room-normalizer-engine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/engines/menu-rebuild-engine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/engines/merchant-override-engine.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1079,11 +1023,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/engines/publish-gate-hotel-engine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/events/handlers/ride-bridge.handler.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1092,11 +1031,6 @@
       "pattern": "src/lib/events/handlers/ride-dispatch.handler.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/favorites/favorites.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/finance/payout-locks.ts",
@@ -1119,44 +1053,9 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/lib/groups/group-repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/i18n.tsx",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/import/shop-import-pipeline.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/inventory/inventoryEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/listing-lifecycle.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/loyalty/apply-loyalty.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/loyalty/loyalty-core.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/loyalty/loyaltyEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/merchant-qr/merchant-payment-executor.ts",
@@ -1304,54 +1203,14 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/lib/onboarding/menu-publisher.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/onboarding/merchant-onboarding.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/onboarding/pipeline/persistence/persistence.canonical_record.write.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/onboarding/pipeline/persistence/persistence.import_run.write.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/onboarding/pipeline/persistence/persistence.storefront.create_or_update.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/lib/onboarding/pipeline/repository/onboarding.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/onboarding/pipeline/search/search.index.trigger.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/onboarding/recrawl-runner.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/onboarding/review-actions.service.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/onboarding/review-queue.persistence.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/onboarding/seed-merchant.persistence.ts",
@@ -1369,34 +1228,14 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/orbit/createGroupConversation.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/orbit/ensureOrbitProfile.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
     },
     {
-      "pattern": "src/lib/orbit/orbit-account.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/orbit/orbit-contacts-service.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/orbit/orbit-payment-bridge.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/orbit/updateGroupConversation.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/orchestration/handlers/delivery-handlers.ts",
@@ -1409,39 +1248,9 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/lib/orders/autoRepeatEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/orders/booking-payment-saga.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/orders/order-lifecycle.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/orders/order-status-bridge.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/orders/orderActions.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/orders/orderEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/orders/orders-core.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/payments/payment-intents.ts",
@@ -1474,24 +1283,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/push/prayer-push-scheduler.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/push/registerPush.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "src/lib/qr/qr-resolver.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/qr/shop-qr-auto-generator.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/radar/contactBridge.ts",
@@ -1529,11 +1323,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/lib/ranking/ranking-batch-runner.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/real-estate/boostListing.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1547,21 +1336,6 @@
       "pattern": "src/lib/refunds/create-refund-request.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/rental/rental-repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/reviews/reviewEngine.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/search/searchHistory.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/seasonal/seasonal-repository.ts",
@@ -1614,11 +1388,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "src/lib/social/badge-system.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/storage/assets.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1644,11 +1413,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "src/lib/supabase/repositories.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/lib/super-app-bridge.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
@@ -1662,16 +1426,6 @@
       "pattern": "src/lib/support/agents/payment-anomaly-agent.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/lib/support/agents/shop-monitor-agent.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/lib/support/shop-transfer-protocol.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/lib/support/support-session-service.ts",
@@ -1759,21 +1513,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/lib/workspace/workspace-core.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/pages/customer/CustomerAddressBookPage.tsx",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/pages/deep-link/QrResolvePage.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/pages/merchant/MerchantMenuItemEditorPage.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1782,16 +1521,6 @@
       "pattern": "src/pages/merchant/MerchantReturnsPage.tsx",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/pages/pro/ProCatalog.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/pages/settings/SettingsAddresses.tsx",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/pages/StorePage.tsx",
@@ -1804,44 +1533,14 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/pages/UnifiedOrderDetailPage.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/pages/WishlistPage.tsx",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/payments/payment-request-hooks.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/repositories/accounting.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/admin.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/ai-chat.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/auth-utils.repository.ts",
       "reason": "L7 P2: identity/auth — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
-    },
-    {
-      "pattern": "src/repositories/biometric.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/booking-actions.repository.ts",
@@ -1854,49 +1553,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/buildings.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/call.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/candidates.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/channel-manager.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/collaboration.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/communication.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/concierge.repository.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/dashboard.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/data-import.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/deals.repository.ts",
@@ -1909,26 +1568,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/developer.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/discovery.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/document-builder.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/documents.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/domain/c2c.repo.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1937,16 +1576,6 @@
       "pattern": "src/repositories/domain/marketplace.repo.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/domain/onboarding.repo.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/domain/orbit.repo.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/domain/wallet.repo.ts",
@@ -1959,69 +1588,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/dunning.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/dynamic-pricing.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/expenses.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/explore.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/furniture.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/gift-card.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/groups.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/guest-portal.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/interventions.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/inventory.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/leases.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/listing-contact.repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/local-services.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/marketplace.repository.ts",
@@ -2044,46 +1613,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/moderation.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/newsletter.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/notifications.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/onboarding.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/orbit-profile.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/orbit-security.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/orbit.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/order-actions.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/payment-notices.repository.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2099,49 +1628,9 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/repositories/photo-uploader.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/profile-settings.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/profile.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/property-calendar.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/public.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/real-estate.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/rent-payment.repository.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/repositories/rental-data.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/rental.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/ride-tracking.repository.ts",
@@ -2149,24 +1638,9 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/repositories/saved-search.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/repositories/seasonal.repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/seo.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/settings.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/storefront-repository.ts",
@@ -2177,41 +1651,6 @@
       "pattern": "src/repositories/storefront.repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "src/repositories/support.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/tasks.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/tenant-docs.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/tenant-portal.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/tenant-requests.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/tenant.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/repositories/vault.repository.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/repositories/wallet-repository.ts",
@@ -2239,44 +1678,14 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "src/services/onboarding-providers.service.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/services/onboarding.service.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/services/order.service.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/services/plaid.service.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
     },
     {
-      "pattern": "src/services/pos.service.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "src/services/property.service.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "src/services/referral.service.ts",
       "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "src/services/social-graph.service.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "src/services/storefront-orders.service.ts",
@@ -2324,11 +1733,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "supabase/functions/_shared/dld-sync.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/_shared/food-firewall-adapter.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -2339,11 +1743,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "supabase/functions/_shared/prayer-cron-helpers.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/_shared/server-rate-limiter.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
@@ -2352,16 +1751,6 @@
       "pattern": "supabase/functions/alert-dispatcher/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/auto-onboarding-cron/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/award-loyalty-points/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/backup-storage/index.ts",
@@ -2412,11 +1801,6 @@
       "pattern": "supabase/functions/command-email-intake/index.ts",
       "reason": "L7 P5: notifications/comms — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/commerce-router/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/commission-split/index.ts",
@@ -2474,11 +1858,6 @@
       "owning_phase": "P2"
     },
     {
-      "pattern": "supabase/functions/deliveroo-dubai-food/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/disconnect-stripe/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2502,11 +1881,6 @@
       "pattern": "supabase/functions/dispatch-webhook/index.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
-    },
-    {
-      "pattern": "supabase/functions/dld-sync-cron/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/email-enqueue/index.ts",
@@ -2537,46 +1911,6 @@
       "pattern": "supabase/functions/expire-pending-referrals/index.ts",
       "reason": "L7 P1: wallet/billing/referral — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/extract-article/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-audit/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-menu-builder/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-normalizer/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-publish/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-rescrape-monitor/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-visibility-gate/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/food-visual-clean/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/fx-rates/index.ts",
@@ -2634,11 +1968,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/media-processor/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/mobile-money-payment/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2664,11 +1993,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/order-manage/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/payment-notification/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2687,16 +2011,6 @@
       "pattern": "supabase/functions/plaid-webhook/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
-    },
-    {
-      "pattern": "supabase/functions/prayer-push-cron/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/prayer-times/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/process-referral-reward/index.ts",
@@ -2754,11 +2068,6 @@
       "owning_phase": "P3"
     },
     {
-      "pattern": "supabase/functions/search-global/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/seller-kpi-snapshot/index.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -2789,16 +2098,6 @@
       "owning_phase": "P5"
     },
     {
-      "pattern": "supabase/functions/shop-import-processor/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/social-preview/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/spatial-query/index.ts",
       "reason": "L7 P3: rides/mobility/leasing — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -2809,26 +2108,6 @@
       "owning_phase": "P1"
     },
     {
-      "pattern": "supabase/functions/submit-review/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/sync-meilisearch-cron/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/tenant-signup/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
-      "pattern": "supabase/functions/uae-scrape-onboard/index.ts",
-      "reason": "L7 P4: contacts/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
-    },
-    {
       "pattern": "supabase/functions/verify-guest-payment/index.ts",
       "reason": "L7 P1: payments/finance — pending L7 phase 1 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P1"
@@ -2837,11 +2116,6 @@
       "pattern": "supabase/functions/verify-otp/index.ts",
       "reason": "L7 P5: otp/calls — pending L7 phase 5 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P5"
-    },
-    {
-      "pattern": "supabase/functions/video-processor/index.ts",
-      "reason": "L7 P4: storefront/content — pending L7 phase 4 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
-      "owning_phase": "P4"
     },
     {
       "pattern": "supabase/functions/wallet-ops/index.ts",
