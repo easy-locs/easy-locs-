@@ -101,11 +101,14 @@ export function feedsPlugin(): Plugin {
           globalItems.push(rssItem(gTitle, gLink, gDesc, buildDate));
           globalAtomEntries.push(atomEntry(gTitle, gLink, gDesc, `${CONTENT_LASTMOD.guides}T00:00:00Z`));
 
-          const bTitle = `Best Services in ${city.name}`;
-          const bLink = `${BASE_URL}/best/services/in/${city.slug}`;
-          const bDesc = `Top-rated food, taxi, hotel and concierge services in ${city.name}.`;
-          globalItems.push(rssItem(bTitle, bLink, bDesc, buildDate));
-          globalAtomEntries.push(atomEntry(bTitle, bLink, bDesc, `${CONTENT_LASTMOD.best}T00:00:00Z`));
+          const topSvc = BUILD_SERVICE_CATEGORIES[0];
+          if (topSvc) {
+            const bTitle = `Best ${topSvc.label} in ${city.name}`;
+            const bLink = `${BASE_URL}/best/${topSvc.slug}/in/${city.slug}`;
+            const bDesc = `Top-rated ${topSvc.label.toLowerCase()} providers in ${city.name}, vetted and ranked by Easy-Locs.`;
+            globalItems.push(rssItem(bTitle, bLink, bDesc, buildDate));
+            globalAtomEntries.push(atomEntry(bTitle, bLink, bDesc, `${CONTENT_LASTMOD.best}T00:00:00Z`));
+          }
         }
 
         const globalFeed = [
