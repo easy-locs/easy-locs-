@@ -1,8 +1,3 @@
-tree d0b169c3ecaddbd32d5ab67b4bab219105b50aa8
-parent f353211a0c1c9a97da6b169d2f606c7a32ac198e
-author jstarbuzz <jstarbuzz@gmail.com> 1776460678 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776462194 +0000
-
 Task #909: Wiring closeout — Phases A/B/C to 100%
 
 Closes the two residual blockers identified in FIX_PLAN_BY_PHASE.
