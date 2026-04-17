@@ -1,38 +1,37 @@
-Fix blank-screen boot crash + boot hardening audit (Task #913)
+Add CI check enforcing pillar prefixes on route paths (Task #745)
 
-Root cause: validateIntegrationsBoot() ran at the top of src/main.tsx
-before the try/catch that wraps ReactDOM render. Missing AWS/PostHog
-keys caused it to throw, module evaluation aborted, and the HTML splash
-was hidden in dev — leaving a blank gray page with no diagnostic.
+Adds a new CI-invoked script that parses every src/routes/<pillar>.routes.tsx
+and fails if any <Route path="..."> does not match that pillar's declared
+prefix list or its explicit allowlist of legacy/shared paths.
 
 Changes:
-- src/main.tsx: moved validateIntegrationsBoot() inside the render
-  try/catch so any throw lands on the existing inline Boot Error UI;
-  wrapped each pre-render helper (initSentryBoot, startTrace,
-  installFetchTracePropagation, initBrowserOtel) in its own try/catch
-  so a single failing observability helper can never blank the screen.
-- src/lib/integrations/registry.ts: re-tiered enforceInDev — only
-  Supabase still blocks dev boot. Mapbox, AWS, Sentry, PostHog are now
-  warn-only; each degrades gracefully at runtime.
-- src/components/dev/MissingIntegrationsBanner.tsx (new): dev-only
-  fixed footer chip listing integrations with missing required env
-  vars, with a link to /admin/diagnostics.
-- src/App.tsx: lazy-mounted the banner under CoreProviders (dev only)
-  and wrapped bootstrapAppRuntime() in try/catch.
-- index.html: removed the `if (!isDev)` guard so the HTML radar splash
-  is visible in dev too — stalled boots are now visibly stalled instead
-  of looking blank. The 15s/6s watchdogs already in place keep working.
-- docs/boot-audit.md (new): full per-helper audit of the boot chain
-  with tier classification, current protections, and follow-ups.
+- scripts/check-pillar-routes.ts: new script. Extracts every Route path via
+  regex, matches against per-pillar prefix lists, and falls back to an
+  explicit allowlist for legacy/shared paths. Produces "→ belongs in
+  src/routes/<file>" hints for misplaced paths by looking up canonical
+  owners. Relative (nested-child) paths are accepted since they inherit
+  their parent's prefix in the same file.
+- package.json: adds `check:pillar-routes` npm script.
+- .github/workflows/deploy-now.yml: runs `npm run check:pillar-routes`
+  after `npm ci` and before `npm run build` so CI fails fast on
+  violations.
+
+Configuration:
+- PILLAR_CONFIGS declares prefixes and allowlists for all 14 current
+  pillar route files. The allowlists were populated from the actual
+  legacy paths currently in each file (e.g. dashboard owns `/`, `/home`,
+  `/landing`, `/pricing`, `/real-estate/property/:propertyId`, etc.),
+  so CI is green on today's code while capturing every exception
+  explicitly for future review.
+- A companion CANONICAL_OWNERS table drives the "did you mean" hint
+  when a path's natural pillar is obvious.
 
 Verification:
-- App now renders the home page with all env vars present.
-- With AWS_REGION + PostHog keys absent (current dev state), home page
-  renders normally and the dev banner shows "AWS, PostHog".
-- Critical-path Boot Error UI in main.tsx remains the fallback for any
-  Supabase-tier failure or React crash during initial render.
+- `npx tsx scripts/check-pillar-routes.ts` → OK, 524 paths across 14
+  pillar files validated.
+- Manual tamper test (moving "/dashboard/settings" → "/admin/settings"
+  in dashboard.routes.tsx) produced the expected failure with the
+  correct "belongs in src/routes/admin.routes.tsx" pointer and exit 1.
 
-Out of scope: implementing missing integrations themselves; per-pillar
-functional audits; Vercel deploy config.
-
-Replit-Task-Id: e90af781-7a81-422f-82e1-6bba9d31e287
+Deviations: none.
+Replit-Task-Id: 07907ddb-60a5-4bf2-bbcf-7d56239d5300
