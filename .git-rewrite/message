@@ -1,0 +1,38 @@
+Task #952: Alert ops when merge-conflict recovery storms a single file
+
+Adds threshold-based spike detection to the operator dashboard at
+/admin/merge-conflict-recovery so a single file path crossing N
+conflicts within a rolling window pages on-call instead of waiting
+for someone to refresh the page.
+
+Changes:
+- src/repositories/merge-conflict-recovery.repository.ts
+  Adds pure projection `summarizeFileBurstsWithinWindow(events,
+  windowMs, now?)` returning per-file counts + lastAt within the
+  window. Sorted desc by count.
+
+- src/pages/admin/AdminMergeConflictRecoveryPage.tsx
+  - Configurable threshold (count + window minutes) with sensible
+    defaults (5 conflicts / 60 min) persisted to localStorage.
+    Bounded inputs: count >= 2, window 5..1440 minutes.
+  - New "Spike detection" card showing the threshold inputs, a top-
+    of-window proximity bar (current top-file count vs threshold),
+    and per-file proximity bars for the 10 worst files in the
+    window. Card border / icon turn destructive when any file is
+    over the line.
+  - `useFileBurstAlerts` hook fires `createAdminAlert` with
+    alertType `merge_conflict_recovery_storm`, severity `high`,
+    contextType `merge_conflict_recovery`, contextId = file path,
+    and metadata (count, threshold, window, last_event_at). Dedup
+    keyed on (file, threshold) with a 1h cool-down stored in
+    localStorage; in-flight set prevents double-fire from the
+    refetch interval. Errors are swallowed (logged) so a flaky
+    insert doesn't break the dashboard.
+
+Alerts flow into the existing alert center (admin_alerts /
+AdminAlertCenterPage) — no new pipeline added.
+
+Verification: tsc --noEmit and eslint both clean on touched files.
+
+Follow-ups proposed (#974 server-side firing, #975 team-wide
+threshold storage, #976 tests for spike detection).
