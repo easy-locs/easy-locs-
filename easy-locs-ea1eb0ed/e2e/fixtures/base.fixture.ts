@@ -65,18 +65,22 @@ export const test = base.extend<Fixtures>({
     await use(page);
   },
 
+  // eslint-disable-next-line no-empty-pattern
   seededListingIds: async ({}, use) => {
     await use(getSeededListingIds());
   },
 
+  // eslint-disable-next-line no-empty-pattern
   seedListing: async ({}, use) => {
     await use(SEED_LISTING);
   },
 
+  // eslint-disable-next-line no-empty-pattern
   seedListing2: async ({}, use) => {
     await use(SEED_LISTING_2);
   },
 
+  // eslint-disable-next-line no-empty-pattern
   seedWallet: async ({}, use) => {
     await use(SEED_WALLET);
   },
