@@ -104,7 +104,19 @@ Deno.serve(async (req) => {
       if (status === "running") payload.last_run_at = now;
       if (status === "ok") { payload.last_success_at = now; payload.consecutive_failures = 0; }
       if (status === "error") payload.last_error_at = now;
-      try { await supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" }); } catch(_) {}
+      try {
+        await supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" });
+      } catch (err) {
+        // LB Closeout #853 — replace bare catch with structured emission so the
+        // audit pipeline can correlate supervisor heartbeat failures.
+        console.error(JSON.stringify({
+          level: "error",
+          event: "engine_cron.supervisor_upsert_failed",
+          engine_name: engineName,
+          status,
+          message: err instanceof Error ? err.message : String(err),
+        }));
+      }
     }
 
     async function callFunction(name: string, body: Record<string, any> = {}) {
@@ -993,7 +1005,17 @@ Deno.serve(async (req) => {
       try {
         await supabase.from("fx_rates").upsert({ base: "AED", target: "USD", rate: 0.2723, updated_at: now } as any, { onConflict: "base,target" });
         await supabase.from("fx_rates").upsert({ base: "AED", target: "EUR", rate: 0.2510, updated_at: now } as any, { onConflict: "base,target" });
-      } catch(_) {}
+      } catch (err) {
+        // LB Closeout #853 — replace bare catch with structured emission so
+        // FX-refresh failures are visible to the audit pipeline.
+        console.error(JSON.stringify({
+          level: "error",
+          event: "engine_cron.fx_refresh_failed",
+          base: "AED",
+          targets: ["USD", "EUR"],
+          message: err instanceof Error ? err.message : String(err),
+        }));
+      }
       return { refreshed: 2 };
     }, "standard");
 
