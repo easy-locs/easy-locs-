@@ -9,10 +9,11 @@
  *   - Recent events with timestamp, builder task id, overlap count,
  *     and a deep link into the builder task row.
  */
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, AlertTriangle, RefreshCw, ExternalLink, GitMerge, X, Siren } from "lucide-react";
+import { toast } from "sonner";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,10 +23,15 @@ import { Label } from "@/components/ui/label";
 import { dashboardRepo } from "@/repositories/domain/dashboard.repo";
 import {
   fetchMergeConflictRecoveryEvents,
+  loadMergeConflictAlertThreshold,
+  MAX_THRESHOLD_WINDOW_MINUTES,
+  type MergeConflictAlertThreshold,
+  MIN_THRESHOLD_COUNT,
+  MIN_THRESHOLD_WINDOW_MINUTES,
   projectMergeConflictRecoverySummary,
+  saveMergeConflictAlertThreshold,
   summarizeFileBurstsWithinWindow,
 } from "@/repositories/merge-conflict-recovery.repository";
-import { createAdminAlert } from "@/lib/admin/create-admin-alert";
 
 const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
   month: "short",
@@ -35,80 +41,6 @@ const DAY_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
 function formatDay(iso: string): string {
   const d = new Date(iso + "T00:00:00Z");
   return DAY_LABEL_FORMATTER.format(d);
-}
-
-const ALERT_THRESHOLD_STORAGE_KEY = "admin.mergeConflictRecovery.alertThreshold.v1";
-const ALERT_DEDUPE_STORAGE_KEY = "admin.mergeConflictRecovery.alertDedupe.v1";
-const DEFAULT_THRESHOLD_COUNT = 5;
-const DEFAULT_THRESHOLD_WINDOW_MINUTES = 60;
-const MIN_THRESHOLD_COUNT = 2;
-const MIN_THRESHOLD_WINDOW_MINUTES = 5;
-const MAX_THRESHOLD_WINDOW_MINUTES = 24 * 60;
-/** Re-fire an alert for the same file at most once per this cool-down. */
-const ALERT_COOLDOWN_MS = 60 * 60 * 1000;
-
-interface AlertThreshold {
-  count: number;
-  windowMinutes: number;
-}
-
-function loadThreshold(): AlertThreshold {
-  if (typeof window === "undefined") {
-    return {
-      count: DEFAULT_THRESHOLD_COUNT,
-      windowMinutes: DEFAULT_THRESHOLD_WINDOW_MINUTES,
-    };
-  }
-  try {
-    const raw = window.localStorage.getItem(ALERT_THRESHOLD_STORAGE_KEY);
-    if (!raw) throw new Error("missing");
-    const parsed = JSON.parse(raw) as Partial<AlertThreshold>;
-    const count = Math.max(
-      MIN_THRESHOLD_COUNT,
-      Math.floor(Number(parsed.count) || DEFAULT_THRESHOLD_COUNT),
-    );
-    const windowMinutes = Math.min(
-      MAX_THRESHOLD_WINDOW_MINUTES,
-      Math.max(
-        MIN_THRESHOLD_WINDOW_MINUTES,
-        Math.floor(Number(parsed.windowMinutes) || DEFAULT_THRESHOLD_WINDOW_MINUTES),
-      ),
-    );
-    return { count, windowMinutes };
-  } catch {
-    return {
-      count: DEFAULT_THRESHOLD_COUNT,
-      windowMinutes: DEFAULT_THRESHOLD_WINDOW_MINUTES,
-    };
-  }
-}
-
-function saveThreshold(t: AlertThreshold): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(ALERT_THRESHOLD_STORAGE_KEY, JSON.stringify(t));
-  } catch {
-    // best-effort
-  }
-}
-
-function loadAlertDedupe(): Record<string, number> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = window.localStorage.getItem(ALERT_DEDUPE_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Record<string, number>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveAlertDedupe(d: Record<string, number>): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.setItem(ALERT_DEDUPE_STORAGE_KEY, JSON.stringify(d));
-  } catch {
-    // best-effort
-  }
 }
 
 export default function AdminMergeConflictRecoveryPage() {
@@ -148,26 +80,40 @@ export default function AdminMergeConflictRecoveryPage() {
     return max;
   }, [summary.perDay]);
 
-  const [threshold, setThreshold] = useState<AlertThreshold>(() => loadThreshold());
-  useEffect(() => {
-    saveThreshold(threshold);
-  }, [threshold]);
+  const queryClient = useQueryClient();
+  const thresholdQuery = useQuery({
+    queryKey: ["admin-merge-conflict-recovery-threshold"],
+    queryFn: loadMergeConflictAlertThreshold,
+    staleTime: 30_000,
+  });
+  const thresholdMutation = useMutation({
+    mutationFn: saveMergeConflictAlertThreshold,
+    onSuccess: (saved) => {
+      queryClient.setQueryData(
+        ["admin-merge-conflict-recovery-threshold"],
+        saved,
+      );
+      toast.success("Spike-detection threshold saved");
+    },
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Failed to save threshold: ${msg}`);
+    },
+  });
+  const threshold: MergeConflictAlertThreshold | undefined = thresholdQuery.data;
 
-  const fileBursts = useMemo(
-    () =>
-      summarizeFileBurstsWithinWindow(
-        data ?? [],
-        threshold.windowMinutes * 60 * 1000,
-      ).slice(0, 10),
-    [data, threshold.windowMinutes],
-  );
+  const fileBursts = useMemo(() => {
+    if (!threshold) return [];
+    return summarizeFileBurstsWithinWindow(
+      data ?? [],
+      threshold.windowMinutes * 60 * 1000,
+    ).slice(0, 10);
+  }, [data, threshold]);
 
-  const alertingFiles = useMemo(
-    () => fileBursts.filter((f) => f.count >= threshold.count),
-    [fileBursts, threshold.count],
-  );
-
-  useFileBurstAlerts(alertingFiles, threshold);
+  const alertingFiles = useMemo(() => {
+    if (!threshold) return [];
+    return fileBursts.filter((f) => f.count >= threshold.count);
+  }, [fileBursts, threshold]);
 
   return (
     <SubPageShell
@@ -254,8 +200,9 @@ export default function AdminMergeConflictRecoveryPage() {
             </Card>
 
             <SpikeDetectionCard
-              threshold={threshold}
-              setThreshold={setThreshold}
+              thresholdQuery={thresholdQuery}
+              onSave={(t) => thresholdMutation.mutate(t)}
+              isSaving={thresholdMutation.isPending}
               bursts={fileBursts}
               alertingFiles={alertingFiles}
             />
@@ -534,18 +481,73 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 interface SpikeDetectionCardProps {
-  threshold: AlertThreshold;
-  setThreshold: (next: AlertThreshold) => void;
+  thresholdQuery: {
+    data: MergeConflictAlertThreshold | undefined;
+    isLoading: boolean;
+    error: unknown;
+    refetch: () => void;
+  };
+  onSave: (next: MergeConflictAlertThreshold) => void;
+  isSaving: boolean;
   bursts: ReadonlyArray<{ file: string; count: number; lastAt: string }>;
   alertingFiles: ReadonlyArray<{ file: string; count: number; lastAt: string }>;
 }
 
 function SpikeDetectionCard({
-  threshold,
-  setThreshold,
+  thresholdQuery,
+  onSave,
+  isSaving,
   bursts,
   alertingFiles,
 }: SpikeDetectionCardProps) {
+  const threshold = thresholdQuery.data;
+  const [draft, setDraft] = useState<MergeConflictAlertThreshold | null>(null);
+  useEffect(() => {
+    if (threshold) setDraft(threshold);
+  }, [threshold]);
+
+  if (thresholdQuery.isLoading || !threshold || !draft) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-muted-foreground" />
+            Spike detection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+  if (thresholdQuery.error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Siren className="h-4 w-4 text-destructive" />
+            Spike detection
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-sm text-destructive flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              Failed to load shared threshold:{" "}
+              {(thresholdQuery.error as Error).message}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const dirty =
+    draft.count !== threshold.count ||
+    draft.windowMinutes !== threshold.windowMinutes;
   const topCount = bursts[0]?.count ?? 0;
   const proximityPct = Math.min(
     100,
@@ -579,13 +581,13 @@ function SpikeDetectionCard({
                 type="number"
                 inputMode="numeric"
                 min={MIN_THRESHOLD_COUNT}
-                value={threshold.count}
+                value={draft.count}
                 onChange={(e) => {
                   const next = Math.max(
                     MIN_THRESHOLD_COUNT,
                     Math.floor(Number(e.target.value) || MIN_THRESHOLD_COUNT),
                   );
-                  setThreshold({ ...threshold, count: next });
+                  setDraft({ ...draft, count: next });
                 }}
                 className="h-8 w-24"
               />
@@ -603,7 +605,7 @@ function SpikeDetectionCard({
                 inputMode="numeric"
                 min={MIN_THRESHOLD_WINDOW_MINUTES}
                 max={MAX_THRESHOLD_WINDOW_MINUTES}
-                value={threshold.windowMinutes}
+                value={draft.windowMinutes}
                 onChange={(e) => {
                   const raw = Math.floor(
                     Number(e.target.value) || MIN_THRESHOLD_WINDOW_MINUTES,
@@ -612,13 +614,30 @@ function SpikeDetectionCard({
                     MAX_THRESHOLD_WINDOW_MINUTES,
                     Math.max(MIN_THRESHOLD_WINDOW_MINUTES, raw),
                   );
-                  setThreshold({ ...threshold, windowMinutes: next });
+                  setDraft({ ...draft, windowMinutes: next });
                 }}
                 className="h-8 w-24"
               />
               <span className="text-xs text-muted-foreground">minutes</span>
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-muted-foreground">
+            Shared across all operators. Server-side audit handler reads
+            this and pages on-call automatically when crossed.
+          </p>
+          <Button
+            size="sm"
+            variant={dirty ? "default" : "outline"}
+            disabled={!dirty || isSaving}
+            onClick={() => onSave(draft)}
+            className="gap-2 shrink-0"
+          >
+            {isSaving && <Loader2 className="h-3 w-3 animate-spin" />}
+            Save
+          </Button>
         </div>
 
         <div>
@@ -678,9 +697,10 @@ function SpikeDetectionCard({
           <div className="rounded border border-destructive/40 bg-destructive/5 p-3 text-xs flex items-start gap-2">
             <AlertTriangle className="h-3.5 w-3.5 mt-0.5 text-destructive shrink-0" />
             <span>
-              Paged ops for {alertingFiles.length} file
-              {alertingFiles.length === 1 ? "" : "s"} crossing the threshold.
-              Re-fires at most once per hour per file.
+              {alertingFiles.length} file
+              {alertingFiles.length === 1 ? " is" : "s are"} over the threshold.
+              The server-side audit handler pages ops in the Alert Center
+              (rate-limited to once per hour per file).
             </span>
           </div>
         )}
@@ -689,77 +709,11 @@ function SpikeDetectionCard({
   );
 }
 
-/**
- * Side-effect hook: persists an admin alert in the alert center
- * whenever a file path crosses the configured threshold. Dedup keyed
- * by (file, threshold) inside an hour-long cool-down so a rapid-fire
- * dashboard refresh can't spam the alert pipeline.
- */
-function useFileBurstAlerts(
-  alertingFiles: ReadonlyArray<{ file: string; count: number; lastAt: string }>,
-  threshold: AlertThreshold,
-): void {
-  const inFlight = useRef<Set<string>>(new Set());
-
-  const fire = useCallback(
-    async (
-      file: string,
-      count: number,
-      lastAt: string,
-      t: AlertThreshold,
-    ) => {
-      const dedupeKey = `${file}::${t.count}::${t.windowMinutes}`;
-      if (inFlight.current.has(dedupeKey)) return;
-      const dedupe = loadAlertDedupe();
-      const lastFiredAt = dedupe[dedupeKey] ?? 0;
-      if (Date.now() - lastFiredAt < ALERT_COOLDOWN_MS) return;
-      inFlight.current.add(dedupeKey);
-      try {
-        await createAdminAlert({
-          alertType: "merge_conflict_recovery_storm",
-          severity: "high",
-          title: `Merge-conflict storm on ${file}`,
-          body:
-            `${count} merge-conflict recovery events recorded for ${file} ` +
-            `within the last ${t.windowMinutes} minutes ` +
-            `(threshold ${t.count}). Most recent at ` +
-            `${new Date(lastAt).toISOString()}. Likely two agents ` +
-            `racing on the same file — investigate the builder loop.`,
-          contextType: "merge_conflict_recovery",
-          contextId: file,
-          metadata: {
-            file,
-            count,
-            threshold_count: t.count,
-            window_minutes: t.windowMinutes,
-            last_event_at: lastAt,
-            source: "AdminMergeConflictRecoveryPage",
-          },
-        });
-        const next = { ...loadAlertDedupe(), [dedupeKey]: Date.now() };
-        // Garbage-collect entries older than 24h so localStorage stays bounded.
-        const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-        for (const [k, v] of Object.entries(next)) {
-          if (typeof v !== "number" || v < cutoff) delete next[k];
-        }
-        saveAlertDedupe(next);
-      } catch (err) {
-        // Surface in console only — alert-creation is best-effort and
-        // we don't want to disrupt the dashboard render path.
-        console.error("Failed to create merge-conflict storm alert", err);
-      } finally {
-        inFlight.current.delete(dedupeKey);
-      }
-    },
-    [],
-  );
-
-  useEffect(() => {
-    for (const f of alertingFiles) {
-      void fire(f.file, f.count, f.lastAt, threshold);
-    }
-  }, [alertingFiles, threshold, fire]);
-}
+// NOTE (#952): the dashboard-driven alert hook was removed in favour
+// of server-side spike detection inside
+// `supabase/functions/_shared/execution/builders/merge-conflict-storm-alerts.ts`.
+// The dashboard only renders threshold + proximity now, which means ops
+// gets paged whether or not anyone has this page open.
 
 function Metric({ title, value }: { title: string; value: string }) {
   return (
