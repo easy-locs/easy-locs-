@@ -1,0 +1,71 @@
+# supabase.rpc("<name>") callsites (path:line:match)
+src/domains/wallet/adapters/supabase.adapter.ts:29:    const { data } = await supabase.rpc("ensure_wallet_account", {
+src/lib/auth-redirect.ts:12:    const { data, error } = await supabase.rpc("has_role", {
+src/__tests__/eslint-plugin-easylocs.test.ts:141:            code: `supabase.rpc('do_thing', {});`,
+supabase/functions/_shared/server-rate-limiter.ts:243:    const { data, error } = await supabase.rpc("atomic_rate_limit_increment", {
+supabase/functions/_shared/server-rate-limiter.ts:287:    const { data, error } = await supabase.rpc("atomic_rate_limit_increment", {
+supabase/functions/cleanup-expired-media/index.ts:90:    const { data: deletedCount, error: rpcError } = await supabase.rpc("cleanup_expired_messages");
+supabase/functions/cleanup-expired-media/index.ts:96:    const { data: noncesDeleted } = await supabase.rpc("cleanup_expired_nonces");
+supabase/functions/cleanup-expired-messages/index.ts:40:    const { data, error } = await supabase.rpc("cleanup_expired_messages");
+supabase/functions/expire-listings/index.ts:65:          await supabase.rpc("increment_listing_renewal_count", { p_listing_id: l.id }).catch(() => {});
+supabase/functions/expire-listings/index.ts:125:      const { data: freshnessResult } = await supabase.rpc("update_listing_freshness_scores");
+supabase/functions/orbit-payment/index.ts:249:      const { data: result, error: rpcError } = await supabase.rpc("transfer_locs", {
+supabase/functions/orbit-payment/index.ts:263:        await supabase.rpc("insert_into_dlq", {
+supabase/functions/stripe-webhook/index.ts:1350:  await supabase.rpc("increment_listing_renewal_count", { p_listing_id: listingId }).catch(() => {});
+supabase/functions/wallet-pin/index.ts:318:        const { data: lockoutResult, error: lockoutErr } = await supabase.rpc("atomic_pin_fail_increment", {
+supabase/functions/wallet-pin/index.ts:416:        await supabase.rpc("atomic_pin_success_reset", { p_user_id: userId })
+supabase/functions/wallet-pin/index.ts:424:      const { data: lockoutResult, error: lockoutErr } = await supabase.rpc("atomic_pin_fail_increment", {
+supabase/functions/alert-dispatcher/index.ts:133:      await supabase.rpc("update_autonomy_status", {
+supabase/functions/alert-dispatcher/index.ts:260:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/autonomous-cron-dispatcher/index.ts:159:        const { error: dlqErr } = await supabase.rpc("insert_into_dlq", {
+supabase/functions/autonomous-cron-dispatcher/index.ts:209:    const { error: statusErr } = await supabase.rpc("update_autonomy_status", {
+supabase/functions/backup-storage/index.ts:119:    await supabase.rpc("cleanup_old_config_snapshots").catch((e: unknown) => {
+supabase/functions/backup-storage/index.ts:137:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/cache-manager/index.ts:253:      await supabase.rpc("cleanup_expired_cache").catch((e: unknown) => {
+supabase/functions/cache-manager/index.ts:257:      await supabase.rpc("update_autonomy_status", {
+supabase/functions/dlq-processor/index.ts:248:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/dlq-processor/index.ts:256:    await supabase.rpc("record_db_observability", {
+supabase/functions/job-queue-worker/index.ts:184:        await supabase.rpc("insert_into_dlq", {
+supabase/functions/job-queue-worker/index.ts:245:        const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
+supabase/functions/job-queue-worker/index.ts:297:            await supabase.rpc("insert_into_dlq", {
+supabase/functions/job-queue-worker/index.ts:329:          await supabase.rpc("record_db_observability", {
+supabase/functions/job-queue-worker/index.ts:346:            await supabase.rpc("insert_into_dlq", {
+supabase/functions/job-queue-worker/index.ts:409:        const { data: isDuplicate } = await supabase.rpc("check_queue_dedup", {
+supabase/functions/job-queue-worker/index.ts:459:            await supabase.rpc("insert_into_dlq", {
+supabase/functions/job-queue-worker/index.ts:494:          await supabase.rpc("record_db_observability", {
+supabase/functions/job-queue-worker/index.ts:514:            await supabase.rpc("insert_into_dlq", {
+supabase/functions/job-queue-worker/index.ts:569:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/job-queue-worker/index.ts:584:    await supabase.rpc("record_db_observability", {
+supabase/functions/send-push-notification/index.ts:225:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/sentinel-server/index.ts:183:  await supabase.rpc("update_autonomy_status", {
+supabase/functions/watchdog-ping/index.ts:223:        await supabase.rpc("emit_server_event", {
+supabase/functions/watchdog-ping/index.ts:252:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/watchdog-ping/index.ts:299:  await supabase.rpc("update_autonomy_status", {
+supabase/functions/notification-dispatcher/index.ts:372:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/send-sms/index.ts:125:    await supabase.rpc("update_autonomy_status", {
+supabase/functions/command-center-api/index.ts:241:  await supabase.rpc("emit_server_event", {
+supabase/functions/command-center-api/index.ts:299:  await supabase.rpc("emit_server_event", {
+supabase/functions/command-center-api/index.ts:331:  await supabase.rpc("record_circuit_breaker_success", {
+supabase/functions/command-center-api/index.ts:345:  await supabase.rpc("emit_server_event", {
+supabase/functions/omega-server-loop/index.ts:85:    await supabase.rpc("update_agent_heartbeat", {
+supabase/functions/omega-server-loop/index.ts:281:    await supabase.rpc("emit_server_event", {
+supabase/functions/sentinel-server-guards/index.ts:277:      await supabase.rpc("emit_server_event", {
+supabase/functions/sentinel-server-guards/index.ts:547:  await supabase.rpc("update_agent_heartbeat", {
+supabase/functions/sentinel-server-guards/index.ts:578:      await supabase.rpc("emit_server_event", {
+supabase/functions/sentinel-server-guards/index.ts:612:        await supabase.rpc("record_circuit_breaker_success", {
+supabase/functions/sentinel-server-guards/index.ts:652:      await supabase.rpc("emit_server_event", {
+supabase/functions/sentinel-server-guards/index.ts:676:      await supabase.rpc("record_circuit_breaker_failure", {
+supabase/functions/cleanup-orphan-media/index.ts:40:    const { data: orphans, error: findError } = await supabase.rpc("find_orphan_media", {
+supabase/functions/job-runner/index.ts:112:  const { data: jobs, error: fetchErr } = await supabase.rpc("claim_pending_jobs", {
+supabase/functions/runtime-control-plane/index.ts:205:      const { data, error } = await supabase.rpc("record_anomaly_window", {
+supabase/functions/runtime-control-plane/index.ts:228:      const { error } = await supabase.rpc("upsert_dashboard_card", {
+supabase/functions/runtime-control-plane/index.ts:243:      const { data, error } = await supabase.rpc("record_db_observability", {
+supabase/functions/runtime-control-plane/index.ts:256:      const { data, error } = await supabase.rpc("toggle_kill_switch_server", {
+supabase/functions/runtime-control-plane/index.ts:267:      const { data, error } = await supabase.rpc("set_domain_degradation", {
+supabase/functions/runtime-control-plane/index.ts:279:      const { data, error } = await supabase.rpc("check_queue_dedup", {
+supabase/functions/spatial-query/index.ts:73:      const { data, error } = await supabase.rpc("spatial_nearby", {
+supabase/functions/spatial-query/index.ts:101:        const { data: rawData, error: rawError } = await supabase.rpc("exec_sql", {
+supabase/functions/spatial-query/index.ts:123:      const { data, error } = await supabase.rpc("auto_assign_zone", {
+supabase/functions/spatial-query/index.ts:140:      const { data, error } = await supabase.rpc("point_in_zones", {
+supabase/functions/system-router/index.ts:335:        const { data, error } = await supabase.rpc("capture_slow_queries", {
+supabase/functions/chief-agent/index.ts:84:  const { data } = await supabase.rpc("has_role", {

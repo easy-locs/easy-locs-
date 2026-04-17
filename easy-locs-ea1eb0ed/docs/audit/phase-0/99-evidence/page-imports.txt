@@ -1,0 +1,12 @@
+# Static import callsites referencing src/pages/* (file:line:import)
+src/components/app/AppRouters.tsx:9:import Index from "@/pages/Index";
+src/components/communication-hub/OrbitAccountSection.tsx:18:import YouEditProfilePage from "@/components/orbit/you/subpages/YouEditProfilePage";
+src/components/communication-hub/OrbitAccountSection.tsx:19:import YouNotificationsPage from "@/components/orbit/you/subpages/YouNotificationsPage";
+src/components/communication-hub/OrbitAccountSection.tsx:20:import YouPrivacyPage from "@/components/orbit/you/subpages/YouPrivacyPage";
+src/components/communication-hub/OrbitAccountSection.tsx:21:import YouChatDefaultsPage from "@/components/orbit/you/subpages/YouChatDefaultsPage";
+src/components/communication-hub/OrbitAccountSection.tsx:22:import YouMediaPage from "@/components/orbit/you/subpages/YouMediaPage";
+src/pages/admin/AdminAgentRunsPage.tsx:23:import ReplayDialog from "@/pages/admin/control/runs/ReplayDialog";
+src/pages/EditProfilePage.tsx:2:import YouEditProfilePage from "@/components/orbit/you/subpages/YouEditProfilePage";
+src/__tests__/admin-agents-page.test.tsx:107:import AdminAgentsPage from "../pages/admin/AdminAgentsPage";
+src/__tests__/admin-agents-route-gate.test.tsx:41:import AdminAgentsPage from "@/pages/admin/AdminAgentsPage";
+src/__tests__/lb1-track3-hardening.test.ts:47:} from "../pages/DashboardCommandCenter";

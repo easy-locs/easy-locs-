@@ -1,4 +1,4 @@
-# CREATE INDEX (file:line)
+# CREATE INDEX (relative_path:line:full_match)
 supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:64:CREATE INDEX idx_messages_tenant_id ON public.messages(tenant_id);
 supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:65:CREATE INDEX idx_messages_org_id ON public.messages(org_id);
 supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:66:CREATE INDEX idx_messages_created_at ON public.messages(created_at DESC);
