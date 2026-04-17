@@ -1,0 +1,43 @@
+tree 5cdaa2d81a014113cb6d86011540b5ad806a9214
+parent 513c4d90a81aa4c6a8c4dc188c1601dca1148e49
+author jstarbuzz <jstarbuzz@gmail.com> 1776460893 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776462194 +0000
+
+Fix blank-screen boot crash + boot hardening audit (Task #913)
+
+Root cause: validateIntegrationsBoot() ran at the top of src/main.tsx
+before the try/catch that wraps ReactDOM render. Missing AWS/PostHog
+keys caused it to throw, module evaluation aborted, and the HTML splash
+was hidden in dev — leaving a blank gray page with no diagnostic.
+
+Changes:
+- src/main.tsx: moved validateIntegrationsBoot() inside the render
+  try/catch so any throw lands on the existing inline Boot Error UI;
+  wrapped each pre-render helper (initSentryBoot, startTrace,
+  installFetchTracePropagation, initBrowserOtel) in its own try/catch
+  so a single failing observability helper can never blank the screen.
+- src/lib/integrations/registry.ts: re-tiered enforceInDev — only
+  Supabase still blocks dev boot. Mapbox, AWS, Sentry, PostHog are now
+  warn-only; each degrades gracefully at runtime.
+- src/components/dev/MissingIntegrationsBanner.tsx (new): dev-only
+  fixed footer chip listing integrations with missing required env
+  vars, with a link to /admin/diagnostics.
+- src/App.tsx: lazy-mounted the banner under CoreProviders (dev only)
+  and wrapped bootstrapAppRuntime() in try/catch.
+- index.html: removed the `if (!isDev)` guard so the HTML radar splash
+  is visible in dev too — stalled boots are now visibly stalled instead
+  of looking blank. The 15s/6s watchdogs already in place keep working.
+- docs/boot-audit.md (new): full per-helper audit of the boot chain
+  with tier classification, current protections, and follow-ups.
+
+Verification:
+- App now renders the home page with all env vars present.
+- With AWS_REGION + PostHog keys absent (current dev state), home page
+  renders normally and the dev banner shows "AWS, PostHog".
+- Critical-path Boot Error UI in main.tsx remains the fallback for any
+  Supabase-tier failure or React crash during initial render.
+
+Out of scope: implementing missing integrations themselves; per-pillar
+functional audits; Vercel deploy config.
+
+Replit-Task-Id: e90af781-7a81-422f-82e1-6bba9d31e287
