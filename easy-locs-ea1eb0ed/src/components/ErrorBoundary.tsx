@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { captureException } from "@/lib/analytics/sentry";
 
 interface Props {
   children: ReactNode;
@@ -25,11 +26,7 @@ class ErrorBoundary extends Component<Props, State> {
     console.error("[ErrorBoundary] Error:", error.message, error.stack);
     console.error("[ErrorBoundary] Component Stack:", info.componentStack);
 
-    void import("@/lib/analytics/sentry")
-      .then(({ captureException }) => {
-        captureException(error, { componentStack: info.componentStack });
-      })
-      .catch(() => {});
+    try { captureException(error, { componentStack: info.componentStack }); } catch {}
 
     void import("@/lib/ai-audit/triggers")
       .then(({ reportUIRegression }) => {

@@ -191,9 +191,12 @@ export const RADAR_QUICK_CATEGORIES: { id: RadarMainCategory; emoji: string; lab
     .filter(c => c.value !== "all" && c.value !== "utility")
     .map(c => ({ id: c.value, emoji: c.emoji, labelKey: `radar.layer_${c.value}` }));
 
-export const loadTaxonomyAliases = () => import("./taxonomy-aliases");
+import * as _taxonomyAliasesModule from "./taxonomy-aliases";
+import * as _worldTaxonomyDataModule from "./world-taxonomy-data";
 
-export const loadWorldTaxonomy = () => import("./world-taxonomy-data");
+export const loadTaxonomyAliases = async () => _taxonomyAliasesModule;
+
+export const loadWorldTaxonomy = async () => _worldTaxonomyDataModule;
 
 export function strictVerticalToRadarCategory(vertical: string): RadarMainCategory {
   return VERTICAL_TO_RADAR[vertical as Vertical] ?? "shops";

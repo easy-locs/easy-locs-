@@ -1,5 +1,5 @@
 import { useGeoStore, type GeoPermission } from "./geo-store";
-import { getIPLocation } from "./ip-fallback";
+import { getIPLocation, getDefaultFallback } from "./ip-fallback";
 import { platformBus } from "@/lib/shared/platform-bus";
 
 class GeoService {
@@ -55,7 +55,6 @@ class GeoService {
       }, "geo-service");
     } catch {
       // Even IP failed — use hardcoded default
-      const { getDefaultFallback } = await import("./ip-fallback");
       const fb = getDefaultFallback();
       useGeoStore.getState().setStatePartial({
         ready: true,
