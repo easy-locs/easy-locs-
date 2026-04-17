@@ -63,7 +63,7 @@ it owns:
 | --- | --- | --- |
 | P1 (payments + wallet) | 79 | per-file, retires when payments+wallet adapters land |
 | P2 (KYC + identity) | 38 | per-file, retires when KYC+identity adapters land |
-| P3 (rides + marketplace) | 157 | per-file, retires when rides+marketplace adapters land |
+| P3 (rides + marketplace) | 157 | per-file, retires when rides+marketplace adapters land — phase plan + gating doc at `docs/audits/agent-migration/p3-rides-marketplace.md` (task #927) |
 | P4 (content + contacts) | 149 | per-file, retires when content+contacts adapters land |
 | P5 (notifications + OTP) | 33 | per-file, retires when notifications+OTP adapters land |
 | ADMIN | 40 | promoted to `globalExemptions` (admin/command-control surface) |
