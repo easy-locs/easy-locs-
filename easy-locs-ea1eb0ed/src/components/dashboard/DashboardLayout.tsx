@@ -71,12 +71,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // Role-aware section visibility: which nav sections each role can access.
   // activeRole covers: "landlord" | "tenant" | "client" (from AuthContext)
   // userType also used: "landlord" | "tenant" | "client"
-  // admin is detected from user metadata or subscription plan.
   // Merchant / driver roles are detected from user_metadata.role.
+  // Admin detection: single source of truth is the `useIsAdmin` hook
+  // (email allowlist + server-side `has_role` RPC), so the sidebar
+  // visibility and the route guards (`ProtectedRoute` / `AdminRoute`)
+  // always agree and cannot drift apart.
   const metaRole = (user?.user_metadata?.role as string | undefined) ?? "";
-  // Admin detection: single source of truth is the server-side `has_role` RPC
-  // (via `useIsAdmin`), so the sidebar visibility and the route guard
-  // (`ProtectedRoute` / `AdminRoute`) always agree.
   const isAdmin = isAdminRole;
   const isMerchant = metaRole === "merchant" || metaRole === "seller";
   const isDriver = metaRole === "driver";
