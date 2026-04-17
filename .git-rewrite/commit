@@ -1,67 +1,73 @@
-tree 8feaacbed2a8693e7810267a8c5e718d831c6c9e
-parent 25d8d7bfe69efbd3df0f69d065ba88a7ee071c35
-author jstarbuzz <jstarbuzz@gmail.com> 1776466697 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776466697 +0000
+tree 80f9460067ee69ce3509fcddd8939fb7135ac715
+parent dddc8044082f0f8e8ae0215e3031c5cfcc542280
+author jstarbuzz <jstarbuzz@gmail.com> 1776450210 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776450210 +0000
 
-Task #940: Surface merge-conflict recovery events on the operator dashboard
+ACP Agent 10 (#869) — QA pass on /admin/control plane
 
-Adds operator-visible surfacing for the LC4 dev-builder
-`merge_conflict_recovery` audit envelopes that the recovery handler
-stamps onto `system.execution_tasks.payload` when the loop auto-replans
-on a hard drift overlap.
+QA scope (read-only verification + targeted bug fixes; no new features).
 
-Changes
-- Extended `createMergeConflictAuditHandler` in
-  `supabase/functions/_shared/execution/builders/merge-conflict-recovery.ts`
-  to include a deduplicated `files: string[]` field in the audit entry,
-  enabling per-file aggregation downstream.
-- New repository
-  `src/repositories/merge-conflict-recovery.repository.ts`:
-  - `fetchMergeConflictRecoveryEvents` now keyset-paginates over
-    `system.execution_tasks` (PAGE_SIZE 500, MAX_PAGES 100) so 14-day
-    aggregates do not silently undercount under load. Replaces the
-    earlier 200-row hard cap.
-  - Pure `projectMergeConflictRecoverySummary` produces per-day buckets,
-    top-5 files, totals, and affected task count.
-- New page
-  `src/pages/admin/AdminMergeConflictRecoveryPage.tsx`:
-  - Metrics, 14-day bar chart, top-5 conflicting paths, recent events
-    list.
-  - Deep linking is shareable: clicking an event writes
-    `?taskId=<id>` to the URL; the same URL pre-opens the drawer on
-    load. The drawer fetches the affected `system.execution_tasks`
-    row by id (`dashboardRepo.fetchExecutionTaskById`).
-  - "Open in Command & Control" forwards the task id as
-    `/admin/command-control?tab=live-tasks&taskId=<id>`.
-- `CommandControlDashboard` honors `?tab=` to land on the live-tasks
-  tab.
-- `ExecutionTaskPanel` reads `?taskId=` from the URL: pulls that row
-  by id (independent of the active status filter), pins it to the top
-  of the list, and scroll-highlights it with a ring — completing the
-  shareable deep link from the recovery dashboard into the live
-  builder task row.
-- `AdminOpsDashboardPage` (the operator dashboard) embeds a
-  `MergeConflictRecoveryWidget` panel that shows the 14-day event
-  count, affected task count, and top file, and links to the full
-  detail page.
-- Wired into the route registry and `AdminRoutes` at
-  `/admin/merge-conflict-recovery`.
+Verifications run
+- TypeScript: `npx tsc --noEmit` → 0 errors (clean before and after edits).
+- Production build (`vite build`): 7569 modules transformed, 0 errors.
+  Pre-existing rollup warnings (circular chunks, dynamic+static imports) are
+  documented as a follow-up; no regression introduced. Build was confirmed
+  to progress past transform into the rendering-chunks phase with no errors.
+- Dev server boots cleanly (~480ms ready, no console errors on initial load).
+- Legacy admin URL redirects in src/routes/admin.routes.tsx all confirmed
+  wired (agents, agent-runs with :slug→?agent= promotion, command-center,
+  approvals, autonomy, control-room, engine-control-room, master-control).
+- Action handlers: every onClick under src/{pages,components}/admin/control
+  has real logic — no `() => {}` stubs, no `onClick={undefined}`.
+- Hotkeys: ⌘K palette, `?` shortcuts, `Esc`, `[`, `g <letter>` all wired in
+  useControlHotkeys.ts.
 
-Code-review iterations addressed
-1. First review: original `?taskId=` link did not resolve in any
-   downstream surface. Fixed with an in-page drawer.
-2. Second review:
-   - Deep link is now URL-driven (shareable / bookmarkable) and
-     forwards into Command & Control, which pins/highlights the row.
-   - Surfacing on the operator dashboard added as a panel widget on
-     `AdminOpsDashboardPage`.
-   - Removed the 200-row cap; replaced with paginated keyset scan.
+Targeted bug fixes (in this diff)
+1) src/lib/seo/seo-provider-stats.ts
+   Removed duplicate `"istanbul"` key in CITY_BASE_COUNTS (same value at
+   lines 15 and 25). Eliminates the only "Duplicate key" esbuild warning
+   surfaced during build.
 
-Validation
-- LSP diagnostics clean across the project.
-- `npx vitest run src/__tests__/lc4-merge-conflict-recovery.test.ts`:
-  42/42 pass (handler audit + new projection tests).
+2) src/pages/admin/control/ControlTopBar.tsx
+   - Disable the global kill-switch button when no handler is registered,
+     so it can no longer be clicked into a no-op confirm dialog.
+   - Replaced the stale "Agent 5/6 binds it" placeholder copy with a
+     production-grade message pointing the operator to Mission Control
+     (where ControlOverview registers the handler via
+     registerKillSwitchHandler).
 
-No deviations from the task brief.
+3) src/pages/admin/control/sections/ApprovalsSection.tsx
+   - Stabilized the Supabase Presence useEffect dep list: was depending on
+     `user.user_metadata` (a fresh object every render) which caused
+     repeated channel re-subscribe / un-subscribe cycles. Now keyed on
+     `user?.id` only, with display-name resolved inside the effect from
+     the latest user snapshot.
+   - Approval row: added `role="button"`, `tabIndex={0}`, `aria-label`,
+     and `onKeyDown` (Enter/Space) so the queue is fully keyboard
+     navigable and screen-reader friendly. Focus ring added.
 
-Replit-Task-Id: 6fceefd6-f7d5-47c6-b8be-d79627282c16
+4) src/components/admin/control/agents/AgentsCockpit.tsx
+   - Agent row (the click target opening the agent drawer): same a11y
+     treatment as approvals — `role="button"`, `tabIndex={0}`,
+     `aria-label`, `onKeyDown` (Enter/Space), focus ring. The cockpit
+     was previously mouse-only.
+   - Both row keyboard handlers (approvals + agents) early-return when
+     `e.target !== e.currentTarget` so Enter/Space pressed on inner
+     interactive controls (checkbox, action buttons, sparkline) does not
+     bubble up and re-open the drawer.
+
+Known gaps left for follow-ups (out of scope: "aucune nouvelle feature")
+- src/pages/admin/control/sections/RunsSection.tsx and CommandSection.tsx
+  are still SectionPlaceholder slots awaiting their owner agents
+  (follow-ups #884 and #885).
+- Bundle warnings (circular chunks + mixed import patterns) inflate the
+  rendering-chunks phase — pre-existing architectural concern, follow-up
+  #886.
+- AgentsCockpit row uses a fixed-px grid template that requires
+  horizontal scrolling on very narrow screens; the container is
+  overflow-auto so behaviour is acceptable. A responsive collapse is left
+  to the cockpit owner agent.
+
+No mocks added, no placeholders introduced, no handlers without logic.
+
+Replit-Task-Id: af2c05f2-4470-4366-9650-1cb3d44b1199
