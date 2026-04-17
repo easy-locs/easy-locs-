@@ -106,10 +106,29 @@ function buildAdapter(
   const now = deps.now ?? (() => new Date());
   const validator = pickValidator(taskType);
   const verifyState = deps.verify ?? verifyExpectedListingState;
+  const isPublish = taskType === MARKETPLACE_TASK_TYPES.PUBLISH;
 
   return {
     domain: MARKETPLACE_DOMAIN,
     taskType,
+    agent: {
+      slug: isPublish ? "marketplace.publish" : "marketplace.unpublish",
+      version: "1.0.0",
+      kind: "business.adapter",
+      displayName: isPublish
+        ? "Marketplace Publish Agent"
+        : "Marketplace Unpublish Agent",
+      ownerTeam: "marketplace",
+      policyProfile: isPublish ? "medium-approval" : "medium-default",
+      quotas: { max_runs_per_min: 60, max_runs_per_day: 5000 },
+      metadata: {
+        description: isPublish
+          ? "Publishes a property listing (status active) with KYC + verifier gates."
+          : "Unpublishes a property listing (status paused).",
+        rollback_strategy: "auto",
+        verifier: "marketplace.listing",
+      },
+    },
 
     getLockKey(task: ExecutionTask): string {
       const id =

@@ -98,9 +98,36 @@ export interface OrchestrationOutcome {
  *     an exclusive lock for `getLockKey(task)`.
  *   - Return AdapterResult; throwing is treated as a transient failure.
  */
+/**
+ * AgentRef — sovereign-agent-control binding for a DomainAdapter (L1, #808).
+ *
+ * Every adapter SHOULD declare an `agent` so the platform can:
+ *   - Register the adapter as a first-class row in `system.agents`.
+ *   - Stamp `agent_id` / `agent_version_id` on every dispatched task.
+ *   - Apply policy profiles, quotas, canary %, status (active/disabled/...)
+ *     uniformly across business adapters, AI routers and future dev.builder
+ *     / asis.cognitive agents — all kinds share this surface.
+ *
+ * `kind` is FREE TEXT validated at the DB level. Canonical values:
+ *   business.adapter, ai.router, ai.tool, ops.scheduler,
+ *   dev.builder, dev.reviewer, dev.deployer, asis.cognitive, system.internal
+ */
+export interface AgentRef {
+  slug: string;
+  version: string;
+  kind: string;
+  displayName?: string;
+  ownerTeam?: string;
+  policyProfile?: string;
+  quotas?: Record<string, unknown>;
+  metadata?: Record<string, unknown>;
+}
+
 export interface DomainAdapter {
   domain: string;
   taskType: string;
+  /** Sovereign-agent-control binding (L1, #808). Required in strict mode. */
+  agent?: AgentRef;
   /**
    * Compute the canonical lock key for this task. Default behaviour is
    * provided by AdapterRegistry; adapters may override for cross-entity

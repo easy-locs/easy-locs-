@@ -13,6 +13,7 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { globalAdapterRegistry } from "../../adapter-registry.ts";
 import { globalVerifierRegistry } from "../../verifier-registry.ts";
+import { reconcileAgents } from "../../agent-reconciler.ts";
 import {
   createMarketplacePublishAdapter,
   createMarketplaceUnpublishAdapter,
@@ -66,6 +67,12 @@ export interface MarketplaceBootstrapOverrides {
   repo?: ListingRepository;
   kyc?: KycCheck;
   events?: DomainEventEmitter;
+  /**
+   * When true (default), the bootstrap will reconcile the in-process adapters
+   * with `system.agents` so the platform-native registry stays in lock-step
+   * with the running code. Tests pass `false` to skip the network call.
+   */
+  reconcileAgents?: boolean;
 }
 
 export function bootstrapMarketplaceAdapters(
@@ -95,6 +102,15 @@ export function bootstrapMarketplaceAdapters(
     createMarketplaceUnpublishAdapter({ repo, kyc: allowAllKyc, events }),
     { overwrite: true },
   );
+
+  // Sovereign Agent Control (L1, #808) — best-effort upsert of the in-process
+  // adapters into `system.agents`. Failure does NOT prevent boot; the seed in
+  // migration 20260419000000_agent_registry.sql guarantees the rows exist.
+  if (overrides.reconcileAgents !== false) {
+    reconcileAgents(sb).catch((e) =>
+      console.warn("[marketplace.bootstrap] reconcileAgents failed:", e),
+    );
+  }
 }
 
 export { MARKETPLACE_DOMAIN, MARKETPLACE_TASK_TYPES };
