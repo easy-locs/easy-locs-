@@ -30,6 +30,7 @@ import {
 import { createAiVerifier } from "./ai-verifier.ts";
 import { AI_AGENT_SLUGS, AI_TASK_TYPES } from "./types.ts";
 import { createAiRouteRunner } from "./runner-aiRoute.ts";
+import { createAgentRouterConfigLoader } from "./router-config.ts";
 
 export interface AiBootstrapOverrides {
   runner?: LLMRunner;
@@ -81,7 +82,10 @@ export async function bootstrapAiAdapters(
   sb: SupabaseClient,
   overrides: AiBootstrapOverrides = {},
 ): Promise<void> {
-  const runner = overrides.runner ?? createAiRouteRunner();
+  // LB1 follow-up 4 (#837): wire the registry-aware config loader so the
+  // production runner reads model / fallback chain / API-key env-var name
+  // from `system.agents.metadata.router` instead of hard-coded constants.
+  const runner = overrides.runner ?? createAiRouteRunner({ loadConfig: createAgentRouterConfigLoader(sb) });
   const quota = overrides.quota ?? createSupabaseQuotaGate(sb);
   const interactions = overrides.interactions ?? createSupabaseInteractionSink(sb);
   const resolveAgentId = overrides.resolveAgentId ?? defaultResolveAgentId(sb);

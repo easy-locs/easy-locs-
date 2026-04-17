@@ -1,7 +1,38 @@
+/**
+ * Shared AI provider router.
+ *
+ * As of LB1 follow-up 4 (#837) this module no longer reads `Deno.env`
+ * directly when invoked through the registry — `aiRouteForAgent()`
+ * accepts an `AgentRouterConfig` resolved from `system.agents.metadata.
+ * router`, and the env-var holding the API key is named in that config.
+ * Rotating a provider key, swapping a default model, or rearranging the
+ * fallback chain is therefore a single configuration change visible in
+ * the agent inspector — no code edit required.
+ *
+ * The legacy `aiRoute()` / `aiRouteAndParse()` entry points are retained
+ * unchanged for callers that have not yet migrated through the
+ * adapter; they internally delegate to the new path with an env-derived
+ * default config and are marked `@deprecated`.
+ */
+
+import {
+  type AgentRouterConfig,
+  type AiProviderEntry,
+  buildInteraction,
+  DEFAULT_OPENAI_MODEL,
+  DEFAULT_OPENAI_TIMEOUT_MS,
+  envDefaultChatConfig,
+  readApiKey,
+} from "./execution/adapters/ai/router-config.ts";
+import type { AiInteractionRecord } from "./execution/adapters/ai/types.ts";
+
+export {
+  DEFAULT_ANTHROPIC_MODEL,
+  DEFAULT_OPENAI_MODEL,
+} from "./execution/adapters/ai/router-config.ts";
+
 const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-
-const OPENAI_TIMEOUT_MS = 8000;
 
 export interface ChatMessage {
   role: string;
@@ -17,6 +48,9 @@ export interface AIRouterOptions {
   tools?: unknown[];
   tool_choice?: unknown;
   response_format?: unknown;
+  /** @deprecated — model + provider chain are sourced from the agent
+   *  registry. Retained so legacy callers compile, but ignored when
+   *  invoked via `aiRouteForAgent`. */
   preferredProvider?: "openai" | "anthropic" | "auto";
 }
 
@@ -26,26 +60,24 @@ export interface AIRouterResult {
   fallbackUsed: boolean;
 }
 
-export const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
-export const DEFAULT_ANTHROPIC_MODEL = "claude-3-5-haiku-20241022";
-
-function getOpenAIKey(): string | null {
-  return Deno.env.get("OPENAI_API_KEY") ?? null;
+/** Like `AIRouterResult` but also returns the canonical telemetry record
+ *  so adapters and direct callers share one provider-agnostic shape. */
+export interface AIRouterResultWithTelemetry extends AIRouterResult {
+  interaction: AiInteractionRecord;
 }
 
-function getAnthropicKey(): string | null {
-  return Deno.env.get("ANTHROPIC_API_KEY") ?? null;
-}
+// ── Provider call primitives. Both take an explicit `entry` so the
+//   key env-var name is config-driven, not hard-coded.
 
-async function callOpenAI(options: AIRouterOptions): Promise<Response> {
-  const apiKey = getOpenAIKey();
-  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
+async function callOpenAI(entry: AiProviderEntry, options: AIRouterOptions): Promise<Response> {
+  const apiKey = readApiKey(entry);
+  if (!apiKey) throw new Error(`${entry.keyEnv} not configured`);
 
-  const { messages, model = DEFAULT_OPENAI_MODEL, stream, ...rest } = options;
+  const { messages, model = entry.model, stream, ...rest } = options;
   delete (rest as Record<string, unknown>).preferredProvider;
 
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+  const timer = setTimeout(() => controller.abort(), entry.timeoutMs ?? DEFAULT_OPENAI_TIMEOUT_MS);
 
   try {
     const response = await fetch(OPENAI_API_URL, {
@@ -90,11 +122,11 @@ function convertMessagesForAnthropic(messages: ChatMessage[]): {
   return { system, anthropicMessages };
 }
 
-async function callAnthropic(options: AIRouterOptions): Promise<Response> {
-  const apiKey = getAnthropicKey();
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY not configured");
+async function callAnthropic(entry: AiProviderEntry, options: AIRouterOptions): Promise<Response> {
+  const apiKey = readApiKey(entry);
+  if (!apiKey) throw new Error(`${entry.keyEnv} not configured`);
 
-  const { messages, model = DEFAULT_ANTHROPIC_MODEL, max_tokens = 2000, temperature = 0.7, stream } = options;
+  const { messages, model = entry.model, max_tokens = 2000, temperature = 0.7, stream } = options;
   const { system, anthropicMessages } = convertMessagesForAnthropic(messages);
 
   const body: Record<string, unknown> = {
@@ -196,66 +228,135 @@ function normalizeAnthropicResponse(data: Record<string, unknown>): {
   };
 }
 
-export async function aiRoute(options: AIRouterOptions): Promise<AIRouterResult> {
-  const preferred = options.preferredProvider ?? "auto";
-  const hasOpenAI = !!getOpenAIKey();
-  const hasAnthropic = !!getAnthropicKey();
-
-  if (preferred === "anthropic" && hasAnthropic) {
-    const response = await callAnthropic(options);
-    return { response, provider: "anthropic", fallbackUsed: false };
-  }
-
-  if (preferred === "openai" && hasOpenAI) {
-    try {
-      const response = await callOpenAI(options);
-      if (response.ok) return { response, provider: "openai", fallbackUsed: false };
-      if (hasAnthropic && (response.status === 429 || response.status >= 500)) {
-        console.warn(`[ai-router] OpenAI returned ${response.status}, falling back to Anthropic`);
-        const fallbackResp = await callAnthropic(options);
-        return { response: fallbackResp, provider: "anthropic", fallbackUsed: true };
-      }
-      return { response, provider: "openai", fallbackUsed: false };
-    } catch (err) {
-      if (hasAnthropic) {
-        console.warn("[ai-router] OpenAI failed, falling back to Anthropic:", (err as Error).message);
-        const fallbackResp = await callAnthropic(options);
-        return { response: fallbackResp, provider: "anthropic", fallbackUsed: true };
-      }
-      throw err;
-    }
-  }
-
-  if (hasOpenAI) {
-    try {
-      const response = await callOpenAI(options);
-      if (response.ok || !hasAnthropic) {
-        return { response, provider: "openai", fallbackUsed: false };
-      }
-      if (response.status === 429 || response.status >= 500) {
-        console.warn(`[ai-router] OpenAI returned ${response.status}, falling back to Anthropic`);
-        const fallbackResp = await callAnthropic(options);
-        return { response: fallbackResp, provider: "anthropic", fallbackUsed: true };
-      }
-      return { response, provider: "openai", fallbackUsed: false };
-    } catch (err) {
-      if (hasAnthropic) {
-        console.warn("[ai-router] OpenAI timeout/error, falling back to Anthropic:", (err as Error).message);
-        const fallbackResp = await callAnthropic(options);
-        return { response: fallbackResp, provider: "anthropic", fallbackUsed: true };
-      }
-      throw err;
-    }
-  }
-
-  if (hasAnthropic) {
-    const response = await callAnthropic(options);
-    return { response, provider: "anthropic", fallbackUsed: false };
-  }
-
-  throw new Error("No AI provider configured. Set OPENAI_API_KEY or ANTHROPIC_API_KEY.");
+async function callProvider(entry: AiProviderEntry, options: AIRouterOptions): Promise<Response> {
+  return entry.provider === "anthropic" ? callAnthropic(entry, options) : callOpenAI(entry, options);
 }
 
+// ── New, registry-aware entry point. Every AI agent run goes through
+//   here; the config (model, fallback chain, key env-var names) comes
+//   from `system.agents.metadata.router` via the loader in
+//   `router-config.ts`.
+
+export interface AiRouteForAgentInput {
+  config: AgentRouterConfig;
+  options: AIRouterOptions;
+  /** Free-text caller tag (e.g. "support.triage") propagated into the
+   *  canonical interaction record. */
+  feature: string;
+  /** Optional clock injection for tests. */
+  now?: () => number;
+}
+
+export async function aiRouteForAgent(
+  input: AiRouteForAgentInput,
+): Promise<AIRouterResultWithTelemetry> {
+  if (input.config.kind !== "chat") {
+    throw new Error(`aiRouteForAgent: config.kind must be "chat" (got "${input.config.kind}")`);
+  }
+
+  const startedAt = (input.now ?? Date.now)();
+  const chain: AiProviderEntry[] = [input.config.primary, ...input.config.fallbacks];
+  const attempted: Array<{ provider: string; reason: string }> = [];
+
+  for (let i = 0; i < chain.length; i++) {
+    const entry = chain[i];
+    const isLast = i === chain.length - 1;
+    const fallbackUsed = i > 0;
+
+    if (!readApiKey(entry)) {
+      attempted.push({ provider: entry.provider, reason: `${entry.keyEnv}_missing` });
+      if (isLast) {
+        throw new Error(
+          `aiRouteForAgent: no provider key available; attempted=${
+            attempted.map((a) => `${a.provider}:${a.reason}`).join(",")
+          }`,
+        );
+      }
+      continue;
+    }
+
+    try {
+      const response = await callProvider(entry, input.options);
+      const retriable = response.status === 429 || response.status >= 500;
+      if (response.ok || isLast || !retriable) {
+        // We do NOT consume the body here — the caller still needs it.
+        // Telemetry is built with token counts of zero; the caller updates
+        // them via `finaliseInteraction()` once the body is parsed.
+        const interaction = buildInteraction({
+          feature: input.feature,
+          provider: entry.provider,
+          model: input.options.model ?? entry.model,
+          promptTokens: 0,
+          completionTokens: 0,
+          startedAt,
+          fallbackUsed,
+          status: response.ok ? "ok" : "error",
+          blockReason: response.ok ? undefined : `provider_http_${response.status}`,
+          costTable: input.config.costPer1k,
+          metadata: {
+            attempts: [...attempted, { provider: entry.provider, reason: response.ok ? "ok" : `http_${response.status}` }],
+            config_source: input.config.source,
+            key_env: entry.keyEnv,
+          },
+        });
+        return { response, provider: entry.provider, fallbackUsed, interaction };
+      }
+      console.warn(
+        `[ai-router] ${entry.provider} returned ${response.status}; trying fallback`,
+      );
+      attempted.push({ provider: entry.provider, reason: `http_${response.status}` });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[ai-router] ${entry.provider} threw: ${msg}; trying fallback`);
+      attempted.push({ provider: entry.provider, reason: `threw:${msg.slice(0, 80)}` });
+      if (isLast) throw err;
+    }
+  }
+
+  // Unreachable: the loop either returns or throws on the last entry.
+  throw new Error("aiRouteForAgent: exhausted provider chain without resolution");
+}
+
+/** Update token counts on a canonical interaction once the body is parsed. */
+export function finaliseInteraction(
+  interaction: AiInteractionRecord,
+  costTable: Record<string, { prompt: number; completion: number }>,
+  promptTokens: number,
+  completionTokens: number,
+): AiInteractionRecord {
+  const row = costTable[interaction.model] ?? { prompt: 0.0001, completion: 0.0003 };
+  return {
+    ...interaction,
+    promptTokens,
+    completionTokens,
+    costUsd: (promptTokens * row.prompt + completionTokens * row.completion) / 1000,
+  };
+}
+
+// ── Legacy env-only entry points ──────────────────────────────────────────
+// These are retained for callers that haven't migrated through
+// `dispatchExecutionTask`. They internally call the registry-aware path
+// with a config built from environment variables, so the inner provider
+// plumbing is identical for both.
+
+/**
+ * @deprecated Use `dispatchExecutionTask({ domain: "ai", taskType: "AI_COMPLETION", ... })`
+ * so the call goes through the registered AI agent. This function exists only
+ * for backwards compatibility with callers that have not migrated yet.
+ */
+export async function aiRoute(options: AIRouterOptions): Promise<AIRouterResult> {
+  const config = envDefaultChatConfig();
+  const { response, provider, fallbackUsed } = await aiRouteForAgent({
+    config,
+    options,
+    feature: "legacy.aiRoute",
+  });
+  return { response, provider, fallbackUsed };
+}
+
+/**
+ * @deprecated See `aiRoute` — this wrapper is kept only for legacy callers.
+ */
 export async function aiRouteAndParse(options: AIRouterOptions): Promise<{
   content: string;
   provider: "openai" | "anthropic";
@@ -281,4 +382,10 @@ export async function aiRouteAndParse(options: AIRouterOptions): Promise<{
   return { content, provider, fallbackUsed };
 }
 
-export { callOpenAI as openaiChat };
+/** @deprecated Use `aiRouteForAgent` with a registry-resolved config. */
+export const openaiChat = (options: AIRouterOptions) =>
+  callOpenAI(envDefaultChatConfig().primary, options);
+
+// Sanity: keep DEFAULT_OPENAI_MODEL in scope so the deprecated re-export
+// above resolves at module init even if tree-shaken differently.
+void DEFAULT_OPENAI_MODEL;
