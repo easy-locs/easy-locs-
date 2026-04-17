@@ -10,7 +10,7 @@ const DEFAULT_WEBSUB_HUBS = [
   "https://pubsubhubbub.superfeedr.com/",
 ];
 
-function getWebSubHubs(): string[] {
+export function getWebSubHubs(): string[] {
   const raw = process.env.WEBSUB_HUBS || process.env.WEBSUB_HUB;
   if (!raw) return DEFAULT_WEBSUB_HUBS;
   return raw.split(",").map(s => s.trim()).filter(Boolean);
@@ -20,7 +20,7 @@ function escXml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function rssHeader(title: string, description: string, link: string, buildDate: string, hubs: string[]): string {
+export function rssHeader(title: string, description: string, link: string, buildDate: string, hubs: string[]): string {
   const hubLinks = hubs
     .map(h => `  <atom:link href="${h}" rel="hub" />`)
     .join("\n");
@@ -47,7 +47,7 @@ function rssItem(title: string, link: string, description: string, pubDate: stri
   </item>`;
 }
 
-function atomHeader(title: string, id: string, updated: string, selfHref: string, hubs: string[]): string {
+export function atomHeader(title: string, id: string, updated: string, selfHref: string, hubs: string[]): string {
   const hubLinks = hubs
     .map(h => `  <link href="${h}" rel="hub" />`)
     .join("\n");
@@ -73,19 +73,23 @@ function atomEntry(title: string, link: string, summary: string, updated: string
   </entry>`;
 }
 
-async function pingWebSubHub(hub: string, feedUrl: string): Promise<{ hub: string; feedUrl: string; status: number; ok: boolean; error?: string }> {
+export async function pingWebSubHub(hub: string, feedUrl: string, timeoutMs = 10000): Promise<{ hub: string; feedUrl: string; status: number; ok: boolean; error?: string }> {
   const body = new URLSearchParams({ "hub.mode": "publish", "hub.url": feedUrl }).toString();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(hub, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
     });
     return { hub, feedUrl, status: response.status, ok: response.ok };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return { hub, feedUrl, status: 0, ok: false, error: message };
+  } finally {
+    clearTimeout(timer);
   }
 }
 

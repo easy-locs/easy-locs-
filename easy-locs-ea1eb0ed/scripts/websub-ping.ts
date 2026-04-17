@@ -47,17 +47,21 @@ function getFeedUrls(base: string): string[] {
 
 async function pingHub(hub: string, feedUrl: string) {
   const body = new URLSearchParams({ "hub.mode": "publish", "hub.url": feedUrl }).toString();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(hub, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body,
-      signal: AbortSignal.timeout(10000),
+      signal: controller.signal,
     });
     return { hub, feedUrl, status: response.status, ok: response.ok };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return { hub, feedUrl, status: 0, ok: false, error: message };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
