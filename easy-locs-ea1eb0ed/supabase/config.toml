@@ -143,6 +143,10 @@ verify_jwt = false
 [functions.command-monitoring-cron]
 verify_jwt = false
 
+# ─── Merge-conflict spike alerts (service-role via x-internal-secret) ───
+[functions.merge-conflict-recovery-alerts-cron]
+verify_jwt = false
+
 # ─── CSP report collector (no JWT from browsers) ────────────────────────
 [functions.csp-report]
 verify_jwt = false
