@@ -98,7 +98,7 @@ export async function cancelReservation(res: { id: string; source_table: string;
   }
 
   if (res.guest_email) {
-    await db.functions.invoke("send-email", {
+    const { error } = await db.functions.invoke("send-email", {
       body: {
         to: res.guest_email,
         subject: `🚫 Réservation annulée — ${res.check_in} → ${res.check_out}`,
@@ -109,6 +109,7 @@ export async function cancelReservation(res: { id: string; source_table: string;
         </div>`,
       },
     });
+    if (error) console.warn("[channel-manager] cancellation email failed", error);
   }
 }
 
@@ -133,7 +134,7 @@ export async function modifyReservationDates(
   }
 
   if (res.guest_email) {
-    await db.functions.invoke("send-email", {
+    const { error } = await db.functions.invoke("send-email", {
       body: {
         to: res.guest_email,
         subject: `📅 Dates modifiées — ${newCheckIn} → ${newCheckOut}`,
@@ -145,5 +146,6 @@ export async function modifyReservationDates(
         </div>`,
       },
     });
+    if (error) console.warn("[channel-manager] reschedule email failed", error);
   }
 }
