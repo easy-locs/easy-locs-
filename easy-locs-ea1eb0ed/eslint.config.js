@@ -3,9 +3,24 @@ import globals from "globals";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
+import easylocs from "./tooling/eslint-plugin-easylocs/index.js";
 
 export default tseslint.config(
   { ignores: ["dist"] },
+  // ── Sovereign Agent Control L6 (#809) ──────────────────────────────
+  // All mutations must flow through `dispatchExecutionTask`. The three
+  // rules below are fail-closed; exemptions live in
+  // `.eslintrc.dispatch-allowlist.json` and require PR review.
+  // See docs/architecture/dispatch-guard.md.
+  {
+    files: ["src/**/*.{ts,tsx}", "supabase/functions/**/*.ts"],
+    plugins: { easylocs },
+    rules: {
+      "easylocs/require-dispatch-execution-task": "error",
+      "easylocs/no-direct-postgrest-mutation": "error",
+      "easylocs/no-direct-rpc-mutation": "error",
+    },
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
