@@ -12,6 +12,7 @@
 import {
   aiRouteForAgent,
   finaliseInteraction,
+  parseChatResponse,
 } from "../../../ai-router.ts";
 import {
   type AgentRouterConfig,
@@ -34,19 +35,6 @@ import type {
 } from "./ai-adapter.ts";
 
 const EMBEDDING_URL = "https://api.openai.com/v1/embeddings";
-
-interface ChatJson {
-  choices?: Array<{ message?: { content?: string } }>;
-  usage?: { prompt_tokens?: number; completion_tokens?: number };
-}
-
-async function readChatJson(response: Response): Promise<ChatJson> {
-  if (!response.ok) {
-    const text = await response.text().catch(() => "");
-    throw new Error(`provider HTTP ${response.status}: ${text.slice(0, 200)}`);
-  }
-  return await response.json() as ChatJson;
-}
 
 export interface AiRouteRunnerDeps {
   /** Loads the per-agent router config from `system.agents.metadata.router`.
@@ -91,19 +79,18 @@ export function createAiRouteRunner(deps: AiRouteRunnerDeps = {}): LLMRunner {
             : undefined,
         },
       });
-      const json = await readChatJson(routed.response);
-      const text = json.choices?.[0]?.message?.content ?? "";
+      const parsed = await parseChatResponse(routed.provider, routed.response);
       const interaction = finaliseInteraction(
         routed.interaction,
         config.costPer1k,
-        json.usage?.prompt_tokens ?? 0,
-        json.usage?.completion_tokens ?? 0,
+        parsed.promptTokens,
+        parsed.completionTokens,
       );
       let parsedJson: unknown;
       if (input.payload.responseFormat === "json") {
-        try { parsedJson = JSON.parse(text); } catch { /* leave undefined */ }
+        try { parsedJson = JSON.parse(parsed.text); } catch { /* leave undefined */ }
       }
-      return { text, json: parsedJson, interaction };
+      return { text: parsed.text, json: parsedJson, interaction };
     },
 
     async embedding(
@@ -166,8 +153,7 @@ export function createAiRouteRunner(deps: AiRouteRunnerDeps = {}): LLMRunner {
           model: input.payload.model,
         },
       });
-      const json = await readChatJson(routed.response);
-      const answer = json.choices?.[0]?.message?.content ?? "";
+      const parsed = await parseChatResponse(routed.provider, routed.response);
       const interaction = finaliseInteraction(
         {
           ...routed.interaction,
@@ -178,10 +164,10 @@ export function createAiRouteRunner(deps: AiRouteRunnerDeps = {}): LLMRunner {
           },
         },
         config.costPer1k,
-        json.usage?.prompt_tokens ?? 0,
-        json.usage?.completion_tokens ?? 0,
+        parsed.promptTokens,
+        parsed.completionTokens,
       );
-      return { answer, citations: [], interaction };
+      return { answer: parsed.text, citations: [], interaction };
     },
   };
 }
