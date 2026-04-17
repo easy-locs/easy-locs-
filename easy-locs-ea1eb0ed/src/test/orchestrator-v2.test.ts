@@ -653,6 +653,55 @@ describe("ExecutionOrchestratorV2 · rollback contract", () => {
     expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
   });
 
+  it("auto-rolls-back when the verification SERVICE itself throws unexpectedly (#811 round-6)", async () => {
+    // Distinct from the test above: the service is normally defensive
+    // and converts verifier throws into `decision.kind === "threw"`.
+    // This test injects a service whose `.run()` itself throws (e.g.
+    // verifier registry corruption, infra outage). Mutation has already
+    // happened, so the orchestrator MUST still attempt auto-rollback.
+    const task = buildTask();
+    let rollbackCalled = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => ({ snap: "pre-mutate" }),
+      execute: async () => ({ success: true, output: { ok: true } }),
+      rollback: async () => {
+        rollbackCalled = true;
+        return { success: true };
+      },
+    };
+    const registry = new AdapterRegistry();
+    registry.register(adapter);
+    const repo = new MemoryRepository();
+    repo.seed(task);
+    const sink = new InMemoryEventSink();
+    const orch = new ExecutionOrchestratorV2({
+      registry,
+      repository: repo,
+      locks: new MemoryLockService(),
+      idempotency: new MemoryIdempotencyService(),
+      validator: PASSING_VALIDATOR,
+      sink,
+      // Service that throws unconditionally — exercises the outer catch.
+      verification: {
+        run: async () => {
+          throw new Error("verification registry corrupted");
+        },
+      } as unknown as TaskVerificationService,
+      ownerId: "test-orch",
+      lockTtlSeconds: 30,
+    });
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.errorCode).toBe("VERIFIER_THREW");
+    expect(rollbackCalled).toBe(true);
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
+  });
+
   it("manual runRollback drives a rolling_back row to rolled_back", async () => {
     const task = buildTask({
       status: "rolling_back",

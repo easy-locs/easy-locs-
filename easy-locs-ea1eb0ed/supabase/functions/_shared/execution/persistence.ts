@@ -149,10 +149,26 @@ export function createSupabaseDefaultSnapshotter(
     const ident = /^[a-z_][a-z0-9_]*$/i;
     if (!ident.test(schema) || !ident.test(table)) return null;
     try {
-      const { data, error } = await sb
-        .schema(schema)
-        // deno-lint-ignore no-explicit-any
-        .from(table as any)
+      // The table identifier is dynamic by design (we do not know which
+      // domain table will be touched at compile time), but we have
+      // already restricted it to a plain identifier above. Use a typed
+      // helper that narrows the supabase-js generic to a generic record
+      // shape, so we get types without a blanket `any` cast.
+      const fromTable = (
+        sb.schema(schema) as unknown as {
+          from(name: string): {
+            select(cols: string): {
+              eq(col: string, val: string): {
+                maybeSingle(): Promise<{
+                  data: Record<string, unknown> | null;
+                  error: { message: string } | null;
+                }>;
+              };
+            };
+          };
+        }
+      ).from(table);
+      const { data, error } = await fromTable
         .select("*")
         .eq("id", entityId)
         .maybeSingle();
