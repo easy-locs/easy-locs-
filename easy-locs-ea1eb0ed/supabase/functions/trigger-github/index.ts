@@ -71,16 +71,34 @@ Deno.serve(async (req) => {
   // Center the user's prompt is embedded in the payload so the GitHub run
   // shows a meaningful label and the dashboard can surface it back to the
   // user from system.execution_tasks (no agent_tasks write any more).
+  //
+  // Track 3 (#843): no silent swallow. An empty body is fine on POST (the
+  // smoke-test path), but malformed JSON is a client bug — emit a
+  // structured log AND return a 400 so the caller sees it.
   let prompt = "";
-  try {
-    if (req.method === "POST") {
-      const body = await req.json().catch(() => null) as { prompt?: unknown } | null;
-      if (body && typeof body.prompt === "string") {
-        prompt = body.prompt.slice(0, 500);
+  if (req.method === "POST") {
+    const raw = await req.text();
+    if (raw.length > 0) {
+      try {
+        const body = JSON.parse(raw) as { prompt?: unknown };
+        if (typeof body?.prompt === "string") {
+          prompt = body.prompt.slice(0, 500);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(JSON.stringify({
+          event: "trigger_github.invalid_request_body",
+          level: "error",
+          method: req.method,
+          body_bytes: raw.length,
+          message,
+        }));
+        return new Response(
+          JSON.stringify({ error: "Request body must be valid JSON" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
     }
-  } catch {
-    // non-fatal — continue with empty prompt
   }
   const label = prompt.trim() || "smoke-test";
 
