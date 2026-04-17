@@ -134,3 +134,4 @@ dist
 
 # AI-generated paste artifacts
 attached_assets/Pasted-*.txt
+.git-rewrite/
