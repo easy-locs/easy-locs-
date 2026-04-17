@@ -29,14 +29,24 @@ import {
   AI_TASK_TYPES,
 } from "../../supabase/functions/_shared/execution/adapters/ai/types.ts";
 
-const MIGRATED_FILES = [
-  "supabase/functions/command-email-intake/index.ts",
+// Files that must wire AI through the dispatch entrypoint.
+const DISPATCH_OWNERS = [
+  "supabase/functions/command-email-intake/parser.ts",
   "supabase/functions/ops-ai-chat/index.ts",
   "supabase/functions/generate-seo/index.ts",
   "supabase/functions/generate-cv/index.ts",
   "supabase/functions/receive-email/index.ts",
   "supabase/functions/send-notification-email/index.ts",
   "supabase/functions/generate-embeddings/index.ts",
+] as const;
+
+// All files that previously held bypass code — must be free of openaiChat
+// and direct OpenAI fetches AND must not gate on OPENAI_API_KEY env var
+// (provider-key resolution lives in router metadata now).
+const ALL_GUARDED_FILES = [
+  ...DISPATCH_OWNERS,
+  // index.ts files that delegate AI to a sibling module (e.g. parser.ts):
+  "supabase/functions/command-email-intake/index.ts",
 ] as const;
 
 // Strip line/block comments so doc lines that mention `openaiChat` (intentional
@@ -63,8 +73,8 @@ const ALL_AI_PASSING_VERIFIERS: TaskVerifier[] = [
 // ── Static guard ──────────────────────────────────────────────────────────
 
 describe("LB1 Track 1 (#841) — static bypass guard", () => {
-  it.each(MIGRATED_FILES)(
-    "%s imports dispatch and contains no direct openaiChat / openai.com calls",
+  it.each(ALL_GUARDED_FILES)(
+    "%s contains no direct openaiChat / openai.com / OPENAI_API_KEY gating",
     (relPath) => {
       const abs = resolve(process.cwd(), relPath);
       const src = readFileSync(abs, "utf8");
@@ -77,11 +87,20 @@ describe("LB1 Track 1 (#841) — static bypass guard", () => {
       expect(code).not.toMatch(/api\.openai\.com/);
 
       // Must not pull in the openai-client helper any longer.
-      expect(code).not.toMatch(
-        /from\s+["']\.\.\/_shared\/openai-client\.ts["']/,
-      );
+      expect(code).not.toMatch(/from\s+["'][^"']*openai-client\.ts["']/);
 
-      // Must wire through the canonical AI dispatch entrypoint.
+      // Must not gate AI behavior on direct provider-key env reads.
+      // Provider keys are resolved by the registered AI router metadata,
+      // not by the edge function callsite.
+      expect(code).not.toMatch(/Deno\.env\.get\(\s*["']OPENAI_API_KEY["']/);
+    },
+  );
+
+  it.each(DISPATCH_OWNERS)(
+    "%s wires through dispatchAi* entrypoint",
+    (relPath) => {
+      const abs = resolve(process.cwd(), relPath);
+      const src = readFileSync(abs, "utf8");
       expect(src).toMatch(
         /from\s+["']\.\.\/_shared\/execution\/ai-dispatch\.ts["']/,
       );

@@ -42,53 +42,44 @@ Deno.serve(async (req) => {
     );
 
     if (outcome.status === "succeeded" && outcome.output) {
+      const it = outcome.output.interaction;
       return new Response(
         JSON.stringify({
           answer: outcome.output.text ?? "",
           usage: {
-            prompt_tokens: outcome.output.interaction.promptTokens,
-            completion_tokens: outcome.output.interaction.completionTokens,
-            total_tokens:
-              outcome.output.interaction.promptTokens +
-              outcome.output.interaction.completionTokens,
+            prompt_tokens: it.promptTokens,
+            completion_tokens: it.completionTokens,
+            total_tokens: it.promptTokens + it.completionTokens,
           },
-          model: outcome.output.interaction.model,
-          task_id: outcome.taskId,
+          model: it.model ?? "gpt-4o-mini",
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    if (outcome.status === "pending_review") {
-      return new Response(
-        JSON.stringify({
-          status: "pending_review",
-          task_id: outcome.taskId,
-          reason: outcome.blockedReason,
-        }),
-        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const httpStatus =
-      outcome.status === "timeout" ? 504 :
-      outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
-      (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
-      500;
-
+    // Preserve legacy ops-ai-chat contract: 429 / 402 / 500.
+    const msg = outcome.errorMessage ?? outcome.blockedReason ?? "";
     console.error(
       "[ops-ai-chat] dispatch outcome:",
       outcome.status,
       outcome.errorCode,
-      outcome.errorMessage ?? outcome.blockedReason,
+      msg,
     );
+    if (outcome.errorCode === "AI_QUOTA_EXCEEDED") {
+      return new Response(
+        JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
+        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (/\b402\b|payment\s*required|insufficient.*quota/i.test(msg)) {
+      return new Response(
+        JSON.stringify({ error: "Payment required, please add funds." }),
+        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
     return new Response(
-      JSON.stringify({
-        error: outcome.errorMessage ?? outcome.blockedReason ?? "AI dispatch failed",
-        error_code: outcome.errorCode,
-        task_id: outcome.taskId,
-      }),
-      { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: "OpenAI API error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("ops-ai-chat error:", err);

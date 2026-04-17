@@ -71,7 +71,9 @@ function detectLocale(text: string): string {
 
 async function translateText(text: string, fromLocale: string, toLocale: string): Promise<string | null> {
   if (fromLocale === toLocale) return null;
-  if (!Deno.env.get("OPENAI_API_KEY")) return null;
+  // Provider-key resolution lives in the registered AI router metadata, not
+  // here. On dispatch failure we return null and the caller skips translation
+  // (same UX as the legacy "no key configured" path).
 
   const names: Record<string, string> = {
     fr: "French", en: "English", es: "Spanish", de: "German", it: "Italian",

@@ -56,13 +56,6 @@ Deno.serve(async (req) => {
 
     const { type, context, locale } = await req.json();
 
-    if (!Deno.env.get("OPENAI_API_KEY")) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const langMap: Record<string, string> = {
       fr: "en français", en: "in English", es: "en español", de: "auf Deutsch",
       it: "in italiano", pt: "em português", nl: "in het Nederlands", ar: "بالعربية",
@@ -149,37 +142,28 @@ ONLY return valid JSON, no markdown.`;
       { feature: "generate-seo" },
     );
 
-    if (outcome.status === "pending_review") {
-      return new Response(
-        JSON.stringify({
-          status: "pending_review",
-          task_id: outcome.taskId,
-          reason: outcome.blockedReason,
-        }),
-        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
     if (outcome.status !== "succeeded" || !outcome.output) {
+      const msg = outcome.errorMessage ?? outcome.blockedReason ?? "";
       console.error(
         "[generate-seo] dispatch outcome:",
         outcome.status,
         outcome.errorCode,
-        outcome.errorMessage ?? outcome.blockedReason,
+        msg,
       );
-      const httpStatus =
-        outcome.status === "timeout" ? 504 :
-        outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
-        (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
-        500;
-      return new Response(
-        JSON.stringify({
-          error: outcome.errorMessage ?? outcome.blockedReason ?? "AI error",
-          error_code: outcome.errorCode,
-          task_id: outcome.taskId,
-        }),
-        { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      // Preserve legacy generate-seo contract: 429 / 402 / 500.
+      if (outcome.errorCode === "AI_QUOTA_EXCEEDED") {
+        return new Response(JSON.stringify({ error: "Rate limited" }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (/\b402\b|payment\s*required|insufficient.*quota/i.test(msg)) {
+        return new Response(JSON.stringify({ error: "Payment required" }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({ error: "AI error" }), {
+        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const raw = outcome.output.text || "{}";
