@@ -398,11 +398,14 @@
     <div id="root">
       <div id="app-loading" role="status" aria-label="Loading Easy-Locs" style="display:none">
     <script>
+      // Always show the HTML splash until React commits — including in dev.
+      // A blank gray screen is indistinguishable from a stalled boot, so we
+      // prefer to always paint the radar splash and let either React mount
+      // (which fades it out) or the boot watchdog below (which replaces it
+      // with a Boot Error UI) take over. See docs/boot-audit.md.
       (function(){
-        try {
-          var isDev = (location.hostname.indexOf('replit') !== -1 || location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.port);
-          if (!isDev) document.getElementById('app-loading').style.display = '';
-        } catch(e) { document.getElementById('app-loading').style.display = ''; }
+        try { document.getElementById('app-loading').style.display = ''; }
+        catch(e) {}
       })();
     </script>
         <div class="splash-radar-wrap">
