@@ -1,10 +1,18 @@
-const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+// LB Closeout #852 — `openai-client.ts` is retired.
+//
+// Every AI callsite must now go through `dispatchAiCompletion`
+// (or `dispatchAiEmbedding` / `dispatchAiRag` / `dispatchAiToolUse`) in
+// `_shared/execution/ai-dispatch.ts`, so the call is governed by the
+// platform agent registry: quota, sensitive routing, approval flow, and
+// `ai_interactions` audit are guaranteed.
+//
+// This module is kept as a compile-time stub so any rogue import surfaces
+// as an immediate, loud error instead of silently re-introducing a
+// provider-key bypass.
 
-export function getOpenAIApiKey(): string {
-  const key = Deno.env.get("OPENAI_API_KEY");
-  if (!key) throw new Error("OPENAI_API_KEY is not configured");
-  return key;
-}
+const REPLACEMENT_NOTE =
+  "openai-client.ts is retired (#852). Use dispatchAiCompletion from " +
+  "_shared/execution/ai-dispatch.ts instead.";
 
 export interface ChatMessage {
   role: string;
@@ -24,15 +32,10 @@ export interface OpenAIChatOptions {
 
 export const DEFAULT_MODEL = "gpt-4o-mini";
 
-export async function openaiChat(options: OpenAIChatOptions): Promise<Response> {
-  const apiKey = getOpenAIApiKey();
-  const { model = DEFAULT_MODEL, ...rest } = options;
-  return fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({ model, ...rest }),
-  });
+export function getOpenAIApiKey(): string {
+  throw new Error(REPLACEMENT_NOTE);
+}
+
+export function openaiChat(_options: OpenAIChatOptions): Promise<Response> {
+  throw new Error(REPLACEMENT_NOTE);
 }

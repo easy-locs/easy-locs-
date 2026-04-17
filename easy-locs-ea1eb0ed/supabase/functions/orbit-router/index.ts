@@ -2,6 +2,10 @@ import { createDomainRouter } from "../_shared/domain-router.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders } from "../_shared/cache-headers.ts";
 import { invalidateCacheOnMutation } from "../_shared/edge-cache.ts";
+// LB Closeout #852 — translate goes through the platform-native registry so
+// every model call is governed (quota, sensitive routing, audit). Direct
+// `fetch("https://api.openai.com/...")` is no longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 function getSupabase() {
   return createClient(
@@ -228,40 +232,34 @@ const router = createDomainRouter({
           );
         }
 
-        const apiKey = Deno.env.get("OPENAI_API_KEY");
-        if (!apiKey) {
-          return new Response(JSON.stringify({ error: "Translation not configured" }), {
-            status: 500,
-            headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
+        const outcome = await dispatchAiCompletion(
+          {
+            feature: "orbit-router.translate",
             messages: [
               { role: "system", content: `Translate the following text to ${target_lang}. Only return the translation.` },
               { role: "user", content: text },
             ],
-            max_tokens: 1000,
+            maxTokens: 1000,
             temperature: 0.3,
-          }),
-        });
+            purpose: "general",
+          },
+          { feature: "orbit-router.translate" },
+        );
 
-        if (!response.ok) {
+        if (outcome.status !== "succeeded" || !outcome.output) {
+          console.error(
+            "[orbit-router.translate] dispatch outcome:",
+            outcome.status,
+            outcome.errorCode,
+            outcome.errorMessage ?? outcome.blockedReason,
+          );
           return new Response(JSON.stringify({ error: "Translation failed" }), {
             status: 500,
             headers: { ...ctx.corsHeaders, "Content-Type": "application/json" },
           });
         }
 
-        const result = await response.json();
-        const translated = result.choices?.[0]?.message?.content || text;
+        const translated = outcome.output.text || text;
 
         const cacheHeaders = buildCacheHeaders("search");
         return new Response(JSON.stringify({ translated, source: text, target_lang }), {

@@ -17,8 +17,8 @@
  */
 
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { resolve, relative } from "node:path";
 
 import {
   buildAiDispatchHarness,
@@ -109,6 +109,138 @@ describe("LB1 Track 1 (#841) — static bypass guard", () => {
       );
     },
   );
+});
+
+// ── LB Closeout #852 — repo-wide bypass scan ─────────────────────────────
+// Walks every supabase/function, lambda-handler, orchestrator file, and
+// frontend src file and asserts that none of them re-introduce a direct
+// provider call. The canonical homes for the OpenAI HTTP host
+// (`api.openai.com`) and the legacy `openaiChat(` symbol are explicitly
+// allow-listed.
+
+const REPO_ROOT = process.cwd();
+
+// Files where direct `api.openai.com` host calls are sanctioned because
+// they ARE the canonical AI router / adapter / retired-stub home.
+const OPENAI_HOST_ALLOWLIST = new Set<string>([
+  "supabase/functions/_shared/ai-router.ts",
+  "supabase/functions/_shared/openai-client.ts",
+  "supabase/functions/_shared/execution/adapters/ai/runner-aiRoute.ts",
+]);
+
+// Files where `openaiChat(` may still appear (the retired stub throws,
+// and the canonical router exports it for type back-compat with no impl).
+const OPENAI_CHAT_ALLOWLIST = new Set<string>([
+  "supabase/functions/_shared/openai-client.ts",
+]);
+
+// Files where `OPENAI_API_KEY` env reads are sanctioned (the canonical
+// router / adapter resolves provider keys via registered metadata; the
+// moderation helper inside ai-router.ts is the allow-listed home).
+const OPENAI_KEY_ENV_ALLOWLIST = new Set<string>([
+  "supabase/functions/_shared/ai-router.ts",
+  "supabase/functions/_shared/openai-client.ts",
+  "supabase/functions/_shared/execution/adapters/ai/router-config.ts",
+  "supabase/functions/_shared/execution/adapters/ai/runner-aiRoute.ts",
+]);
+
+// Orchestrator uses the `@openai/agents` SDK (not direct host fetches).
+// Documented Level C exception — allow-listed wholesale.
+const ORCHESTRATOR_ROOT = "orchestrator";
+
+const SCAN_ROOTS = [
+  "supabase/functions",
+  "lambda-handlers",
+  "src",
+];
+
+const SKIP_DIRS = new Set([
+  "node_modules", "dist", ".next", "build", "coverage", ".turbo",
+  "__tests__", "tests", "e2e", "e2e-trends", "storybook-static",
+]);
+
+function walk(dir: string, out: string[]): void {
+  let entries: string[];
+  try {
+    entries = readdirSync(dir);
+  } catch {
+    return;
+  }
+  for (const name of entries) {
+    if (SKIP_DIRS.has(name)) continue;
+    const full = `${dir}/${name}`;
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) {
+      walk(full, out);
+    } else if (/\.(ts|tsx|js|mjs)$/.test(name) && !/\.test\.[tj]sx?$/.test(name)) {
+      out.push(full);
+    }
+  }
+}
+
+function scannedFiles(): string[] {
+  const all: string[] = [];
+  for (const root of SCAN_ROOTS) {
+    walk(resolve(REPO_ROOT, root), all);
+  }
+  return all
+    .map((p) => relative(REPO_ROOT, p).replace(/\\/g, "/"))
+    .filter((p) => !p.startsWith(`${ORCHESTRATOR_ROOT}/`));
+}
+
+describe("LB Closeout #852 — repo-wide bypass scan", () => {
+  const files = scannedFiles();
+
+  it("scan covers a meaningful number of files (sanity)", () => {
+    expect(files.length).toBeGreaterThan(50);
+  });
+
+  it("no file outside the allow-list calls api.openai.com directly", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (OPENAI_HOST_ALLOWLIST.has(rel)) continue;
+      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
+      if (/api\.openai\.com/.test(code)) offenders.push(rel);
+    }
+    expect(offenders, `Direct api.openai.com calls found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the allow-list invokes openaiChat(", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (OPENAI_CHAT_ALLOWLIST.has(rel)) continue;
+      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
+      if (/\bopenaiChat\s*\(/.test(code)) offenders.push(rel);
+    }
+    expect(offenders, `openaiChat( invocations found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the allow-list reads OPENAI_API_KEY directly", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (OPENAI_KEY_ENV_ALLOWLIST.has(rel)) continue;
+      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
+      if (/(?:Deno\.env\.get|process\.env)\s*[(.]\s*["']?OPENAI_API_KEY["']?/.test(code)) {
+        offenders.push(rel);
+      }
+    }
+    expect(offenders, `OPENAI_API_KEY reads found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the allow-list imports the retired _shared/openai-client.ts", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (OPENAI_HOST_ALLOWLIST.has(rel)) continue;
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/from\s+["'][^"']*openai-client(\.ts)?["']/.test(src)) offenders.push(rel);
+    }
+    expect(offenders, `openai-client.ts imports found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
 });
 
 // ── Live dispatch using ex-bypass feature tags ────────────────────────────

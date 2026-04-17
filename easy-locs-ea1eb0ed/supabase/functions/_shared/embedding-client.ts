@@ -1,4 +1,12 @@
-const OPENAI_EMBEDDING_URL = "https://api.openai.com/v1/embeddings";
+// LB Closeout #852 — embedding-client is now a thin shim over the platform
+// agent registry. Direct `fetch("https://api.openai.com/v1/embeddings")` is
+// no longer permitted; the AI_EMBEDDING adapter handles provider selection,
+// quota and `ai_interactions` persistence. The exported API shape is
+// preserved so downstream callers (vector-embed, ai-recommendations, ai-rag,
+// inngest-client) continue to work without source changes.
+
+import { dispatchAiEmbedding } from "./execution/ai-dispatch.ts";
+
 const DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small";
 const EMBEDDING_DIMENSIONS = 1536;
 
@@ -14,79 +22,81 @@ export interface BatchEmbeddingResult {
   totalTokens: number;
 }
 
+function ensureFeatureTag(): string {
+  // Generic tag — callers that need a precise feature tag should call
+  // dispatchAiEmbedding directly. Kept stable so audit lines are searchable.
+  return "embedding-client.shim";
+}
+
 export async function generateEmbedding(
   text: string,
-  model: string = DEFAULT_EMBEDDING_MODEL
+  model: string = DEFAULT_EMBEDDING_MODEL,
 ): Promise<EmbeddingResult> {
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
-
   const cleaned = text.replace(/\n+/g, " ").trim();
   if (!cleaned) throw new Error("Empty text cannot be embedded");
 
-  const response = await fetch(OPENAI_EMBEDDING_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
+  const feature = ensureFeatureTag();
+  const outcome = await dispatchAiEmbedding(
+    {
+      feature,
       input: cleaned,
+      model,
       dimensions: EMBEDDING_DIMENSIONS,
-    }),
-  });
+    },
+    { feature },
+  );
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Embedding API error [${response.status}]: ${err}`);
+  if (outcome.status !== "succeeded" || !outcome.output) {
+    throw new Error(
+      `AI_EMBEDDING dispatch ${outcome.status}` +
+        (outcome.errorCode ? ` [${outcome.errorCode}]` : "") +
+        (outcome.errorMessage ? `: ${outcome.errorMessage}` : ""),
+    );
   }
 
-  const data = await response.json();
+  const vec = outcome.output.vectors[0];
+  if (!vec) throw new Error("AI_EMBEDDING dispatch returned no vector");
+
   return {
-    embedding: data.data[0].embedding,
-    model: data.model,
-    tokensUsed: data.usage?.total_tokens ?? 0,
+    embedding: vec,
+    model,
+    // The dispatch outcome doesn't surface per-call token counts (those are
+    // recorded into ai_interactions by the adapter). Callers that previously
+    // logged this number now get 0 — the canonical record is the audit row.
+    tokensUsed: 0,
   };
 }
 
 export async function generateBatchEmbeddings(
   texts: string[],
-  model: string = DEFAULT_EMBEDDING_MODEL
+  model: string = DEFAULT_EMBEDDING_MODEL,
 ): Promise<BatchEmbeddingResult> {
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) throw new Error("OPENAI_API_KEY not configured");
-
   const cleaned = texts.map((t) => t.replace(/\n+/g, " ").trim()).filter(Boolean);
   if (cleaned.length === 0) throw new Error("No valid texts to embed");
 
-  const response = await fetch(OPENAI_EMBEDDING_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
+  const feature = ensureFeatureTag();
+  const outcome = await dispatchAiEmbedding(
+    {
+      feature,
       input: cleaned,
+      model,
       dimensions: EMBEDDING_DIMENSIONS,
-    }),
-  });
+    },
+    { feature },
+  );
 
-  if (!response.ok) {
-    const err = await response.text();
-    throw new Error(`Embedding API error [${response.status}]: ${err}`);
+  if (outcome.status !== "succeeded" || !outcome.output) {
+    throw new Error(
+      `AI_EMBEDDING dispatch ${outcome.status}` +
+        (outcome.errorCode ? ` [${outcome.errorCode}]` : "") +
+        (outcome.errorMessage ? `: ${outcome.errorMessage}` : ""),
+    );
   }
 
-  const data = await response.json();
-  const embeddings = (data.data as Array<{ embedding: number[]; index: number }>)
-    .sort((a, b) => a.index - b.index)
-    .map((d) => d.embedding);
-
   return {
-    embeddings,
-    model: data.model,
-    totalTokens: data.usage?.total_tokens ?? 0,
+    embeddings: outcome.output.vectors,
+    model,
+    totalTokens: 0,
   };
 }
 

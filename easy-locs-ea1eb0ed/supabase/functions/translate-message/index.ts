@@ -58,8 +58,9 @@ async function translateWithDeepL(text: string, from: string, to: string): Promi
 }
 
 async function translateWithAI(text: string, from: string, to: string): Promise<string | null> {
-  if (!Deno.env.get("OPENAI_API_KEY")) return null;
-
+  // LB Closeout #852 — provider-key gating removed. The dispatch chain
+  // resolves provider availability via the registered AI router metadata
+  // and surfaces a clear failed/blocked status when no provider is wired.
   const fromName = LOCALE_NAMES[from] || from;
   const toName = LOCALE_NAMES[to] || to;
 

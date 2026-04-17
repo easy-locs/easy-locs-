@@ -502,10 +502,51 @@ export async function aiRouteAndParse(options: AIRouterOptions): Promise<{
   return { content, provider, fallbackUsed };
 }
 
-/** @deprecated Use `aiRouteForAgent` with a registry-resolved config. */
-export const openaiChat = (options: AIRouterOptions) =>
-  callOpenAI(envDefaultChatConfig().primary, options);
+// LB Closeout #852 — the legacy `openaiChat` shim has been retired. Every
+// chat completion must now go through `dispatchAiCompletion` (or, for the
+// rare in-process consumer, `aiRouteForAgent` with a registry-resolved
+// config). The static guard in `track1-bypass-removed.integration.test.ts`
+// now scans every tree for `openaiChat(` to keep the bypass from creeping
+// back in.
 
-// Sanity: keep DEFAULT_OPENAI_MODEL in scope so the deprecated re-export
-// above resolves at module init even if tree-shaken differently.
+// ── Moderation ───────────────────────────────────────────────────────────
+// Allow-listed `api.openai.com` host call lives here, not in callsites.
+// Returns `null` when the API key is missing or the call fails — moderation
+// is best-effort and must never block business flow.
+
+const OPENAI_MODERATION_URL = "https://api.openai.com/v1/moderations";
+
+export async function moderateText(
+  text: string,
+  opts: { timeoutMs?: number; model?: string } = {},
+): Promise<{ flagged: boolean; categories: string[] } | null> {
+  const key = Deno.env.get("OPENAI_API_KEY");
+  if (!key) return null;
+  try {
+    const resp = await fetch(OPENAI_MODERATION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model: opts.model ?? "omni-moderation-latest",
+        input: text.slice(0, 8000),
+      }),
+      signal: AbortSignal.timeout(opts.timeoutMs ?? 5000),
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json() as {
+      results?: Array<{ flagged?: boolean; categories?: Record<string, boolean> }>;
+    };
+    const r = data.results?.[0];
+    if (!r) return null;
+    const cats = Object.entries(r.categories ?? {})
+      .filter(([, v]) => v === true)
+      .map(([k]) => k);
+    return { flagged: !!r.flagged, categories: cats };
+  } catch (_err) {
+    return null; // best-effort
+  }
+}
+
+// Sanity: keep DEFAULT_OPENAI_MODEL in scope so any future re-export
+// resolves at module init even if tree-shaken differently.
 void DEFAULT_OPENAI_MODEL;

@@ -20,7 +20,6 @@ interface AiChatMessage {
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "";
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
 
 async function updateJobStatus(jobId: string, status: string, error?: string): Promise<void> {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !jobId) return;
@@ -38,19 +37,24 @@ async function updateJobStatus(jobId: string, status: string, error?: string): P
   });
 }
 
-async function callOpenAI(messages: AiChatMessage[], taskType: string): Promise<string> {
-  if (!OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY not configured in Lambda environment");
+// LB Closeout #852 — the lambda no longer talks to OpenAI directly. AI calls
+// go through the `ai-proxy` Edge Function, which routes through
+// `dispatchAiCompletion` so quota / audit / sensitive routing are enforced
+// consistently with every other AI surface in the system.
+async function callAiProxy(messages: AiChatMessage[], taskType: string): Promise<string> {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY must be set in Lambda environment");
   }
 
   const systemPrompt = taskType === "translate"
     ? "You are a professional translator for a property management platform."
     : "You are an AI assistant for Easy-Locs, a property management platform.";
 
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-proxy`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -62,11 +66,11 @@ async function callOpenAI(messages: AiChatMessage[], taskType: string): Promise<
 
   if (!response.ok) {
     const errText = await response.text().catch(() => "");
-    throw new Error(`AI API returned ${response.status}: ${errText}`);
+    throw new Error(`ai-proxy returned ${response.status}: ${errText}`);
   }
 
-  const result = await response.json();
-  return result.choices?.[0]?.message?.content || "";
+  const result = await response.json() as { response?: string };
+  return result.response || "";
 }
 
 async function storeResult(userId: string, taskType: string, result: string, correlationId: string): Promise<void> {
@@ -99,7 +103,7 @@ export const handler: SQSHandler = async (event: SQSEvent) => {
       const messages: AiChatMessage[] = payload.messages || [];
       const taskType = payload.task || "chat";
 
-      const result = await callOpenAI(messages, taskType);
+      const result = await callAiProxy(messages, taskType);
       await storeResult(payload.user_id || "unknown", taskType, result, correlationId);
       await updateJobStatus(jobId, "completed");
 
