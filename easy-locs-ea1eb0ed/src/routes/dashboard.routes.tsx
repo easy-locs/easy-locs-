@@ -88,7 +88,10 @@ export function DashboardRoutes() {
       <Route path="/dashboard/my-shop" element={<Navigate to="/dashboard/my-shops" replace />} />
       <Route path="/dashboard/my-shops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyShopsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><OpsCenter /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/dashboard/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><CommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+      {/* Task #988 — /dashboard/command-center canonicalized to DashboardCommandCenter
+          (defined above). Legacy CommandCenter page is reachable at /dashboard/command-legacy
+          to preserve any deep links until callers migrate. */}
+      <Route path="/dashboard/command-legacy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><CommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CountryWorkspace /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateModulePage /></FeatureErrorBoundary></ProtectedRoute>}>

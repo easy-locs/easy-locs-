@@ -1,12 +1,12 @@
 import { type ReactNode, useRef, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useSwipeNavigation } from "@/hooks/useSwipeNavigation";
-import { HIDE_NAV_PREFIXES } from "@/config/navigation";
+import { shouldHideBottomNav } from "@/config/navigation";
 
 export default function SwipeableMain({ children, className }: { children: ReactNode; className?: string }) {
   const { onTouchStart, onTouchEnd } = useSwipeNavigation();
   const { pathname } = useLocation();
-  const hideNav = HIDE_NAV_PREFIXES.some((p) => pathname.startsWith(p));
+  const hideNav = shouldHideBottomNav(pathname);
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
