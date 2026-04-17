@@ -34,6 +34,19 @@ export const CANONICAL_EXECUTION_EVENTS = {
   TASK_VERIFICATION_SKIPPED: "task.verification_skipped",
   TASK_UNLOCKED: "task.unlocked",
   TASK_IDEMPOTENT_HIT: "task.idempotent_hit",
+  /**
+   * Sovereign Agent Control · L2 (task #810). Emitted by the heartbeat
+   * trigger / sweep when an agent transitions from `healthy` to any
+   * non-healthy status (`stale`, `down`, `degraded`). Carries the previous
+   * status, the new status, the lag in ms, in-flight count, and the
+   * reason string from `system.compute_agent_health`. Kind-agnostic.
+   */
+  AGENT_HEALTH_DEGRADED: "agent.health_degraded",
+  /**
+   * Companion event to AGENT_HEALTH_DEGRADED — emitted on the reverse
+   * transition (any non-healthy status → `healthy`).
+   */
+  AGENT_HEALTH_RECOVERED: "agent.health_recovered",
 } as const;
 
 export type CanonicalExecutionEventName =
