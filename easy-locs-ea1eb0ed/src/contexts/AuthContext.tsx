@@ -28,6 +28,7 @@ import { structuredLogger } from "@/lib/observability/structured-logger";
 import { clearReferralCaches } from "@/lib/referral-cache";
 import { setProfileCountry } from "@/lib/wallet/wallet-config";
 import { autoDetectAndSwitchLocale } from "@/domains/i18n/pipelines/locale-switch.pipeline";
+import { queryClient } from "@/lib/query-client";
 
 type UserType = "landlord" | "tenant" | "client";
 type ActiveRole = "landlord" | "tenant" | "client";
@@ -567,6 +568,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
         clearReferralCaches();
+      }
+      // Drop any cached role/admin lookup so the next render reflects the
+      // new session immediately (sign-in, sign-out, token refresh, user swap).
+      if (_event === "SIGNED_IN" || _event === "SIGNED_OUT" || _event === "TOKEN_REFRESHED" || _event === "USER_UPDATED") {
+        queryClient.removeQueries({ queryKey: ["auth", "is-admin"] });
       }
       void hydrateAuthState(nextSession);
     });

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useI18n } from "@/lib/i18n";
 import { useSubscriptionGating } from "@/hooks/useSubscriptionGating";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { useCountryContext, appendCountryToPath, isGlobalPage } from "@/hooks/useCountryContext";
 import { getCountryEntryOrDefault } from "@/lib/global-country-registry";
 import AppLogo from "@/components/AppLogo";
@@ -51,6 +52,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, signOut, subscription, activeRole, hasDualRole, switchRole, orgId, allOrgs, switchOrg } = useAuth();
   const { t } = useI18n();
   const { currentTier, isSubscribed } = useSubscriptionGating();
+  const { isAdmin: isAdminRole } = useIsAdmin();
   const activeCountry = useCountryContext();
   const isDashboardHome = location.pathname === "/dashboard";
 
@@ -64,7 +66,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // NAVIGATION: Smart clean structure
   // ═══════════════════════════════════════════════════════
 
-  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings"]);
+  const FREE_NAV_SECTIONS = new Set(["dashboard", "listings", "marketplace", "orbit", "settings", "admin"]);
 
   // Role-aware section visibility: which nav sections each role can access.
   // activeRole covers: "landlord" | "tenant" | "client" (from AuthContext)
@@ -72,7 +74,10 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   // admin is detected from user metadata or subscription plan.
   // Merchant / driver roles are detected from user_metadata.role.
   const metaRole = (user?.user_metadata?.role as string | undefined) ?? "";
-  const isAdmin = subscription.plan === "admin" || metaRole === "admin";
+  // Admin detection: single source of truth is the server-side `has_role` RPC
+  // (via `useIsAdmin`), so the sidebar visibility and the route guard
+  // (`ProtectedRoute` / `AdminRoute`) always agree.
+  const isAdmin = isAdminRole;
   const isMerchant = metaRole === "merchant" || metaRole === "seller";
   const isDriver = metaRole === "driver";
   const isTenant = activeRole === "tenant";
@@ -177,14 +182,22 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
         { icon: Settings, label: t("nav.settings") || "Settings", path: "/dashboard/settings" },
         { icon: BrainCircuit, label: t("nav.ai_assistant") || "AI Assistant", path: "/dashboard/ai" },
         { icon: Search, label: t("nav.ai_search") || "AI Search", path: "/dashboard/ai-search" },
-        // Admin-only debug/audit routes — only visible to admin role
-        ...(isAdmin ? [
-          { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },
-          { icon: Activity, label: t("nav.runtime_audit") || "Runtime Audit", path: "/admin/runtime-audit" },
-          { icon: Bug, label: t("nav.master_debug") || "Master Debug", path: "/admin/master-debug" },
-        ] : []),
       ],
     },
+
+    // ── H. Admin (RPC-gated, hidden for non-admins) ──
+    ...(isAdmin ? [{
+      key: "admin",
+      title: t("nav.admin") || "Admin",
+      icon: Shield,
+      items: [
+        { icon: Shield, label: t("nav.admin_home") || "Admin Home", path: "/admin" },
+        { icon: Activity, label: t("nav.super_dashboard") || "Super Dashboard", path: "/admin/super-dashboard" },
+        { icon: Shield, label: t("nav.system_audit") || "System Audit", path: "/admin/audit-debug" },
+        { icon: Activity, label: t("nav.runtime_audit") || "Runtime Audit", path: "/admin/runtime-audit" },
+        { icon: Bug, label: t("nav.master_debug") || "Master Debug", path: "/admin/master-debug" },
+      ],
+    } as NavSection] : []),
   ];
 
   // Determine active items
