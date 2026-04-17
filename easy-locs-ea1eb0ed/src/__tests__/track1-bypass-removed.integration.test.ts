@@ -114,9 +114,11 @@ describe("LB1 Track 1 (#841) — static bypass guard", () => {
 // ── LB Closeout #852 — repo-wide bypass scan ─────────────────────────────
 // Walks every supabase/function, lambda-handler, orchestrator file, and
 // frontend src file and asserts that none of them re-introduce a direct
-// provider call. The canonical homes for the OpenAI HTTP host
-// (`api.openai.com`) and the legacy `openaiChat(` symbol are explicitly
-// allow-listed.
+// provider call. The canonical homes for provider HTTP hosts
+// (`api.openai.com`, `api.anthropic.com`), the legacy `openaiChat(` symbol,
+// and the documented Level C orchestrator exception files are explicitly
+// allow-listed; everything else must route through `dispatchAiCompletion`
+// / `dispatchAiEmbedding`.
 
 const REPO_ROOT = process.cwd();
 
@@ -126,6 +128,12 @@ const OPENAI_HOST_ALLOWLIST = new Set<string>([
   "supabase/functions/_shared/ai-router.ts",
   "supabase/functions/_shared/openai-client.ts",
   "supabase/functions/_shared/execution/adapters/ai/runner-aiRoute.ts",
+]);
+
+// Files where direct `api.anthropic.com` host calls are sanctioned —
+// only the canonical AI router holds the Anthropic URL constant.
+const ANTHROPIC_HOST_ALLOWLIST = new Set<string>([
+  "supabase/functions/_shared/ai-router.ts",
 ]);
 
 // Files where `openaiChat(` may still appear (the retired stub throws,
@@ -144,13 +152,27 @@ const OPENAI_KEY_ENV_ALLOWLIST = new Set<string>([
   "supabase/functions/_shared/execution/adapters/ai/runner-aiRoute.ts",
 ]);
 
-// Orchestrator uses the `@openai/agents` SDK (not direct host fetches).
-// Documented Level C exception — allow-listed wholesale.
-const ORCHESTRATOR_ROOT = "orchestrator";
+// Documented Level C orchestrator exception — these standalone files are
+// not wired into the runtime app and are pinned here as the SOLE
+// permitted importers of the `openai` SDK / `@openai/agents` SDK while
+// the LC1 migration converts them onto the canonical `dispatchAiCompletion`
+// path. Adding a new file here requires explicit Level C reviewer sign-off.
+const ORCHESTRATOR_SDK_ALLOWLIST = new Set<string>([
+  "orchestrator/src/orchestrator.ts",
+  "orchestrator/src/task-decomposition.ts",
+  "orchestrator/src/agents/base-agent.ts",
+  "orchestrator/src/agents/chief-architect.ts",
+  "orchestrator/src/agents/coding.ts",
+  "orchestrator/src/agents/deploy.ts",
+  "orchestrator/src/agents/observability.ts",
+  "orchestrator/src/agents/qa-validation.ts",
+  "orchestrator/src/agents/supabase.ts",
+]);
 
 const SCAN_ROOTS = [
   "supabase/functions",
   "lambda-handlers",
+  "orchestrator",
   "src",
 ];
 
@@ -184,9 +206,7 @@ function scannedFiles(): string[] {
   for (const root of SCAN_ROOTS) {
     walk(resolve(REPO_ROOT, root), all);
   }
-  return all
-    .map((p) => relative(REPO_ROOT, p).replace(/\\/g, "/"))
-    .filter((p) => !p.startsWith(`${ORCHESTRATOR_ROOT}/`));
+  return all.map((p) => relative(REPO_ROOT, p).replace(/\\/g, "/"));
 }
 
 describe("LB Closeout #852 — repo-wide bypass scan", () => {
@@ -239,6 +259,51 @@ describe("LB Closeout #852 — repo-wide bypass scan", () => {
       if (/from\s+["'][^"']*openai-client(\.ts)?["']/.test(src)) offenders.push(rel);
     }
     expect(offenders, `openai-client.ts imports found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the allow-list calls api.anthropic.com directly", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (ANTHROPIC_HOST_ALLOWLIST.has(rel)) continue;
+      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
+      if (/api\.anthropic\.com/.test(code)) offenders.push(rel);
+    }
+    expect(offenders, `Direct api.anthropic.com calls found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the orchestrator Level C allow-list imports the openai SDK directly", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (ORCHESTRATOR_SDK_ALLOWLIST.has(rel)) continue;
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/from\s+["']openai["']/.test(src)) offenders.push(rel);
+    }
+    expect(offenders, `Direct \`from "openai"\` SDK imports found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file outside the orchestrator Level C allow-list imports @openai/agents", () => {
+    const offenders: string[] = [];
+    for (const rel of files) {
+      if (ORCHESTRATOR_SDK_ALLOWLIST.has(rel)) continue;
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/from\s+["']@openai\/agents["']/.test(src)) offenders.push(rel);
+    }
+    expect(offenders, `Direct \`from "@openai/agents"\` imports found in:\n${offenders.join("\n")}`)
+      .toEqual([]);
+  });
+
+  it("no file in the entire repo imports the @anthropic-ai SDK directly", () => {
+    // Anthropic is consumed exclusively via the canonical ai-router; no
+    // SDK import is permitted anywhere, including the Level C exception.
+    const offenders: string[] = [];
+    for (const rel of files) {
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/from\s+["']@anthropic(?:-ai\/sdk)?["']/.test(src)) offenders.push(rel);
+    }
+    expect(offenders, `Direct \`from "@anthropic..."\` SDK imports found in:\n${offenders.join("\n")}`)
       .toEqual([]);
   });
 });
