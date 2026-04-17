@@ -15,59 +15,74 @@ Source files:
 - `99-evidence/edge-function-frontend-invokers.txt` and the multi-line
   variant.
 
-Counts:
+Counts (deterministically derived by
+`scripts/audit/phase-0/derive-edge-orphans.sh`, which reads
+`edge-functions.csv` and writes four authoritative lists into
+`99-evidence/edge-orphans-*.txt`; every name is verified to resolve to
+a `supabase/functions/<name>/` directory on disk):
 
 | Class                                                                  | Count |
 |------------------------------------------------------------------------|------:|
 | Total edge-function directories                                        |  239  |
+| Of which: real entrypoints (`entry_point_exists == true`)              |  238  |
 | With ≥1 `functions.invoke("<name>")` callsite in `src/`                |  102  |
 | With 0 frontend invokers                                               |  137  |
-| With 0 frontend invokers AND 0 internal callers (call-graph)           |  122  |
+| With 0 frontend invokers AND 0 internal callers (entrypoints only)     |  121  |
 
-After classifying the 122 zero-caller functions by name pattern:
+After classifying the 121 zero-caller functions by name pattern:
 
-| Sub-class (zero-caller, by suffix/prefix)                             | Count | Notes |
-|-----------------------------------------------------------------------|------:|-------|
-| `*-router` (dispatched as `<name>` after rewrite by clients)          |   18  | `admin-router`, `ai-router`, `booking-router`, `commerce-router`, `food-router`, `gdpr-router`, `identity-router`, `infra-router`, `logistics-router`, `media-router`, `notification-router`, `orbit-router`, `rent-router`, `search-router`, `stripe-router`, `voice-router`, `wallet-router`, `webauthn-router` |
-| Webhooks / cron / cleanup / dispatcher (external triggers)            |   29  | matches `(-webhook$|-cron$|cleanup-*|expire-*|csp-report|dispatcher|email-intake|email-queue|watchdog|dlq-|backup-|collect-|auto-source|auto-onboarding)` |
-| Remainder — true orphan candidates                                    |   75  | listed below |
+| Sub-class (zero-caller, by suffix/prefix)                             | Count | Source list                                  |
+|-----------------------------------------------------------------------|------:|----------------------------------------------|
+| `*-router` (dispatched as `<name>` after rewrite by clients)          |   18  | `99-evidence/edge-orphans-routers.txt`       |
+| Webhooks / cron / cleanup / dispatcher (external triggers)            |   28  | `99-evidence/edge-orphans-webhook-cron.txt` (regex `(-webhook$\|-cron$\|^cleanup-\|^expire-\|^csp-report$\|dispatcher$\|email-intake$\|email-queue\|^watchdog\|^dlq-\|^backup-\|^collect-\|^auto-source\|^auto-onboarding)`) |
+| Remainder — true orphan candidates                                    |   75  | `99-evidence/edge-orphans-true-candidates.txt` |
 
-**True orphan candidates (75)** — names with neither frontend invoker,
-internal caller, nor router/webhook/cron pattern. Every name resolves to
-a directory under `supabase/functions/<name>/index.ts`:
+**True orphan candidates (75).** This list is regenerated end-to-end by
+`derive-edge-orphans.sh`; do not edit by hand. The script verifies each
+entry resolves to `supabase/functions/<name>/` on disk and exits
+non-zero otherwise. Current contents of
+`99-evidence/edge-orphans-true-candidates.txt`:
 
 ```
-ai-content-enrichment       ai-entity-enrichment        ai-eval-runner
-ai-proxy                    ai-rag                      ai-recommendations
-ai-web-search               audit-export                auth-callback
-booking-lifecycle           browser-user-repair-engine  chief-agent
-classify-business           command-center-api          dev-builder
-dev-planner                 email-enqueue               execution-loop
-execution-runner-callback   export-ical                 forex-rates
-gateway-marketplace-sync    geocode                     get-bls-token
-get-checkout-session        gift-cards                  give-feedback
-governance-engine           handle-checkout-success     hotelbeds-search
-ical-sync                   import-bookingcom           import-property
-inventory-cleanup           ivr-router                  ledger-export
-listing-finalizer           livekit-webhook             llm-budget
-loyalty-points              master-runtime-qa-engine    media-cleanup
-media-processing            metrics-collector           ml-quality
-ml-recommend                module-rollout              monitoring-cron
-notion-sync                 omni-search                 onboarding-finalize
-ops-pulse                   ops-rotation                orbit-payment
-orbit-token-refresh         pii-redact                  prepare-checkout
-push-notification           push-test                   reconciliation-cron
-refund-admin                run-ingestion-pipeline      score-calc
-search-index                semantic-search             sentinel-server
-seo-render                  shop-import-processor       sla-breach-detector
-slack-notify                stock-take                  storefront-export
-support-bot                 tax-rates                   trigger-payout
-twin-runtime                vat-validate                voice-call
-voice-twiml
+ai-content-enrichment            ai-entity-enrichment
+ai-eval-runner                   ai-proxy
+ai-rag                           ai-recommendations
+ai-web-search                    audit-export
+auth-callback                    booking-lifecycle
+browser-user-repair-engine       chief-agent
+classify-business                dev-builder
+dev-planner                      email-enqueue
+execution-loop                   execution-runner-callback
+export-ical                      extract-article
+food-audit                       food-menu-builder
+food-normalizer                  food-publish
+food-rescrape-monitor            food-visibility-gate
+food-visual-clean                gateway-webhook-ingest
+gdpr-delete-account              gdpr-deletion-processor
+gdpr-export                      generate-embeddings
+generate-seo                     goal-create
+guest-session                    inngest-handler
+integration-health-monitor       job-queue-worker
+job-runner                       lambda-invoke-proxy
+lc3-replan-trigger               media-processor
+mux-upload                       omega-server-loop
+ops-ai-chat                      order-manage
+payment-notification             pipeline-worker
+prayer-times                     public-api
+public-health                    purchase-locs
+qr-payment-session               receive-email
+redis-enqueue                    rent-create-payment
+rent-reminders                   repair-worker
+rss-proxy                        search-meilisearch
+seller-kpi-snapshot              send-call-push
+send-push                        sentinel-server-guards
+social-preview                   sqs-enqueue-proxy
+sync-meilisearch                 trigger-github
+tts-engine                       uae-data-cleanup
+vector-embed                     video-processor
+voice-processing                 voice-stt-token
+voice-tts
 ```
-
-(Exhaustive list: `99-evidence/edge-functions.csv` rows where columns
-`frontend_invoker_callsites == 0` AND `internal_callers == 0`.)
 
 **Confidence:** Medium-High. The remaining undetectable invocation
 paths are: (a) router-fanout where the dispatch table maps a public op
@@ -179,8 +194,8 @@ Phase 6 task. No deletion is recommended in this audit.
 
 | Class                                               | Count | Confidence |
 |-----------------------------------------------------|------:|-----------:|
-| Edge functions with 0 frontend + 0 internal callers |  122  | High       |
-| Of which router/webhook/cron (alive)                |   47  | High       |
+| Edge functions with 0 frontend + 0 internal callers (entrypoints only) |  121  | High |
+| Of which router/webhook/cron (alive)                |   46  | High       |
 | **True orphan edge candidates**                     |   75  | Medium-High |
 | Page files with no importer                         |   43  | High       |
 | RPCs with zero callsite                             |  256  | High       |
