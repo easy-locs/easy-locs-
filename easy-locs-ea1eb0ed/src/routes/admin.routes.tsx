@@ -1,8 +1,33 @@
-import { Route } from "react-router-dom";
+import { Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SuperAdminGate from "@/components/auth/SuperAdminGate";
 import * as Pages from "@/app/app-route-registry";
+
+/**
+ * ACP Agent 3 (#863) — Legacy redirect helpers.
+ * Preserve query string when redirecting an old admin URL to its new
+ * /admin/control/* equivalent. Uses replace so the legacy URL doesn't pollute
+ * browser history (no back-button redirect loops).
+ */
+function LegacyControlRedirect({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+}
+
+/**
+ * ACP Agent 3 (#863) — /admin/agents/:slug/runs → /admin/control/runs?agent=:slug
+ * Promotes the :slug path param to an `agent` query param while preserving
+ * any other query params already present on the legacy URL.
+ */
+function LegacyAgentRunsRedirect() {
+  const { slug } = useParams();
+  const { search } = useLocation();
+  const params = new URLSearchParams(search);
+  if (slug) params.set("agent", slug);
+  const qs = params.toString();
+  return <Navigate to={`/admin/control/runs${qs ? `?${qs}` : ""}`} replace />;
+}
 
 const {
   AdminAIControlCenter, AdminAlertCenterPage, AdminAnalyticsOpsPage, AdminArchitectureLabPage,
@@ -37,11 +62,8 @@ export function AdminRoutes() {
 
       {/* ══ Admin ══ */}
       <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/engine-control-room" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EngineControlRoomPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/wiring-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/autonomy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAutonomyDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -58,7 +80,6 @@ export function AdminRoutes() {
       <Route path="/admin/review-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReviewQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/growth-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/qr-generate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QrGeneratePage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/master-control" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminMasterControlPage /></FeatureErrorBoundary></SuperAdminGate>} />
       <Route path="/admin/ui-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUiEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/marketplace-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMarketplaceOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/pipeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPipelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -67,12 +88,6 @@ export function AdminRoutes() {
       <Route path="/admin/delivery-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/merchant-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantApprovalQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
-      {/* L5 Sovereign Agent Control · cross-agent approvals inbox (#812). Behind SuperAdminGate so reviewer set stays small. */}
-      <Route path="/admin/approvals" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminApprovalsPage /></FeatureErrorBoundary></SuperAdminGate>} />
-      {/* L4 Sovereign Agent Control · /admin/agents cockpit (#813). Reads v_agents_overview + v_agent_health, writes via system.set_agent_status RPC. */}
-      <Route path="/admin/agents" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminAgentsPage /></FeatureErrorBoundary></SuperAdminGate>} />
-      {/* LB1 (#815) · Per-agent conversation explorer (prompt/response/cost/latency + sensitive-output release). */}
-      <Route path="/admin/agents/:slug/runs" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminAgentRunsPage /></FeatureErrorBoundary></SuperAdminGate>} />
       <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/seed-tools" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSeedToolsPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -100,13 +115,14 @@ export function AdminRoutes() {
       <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/super-dashboard" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></SuperAdminGate>} />
       <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/command-center" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><CommandCenterPage /></FeatureErrorBoundary></SuperAdminGate>} />
-
       {/* ACP · /admin/control unified shell (#861).
           Sensitive sections (agents/runs/command/approvals/master) are wrapped
           ProtectedRoute > SuperAdminGate so non-admins still see the shared
           AdminAccessDenied screen and admins fall through to SuperAdminGate.
-          Explicit paths take precedence over the `:section` catch-all (v6). */}
+          Explicit paths take precedence over the `:section` catch-all (v6).
+          Note (#863): /admin/command-center is intentionally NOT defined as a
+          real route here — it is registered below as a legacy redirect into
+          /admin/control/command. */}
       <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
@@ -114,6 +130,23 @@ export function AdminRoutes() {
       <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+
+      {/* ══ ACP Agent 3 (#863) · Legacy admin URL redirects → /admin/control/* ══
+          Old URLs (bookmarks, external links, in-app navigation) keep working
+          and land on the matching section of the unified control plane. Query
+          strings are preserved; for /admin/agents/:slug/runs the :slug is
+          promoted to ?agent=:slug. While Agents 5–9 ship their sections, the
+          target route falls back to Agent 1's shell — no 404, no white screen.
+          The original page components remain in app-route-registry (not
+          deleted) per task #863 scope. */}
+      <Route path="/admin/agents/:slug/runs" element={<LegacyAgentRunsRedirect />} />
+      <Route path="/admin/agents" element={<LegacyControlRedirect to="/admin/control/agents" />} />
+      <Route path="/admin/command-center" element={<LegacyControlRedirect to="/admin/control/command" />} />
+      <Route path="/admin/approvals" element={<LegacyControlRedirect to="/admin/control/approvals" />} />
+      <Route path="/admin/autonomy" element={<LegacyControlRedirect to="/admin/control/autonomy" />} />
+      <Route path="/admin/control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+      <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+      <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
 
       {/* ══ Internal Labs ══ */}
       <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
