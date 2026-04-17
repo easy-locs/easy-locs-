@@ -565,18 +565,46 @@ function scanFile(file: string): CallSite[] {
   return sites;
 }
 
+/**
+ * Smart inference for which HTTP methods a handler actually accepts.
+ *
+ * Layers (any layer that fires contributes methods to the gated set):
+ *   1. Direct equality against a method literal:
+ *        `req.method === 'POST'`, `'POST' === req.method`
+ *   2. Inequality guards:
+ *        `req.method !== 'POST'`  (handler accepts only POST after the guard)
+ *   3. Switch dispatch on `req.method`: `case 'GET':`, `case 'POST':`, ...
+ *   4. EdgeRouter / app dispatch tables:
+ *        `router.get(...)`, `router.post(...)`, `app.put(...)`, etc.
+ *   5. Allow-list arrays on `req.method`:
+ *        `['POST','PUT'].includes(req.method)`,
+ *        `['GET'].indexOf(req.method) !== -1`
+ *   6. Body-parsing fallback (only fires if nothing else did): if the handler
+ *      reads `req.json()` / `req.formData()` / `req.text()` / `req.blob()` /
+ *      `req.arrayBuffer()`, infer POST. Edge handlers virtually never parse a
+ *      body for a GET.
+ *   7. URL-reading fallback (only fires if nothing else did and there is no
+ *      body parse): if the handler reads `req.url` / `new URL(req.url)` /
+ *      `searchParams`, infer GET — it is almost certainly a query-string
+ *      endpoint.
+ *
+ * If no layer fires we return `methods: null`, meaning "ungated — any method
+ * is passed through" (so callers don't get false-positive mismatches).
+ *
+ * OPTIONS is treated as the universal CORS preflight short-circuit: it is
+ * added back to the set whenever any non-OPTIONS method was inferred, but a
+ * handler that only handles OPTIONS will never produce gating on its own.
+ */
 function inferHandlerMethods(src: string): {
   methods: HttpMethod[] | null;
   requiresJsonBody: boolean;
 } {
-  // We only treat the handler as "method-gated" when there is an explicit
-  // non-OPTIONS method literal in source (`req.method === 'POST'`,
-  // `req.method !== 'POST'`, `case 'GET':` inside a switch on req.method,
-  // etc). If none exist, the handler passes any method through — return
-  // null so we don't invent false constraints.
   const gated = new Set<HttpMethod>();
+
+  // 1. Direct equality / 2. inequality comparisons.
   for (const re of [
     /req\.method\s*===?\s*['"`]([A-Z]+)['"`]/g,
+    /['"`]([A-Z]+)['"`]\s*===?\s*req\.method/g,
     /req\.method\s*!==?\s*['"`]([A-Z]+)['"`]/g,
   ]) {
     let mm: RegExpExecArray | null;
@@ -585,9 +613,8 @@ function inferHandlerMethods(src: string): {
       if (v !== "OPTIONS") gated.add(v);
     }
   }
-  // Match `case 'POST':` only when within a switch on req.method. We
-  // accept it as a signal if the source has both `switch (req.method)` and
-  // case literals.
+
+  // 3. switch (req.method) { case 'X': ... }
   if (/switch\s*\(\s*req\.method\s*\)/.test(src)) {
     const re = /case\s+['"`]([A-Z]+)['"`]\s*:/g;
     let mm: RegExpExecArray | null;
@@ -597,11 +624,51 @@ function inferHandlerMethods(src: string): {
     }
   }
 
+  // 4. EdgeRouter / app / api / server dispatch tables.
+  const routerCalls = src.matchAll(
+    /\b(?:router|app|edge|server|api)\s*\.\s*(get|post|put|patch|delete)\s*\(/gi,
+  );
+  for (const r of routerCalls) {
+    const v = r[1].toUpperCase() as HttpMethod;
+    if (v !== "OPTIONS") gated.add(v);
+  }
+
+  // 5. Allow-list arrays — `['POST','PUT'].includes(req.method)`.
+  const allowList = src.matchAll(
+    /\[\s*((?:['"`](?:GET|POST|PUT|PATCH|DELETE|HEAD)['"`]\s*,?\s*)+)\]\s*\.(?:includes|indexOf)\s*\(\s*req\.method/g,
+  );
+  for (const a of allowList) {
+    for (const m of a[1].matchAll(
+      /['"`](GET|POST|PUT|PATCH|DELETE|HEAD)['"`]/g,
+    )) {
+      gated.add(m[1] as HttpMethod);
+    }
+  }
+
   const reqJson = /req\s*\.\s*json\s*\(\s*\)/.test(src);
   const reqJsonCatch =
     /req\s*\.\s*json\s*\(\s*\)\s*\.\s*catch\s*\(/.test(src) ||
     /await\s+req\s*\.\s*json\s*\(\s*\)\s*\.\s*catch\s*\(/.test(src);
   const requiresJsonBody = reqJson && !reqJsonCatch;
+
+  if (gated.size === 0) {
+    // 6. Body-parsing fallback. Many handlers short-circuit on OPTIONS first
+    // and never compare `req.method` to a literal again, but they clearly
+    // accept POST because they parse a body. Without this fallback those
+    // functions would look ungated, which hides real method mismatches.
+    const bodyParse =
+      /\breq\s*\.\s*(json|formData|text|arrayBuffer|blob)\s*\(/.test(src);
+    if (bodyParse) {
+      gated.add("POST");
+    } else {
+      // 7. URL-reading fallback — query-string endpoints are GETs.
+      const urlRead =
+        /new\s+URL\s*\(\s*req\.url|req\s*\.\s*url|searchParams/.test(src);
+      if (urlRead) {
+        gated.add("GET");
+      }
+    }
+  }
 
   if (gated.size === 0) {
     // Ungated handler: any method is accepted. Surface null so callers
