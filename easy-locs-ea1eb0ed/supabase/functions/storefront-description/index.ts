@@ -6,8 +6,10 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
  * Raw anon key is rejected — only authenticated sessions or trusted server-side callers allowed.
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+// LB1 #835 — storefront descriptions go through the platform-native AI agent
+// so quota / sensitive routing / audit are uniformly enforced.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const ALLOWED_ORIGINS = new Set([
   Deno.env.get("SITE_URL") ?? "",
@@ -168,27 +170,33 @@ Deno.serve(async (req: Request) => {
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await openaiChat({
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 300,
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-    });
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "storefront-description",
+        messages: [{ role: "user", content: prompt }],
+        maxTokens: 300,
+        temperature: 0.3,
+        responseFormat: "json",
+      },
+      { feature: "storefront-description" },
+    );
 
-    if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);
-
-    const json = await res.json();
-    const text = json.choices?.[0]?.message?.content;
-    if (!text) throw new Error("Empty response");
-
-    const parsed = JSON.parse(text);
-    if (!parsed.description || !parsed.seoTitle) throw new Error("Incomplete LLM response");
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      throw new Error(
+        `dispatch ${outcome.status}: ${outcome.errorCode ?? ""} ${outcome.errorMessage ?? outcome.blockedReason ?? ""}`.trim(),
+      );
+    }
+    const parsed = (outcome.output.json as Record<string, unknown> | undefined) ??
+      (typeof outcome.output.text === "string" ? JSON.parse(outcome.output.text) : null);
+    if (!parsed || typeof parsed !== "object") throw new Error("Empty AI response");
+    const p = parsed as Record<string, unknown>;
+    if (!p.description || !p.seoTitle) throw new Error("Incomplete LLM response");
 
     const response: DescriptionResponse = {
-      description: String(parsed.description),
-      seoTitle: String(parsed.seoTitle).slice(0, 60),
-      seoDescription: String(parsed.seoDescription || "").slice(0, 160),
-      seoKeywords: Array.isArray(parsed.seoKeywords) ? parsed.seoKeywords.map(String) : [],
+      description: String(p.description),
+      seoTitle: String(p.seoTitle).slice(0, 60),
+      seoDescription: String(p.seoDescription || "").slice(0, 160),
+      seoKeywords: Array.isArray(p.seoKeywords) ? (p.seoKeywords as unknown[]).map(String) : [],
       source: "llm",
     };
 

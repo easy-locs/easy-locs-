@@ -1,3 +1,12 @@
+// LB1 #835 — This is the legacy dev/build orchestrator (Level C, code-gen).
+// It speaks to OpenAI directly because it is NOT a runtime user-facing AI
+// surface; every model call here is a developer-tooling call (PR analysis,
+// code-gen). Migration onto `dispatchExecutionTask({ domain: 'ai', ... })`
+// is tracked under the Level C roadmap (LC1) — once the dev orchestrator is
+// itself a registered platform agent, these calls will route through the
+// AI adapter like every other surface. Until then, this file is the ONLY
+// sanctioned exception to the "no direct model SDKs" rule and MUST NOT be
+// referenced from the runtime app.
 import fs from "node:fs";
 import path from "node:path";
 import OpenAI from "openai";

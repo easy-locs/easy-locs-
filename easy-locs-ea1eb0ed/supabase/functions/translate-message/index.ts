@@ -1,6 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+// LB1 #835 — AI translation goes through the platform-native registry so
+// every model call is governed (quota, sensitive routing, audit). Direct
+// `openaiChat` is no longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,25 +58,40 @@ async function translateWithDeepL(text: string, from: string, to: string): Promi
 }
 
 async function translateWithAI(text: string, from: string, to: string): Promise<string | null> {
-  const apiKey = Deno.env.get("OPENAI_API_KEY");
-  if (!apiKey) return null;
+  if (!Deno.env.get("OPENAI_API_KEY")) return null;
 
   const fromName = LOCALE_NAMES[from] || from;
   const toName = LOCALE_NAMES[to] || to;
 
   try {
-    const response = await openaiChat({
-      messages: [
-        { role: "system", content: `You are a professional translator. Translate the following text from ${fromName} to ${toName}. Return ONLY the translated text. Keep the same tone, formality and formatting. Do not add quotes, explanations, or commentary.` },
-        { role: "user", content: text },
-      ],
-      max_tokens: 2000,
-      temperature: 0.1,
-    });
-    if (!response.ok) { console.error("AI translation error:", response.status, await response.text()); return null; }
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch (err) { console.error("AI translation exception:", err); return null; }
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "translate-message",
+        messages: [
+          { role: "system", content: `You are a professional translator. Translate the following text from ${fromName} to ${toName}. Return ONLY the translated text. Keep the same tone, formality and formatting. Do not add quotes, explanations, or commentary.` },
+          { role: "user", content: text },
+        ],
+        maxTokens: 2000,
+        temperature: 0.1,
+        purpose: "general",
+      },
+      { feature: "translate-message" },
+    );
+
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.error(
+        "[translate-message] dispatch outcome:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      return null;
+    }
+    return outcome.output.text?.trim() || null;
+  } catch (err) {
+    console.error("AI translation exception:", err);
+    return null;
+  }
 }
 
 /** Detect language from text using patterns + AI fallback */

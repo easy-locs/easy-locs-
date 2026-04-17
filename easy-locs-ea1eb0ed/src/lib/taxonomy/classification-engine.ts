@@ -453,6 +453,12 @@ export interface LLMClassificationResponse {
  * OpenAI API keys are kept server-side in the edge function only.
  * Uses the brand dictionary as a fast-path cache to skip the edge function for known brands.
  * Returns null if the edge function is unavailable (caller falls back to rule-based).
+ *
+ * LB1 #835 — Governed via the edge layer: `classify-business` now dispatches
+ * through `dispatchExecutionTask({ domain: 'ai', task_type:
+ * 'AI_COMPLETION' })` so every call is gated by the platform-native AI
+ * agent (registry, quota, sensitive routing, audit). No direct provider
+ * SDK is used in this file.
  */
 export async function classifyWithLLM(
   input: LLMClassificationInput,
