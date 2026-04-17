@@ -161,14 +161,19 @@ async function fetchWeatherSignal(lat: number, lng: number): Promise<ContextualF
 
 async function fetchPgvectorSimilar(
   userId: string,
-  queryEmbedding: number[],
+  queryText: string,
   limit = 20,
 ): Promise<PgvectorMatch[]> {
+  if (!queryText.trim()) return [];
   try {
     const { data, error } = await db.functions.invoke("vector-similarity-search", {
       body: {
         user_id: userId,
-        query_embedding: queryEmbedding,
+        // The edge function embeds the text server-side via the shared
+        // AI_EMBEDDING adapter so the resulting vector has the canonical
+        // 1536 dimensions expected by the pgvector columns. Sending the
+        // engine's local 128-dim simulated vector would be rejected.
+        query_text: queryText,
         match_count: limit,
         similarity_threshold: 0.3,
       },
@@ -187,6 +192,25 @@ async function fetchPgvectorSimilar(
   } catch {
     return [];
   }
+}
+
+function buildPgvectorQueryText(
+  recentVerticals: Set<string>,
+  favorites: string[] | undefined,
+): string {
+  const parts: string[] = [];
+  if (recentVerticals.size > 0) {
+    parts.push(`Interested in: ${[...recentVerticals].join(", ")}.`);
+  }
+  if (favorites?.length) {
+    const favoriteTitles = favorites
+      .map((id) => CATALOG.find((c) => c.id === id)?.title)
+      .filter((t): t is string => !!t);
+    if (favoriteTitles.length > 0) {
+      parts.push(`Liked: ${favoriteTitles.slice(0, 5).join("; ")}.`);
+    }
+  }
+  return parts.join(" ");
 }
 
 export function trackUserInteraction(
@@ -228,7 +252,10 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
     const profile = getUserProfile(ctx.userId);
     if (profile && profile.interactionVector.length > 0) {
       userVector = profile.interactionVector;
-      pgvectorResults = await fetchPgvectorSimilar(ctx.userId, userVector, 20);
+    }
+    const pgvectorQueryText = buildPgvectorQueryText(recentVerticals, ctx.favorites);
+    if (pgvectorQueryText) {
+      pgvectorResults = await fetchPgvectorSimilar(ctx.userId, pgvectorQueryText, 20);
     }
     collaborativeScores = getCollaborativeSignals(ctx.userId, itemEmbeddings);
   }
