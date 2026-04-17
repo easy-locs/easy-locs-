@@ -102,9 +102,16 @@ while : ; do
   fi
 
   # Rewrite the recent slice (covers any noreply commits we just pulled).
-  rewrite_range "HEAD~${REWRITE_LOOKBACK}..HEAD" 2>/dev/null \
-    || rewrite_range "HEAD" 2>/dev/null \
-    || true
+  # Cap the lookback at the actual number of reachable commits so we never
+  # accidentally trigger a full-history rewrite on small repos.
+  total_commits="$(git rev-list --count HEAD 2>/dev/null || echo 0)"
+  lookback="${REWRITE_LOOKBACK}"
+  if [ "${total_commits}" -gt 0 ] && [ "${lookback}" -ge "${total_commits}" ]; then
+    lookback=$((total_commits - 1))
+  fi
+  if [ "${lookback}" -gt 0 ]; then
+    rewrite_range "HEAD~${lookback}..HEAD" || true
+  fi
 
   echo "[auto-push] pushing ${BRANCH} -> origin (attempt ${attempt}/${MAX_ATTEMPTS})"
   if git push --force-with-lease origin "${BRANCH}" 2>/tmp/auto-push.err; then
