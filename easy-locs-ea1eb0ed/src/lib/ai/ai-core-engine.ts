@@ -14,6 +14,7 @@
 
 import { db } from "@/services/db";
 import { structuredLogger } from "@/lib/observability/structured-logger";
+import { enqueueEntity } from "@/lib/pipeline/queue-driven-pipeline";
 
 
 
@@ -279,7 +280,6 @@ export async function aiQualityBooster(limit = 30): Promise<{ boosted: number; r
     if (improvements.length > 0 && currentMode === "active") {
       // Re-enqueue for pipeline reprocessing
       try {
-        const { enqueueEntity } = await import("@/lib/pipeline/queue-driven-pipeline");
         await enqueueEntity(e.id, "seed_merchant", undefined, 7, "score");
         requeued++;
       } catch {}

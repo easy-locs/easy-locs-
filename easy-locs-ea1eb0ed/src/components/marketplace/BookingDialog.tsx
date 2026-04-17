@@ -9,7 +9,7 @@ import { CreditCard, Mail, MapPin, Users, Clock, Upload } from "lucide-react";
 import PaymentMethodSelector, { type PaymentMethod } from "./PaymentMethodSelector";
 import MarketplaceDisclaimer from "./MarketplaceDisclaimer";
 import { format } from "date-fns";
-import { fetchBookedDates } from "@/repositories/marketplace.repository";
+import { fetchBookedDates, uploadBookingDocument } from "@/repositories/marketplace.repository";
 import { toast } from "sonner";
 import ServiceBookingCalendar, { type ActivityBookingRules } from "@/components/concierge/ServiceBookingCalendar";
 import { getCategoryBookingConfig } from "./CategoryBookingConfig";
@@ -209,7 +209,6 @@ export default function BookingDialog({ open, onOpenChange, service, provider, o
                     try {
                       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
                       const path = `${service.org_id}/id-docs/${crypto.randomUUID()}.${ext}`;
-                      const { uploadBookingDocument } = await import("@/repositories/marketplace.repository");
                       await uploadBookingDocument("booking-documents", path, file);
                       setIdDocUrl(path);
                       toast.success(t("mp.document_uploaded") || "ID document uploaded");
