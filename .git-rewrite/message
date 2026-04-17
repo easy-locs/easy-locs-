@@ -1,57 +1,44 @@
-fix(ci): unblock Bundle Size Gate by bypassing SEO build gate
+test(ai-dispatch): integration suite (#836) — second rework round
 
-Original task (#941): the GitHub Actions "Bundle Size Gate" job was
-failing on every recent PR (#22) and on every push to main (#26-#28),
-even though Vercel deploys were green.
+Original task: end-to-end integration tests for the AI dispatch flow
+covering dispatch → orchestrator → adapter → terminal status, including
+sensitive-output approval/release.
 
-Root cause
-----------
-The build dies inside the `seo-validate` Vite plugin
-(`easy-locs-ea1eb0ed/vite-plugin-seo-validate.ts`, closeBundle hook).
-Current main has ~10,400 prerendered pages whose meta description
-exceeds 155 chars, so the plugin throws:
+Round 2 changes (addressing the second code-review pass):
+1. NEW classifier-flagged sensitive test (no purpose=contract, no caller
+   hint): runner emits text with a PII pattern, heuristic classifier
+   flags pii.email, row lands in pending_review, appears in approvals
+   inbox, and is released via simulateDecideTaskApproval(approved). This
+   complements the existing purpose=contract path so both sensitive
+   surfaces are covered.
+2. NEW dispatch-entrypoint boundary suite
+   (`src/__tests__/dispatch-execution-task.boundary.test.ts`) — exercises
+   the real `dispatchExecutionTask` helper from
+   `src/lib/execution/dispatch.ts` against a mocked Supabase RPC.
+   Verifies (a) the RPC name + argument shape, (b) `task_id` and `id`
+   row-key mapping, (c) DispatchError is thrown on RPC error, and
+   (d) DispatchError is thrown on missing data. Together with the
+   integration suite this pins down the full caller→RPC→row→orchestrator
+   chain.
+3. Harness now save/restore-pairs `setStrictAgentRegistration` instead
+   of leaving it permanently `false`, so other suites that run after
+   the harness do not inherit relaxed agent registration.
 
-  [seo-validate] BUILD GATE: 10426 critical SEO issue(s) detected
-  (threshold 0)
+Round 1 (kept from prior commit):
+- Tests start from `simulateDispatch({domain, taskType, payload})` which
+  mirrors `system.dispatch_execution_task` and returns a typed handle.
+- Happy paths for ALL FOUR AI task types (completion, embedding, rag,
+  tool-use) — distinct adapters, runner endpoints, agent slugs.
+- Sensitive release/reject via `simulateDecideTaskApproval` mirroring
+  the post-execute hold branch of the SQL RPC.
+- Harness extracted to `src/__tests__/harnesses/ai-dispatch-harness.ts`
+  as a shared, reusable module with generic `createDispatchHarness({...})`
+  and AI-specific `buildAiDispatchHarness({...})`.
 
-`vite build` exits 1 before `dist/assets` is ever written, so
-`npm run bundle:gate` fails with no useful signal. Vercel deploys
-succeed because the same plugin auto-bypasses when `VERCEL=1` is set
-in the environment — GitHub Actions has no such variable.
+Files:
+- src/__tests__/harnesses/ai-dispatch-harness.ts (new)
+- src/__tests__/ai-dispatch.integration.test.ts (rewritten, 11 tests)
+- src/__tests__/dispatch-execution-task.boundary.test.ts (new, 4 tests)
 
-`BUDGET_ENFORCE=false` (already set on the build step) only disables
-a *different* plugin (`performanceBudgetPlugin`), not the SEO gate.
-
-Fix
----
-`.github/workflows/bundle-size-gate.yml`:
-- Set `SEO_GATE_BYPASS: '1'` on the `Build project` step, with a long
-  comment explaining the rationale alongside the existing
-  `BUDGET_ENFORCE=false` note. This isolates the bundle-size workflow
-  from SEO concerns, matching how Vercel already operates.
-- Add a new `Verify build produced dist/assets` step that fails fast
-  with a clear `::error::` annotation if a future plugin again kills
-  the build silently — preventing recurrence of the cryptic
-  "dist/assets not found" error from the gate script.
-
-Verified locally
-----------------
-- `BUDGET_ENFORCE=false npx vite build` → fails on SEO gate (repro).
-- `SEO_GATE_BYPASS=1 BUDGET_ENFORCE=false npx vite build` → ✓ built
-  in 2m 12s, 2370 files in dist/assets.
-- `BUNDLE_SIZE_THRESHOLD=0.10 BUNDLE_SIZE_BASELINE_REF=origin/main
-  npm run bundle:gate` → exit 0 (placeholder baseline, comparison
-  skipped as designed).
-
-Out of scope (proposed as follow-ups)
--------------------------------------
-- The 10,426 SEO description-length violations themselves (#959).
-- Seeding the still-placeholder `bundle-size-baseline.json` so PRs are
-  actually gated against real numbers (#960). The baseline will seed
-  itself on the next push to main via the existing "Refresh baseline"
-  step, which now reaches dist/assets successfully.
-
-The +10% threshold (`BUNDLE_SIZE_THRESHOLD: '0.10'`) and all gate
-logic are unchanged.
-
-Replit-Task-Id: 1256ae69-d818-438a-8099-a28c2957f54b
+Validation: 15/15 new tests pass; orchestrator-v2 (34) + ai-adapter (11)
+suites green; typecheck clean.
