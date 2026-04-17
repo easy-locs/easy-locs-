@@ -1,0 +1,44 @@
+Task #909: Wiring closeout — Phases A/B/C to 100%
+
+Closes the two residual blockers identified in FIX_PLAN_BY_PHASE.
+
+B3 — QR payment lifecycle wiring
+- New file: easy-locs-ea1eb0ed/src/lib/qr/qr-payment-reactions.ts
+  exporting installQrPaymentReactions(). It listens for the QR
+  lifecycle events under BOTH the canonical colon notation
+  (qr:payment_initiated/completed/failed) AND the dot notation
+  required by the FIX_PLAN spec (qr.payment.initiated/completed/
+  failed), so wiring is deterministic regardless of which form an
+  emitter uses. Per-event in-memory dedup (1500ms window keyed on
+  transactionId/reference + event timestamp) prevents the dual
+  registration from double-firing.
+  Behavior:
+    * initiated → telemetry breadcrumb via structuredLogger
+    * completed → invalidates ["wallet-balance",
+      "wallet-transactions","my-orders"] via the action query
+      client and inserts a single success notification
+      (payment.qr.completed)
+    * failed    → logs error and inserts a high-priority error
+      notification (payment.qr.failed)
+  Returns the standard unsubscribe disposer.
+- Wired into useMasterAppBootstrap stage-0+1 alongside
+  installPlatformReactions / installStorefrontReactions, with the
+  same cleanup convention.
+- Removed the duplicate QR-success notification from
+  src/lib/events/handlers/notification.handler.ts so that
+  installQrPaymentReactions is the single owner of the QR
+  notification, eliminating the duplicate-on-success regression.
+
+A3 — MapPlaceCard legacy event drop
+- src/components/map/MapPlaceCard.tsx now emits
+  "radar:entity_selected" (canonical colon) instead of the legacy
+  uppercase "ENTITY_OPENED". Payload includes both the FIX_PLAN
+  spec fields ({id, type, source: "map"}) and the typed schema
+  fields (entityId, entityType) so the existing super-app-bridge
+  listener activates radar-core as expected.
+
+Verification
+- `tsc --noEmit` clean.
+- No remaining `ENTITY_OPENED` references in src/components/map.
+
+Replit-Task-Id: b9f93fc0-7b20-4122-a180-b0a056b1ee0e
