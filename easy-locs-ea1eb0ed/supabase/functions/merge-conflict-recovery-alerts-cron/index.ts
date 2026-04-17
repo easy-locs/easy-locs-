@@ -11,7 +11,12 @@
  * this function with an `x-internal-secret` header, constant-time
  * compared against `INTERNAL_NOTIFICATION_SECRET`.
  *
- * Configurable thresholds (all read from Deno.env, with sane defaults):
+ * Configurable thresholds — operators can tune these from the recovery
+ * dashboard (task #981). On each invocation the function reads the
+ * singleton row in `public.merge_conflict_alert_thresholds` first; if
+ * that row is missing (e.g. migration has not run, or the row was
+ * deleted out-of-band) it falls back to the env vars below so behaviour
+ * never silently drops:
  *   - MERGE_CONFLICT_ALERT_DAILY_THRESHOLD          (default 10)
  *   - MERGE_CONFLICT_ALERT_TOTAL_THRESHOLD          (default 30)
  *   - MERGE_CONFLICT_ALERT_FILE_COUNT_THRESHOLD     (default 5)
@@ -99,7 +104,7 @@ function parseNumber(env: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n >= 0 ? n : fallback;
 }
 
-function readThresholds(): Thresholds {
+function readEnvThresholds(): Thresholds {
   return {
     dailyEventThreshold: parseNumber(Deno.env.get("MERGE_CONFLICT_ALERT_DAILY_THRESHOLD"), 10),
     totalEventsThreshold: parseNumber(Deno.env.get("MERGE_CONFLICT_ALERT_TOTAL_THRESHOLD"), 30),
@@ -109,6 +114,82 @@ function readThresholds(): Thresholds {
 }
 
 type Db = ReturnType<typeof createClient>;
+
+interface ThresholdsLoad {
+  thresholds: Thresholds;
+  source: "db" | "env_fallback_missing_row" | "env_fallback_error";
+  error?: string;
+}
+
+/**
+ * Read the operator-managed thresholds row, falling back to env vars
+ * when the row is missing or the read fails. We never let a transient
+ * DB hiccup silently disable alerting.
+ */
+async function loadThresholds(db: Db): Promise<ThresholdsLoad> {
+  const envFallback = readEnvThresholds();
+  try {
+    const { data, error } = await db
+      .schema("public")
+      .from("merge_conflict_alert_thresholds")
+      .select(
+        "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio",
+      )
+      .eq("id", true)
+      .maybeSingle();
+    if (error) {
+      return {
+        thresholds: envFallback,
+        source: "env_fallback_error",
+        error: error.message,
+      };
+    }
+    if (!data) {
+      return { thresholds: envFallback, source: "env_fallback_missing_row" };
+    }
+    const row = data as {
+      daily_event_threshold: number | null;
+      total_events_threshold: number | null;
+      top_file_min_events: number | null;
+      top_file_dominance_ratio: number | string | null;
+    };
+    return {
+      thresholds: {
+        dailyEventThreshold: parseNumber(
+          row.daily_event_threshold == null
+            ? undefined
+            : String(row.daily_event_threshold),
+          envFallback.dailyEventThreshold,
+        ),
+        totalEventsThreshold: parseNumber(
+          row.total_events_threshold == null
+            ? undefined
+            : String(row.total_events_threshold),
+          envFallback.totalEventsThreshold,
+        ),
+        topFileMinEvents: parseNumber(
+          row.top_file_min_events == null
+            ? undefined
+            : String(row.top_file_min_events),
+          envFallback.topFileMinEvents,
+        ),
+        topFileDominanceRatio: parseNumber(
+          row.top_file_dominance_ratio == null
+            ? undefined
+            : String(row.top_file_dominance_ratio),
+          envFallback.topFileDominanceRatio,
+        ),
+      },
+      source: "db",
+    };
+  } catch (e) {
+    return {
+      thresholds: envFallback,
+      source: "env_fallback_error",
+      error: e instanceof Error ? e.message : String(e),
+    };
+  }
+}
 
 async function fetchEvents(db: Db): Promise<RecoveryEvent[]> {
   const since = new Date(Date.now() - LOOKBACK_DAYS * 86_400_000);
@@ -315,7 +396,8 @@ Deno.serve(async (req) => {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
   try {
-    const thresholds = readThresholds();
+    const loaded = await loadThresholds(supabase);
+    const thresholds = loaded.thresholds;
     const events = await fetchEvents(supabase);
     const summary = project(events);
     const alerts = evaluate(summary, thresholds);
@@ -328,13 +410,16 @@ Deno.serve(async (req) => {
 
     console.log(
       `[merge-conflict-recovery-alerts-cron] events=${summary.totalEvents} ` +
-        `alerts=${alerts.length} thresholds=${JSON.stringify(thresholds)}`,
+        `alerts=${alerts.length} thresholds=${JSON.stringify(thresholds)} ` +
+        `source=${loaded.source}` +
+        (loaded.error ? ` error=${loaded.error}` : ""),
     );
 
     return new Response(
       JSON.stringify({
         evaluated_at: new Date().toISOString(),
         thresholds,
+        thresholds_source: loaded.source,
         summary: {
           totalEvents: summary.totalEvents,
           affectedTasks: summary.affectedTasks,
