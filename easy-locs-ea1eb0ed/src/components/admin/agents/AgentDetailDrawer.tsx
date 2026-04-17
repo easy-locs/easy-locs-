@@ -338,6 +338,47 @@ export default function AgentDetailDrawer({ agent, open, onOpenChange }: Props) 
               )}
             </TabsContent>
 
+            <TabsContent value="health" className="mt-3 space-y-2 text-xs">
+              {!agent.health ? (
+                <Empty msg="No heartbeat recorded for this agent yet." />
+              ) : (
+                <>
+                  <Field
+                    label="Status"
+                    value={`${agent.health.health_status}${
+                      agent.health.health_reason
+                        ? ` · ${agent.health.health_reason}`
+                        : ""
+                    }`}
+                  />
+                  <Field
+                    label="Last seen"
+                    value={relTime(agent.health.last_seen_at)}
+                  />
+                  <Field
+                    label="Lag"
+                    value={
+                      agent.health.lag_ms != null
+                        ? `${agent.health.lag_ms}ms`
+                        : "—"
+                    }
+                  />
+                  <Field
+                    label="In flight"
+                    value={String(agent.health.in_flight ?? 0)}
+                  />
+                  <Field
+                    label="Queue depth"
+                    value={String(agent.health.queue_depth ?? 0)}
+                  />
+                  <Field
+                    label="Workers"
+                    value={String(agent.health.worker_count ?? 0)}
+                  />
+                </>
+              )}
+            </TabsContent>
+
             <TabsContent value="events" className="mt-3">
               {eventsQuery.isLoading ? (
                 <Spinner />
