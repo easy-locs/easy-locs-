@@ -48,3 +48,20 @@ export { onKeyboardChange, getKeyboardHeight, isKeyboardOpen, hideKeyboard } fro
 export { setStatusBarStyle, setStatusBarColor, enterImmersiveMode, exitImmersiveMode } from "./statusbar-service";
 export { hideSplashScreen, showSplashScreen } from "./splashscreen-service";
 export { onNetworkChange, getNetworkStatus, isOnline, isWifi } from "./network-service";
+
+/**
+ * Health probe for the Capacitor plugin layer. The web build does not run
+ * any native plugins, so we report `ok: true` on web with a "n/a" reason.
+ * On a native device we additionally verify that `initNativePlugins()` has
+ * been called so the diagnostics page can flag a wiring regression.
+ */
+export function getCapacitorHealth(): { ok: boolean; reason?: string } {
+  const native = isNativePlatform();
+  if (!native) {
+    return { ok: true, reason: "Web build (no native plugins active)" };
+  }
+  if (!initialized) {
+    return { ok: false, reason: "initNativePlugins() has not run on this native device" };
+  }
+  return { ok: true };
+}
