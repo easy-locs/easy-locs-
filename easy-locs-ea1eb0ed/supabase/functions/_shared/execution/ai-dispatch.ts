@@ -120,6 +120,23 @@ interface TaskRow {
   blocked_reason: string | null;
 }
 
+/**
+ * Track 3 hardening (#843): poll-read errors used to be swallowed with a
+ * `console.warn`. Schema/permission errors meant the dispatch helper would
+ * silently spin until the timeout — masking real problems. We now classify:
+ *
+ *   - **fatal**  PostgREST / Postgres errors that cannot recover by retrying:
+ *     missing relation, missing column, missing function, RLS denial, JWT
+ *     issue. The poll loop re-throws so the caller sees a clear failure.
+ *   - **transient**  network / 5xx / unknown — log structured + continue.
+ *
+ * The classifier itself lives in `./poll-read-classifier.ts` so it stays
+ * importable from unit tests without dragging in the Deno-only Supabase
+ * client this module loads from `https://esm.sh/...`.
+ */
+import { classifyPollReadError } from "./poll-read-classifier.ts";
+export { classifyPollReadError };
+
 async function pollForResult(
   taskId: string,
   pollIntervalMs: number,
@@ -137,10 +154,23 @@ async function pollForResult(
       .maybeSingle();
 
     if (error) {
-      // Transient read error — log and keep polling. The dispatch already
-      // succeeded so the row exists; we don't want one flaky read to fail
-      // the whole call.
-      console.warn(`[ai-dispatch] poll read error: ${error.message}`);
+      const code = (error as { code?: string | null }).code ?? null;
+      const severity = classifyPollReadError(code);
+      // Structured, error-level log so the platform's log scraper picks it
+      // up. Replaces the previous swallow-via-console.warn behaviour.
+      console.error(JSON.stringify({
+        event: "ai_dispatch.poll_read_error",
+        level: "error",
+        taskId,
+        code,
+        message: error.message,
+        severity,
+      }));
+      if (severity === "fatal") {
+        throw new Error(
+          `[ai-dispatch] fatal poll read error (code=${code ?? "null"}): ${error.message}`,
+        );
+      }
     } else if (data) {
       const row = data as TaskRow;
       if (TERMINAL.includes(row.status) || HOLD.includes(row.status)) {

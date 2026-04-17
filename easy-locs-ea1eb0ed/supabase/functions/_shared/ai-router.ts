@@ -270,6 +270,48 @@ async function callProvider(entry: AiProviderEntry, options: AIRouterOptions): P
   return entry.provider === "anthropic" ? callAnthropic(entry, options) : callOpenAI(entry, options);
 }
 
+// ── Track 3 (#843) — structured fallback logger ─────────────────────────
+// Lifted out of the hot path so it is independently unit-testable. Emits a
+// single JSON line at error level: the platform log scraper indexes the
+// `event` field and surfaces these in the Sovereign Agent Control timeline.
+
+export interface ProviderFallbackLog {
+  feature: string;
+  provider: string;
+  model: string;
+  keyEnv: string;
+  attempt: number;
+  chainSize: number;
+  outcome: "http_error" | "threw";
+  status?: number;
+  message?: string;
+  latencyMs: number;
+}
+
+export function buildProviderFallbackLog(
+  details: ProviderFallbackLog,
+): Record<string, unknown> {
+  return {
+    event: "ai_router.provider_fallback",
+    level: "error",
+    feature: details.feature,
+    provider: details.provider,
+    model: details.model,
+    key_env: details.keyEnv,
+    attempt: details.attempt,
+    chain_size: details.chainSize,
+    is_last: details.attempt === details.chainSize - 1,
+    outcome: details.outcome,
+    status: details.status ?? null,
+    message: details.message ?? null,
+    latency_ms: details.latencyMs,
+  };
+}
+
+function logProviderFallback(details: ProviderFallbackLog): void {
+  console.error(JSON.stringify(buildProviderFallbackLog(details)));
+}
+
 // ── New, registry-aware entry point. Every AI agent run goes through
 //   here; the config (model, fallback chain, key env-var names) comes
 //   from `system.agents.metadata.router` via the loader in
@@ -339,13 +381,35 @@ export async function aiRouteForAgent(
         });
         return { response, provider: entry.provider, fallbackUsed, interaction };
       }
-      console.warn(
-        `[ai-router] ${entry.provider} returned ${response.status}; trying fallback`,
-      );
+      logProviderFallback({
+        feature: input.feature,
+        provider: entry.provider,
+        model: input.options.model ?? entry.model,
+        keyEnv: entry.keyEnv,
+        attempt: i,
+        chainSize: chain.length,
+        outcome: "http_error",
+        status: response.status,
+        latencyMs: ((input.now ?? Date.now)()) - startedAt,
+      });
       attempted.push({ provider: entry.provider, reason: `http_${response.status}` });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn(`[ai-router] ${entry.provider} threw: ${msg}; trying fallback`);
+      // Track 3 hardening (#843): emit a structured error-level log instead
+      // of swallowing the throw with a `console.warn`. The chain still falls
+      // through to the next provider; only the LAST entry re-throws (existing
+      // behaviour preserved).
+      logProviderFallback({
+        feature: input.feature,
+        provider: entry.provider,
+        model: input.options.model ?? entry.model,
+        keyEnv: entry.keyEnv,
+        attempt: i,
+        chainSize: chain.length,
+        outcome: "threw",
+        message: msg,
+        latencyMs: ((input.now ?? Date.now)()) - startedAt,
+      });
       attempted.push({ provider: entry.provider, reason: `threw:${msg.slice(0, 80)}` });
       if (isLast) throw err;
     }

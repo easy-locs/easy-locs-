@@ -67,6 +67,23 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Optional JSON body { prompt?: string } — when called from the Command
+  // Center the user's prompt is embedded in the payload so the GitHub run
+  // shows a meaningful label and the dashboard can surface it back to the
+  // user from system.execution_tasks (no agent_tasks write any more).
+  let prompt = "";
+  try {
+    if (req.method === "POST") {
+      const body = await req.json().catch(() => null) as { prompt?: unknown } | null;
+      if (body && typeof body.prompt === "string") {
+        prompt = body.prompt.slice(0, 500);
+      }
+    }
+  } catch {
+    // non-fatal — continue with empty prompt
+  }
+  const label = prompt.trim() || "smoke-test";
+
   try {
     const { data: task, error: rpcError } = await userClient
       .schema("system")
@@ -76,7 +93,8 @@ Deno.serve(async (req) => {
         p_risk_level: "SAFE",
         p_status: "queued",
         p_payload: {
-          label: "smoke-test",
+          label,
+          prompt,
           triggered_by: "command-center",
           triggered_at: new Date().toISOString(),
         },
