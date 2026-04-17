@@ -607,6 +607,15 @@ async function pickEligibleTasks(batchSize: number): Promise<ExecutionTaskRow[]>
   return (data ?? []) as ExecutionTaskRow[];
 }
 
+// L2 — Eager heartbeat start at worker bootstrap.
+// The worker is "alive" the moment the edge runtime imports this module,
+// not only when it first runs an adapter task. Starting the emitter here
+// (instead of lazily inside getHeartbeat()) ensures the registry shows
+// `system.execution_loop` as `healthy` immediately after process boot,
+// which matches operator expectations for always-on liveness.
+try { getHeartbeat(); }
+catch (e) { console.warn("[execution-loop] eager heartbeat start failed:", e); }
+
 Deno.serve(async (req) => {
   const __qs = rejectQuerySecrets(req);
   if (__qs.rejected) return __qs.response!;
