@@ -1,0 +1,42 @@
+Migrate the GitHub-runner callback to write the V2 result columns (#848)
+
+Original task: the `execution-runner-callback` Edge Function was the last
+writer still using the legacy `result` (JSONB) and `error` (TEXT) columns
+inherited from the agent_tasks era. The Command Center read both shapes
+via a merged-object fallback in `projectTask`, which caused two writer
+shapes to drift and made future schema cleanup harder.
+
+Changes:
+- supabase/functions/execution-runner-callback/index.ts now reads and
+  writes `execution_result` (JSONB) and `error_code` (TEXT) only. The
+  RUNNING / SUCCESS / FAILED branches all merge into the V2 column; the
+  prior-state read selects `execution_result` instead of `result`.
+- src/pages/DashboardCommandCenter.tsx:
+  * Dropped `result` and `error` from `ExecutionTaskRow`.
+  * `projectTask` no longer merges legacy + V2; it reads only
+    `execution_result` (and `error_code` / `blocked_reason` for the
+    error message).
+  * Updated the leading comment block to reflect the single-shape model.
+- src/lib/execution/dispatchCommandCenter.ts: removed `result,error`
+  from `COMMAND_CENTER_TASK_COLUMNS`.
+- src/__tests__/lb1-track3-hardening.test.ts: updated `makeRow` and the
+  GitHub-runner / FAILED projection tests to use the V2 columns; updated
+  the file header comment.
+- New migration
+  supabase/migrations/20260428100000_execution_runner_callback_v2_backfill.sql:
+  one-shot backfill that copies legacy `result` -> `execution_result`
+  and `error` -> `error_code` for any row where the V2 columns are
+  still empty, so old in-flight rows keep rendering after deploy. The
+  DO block is defensive: it no-ops if the legacy columns are already
+  dropped.
+
+Verification:
+- vitest run src/__tests__/lb1-track3-hardening.test.ts → 21/21 pass.
+- tsc --noEmit clean.
+
+Out of scope (not changed):
+- src/components/admin/ExecutionTaskPanel.tsx still reads the legacy
+  `result` / `error` columns; that component is a separate admin
+  surface and the task explicitly scoped only DashboardCommandCenter.
+
+Replit-Task-Id: 23f2c0d2-33e6-4306-8108-33351764dbef
