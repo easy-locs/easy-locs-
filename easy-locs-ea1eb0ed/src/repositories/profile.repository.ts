@@ -3,7 +3,7 @@
  */
 import { db } from "@/services/db";
 import { cachedFetch, cacheKey, invalidateOnMutation } from "@/lib/infrastructure/cache-layer";
-import { idbGet, idbSet } from "@/lib/cache/idb-cache";
+import { idbGet, idbSet, idbDelete } from "@/lib/cache/idb-cache";
 
 import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const PROFILE_IDB_TTL = 4 * 60 * 60 * 1000;
@@ -54,7 +54,7 @@ export async function updateProfile(userId: string, updates: Record<string, any>
   if (error) throw error;
   invalidateOnMutation("profiles", cacheKey("profile", userId));
   invalidateOnMutation("profiles", cacheKey("profile-critical", userId));
-  import("@/lib/cache/idb-cache").then(m => m.idbDelete(`profile:${userId}`)).catch(() => {});
+  void idbDelete(`profile:${userId}`).catch(() => {});
 }
 
 export async function upsertOwnerProfile(payload: Record<string, any>) {

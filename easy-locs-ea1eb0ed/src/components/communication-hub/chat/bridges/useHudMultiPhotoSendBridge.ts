@@ -4,6 +4,8 @@
  */
 import { useCallback } from "react";
 import type { ConversationThread } from "../../types";
+import { transportUploadWithPrepare } from "@/families/media/transport/transport-engine";
+import { TransportPolicy } from "@/families/media/transport/transport-policy";
 
 export function useHudMultiPhotoSendBridge(
   thread: ConversationThread | null,
@@ -18,8 +20,6 @@ export function useHudMultiPhotoSendBridge(
 
       void (async () => {
         const { orbitDispatch } = await import("@/families/orbit-dispatch/orbit-dispatch");
-        const { transportUploadWithPrepare } = await import("@/families/media/transport/transport-engine");
-        const { TransportPolicy } = await import("@/families/media/transport/transport-policy");
 
         await orbitDispatch({
           type: "send_media_batch",
