@@ -113,7 +113,12 @@ export const dashboardRepo = {
     let query = domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, domain, risk_level, status, payload, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, runner, external_run_url, pr_url, created_at, updated_at",
+        // Task #850 — switched from legacy `result`/`error` to the V2
+        // `execution_result`/`error_code` columns. The GitHub-runner
+        // callback (#848) no longer writes the legacy columns, so the
+        // admin Execution Tasks panel must read the canonical V2 shape
+        // to surface logs, github_status, and error details.
+        "id, type, domain, risk_level, status, payload, execution_result, error_code, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, runner, external_run_url, pr_url, created_at, updated_at",
       )
       .order("created_at", { ascending: false })
       .limit(limit);

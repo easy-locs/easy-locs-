@@ -2,9 +2,11 @@
  * ExecutionTaskPanel — task #712
  *
  * Live view of `system.execution_tasks` for admins. Shows status badges,
- * execution timeline, structured logs (from result.logs), error details,
- * attempt count, blocked reason, and approver info. Auto-refreshes via
- * short polling (RLS already restricts SELECT to admins).
+ * execution timeline, structured logs (from `execution_result.logs` /
+ * `output.text`), error details (from `execution_result.errorMessage`,
+ * `execution_result.error`, or `error_code`), attempt count, blocked
+ * reason, and approver info. Auto-refreshes via short polling (RLS
+ * already restricts SELECT to admins).
  *
  * Provides a Retry control on FAILED tasks — dispatching a new task with
  * the same payload, parent_task_id linkage, and a fresh attempt_count.
@@ -52,8 +54,11 @@ type ExecRow = {
     | "rolled_back"
     | "cancelled";
   payload: Record<string, unknown> | null;
-  result: Record<string, unknown> | null;
-  error: string | null;
+  // Task #850 — V2 canonical columns. The GitHub-runner callback (#848)
+  // and orchestrator V2 both write here; the legacy `result` / `error`
+  // columns are no longer populated.
+  execution_result: Record<string, unknown> | null;
+  error_code: string | null;
   requested_by: string;
   parent_task_id: string | null;
   blocked_reason: string | null;
@@ -122,10 +127,12 @@ function relTime(dateStr: string | null): string {
 }
 
 /**
- * Pull a structured log array out of result. We accept either result.logs
- * (preferred — array of {ts, level, message}) or result.summary (a single
- * summary string written by logEngineRun helpers). Anything else is shown
- * as raw JSON so the operator never loses information.
+ * Pull a structured log array out of execution_result. Task #850 — the
+ * GitHub-runner callback (#848) writes `logs: string[]` directly on
+ * `execution_result`, while orchestrator V2 adapters surface text under
+ * `output.text` / `output.output_text` / `summary`. We coalesce all of
+ * these so the admin panel renders the same content the Command Center
+ * shows. Unstructured entries fall back to JSON so no information is lost.
  */
 function extractLogs(result: Record<string, unknown> | null): Array<{
   ts?: string;
@@ -151,12 +158,52 @@ function extractLogs(result: Record<string, unknown> | null): Array<{
     }
   }
 
+  const output = (result as { output?: unknown }).output;
+  if (output && typeof output === "object") {
+    const o = output as { text?: unknown; output_text?: unknown };
+    const text = typeof o.text === "string" ? o.text
+      : typeof o.output_text === "string" ? o.output_text
+      : null;
+    if (text && text.trim().length > 0) {
+      logs.push({ level: "output", message: text });
+    }
+  }
+
   const summary = (result as { summary?: unknown }).summary;
   if (typeof summary === "string" && summary.trim().length > 0) {
     logs.unshift({ level: "summary", message: summary });
   }
 
   return logs;
+}
+
+/** Coalesce an error message from the V2 columns. Mirrors the projection
+ *  in DashboardCommandCenter so admins see the same details. Note: we
+ *  intentionally do NOT fall back to `blocked_reason` here — the row
+ *  renders `blocked_reason` in its own dedicated banner above, so
+ *  including it would duplicate the same text in the error banner. */
+function extractErrorMessage(row: Pick<ExecRow, "execution_result" | "error_code">): string | null {
+  const v2 = (row.execution_result ?? {}) as Record<string, unknown>;
+  const fromResult =
+    (typeof v2.errorMessage === "string" && v2.errorMessage) ||
+    (typeof v2.error === "string" && v2.error) ||
+    null;
+  return fromResult || row.error_code || null;
+}
+
+/** GitHub conclusion is either at the top of `execution_result` (runner
+ *  callback) or under `execution_result.output.github_status`
+ *  (orchestrator adapter). */
+function extractGithubStatus(result: Record<string, unknown> | null): string | null {
+  if (!result || typeof result !== "object") return null;
+  const top = (result as { github_status?: unknown }).github_status;
+  if (typeof top === "string" && top.length > 0) return top;
+  const output = (result as { output?: unknown }).output;
+  if (output && typeof output === "object") {
+    const gs = (output as { github_status?: unknown }).github_status;
+    if (typeof gs === "string" && gs.length > 0) return gs;
+  }
+  return null;
 }
 
 function TaskRow({ row, onRetry, retrying }: {
@@ -167,7 +214,9 @@ function TaskRow({ row, onRetry, retrying }: {
   const [expanded, setExpanded] = useState(false);
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const logs = useMemo(() => extractLogs(row.result), [row.result]);
+  const logs = useMemo(() => extractLogs(row.execution_result), [row.execution_result]);
+  const errorMessage = useMemo(() => extractErrorMessage(row), [row]);
+  const githubStatus = useMemo(() => extractGithubStatus(row.execution_result), [row.execution_result]);
   const canRetry = row.status === "failed";
 
   // Sensitive types require explicit re-authorization on retry — never an
@@ -222,10 +271,10 @@ function TaskRow({ row, onRetry, retrying }: {
           </div>
         )}
 
-        {row.error && (
+        {errorMessage && (
           <div className="text-[0.6875rem] text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2 flex items-start gap-2">
             <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
-            <span className="break-words font-mono">{row.error}</span>
+            <span className="break-words font-mono">{errorMessage}</span>
           </div>
         )}
 
@@ -268,11 +317,11 @@ function TaskRow({ row, onRetry, retrying }: {
                   ) : (
                     <div className="text-muted-foreground italic">PR not yet opened</div>
                   )}
-                  {(row.result as Record<string, unknown> | null)?.github_status && (
+                  {githubStatus && (
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground shrink-0">GitHub status:</span>
                       <span className="font-mono text-[0.625rem]">
-                        {String((row.result as Record<string, unknown>).github_status)}
+                        {githubStatus}
                       </span>
                     </div>
                   )}
@@ -346,13 +395,13 @@ function TaskRow({ row, onRetry, retrying }: {
             </div>
 
             {/* Result JSON */}
-            {row.result && Object.keys(row.result).length > 0 && (
+            {row.execution_result && Object.keys(row.execution_result).length > 0 && (
               <div>
                 <div className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1.5">
-                  Result payload
+                  Execution result
                 </div>
                 <pre className="text-[0.625rem] bg-muted/40 border border-border/40 rounded-lg p-2 overflow-x-auto max-h-48 text-foreground">
-                  {JSON.stringify(row.result, null, 2)}
+                  {JSON.stringify(row.execution_result, null, 2)}
                 </pre>
               </div>
             )}
