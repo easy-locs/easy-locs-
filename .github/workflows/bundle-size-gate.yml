@@ -44,11 +44,36 @@ jobs:
         # gate, producing a red workflow even when bundle sizes are fine vs main.
         # If you ever want to re-enable the absolute budget here, drop this var
         # and trim the offending chunks first.
+        #
+        # SEO_GATE_BYPASS=1 is required for the same reason: the seo-validate
+        # Vite plugin (vite-plugin-seo-validate.ts) throws in closeBundle when
+        # any critical SEO issue is detected (current main has thousands of
+        # "description exceeds 155 chars" findings on prerendered pages).
+        # Vercel deploys succeed because that plugin auto-bypasses when
+        # VERCEL=1 is set, but GitHub Actions has no such env, so without the
+        # explicit bypass the build dies before dist/assets is ever produced
+        # and the bundle-size-gate workflow fails for reasons unrelated to
+        # bundle size. SEO regressions are policed by a separate concern; this
+        # job only cares about relative bundle growth vs main.
         run: npm run build
         env:
           BUDGET_ENFORCE: 'false'
+          SEO_GATE_BYPASS: '1'
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Verify build produced dist/assets
+        # Defensive guard: if the build silently no-ops (e.g. a future plugin
+        # short-circuits closeBundle or someone removes the bypass above), fail
+        # loudly here with a clear message instead of letting bundle:gate exit
+        # 1 with the cryptic "dist/assets not found" error.
+        run: |
+          if [ ! -d dist/assets ] || [ -z "$(ls -A dist/assets 2>/dev/null)" ]; then
+            echo "::error::Build did not produce dist/assets — bundle-size gate cannot run."
+            echo "Check the 'Build project' step above for the underlying failure."
+            exit 1
+          fi
+          echo "dist/assets contains $(ls dist/assets | wc -l) files."
 
       - name: Check bundle size against baseline
         run: npm run bundle:gate
