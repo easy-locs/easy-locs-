@@ -30,6 +30,8 @@
     "test:load": "npx artillery run tests/load/artillery-config.yml",
     "test:load:frontend": "npx artillery run tests/load/load-test.yml",
     "test:contracts": "vitest run --config vitest.contracts.config.ts",
+    "contracts:matrix": "npx tsx scripts/edge-function-contract-matrix.ts",
+    "contracts:matrix:ci": "npx tsx scripts/edge-function-contract-matrix.ts --ci",
     "test:all": "npm run test && npm run test:e2e && npm run test:contracts",
     "playwright:install": "npx playwright install chromium",
     "check:strict-core": "npx tsc --noEmit",

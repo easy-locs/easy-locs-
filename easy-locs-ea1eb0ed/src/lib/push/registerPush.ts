@@ -330,7 +330,7 @@ export async function sendPushToUser(
   data?: Record<string, string>,
   eventType?: string
 ): Promise<void> {
-  await supabase.functions.invoke("send-push-notification", {
+  const { error } = await supabase.functions.invoke("send-push-notification", {
     body: {
       user_id: userId,
       title,
@@ -339,4 +339,5 @@ export async function sendPushToUser(
       event_type: eventType ?? "general",
     },
   });
+  if (error) console.warn("[push] send-push-notification failed", error);
 }
