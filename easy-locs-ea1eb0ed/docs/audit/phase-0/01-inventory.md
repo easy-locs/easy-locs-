@@ -103,7 +103,7 @@ function names and 3 SQS queues:
 | `CREATE INDEX` statements               | 1 046 |
 
 Sources: `99-evidence/tables-created.txt`, `rls-policies.txt`,
-`rpc-functions.txt`, `triggers.txt`, `indexes.txt`.
+`rpc-functions-provenance.txt`, `rpc-names.txt`, `triggers.txt`, `indexes.txt`.
 
 Storage buckets observed in migrations include `rental-docs`
 (`supabase/migrations/20260226030620_*.sql`) plus additional buckets in
