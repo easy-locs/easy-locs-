@@ -1050,6 +1050,19 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Status**: The legacy standalone `orchestrator/` Express service (Node.js, OpenAI/Octokit, 6 agents) was removed in LB Closeout #852. It had no consumers in the runtime app and was the sole holder of direct `from "openai"` / `from "@openai/agents"` SDK imports. Removing it eliminated the last AI-call bypass.
 - **Future**: Level C will rebuild the dev/build agent family (dev.builder, dev.reviewer, dev.deployer) as first-class platform-native agents on top of `dispatchExecutionTask` + `dispatchAiCompletion`, governed by the same registry/policy/audit chain as Levels A and B. The complete planning bundle lives in `.local/level-c-planning/` (start at `LEVEL_C_READINESS.md`). No Level C code may merge until the readiness gates in `.local/level-c-planning/deep/F-readiness-gates.md` are green.
 
+## Level-C Governance Tests (LC9, Task #879)
+- **End-to-end suite**: `src/__tests__/lc9-level-c-governance.integration.test.ts` proves the canonical chain `registry → quota → policy → approval → execution → verifier → audit` for every Level-C dev task. Five composed scenarios (simple UI, sensitive `_shared/`, broken build, parallel drift, deploy.prod health-check rollback) plus a static no-bypass scan and an LC1 sandbox sanity check. Composes the real LC1..LC7 primitives via dependency injection — no Supabase, GitHub, or Vercel calls.
+- **CI gate**: `.github/workflows/lc-governance-tests.yml` runs `npm test` on every PR and push to `main`. A red LC9 test BLOCKS the merge.
+- **No-bypass scan allow-list** (strict repo-relative `startsWith` match — never substring/`includes`; the ONLY runtime paths permitted to import `child_process`, `@octokit/*`, named-import `{ writeFile }` from `node:fs(/promises)`, or call `Deno.writeTextFile` / `Deno.writeFile` / `fs.writeFile*` / `writeFileSync`):
+  - `supabase/functions/_shared/execution/adapters/code/` (LC1 — sandboxed code edit)
+  - `supabase/functions/_shared/execution/adapters/build/` (LC2 — build runner)
+  - `supabase/functions/_shared/execution/adapters/test/` (LC2 — test runner)
+  - `supabase/functions/_shared/execution/adapters/deploy/` (LC2 — deploy.preview / deploy.prod)
+  - `supabase/functions/_shared/execution/builders/` (LC4 — dev-builder loop + GitHub helpers)
+  - `src/__tests__/` (test harness — `readFileSync` only is used in practice)
+  - `src/test/` (vitest setup files)
+- **Out of scope for the scan**: `scripts/`, `vite-plugin-*.ts`, `vite.config.ts`, `tooling/`, `e2e/` — these are build-time tooling, not runtime code a dev agent could subvert. The scan walks `src/` and `supabase/functions/` only.
+
 ## Orbit AI Support Factory
 - **Route**: `/orbit/support` — protected, lazy-loaded via `app-route-registry.tsx`
 - **Taxonomy**: `src/lib/support/canonical-support-taxonomy.ts` — 19 canonical issue categories with routing targets, urgency levels, SLA rules
