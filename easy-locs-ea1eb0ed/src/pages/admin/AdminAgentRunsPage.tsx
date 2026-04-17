@@ -19,6 +19,8 @@ import { Loader2, ArrowLeft, ShieldAlert, CheckCircle2, XCircle, Clock, External
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { agentsRepo, type AgentRunRichRow } from "@/lib/admin/agents-repo";
+import DevRunDetail from "@/components/admin/DevRunDetail";
+import ReplayDialog from "@/pages/admin/control/runs/ReplayDialog";
 
 function fmtMs(ms: number | null): string {
   if (ms == null) return "—";
@@ -40,6 +42,7 @@ function statusTone(status: string): string {
 export default function AdminAgentRunsPage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [replayOpen, setReplayOpen] = useState(false);
 
   const agentQuery = useQuery({
     queryKey: ["admin-agent", slug],
@@ -161,12 +164,21 @@ export default function AdminAgentRunsPage() {
               <div className="text-sm text-muted-foreground">
                 Pick a run on the left to inspect prompt, response, cost, latency, and sensitive-output gates.
               </div>
+            ) : domain === "code" ? (
+              <DevRunDetail run={selected} onReplay={() => setReplayOpen(true)} />
             ) : (
               <RunDetail run={selected} />
             )}
           </CardContent>
         </Card>
       </div>
+
+      <ReplayDialog
+        open={replayOpen}
+        onOpenChange={setReplayOpen}
+        run={selected}
+        domain={domain}
+      />
     </div>
   );
 }

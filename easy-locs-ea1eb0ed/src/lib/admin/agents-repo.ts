@@ -288,13 +288,53 @@ export const agentsRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, status, risk_level, cost_usd, latency_ms, error_code, blocked_reason, created_at, completed_at, payload, execution_result",
+        "id, type, status, risk_level, cost_usd, latency_ms, error_code, blocked_reason, created_at, completed_at, payload, execution_result, pr_url, external_run_url, runner",
       )
       .eq("agent_id", agentId)
       .order("created_at", { ascending: false })
       .limit(limit);
     if (error) throw new Error(`listAgentRunsRich failed: ${error.message}`);
-    return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
+    return ((data ?? []) as Array<Record<string, unknown>>).map((r) => {
+      const result = (r.execution_result as Record<string, unknown> | null) ?? null;
+      const payload = (r.payload as Record<string, unknown> | null) ?? null;
+      const ghStatus = (result?.github_status as string | null) ?? null;
+      // LC8 (#875) — Map dev-domain runner output (diff, build/test logs,
+      // PR status, drift report) into the rich row so DevRunDetail can
+      // render without re-querying. Falls back gracefully when the
+      // runner has not produced these fields yet.
+      const dev_diff =
+        (result?.diff as string | null) ??
+        (result?.patch as string | null) ??
+        (result?.unified_diff as string | null) ??
+        null;
+      const dev_build_log =
+        (result?.build_log as string | null) ??
+        (result?.build_output as string | null) ??
+        null;
+      const dev_test_output =
+        (result?.test_output as string | null) ??
+        (result?.test_log as string | null) ??
+        null;
+      const dev_drift = (result?.drift_report as unknown) ?? null;
+      const dev_logs = Array.isArray(result?.logs) ? (result?.logs as unknown[]) : null;
+      const pr_url =
+        (r.pr_url as string | null) ??
+        (result?.pr_url as string | null) ??
+        null;
+      const external_run_url =
+        (r.external_run_url as string | null) ??
+        (result?.external_run_url as string | null) ??
+        null;
+      const pr_status =
+        (result?.pr_status as string | null) ??
+        (ghStatus
+          ? ghStatus === "SUCCESS"
+            ? "open"
+            : ghStatus === "FAILED"
+              ? "failed"
+              : "running"
+          : null);
+      return {
       task_id: r.id as string,
       type: r.type as string,
       status: r.status as string,
@@ -312,7 +352,7 @@ export const agentsRepo = {
           ? ((r.completed_at as string | null) ?? null)
           : null,
       created_at: r.created_at as string,
-      prompt: null,
+      prompt: (payload?.prompt as string | null) ?? (payload?.intent as string | null) ?? null,
       response: null,
       model: null,
       provider: null,
@@ -320,7 +360,17 @@ export const agentsRepo = {
       verification: ((r.execution_result as Record<string, unknown> | null)?.verification as unknown) ?? null,
       tools_used: ((r.execution_result as Record<string, unknown> | null)?.tools_used as unknown) ?? null,
       purpose: ((r.payload as Record<string, unknown> | null)?.purpose as string) ?? null,
-    }));
+      dev_diff,
+      dev_build_log,
+      dev_test_output,
+      dev_drift,
+      dev_logs,
+      pr_url,
+      external_run_url,
+      pr_status,
+      payload,
+      };
+    });
   },
 
 };
@@ -344,6 +394,17 @@ export interface AgentRunRichRow {
   verification: unknown | null;
   tools_used: unknown | null;
   purpose: string | null;
+  /** LC8 (#875) — optional dev-domain fields surfaced by the GitHub
+   *  Actions runner / dev builder. All optional; absent on AI runs. */
+  dev_diff?: string | null;
+  dev_build_log?: string | null;
+  dev_test_output?: string | null;
+  dev_drift?: unknown | null;
+  dev_logs?: unknown[] | null;
+  pr_url?: string | null;
+  external_run_url?: string | null;
+  pr_status?: string | null;
+  payload?: Record<string, unknown> | null;
 }
 
 interface AiRunViewRow {
