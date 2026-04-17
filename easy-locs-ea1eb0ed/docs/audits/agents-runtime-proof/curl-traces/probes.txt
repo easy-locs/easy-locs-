@@ -1,0 +1,289 @@
+# Edge Function Probe Transcripts
+# Captured: 2026-04-16T23:45:53Z
+# Project ref: ifvuvbolrmuuugtzxsfk
+# Production base URL: https://ifvuvbolrmuuugtzxsfk.supabase.co
+
+==================== chief-agent ====================
+--- POST https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/chief-agent (anon JWT, JSON body) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:53 GMT
+content-type: application/json
+cf-ray: 9ed710f6bc767766-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-d63e-7eff-8833-3efecd75a7c0
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=qn9MsdwnRjKI9.ZtJS_5Jli.oMszzT4WiFmXUlcIuEg-1776383153-1.0.1.1-GyJtv9y5NmqaK8YIzyLPd51rMgJ4sjreb9HedUPczcxtl3uOrZym.n51JHkJsq_rNtuIaVzErWj7Vkn75gmQTOdxzGjsfFjMbmmTxG4pxZ8; path=/; expires=Fri, 17-Apr-26 00:15:53 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.125917s status=404 ---
+
+--- GET https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/chief-agent (apikey only) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:53 GMT
+content-type: application/json
+cf-ray: 9ed710f7bc693af8-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-d6d7-7a35-b55a-000d8607e844
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=0R3E8K2RncQIijRC_V_9cyzUqazOOKOZrIItVC_2gjE-1776383153-1.0.1.1-PXlqGr7WXvCUvqJsu4.LsACKfAFiQqF0g3XK0TY_MiP7GaMr.yDfRgIXOptGqfd4q_BJ7LuODXHo9F85I8Lp7acDtGuvlU._XN1Aiu1.RzQ; path=/; expires=Fri, 17-Apr-26 00:15:53 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.124496s status=404 ---
+
+--- Management API GET /v1/projects/ifvuvbolrmuuugtzxsfk/functions/chief-agent ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:54 GMT
+content-type: application/json; charset=utf-8
+content-length: 32
+cf-ray: 9ed710f8bdcf3505-BOM
+cf-cache-status: DYNAMIC
+etag: W/"20-y/ui+7WdGhMI+qutZxVd0M2nyjM"
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Origin
+access-control-allow-credentials: true
+access-control-expose-headers: x-connection-encrypted,x-forwarded-for,user-agent,CF-Connecting-IP,Retry-After
+x-gotrue-id: a861ed5b-25c0-434a-ba53-20bced646907
+x-powered-by: Express
+x-ratelimit-limit: 120
+x-ratelimit-remaining: 118
+x-ratelimit-reset: 10
+set-cookie: __cf_bm=yHEU.Z1RagOU1wjhKgl8QFwM3Q1XOiDCv52t.98.DXM-1776383154.0332925-1.0.1.1-NFDG7fgTCkfm2eMSpy5EG7hbHw9qKRjE4u.wf7l9jdIXZfAiD.PYPiI7fTpW.qF.RyJNx2xfYWumHIhezgcAV16RR2SIRYdsXvjCKgpwjm31HrBn.EPMDUWhiHv3HxJN; HttpOnly; Secure; Path=/; Domain=supabase.com; Expires=Fri, 17 Apr 2026 00:15:54 GMT
+
+{"message":"Function not found"}
+--- TIMING: total=0.188885s status=404 ---
+
+==================== autonomous-cron-dispatcher ====================
+--- POST https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/autonomous-cron-dispatcher (anon JWT, JSON body) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:54 GMT
+content-type: application/json
+cf-ray: 9ed710fa1df90aaa-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-d856-7b55-9499-c33983a851a2
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=aWADI2pHiHij9lVR0Z8cnVCNy4bCFHsi06ASRxis7VY-1776383154-1.0.1.1-7CnuhZcejY.bZSoiTJGJtzcBd5_Io5sxvi7x7Lrz7P4jT5C2VAcf6W4WsXQh6JyNuL9PwbeHXCyFeer3w.H8jxE8vGmHVIVBNjKw5ljZReE; path=/; expires=Fri, 17-Apr-26 00:15:54 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.383123s status=404 ---
+
+--- GET https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/autonomous-cron-dispatcher (apikey only) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:54 GMT
+content-type: application/json
+cf-ray: 9ed710fcbcbc3f91-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-d9fd-74e0-8a16-c8727b3853e3
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=CLGWxXKX6LCL1qy_JzBXV.ZcQHaQyIW3os09UYpfiL8-1776383154-1.0.1.1-X6JSRrn7Zr3_7.AmjmXpPentp7Sqo7FSOYCJ9Hazt4AxXhJb7qxwS6uUrTINaWzcg_SIoN2Y294uYvuS1PzDpS.W17EejyR4Py88jbomOyE; path=/; expires=Fri, 17-Apr-26 00:15:54 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.126585s status=404 ---
+
+--- Management API GET /v1/projects/ifvuvbolrmuuugtzxsfk/functions/autonomous-cron-dispatcher ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:54 GMT
+content-type: application/json; charset=utf-8
+content-length: 32
+cf-ray: 9ed710fdcc5e4433-BOM
+cf-cache-status: DYNAMIC
+etag: W/"20-y/ui+7WdGhMI+qutZxVd0M2nyjM"
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Origin
+access-control-allow-credentials: true
+access-control-expose-headers: x-connection-encrypted,x-forwarded-for,user-agent,CF-Connecting-IP,Retry-After
+x-gotrue-id: a861ed5b-25c0-434a-ba53-20bced646907
+x-powered-by: Express
+x-ratelimit-limit: 120
+x-ratelimit-remaining: 117
+x-ratelimit-reset: 10
+set-cookie: __cf_bm=dnRWripYi4oHqbTVe_r8JzZWA0ExI_wrqbopo4rkMAU-1776383154.8479323-1.0.1.1-hJoNfQc4NH7HDulSBTPLLYA_hl5f6gSNJv0JPHnZDIOKgD2IfEWo87R2ec0TcoChLoY4zJ51.fGqiuN.hq4__LmiWajE_lPSyg6Wr2YYMXzEy6.Z4APGwaOgxUMqRoLj; HttpOnly; Secure; Path=/; Domain=supabase.com; Expires=Fri, 17 Apr 2026 00:15:54 GMT
+
+{"message":"Function not found"}
+--- TIMING: total=0.167917s status=404 ---
+
+==================== execution-loop ====================
+--- POST https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/execution-loop (anon JWT, JSON body) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:55 GMT
+content-type: application/json
+cf-ray: 9ed710ff085690f3-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-db70-704c-9ca3-c53c9eb686ba
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=uMTdMWWxyRieHU5aZgtxZvlUSODw4pRRW40zuctobV0-1776383155-1.0.1.1-UTasPPrVS.2FKjTRoKX8PtU9zrAG03KCD0KNmFA4dTMq9D.xU7TI_9egyU1IcqYP1Vo0WqSzcuBNrlXIpu_uqfNSnFqrwBE02oFaUypEakI; path=/; expires=Fri, 17-Apr-26 00:15:55 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.425529s status=404 ---
+
+--- GET https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/execution-loop (apikey only) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:55 GMT
+content-type: application/json
+cf-ray: 9ed71101f939066f-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-dd44-7025-b72d-3847de986cca
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=TIFrZ_7IbhY7b2kypWFS_Qn7Snm7If6fS3NDl8diCnM-1776383155-1.0.1.1-zFh9Bc79vHbOQYTQGI9whC3IQKR5JQjL_Nedk57EIPJqSYjhgSLGP72OVo3tkIoJoXvkZnkPWgwlTid78bY6hdWw9of046pq4HNOXoh9tJc; path=/; expires=Fri, 17-Apr-26 00:15:55 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.126275s status=404 ---
+
+--- Management API GET /v1/projects/ifvuvbolrmuuugtzxsfk/functions/execution-loop ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:55 GMT
+content-type: application/json; charset=utf-8
+content-length: 32
+cf-ray: 9ed711030ff8ff6a-BOM
+cf-cache-status: DYNAMIC
+etag: W/"20-y/ui+7WdGhMI+qutZxVd0M2nyjM"
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Origin
+access-control-allow-credentials: true
+access-control-expose-headers: x-connection-encrypted,x-forwarded-for,user-agent,CF-Connecting-IP,Retry-After
+x-gotrue-id: a861ed5b-25c0-434a-ba53-20bced646907
+x-powered-by: Express
+x-ratelimit-limit: 120
+x-ratelimit-remaining: 116
+x-ratelimit-reset: 9
+set-cookie: __cf_bm=EbNkgR.6WTUD5KXTyqJ_zx.HoNFMtRcbdokU777hWs4-1776383155.6900952-1.0.1.1-5FSniwFS9JW12JBnaJelQeGYTRrOFaa4vSg0iabElTKgCkMHhI6Yce4N08rjnSdC42GIZ1O_0VaItoUK7TLI0jYhrdU.5TYLikezabbDNPazYN7QMGrGfdk_wicHne8h; HttpOnly; Secure; Path=/; Domain=supabase.com; Expires=Fri, 17 Apr 2026 00:15:55 GMT
+
+{"message":"Function not found"}
+--- TIMING: total=0.320145s status=404 ---
+
+==================== lease-workflow ====================
+--- POST https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/lease-workflow (anon JWT, JSON body) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:56 GMT
+content-type: application/json
+cf-ray: 9ed711056ef26eec-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-df68-7a84-b3e2-5b72de869234
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=TJUBql7zshcmh5kuudws03x6x9C6gy3CwSPdsPSC3Ko-1776383156-1.0.1.1-JW8pLk19It4ZK23HQ1i7MgG1oHkOdjVkSX91MpxMBQvJJ48xfM87W5o9mhDIc4GipfBPpzWc.Dm0f4vcR_WtYGsZNCSqjiil.pIYN7KsJ3M; path=/; expires=Fri, 17-Apr-26 00:15:56 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.142920s status=404 ---
+
+--- GET https://ifvuvbolrmuuugtzxsfk.supabase.co/functions/v1/lease-workflow (apikey only) ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:56 GMT
+content-type: application/json
+cf-ray: 9ed711068970da6e-BOM
+cf-cache-status: DYNAMIC
+access-control-allow-origin: *
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept-Encoding
+x-content-type-options: nosniff
+access-control-allow-headers: authorization, x-client-info, apikey
+sb-error-code: NOT_FOUND
+sb-gateway-version: 1
+sb-project-ref: ifvuvbolrmuuugtzxsfk
+sb-request-id: 019d98af-e018-7b08-b4d7-76fd835d1865
+x-sb-edge-region: ap-south-1
+x-served-by: supabase-edge-runtime
+set-cookie: __cf_bm=uKq15Eq58EhHrStC8qyZy7yuNtlRONwIZHGVDc7AkWs-1776383156-1.0.1.1-D3nRisHHco7vbsnEkpHJ2yGsnAbfAcrNsGGulOzo03YqfmzWtIWvp2EbsE7E15F7gxaA.RJKB5xpvFOttxY4VHYmO8KPzIETjB47chHTYlQ; path=/; expires=Fri, 17-Apr-26 00:15:56 GMT; domain=.supabase.co; HttpOnly; Secure; SameSite=None
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+
+{"code":"NOT_FOUND","message":"Requested function was not found"}
+--- TIMING: total=0.376882s status=404 ---
+
+--- Management API GET /v1/projects/ifvuvbolrmuuugtzxsfk/functions/lease-workflow ---
+HTTP/2 404 
+date: Thu, 16 Apr 2026 23:45:56 GMT
+content-type: application/json; charset=utf-8
+content-length: 32
+cf-ray: 9ed711090caebd55-BOM
+cf-cache-status: DYNAMIC
+etag: W/"20-y/ui+7WdGhMI+qutZxVd0M2nyjM"
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Origin
+access-control-allow-credentials: true
+access-control-expose-headers: x-connection-encrypted,x-forwarded-for,user-agent,CF-Connecting-IP,Retry-After
+x-gotrue-id: a861ed5b-25c0-434a-ba53-20bced646907
+x-powered-by: Express
+x-ratelimit-limit: 120
+x-ratelimit-remaining: 115
+x-ratelimit-reset: 8
+set-cookie: __cf_bm=wFkgVYcAUHob4fnSaroghX2PhJNBX_JBSzT4_VENCHg-1776383156.6488276-1.0.1.1-SzW4m6PqiPuPqry2hKHc0KGzYKGIT1MvlxnpRxtSl1UmDVlIJ1TrEwd3hBXxYD.hl0kBDkOAXVnFlZnAysl04Wf62Y.U32pMX_ehZsRI9oZlmAWwT6VSyIbf7VWnEmzO; HttpOnly; Secure; Path=/; Domain=supabase.com; Expires=Fri, 17 Apr 2026 00:15:56 GMT
+
+{"message":"Function not found"}
+--- TIMING: total=0.160974s status=404 ---
+

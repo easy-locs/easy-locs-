@@ -128,6 +128,7 @@ Deno.serve(async (req) => {
         .from("leases")
         .insert({
           org_id: org_id || tenant.org_id,
+          user_id: tenant.user_id || property.user_id,
           tenant_id,
           property_id,
           lease_type: override?.lease_type || defaults.leaseType,
@@ -138,7 +139,7 @@ Deno.serve(async (req) => {
           deposit_amount: depositAmount,
           status: "pending_signature",
           country,
-          notice_period: defaults.noticePeriod,
+          notice_period_months: defaults.noticePeriod,
           rent_schedule_generated: false,
         } as any)
         .select("*")

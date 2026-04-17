@@ -148,14 +148,17 @@ Deno.serve(async (req) => {
       results[job.name] = { error: msg };
       errors++;
 
-      await supabase.rpc("insert_into_dlq", {
-        p_source_system: "autonomous-cron-dispatcher",
-        p_operation_type: `trigger_${job.name}`,
-        p_payload: { function_name: job.function_name, body: job.body },
-        p_error: msg,
-      }).catch((dlqErr: unknown) => {
-        console.error(`[cron-dispatcher] DLQ insert failed for ${job.name}:`, dlqErr);
-      });
+      try {
+        const { error: dlqErr } = await supabase.rpc("insert_into_dlq", {
+          p_source_system: "autonomous-cron-dispatcher",
+          p_operation_type: `trigger_${job.name}`,
+          p_payload: { function_name: job.function_name, body: job.body },
+          p_error: msg,
+        });
+        if (dlqErr) console.error(`[cron-dispatcher] DLQ insert failed for ${job.name}:`, dlqErr);
+      } catch (dlqErr) {
+        console.error(`[cron-dispatcher] DLQ insert threw for ${job.name}:`, dlqErr);
+      }
     }
   }
 
@@ -195,13 +198,16 @@ Deno.serve(async (req) => {
     triggered++;
   }
 
-  await supabase.rpc("update_autonomy_status", {
-    p_system_name: "pg_cron_dispatcher",
-    p_status: errors === 0 ? "green" : errors < triggered ? "yellow" : "red",
-    p_error_message: errors > 0 ? `${errors} jobs failed` : null,
-  }).catch((statusErr: unknown) => {
-    console.error("[cron-dispatcher] status update failed:", statusErr);
-  });
+  try {
+    const { error: statusErr } = await supabase.rpc("update_autonomy_status", {
+      p_system_name: "pg_cron_dispatcher",
+      p_status: errors === 0 ? "green" : errors < triggered ? "yellow" : "red",
+      p_error_message: errors > 0 ? `${errors} jobs failed` : null,
+    });
+    if (statusErr) console.error("[cron-dispatcher] status update failed:", statusErr);
+  } catch (statusErr) {
+    console.error("[cron-dispatcher] status update threw:", statusErr);
+  }
 
   if (errors > 0 && !requestedJob) {
     const failedJobNames = Object.entries(results)

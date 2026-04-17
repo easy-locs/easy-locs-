@@ -1,0 +1,39 @@
+{
+  "captured_at": "2026-04-16T23:45:44Z",
+  "project_ref": "ifvuvbolrmuuugtzxsfk",
+  "total_functions_deployed": 18,
+  "target_functions": [
+    "chief-agent",
+    "autonomous-cron-dispatcher",
+    "execution-loop",
+    "lease-workflow"
+  ],
+  "deployed_target_functions": [],
+  "deployed_target_count": 0,
+  "missing_target_functions": [
+    "chief-agent",
+    "autonomous-cron-dispatcher",
+    "execution-loop",
+    "lease-workflow"
+  ],
+  "all_deployed_slugs_sorted": [
+    "auth-callback",
+    "create-booking-payment",
+    "create-checkout",
+    "create-concierge-payment",
+    "create-guest-checkout",
+    "create-rent-payment",
+    "create-stripe-intent",
+    "create-wallet-topup",
+    "fx-rates",
+    "get-turn-credentials",
+    "orbit-payment",
+    "send-otp",
+    "translate-message",
+    "verify-guest-payment",
+    "verify-otp",
+    "wallet-ops",
+    "wallet-pin",
+    "wallet-transfer"
+  ]
+}

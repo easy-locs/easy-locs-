@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "chief-agent",
+    "id": "98217b3b-b3bc-4b3d-9562-bdee11a0081b",
+    "status": "ACTIVE",
+    "version": 2
+  },
+  {
+    "slug": "autonomous-cron-dispatcher",
+    "id": "c0b9f41d-a734-4eeb-87ce-4d17f677636e",
+    "status": "ACTIVE",
+    "version": 2
+  },
+  {
+    "slug": "execution-loop",
+    "id": "31ecb8bf-6b1d-4a2a-af30-0e49da6060eb",
+    "status": "ACTIVE",
+    "version": 2
+  },
+  {
+    "slug": "lease-workflow",
+    "id": "e4a51c7c-8243-4578-95fa-55eb43630e83",
+    "status": "ACTIVE",
+    "version": 2
+  }
+]
