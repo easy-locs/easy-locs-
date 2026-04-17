@@ -90,6 +90,23 @@ export interface OrchestratorDeps {
    * orchestrator: an emitter is shared across many `run()` calls.
    */
   heartbeat?: HeartbeatEmitter;
+  /**
+   * L3 (#811) — Generic pre-execute snapshotter used when an adapter does
+   * not declare its own `snapshotProvider`. The worker process injects an
+   * implementation that resolves `task.entity_type` (expected format
+   * `"<schema>.<table>"`) and `task.entity_id` to a `SELECT *` against the
+   * canonical domain-schema table, returning the row that was about to be
+   * mutated. The orchestrator stores the result on `previous_state`.
+   *
+   * Returning `null` (no entity, missing client, or row not found) is
+   * fine — the orchestrator falls back to the structural identity
+   * envelope so every rollback-eligible task still has *something*
+   * actionable on the row. Throwing is also fine — it is surfaced as a
+   * snapshot error event but never blocks the forward execute().
+   */
+  defaultSnapshotter?: (
+    task: ExecutionTask,
+  ) => Promise<Record<string, unknown> | null>;
 }
 
 export class ExecutionOrchestratorV2 {
@@ -336,8 +353,27 @@ export class ExecutionOrchestratorV2 {
           if (adapter.snapshotProvider) {
             previousState = await adapter.snapshotProvider(ctx);
           } else {
-            // Default snapshot — sufficient for adapters whose rollback
-            // can be driven from (entity_type, entity_id, payload) alone.
+            // Default snapshot capture (kind-agnostic). The orchestrator
+            // ALWAYS records a structural identity envelope; if the worker
+            // injected a `defaultSnapshotter` (production wiring resolves
+            // `entity_type`='<schema>.<table>' + `entity_id` to a `SELECT *`
+            // against the canonical domain-schema table), the resolved row
+            // is folded into the envelope under `entity_row`. This gives
+            // adapters without a custom `snapshotProvider` enough state
+            // to drive a restorative rollback (`UPDATE ... SET ... = $1`)
+            // without per-domain wiring.
+            let entityRow: Record<string, unknown> | null = null;
+            if (this.deps.defaultSnapshotter) {
+              try {
+                entityRow = await this.deps.defaultSnapshotter(task);
+              } catch (e) {
+                const detail = e instanceof Error ? e.message : String(e);
+                this.currentSinkErrors.push(
+                  `${ROLLBACK_ERROR_CODES.SNAPSHOT_THREW}:default:${detail}`,
+                );
+                console.warn("[orchestrator-v2] defaultSnapshotter threw:", detail);
+              }
+            }
             previousState = {
               kind: "default",
               captured_at: ctx.startedAt,
@@ -346,6 +382,7 @@ export class ExecutionOrchestratorV2 {
               entity_type: task.entity_type,
               entity_id: task.entity_id,
               payload: task.payload ?? null,
+              entity_row: entityRow,
             } as Record<string, unknown>;
           }
           if (previousState !== null && previousState !== undefined) {

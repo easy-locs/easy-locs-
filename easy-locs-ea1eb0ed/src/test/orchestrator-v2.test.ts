@@ -155,6 +155,9 @@ function makeOrchestrator(opts: {
   /** When true (default), auto-register a passing verifier matching the
    * first adapter so existing happy-path tests stay happy. */
   autoVerifier?: boolean;
+  defaultSnapshotter?: (
+    task: ExecutionTask,
+  ) => Promise<Record<string, unknown> | null>;
 }) {
   const registry = opts.registry ?? new AdapterRegistry();
   const repo = opts.repo ?? new MemoryRepository();
@@ -173,6 +176,7 @@ function makeOrchestrator(opts: {
     verification,
     ownerId: "test-orch",
     lockTtlSeconds: 30,
+    defaultSnapshotter: opts.defaultSnapshotter,
   });
   return { orch, registry, repo, locks, idem, sink, verifiers };
 }
@@ -489,6 +493,78 @@ describe("ExecutionOrchestratorV2 · rollback contract", () => {
 
     expect(rollbackCalled).toBe(true);
     expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+  });
+
+  it("default snapshot envelope folds in entity_row from injected defaultSnapshotter (#811)", async () => {
+    // L3 contract: when an adapter has no `snapshotProvider`, the
+    // orchestrator MUST still capture pre-mutation entity row state via
+    // the worker-injected `defaultSnapshotter`, store it under
+    // `previous_state.entity_row`, and pass it through to rollback.
+    const task = buildTask({
+      entity_type: "marketplace.listings",
+      entity_id: "L-default",
+    });
+    let snapshotterCalled = false;
+    let rollbackInvocation: unknown = null;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      // NO snapshotProvider — exercises the default path.
+      execute: async () => ({ success: false, errorMessage: "boom", errorCode: "X" }),
+      rollback: async (_ctx, inv) => {
+        rollbackInvocation = inv;
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo } = makeOrchestrator({
+      defaultSnapshotter: async (t) => {
+        snapshotterCalled = true;
+        expect(t.entity_type).toBe("marketplace.listings");
+        expect(t.entity_id).toBe("L-default");
+        return { id: "L-default", title: "before mutation", published: false };
+      },
+    });
+    registry.register(adapter);
+    repo.seed(task);
+
+    await orch.run(task.id);
+
+    expect(snapshotterCalled).toBe(true);
+    const finalRow = repo.tasks.get(task.id);
+    expect(finalRow?.status).toBe("rolled_back");
+    expect(finalRow?.previous_state).toMatchObject({
+      kind: "default",
+      entity_type: "marketplace.listings",
+      entity_id: "L-default",
+      entity_row: { id: "L-default", title: "before mutation", published: false },
+    });
+    expect(rollbackInvocation).toMatchObject({
+      previousState: { entity_row: { title: "before mutation" } },
+    });
+  });
+
+  it("default snapshot envelope is still captured (entity_row=null) when no defaultSnapshotter is wired", async () => {
+    const task = buildTask({ entity_type: "marketplace.listings", entity_id: "L-none" });
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      execute: async () => ({ success: false, errorMessage: "boom", errorCode: "X" }),
+      rollback: async () => ({ success: true }),
+    };
+    const { orch, registry, repo } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    await orch.run(task.id);
+
+    expect(repo.tasks.get(task.id)?.previous_state).toMatchObject({
+      kind: "default",
+      entity_type: "marketplace.listings",
+      entity_id: "L-none",
+      entity_row: null,
+    });
   });
 
   it("auto-rolls-back when the verifier reports VERIFICATION_MISMATCH (mutation already happened)", async () => {
