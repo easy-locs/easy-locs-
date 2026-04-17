@@ -21,6 +21,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -45,6 +55,17 @@ export default function AgentActionsMenu({ agent }: Props) {
   const qc = useQueryClient();
   const { toast } = useToast();
   const [pending, setPending] = useState<AgentLifecycleStatus | null>(null);
+  /**
+   * Destructive lifecycle transitions (`disable`, `deprecate`) require an
+   * explicit confirmation step — the operator must read the consequence
+   * sentence before committing. Non-destructive transitions (`enable`,
+   * `canary`) bypass this gate so they remain fast under incident.
+   */
+  const [confirm, setConfirm] = useState<{
+    status: AgentLifecycleStatus;
+    label: string;
+    consequence: string;
+  } | null>(null);
 
   const mutation = useMutation({
     mutationFn: (input: {
@@ -99,6 +120,12 @@ export default function AgentActionsMenu({ agent }: Props) {
   const setStatus = (status: AgentLifecycleStatus, canaryPct?: number) =>
     mutation.mutate({ status, canaryPct: canaryPct ?? null });
 
+  const requestDestructive = (
+    status: AgentLifecycleStatus,
+    label: string,
+    consequence: string,
+  ) => setConfirm({ status, label, consequence });
+
   const isActive = agent.status === "active";
   const isDisabled = agent.status === "disabled";
   const busy = mutation.isPending;
@@ -138,7 +165,13 @@ export default function AgentActionsMenu({ agent }: Props) {
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={isDisabled || busy}
-          onClick={() => setStatus("disabled")}
+          onClick={() =>
+            requestDestructive(
+              "disabled",
+              "Disable agent",
+              "New work will stop being routed to this agent. In-flight runs continue but no new tasks will be accepted.",
+            )
+          }
           data-testid="agent-action-disable"
         >
           <PowerOff className="w-3.5 h-3.5 mr-2" />
@@ -162,7 +195,13 @@ export default function AgentActionsMenu({ agent }: Props) {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           disabled={agent.status === "deprecated" || busy}
-          onClick={() => setStatus("deprecated")}
+          onClick={() =>
+            requestDestructive(
+              "deprecated",
+              "Deprecate version",
+              "The agent will be marked deprecated and removed from the active router. This is a hard archive — only roll forward to a new version after this.",
+            )
+          }
           data-testid="agent-action-deprecate"
           className="text-destructive focus:text-destructive"
         >
@@ -170,6 +209,41 @@ export default function AgentActionsMenu({ agent }: Props) {
           Deprecate version
         </DropdownMenuItem>
       </DropdownMenuContent>
+
+      <AlertDialog
+        open={confirm !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirm(null);
+        }}
+      >
+        <AlertDialogContent data-testid="agent-action-confirm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirm?.label} — {agent.display_name}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirm?.consequence} This action is recorded in the audit
+              trail (agent_command_history).
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="agent-action-confirm-cancel">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="agent-action-confirm-ok"
+              onClick={() => {
+                if (confirm) {
+                  setStatus(confirm.status);
+                  setConfirm(null);
+                }
+              }}
+            >
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </DropdownMenu>
   );
 }

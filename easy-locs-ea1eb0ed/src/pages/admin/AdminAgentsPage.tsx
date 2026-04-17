@@ -307,6 +307,12 @@ export default function AdminAgentsPage() {
                     Health
                   </TableHead>
                   <TableHead className="text-[0.625rem] uppercase tracking-wide">
+                    Owner
+                  </TableHead>
+                  <TableHead className="text-[0.625rem] uppercase tracking-wide text-right">
+                    In-flight
+                  </TableHead>
+                  <TableHead className="text-[0.625rem] uppercase tracking-wide">
                     Domains
                   </TableHead>
                   <TableHead className="text-[0.625rem] uppercase tracking-wide">
@@ -373,6 +379,18 @@ export default function AdminAgentsPage() {
                           <HealthDot status={r.health?.health_status} />
                           {r.health?.health_status ?? "—"}
                         </span>
+                      </TableCell>
+                      <TableCell
+                        className="py-2 text-xs text-muted-foreground"
+                        data-testid={`agent-row-${r.slug}-owner`}
+                      >
+                        {r.owner_team ?? "—"}
+                      </TableCell>
+                      <TableCell
+                        className="py-2 text-xs text-right tabular-nums"
+                        data-testid={`agent-row-${r.slug}-inflight`}
+                      >
+                        {r.health?.in_flight ?? 0}
                       </TableCell>
                       <TableCell className="py-2">
                         <div className="flex flex-wrap gap-1 max-w-[180px]">
