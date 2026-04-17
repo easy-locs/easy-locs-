@@ -10,7 +10,7 @@ import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 const {
   AIAssistant, AISearch, Accounting, AccountingEntries, AddProperty, AuditTrail, Billing,
   BoostDashboardPage, Buildings, CVGenerator, Candidates, CategorySubscriptions, ChannelManager,
-  ChargesRegularization, Collaboration, Company, ConciergeOperations, CountryWorkspace, CreateListing,
+  ChargesRegularization, Collaboration, CommandCenter, Company, ConciergeOperations, CountryWorkspace, CreateListing,
   CustomerProfilePage, Dashboard, DataImport, DeveloperPortal, Documents, DunningLetters, DynamicPricing,
   Expenses, Finances, FiscalReport, FurnitureInventory, Index, Interventions, IslamicSectionPage,
   LandlordProfile, LandlordRentDashboard, Leases, MyShopsPage, NewsPage, OpsCenter, PaymentNotices,
@@ -86,6 +86,7 @@ export function DashboardRoutes() {
       <Route path="/dashboard/my-shop" element={<Navigate to="/dashboard/my-shops" replace />} />
       <Route path="/dashboard/my-shops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyShopsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><OpsCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/dashboard/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><CommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CountryWorkspace /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateModulePage /></FeatureErrorBoundary></ProtectedRoute>}>
