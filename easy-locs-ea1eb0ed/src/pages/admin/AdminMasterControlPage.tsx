@@ -76,9 +76,16 @@ export default function AdminMasterControlPage() {
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
-    hasRole(user.id, "super_admin").then((result) => {
-      if (!cancelled) setIsSuperAdmin(result);
-    });
+    hasRole(user.id, "super_admin")
+      .then((result) => {
+        if (!cancelled) setIsSuperAdmin(result);
+      })
+      .catch((err) => {
+        // hasRole now throws on RPC errors (audit #946). For this page we
+        // degrade gracefully: hide super-admin panels and log the failure.
+        console.error("[AdminMasterControl] hasRole(super_admin) failed:", err);
+        if (!cancelled) setIsSuperAdmin(false);
+      });
     return () => { cancelled = true; };
   }, [user?.id]);
 

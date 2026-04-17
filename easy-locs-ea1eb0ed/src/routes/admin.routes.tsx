@@ -2,6 +2,7 @@ import { Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import SuperAdminGate from "@/components/auth/SuperAdminGate";
+import AdminShellWithChunkBoundary from "@/components/admin/AdminShellChunkBoundary";
 import * as Pages from "@/app/app-route-registry";
 
 /**
@@ -36,7 +37,7 @@ const {
   AdminDriverMonitorPage, AdminEnginesDashboardPage, AdminExperimentLabPage, AdminFinanceSummaryPage,
   AdminFirecrawlUsagePage, AdminFraudDetectionPage, AdminGrowthOpsPage, AdminIntegrationHealthPage, AdminClientIntegrationDiagnosticsPage,
   AdminKycReviewPage, AdminLabHubPage, AdminMapErrorDashboardPage, AdminMarketplaceOpsPage,
-  AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminAgentRunsPage, AdminControlShellPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
+  AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminAgentRunsPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
   AdminNotificationLabPage, AdminNotificationOpsPage, AdminOpsDashboardPage, AdminOrderWatchPage,
   AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage,
   AdminQualityOpsPage, AdminRealtimeControlPage, AdminRefundQueuePage, AdminReleaseHistoryPage,
@@ -123,13 +124,13 @@ export function AdminRoutes() {
           Note (#863): /admin/command-center is intentionally NOT defined as a
           real route here — it is registered below as a legacy redirect into
           /admin/control/command. */}
-      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ ACP Agent 3 (#863) · Legacy admin URL redirects → /admin/control/* ══
           Old URLs (bookmarks, external links, in-app navigation) keep working
