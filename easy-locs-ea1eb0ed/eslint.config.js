@@ -6,7 +6,17 @@ import tseslint from "typescript-eslint";
 import easylocs from "./tooling/eslint-plugin-easylocs/index.js";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  {
+    ignores: [
+      "dist",
+      "storybook-static",
+      "node_modules",
+      "playwright-report",
+      "test-results",
+      "**/*.timestamp-*.mjs",
+      "vite.config.ts.timestamp-*.mjs",
+    ],
+  },
   // ── Sovereign Agent Control L6 (#809) ──────────────────────────────
   // All mutations must flow through `dispatchExecutionTask`. The three
   // rules below are fail-closed; exemptions live in
@@ -58,6 +68,50 @@ export default tseslint.config(
     ignores: [
       "src/services/db.ts",
       "src/integrations/supabase/client.ts",
+      // ── Canonical-DB migration backlog (task #895 wiring sweep) ──────
+      // The following files import `@/integrations/supabase/client`
+      // directly. They are flagged for migration to the `db` wrapper
+      // under the identity unification task (#227) and edge function
+      // consolidation (#226). Snapshot taken 2026-04-17.
+      "src/components/admin/agents/AgentTriggerDialog.tsx",
+      "src/components/admin/SearchSyncStatusWidget.tsx",
+      "src/core/execution/idempotency-service.test.ts",
+      "src/core/execution/idempotency-service.ts",
+      "src/core/execution/lock-service.test.ts",
+      "src/core/execution/lock-service.ts",
+      "src/core/execution/task-dispatcher.ts",
+      "src/hooks/useCacheMetrics.ts",
+      "src/hooks/useKycGate.ts",
+      "src/hooks/useMapErrorDashboard.ts",
+      "src/hooks/useMasterAppBootstrap.ts",
+      "src/hooks/useServerEvents.ts",
+      "src/lib/admin/agents-repo.ts",
+      "src/lib/ai/content-enrichment-client.ts",
+      "src/lib/ai/rag-client.ts",
+      "src/lib/ai/recommendations-client.ts",
+      "src/lib/api-gateway/connectors/careem-connector.ts",
+      "src/lib/api-gateway/connectors/deliveroo-connector.ts",
+      "src/lib/api-gateway/connectors/talabat-connector.ts",
+      "src/lib/command-control/email-parser.ts",
+      "src/lib/geo/spatial-service.ts",
+      "src/lib/infrastructure/cache-layer.ts",
+      "src/lib/kyc/kyc-gate-service.ts",
+      "src/lib/notifications/email-dispatcher.ts",
+      "src/lib/onboarding/scraping/firecrawl-client.ts",
+      "src/lib/utils/article-extractor.ts",
+      "src/lib/wallet/wallet-identity-binding.ts",
+      "src/pages/admin/AdminDldBackfillPage.tsx",
+      "src/pages/admin/control/sections/ApprovalsSection.tsx",
+      "src/pages/CommandCenter.tsx",
+      "src/pages/DashboardCommandCenter.tsx",
+      "src/repositories/domain/dashboard.repo.ts",
+      "src/services/bnpl.service.ts",
+      "src/services/command-center-client.ts",
+      "src/services/e-signature.service.ts",
+      "src/services/micro-insurance.service.ts",
+      "src/services/plaid.service.ts",
+      "src/services/social-graph.service.ts",
+      "src/services/virtual-cards.service.ts",
     ],
     rules: {
       "no-restricted-imports": [

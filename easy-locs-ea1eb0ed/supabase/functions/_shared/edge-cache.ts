@@ -186,5 +186,3 @@ export function getCacheStats(): {
     maxMemory: MAX_MEMORY_CACHE,
   };
 }
-
-}

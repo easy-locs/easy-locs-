@@ -200,7 +200,6 @@ class RealtimeHardener {
 
   private wrapSetupFnWithTracking(hc: HardenedChannel, raw: ReturnType<typeof db.channel>): ReturnType<typeof db.channel> {
     const originalOn = raw.on.bind(raw);
-    const self = this;
     raw.on = function (...args: any[]) {
       const callbackIdx = args.length - 1;
       if (typeof args[callbackIdx] === "function") {
