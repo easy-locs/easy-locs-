@@ -132,6 +132,17 @@ export interface ExecutionTask {
   /** Forward-execute output blob — surfaced so legacy adapters that
    *  embedded `previous_state` in here can still drive rollback. */
   execution_result: Record<string, unknown> | null;
+  /**
+   * L1 sovereign agent reference (mirrored from `system.execution_tasks`).
+   * Optional because legacy/unit-test tasks may not carry one. The
+   * orchestrator's quota gate (LB1 #834) skips when this is null.
+   */
+  agent_id?: string | null;
+  /** Free-form blocked/held reason — mirrors the column. */
+  blocked_reason?: string | null;
+  /** Reviewer / completion timestamps mirrored from the column. */
+  approved_at?: string | null;
+  rejected_by?: string | null;
 }
 
 /**
@@ -278,6 +289,13 @@ export const ORCHESTRATOR_ERROR_CODES = {
   ILLEGAL_STATUS: "ILLEGAL_STATUS",
   IDEMPOTENCY_LOOKUP_FAILED: "IDEMPOTENCY_LOOKUP_FAILED",
   EVENT_SINK_FAILED: "EVENT_SINK_FAILED",
+  /**
+   * LB1 follow-up (#834) — Pre-execute quota gate refused the run.
+   * The orchestrator owns this check (kind-agnostic) so the AI adapter
+   * no longer carries a peek call; the gate consults the same
+   * `system.peek_agent_quota` RPC used by `system.consume_agent_quota`.
+   */
+  QUOTA_EXCEEDED: "QUOTA_EXCEEDED",
 } as const;
 
 /**

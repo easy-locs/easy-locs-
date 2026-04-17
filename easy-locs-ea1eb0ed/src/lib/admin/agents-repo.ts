@@ -273,7 +273,7 @@ export const agentsRepo = {
         latency_ms: r.latency_ms,
         held_for_review: r.held_for_review ?? false,
         held_reason: r.held_reason ?? null,
-        released_at: r.released_at ?? null,
+        released_at: (r as { released_at?: string | null }).released_at ?? null,
         created_at: r.task_created_at,
         prompt: r.prompt ?? null,
         response: r.response ?? null,
@@ -288,7 +288,7 @@ export const agentsRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, status, risk_level, cost_usd, latency_ms, held_for_review, held_reason, released_at, error, blocked_reason, created_at, payload, execution_result",
+        "id, type, status, risk_level, cost_usd, latency_ms, error, blocked_reason, created_at, completed_at, payload, execution_result",
       )
       .eq("agent_id", agentId)
       .order("created_at", { ascending: false })
@@ -301,9 +301,16 @@ export const agentsRepo = {
       risk_level: (r.risk_level as string) ?? "UNKNOWN",
       cost_usd: (r.cost_usd as number) ?? null,
       latency_ms: (r.latency_ms as number) ?? null,
-      held_for_review: (r.held_for_review as boolean) ?? false,
-      held_reason: (r.held_reason as string) ?? null,
-      released_at: (r.released_at as string) ?? null,
+      // Canonical lifecycle (LB1 #834): held = pending_review with an
+      // execution_result already on the row. Reason lives in
+      // blocked_reason; release timestamp is the post-decision
+      // completed_at on terminal succeeded/failed rows.
+      held_for_review: r.status === "pending_review" && r.execution_result != null,
+      held_reason: r.status === "pending_review" ? ((r.blocked_reason as string) ?? null) : null,
+      released_at:
+        (r.status === "succeeded" || r.status === "failed") && r.execution_result != null
+          ? ((r.completed_at as string | null) ?? null)
+          : null,
       created_at: r.created_at as string,
       prompt: null,
       response: null,
@@ -316,17 +323,6 @@ export const agentsRepo = {
     }));
   },
 
-  /**
-   * Releases a held AI response after admin review. RPC is admin-only.
-   */
-  async releaseHeldAiResponse(taskId: string, decision: "approved" | "rejected") {
-    const { data, error } = await systemRpc().rpc("release_held_ai_response", {
-      p_task_id: taskId,
-      p_decision: decision,
-    });
-    if (error) throw new Error(`releaseHeldAiResponse failed: ${error.message}`);
-    return data;
-  },
 };
 
 export interface AgentRunRichRow {

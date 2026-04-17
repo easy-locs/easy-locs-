@@ -284,26 +284,10 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
   }
   logs.push(`[${ts()}] resolve.ok agent_id=${agentId}`);
 
-  // Step 2: quota pre-check — READ-ONLY peek; the actual increment happens
-  // exactly ONCE in Step 5 with the real token/cost usage. Calling consume()
-  // here would double-count every run.
-  const pre = await opts.deps.quota.peek({ agentId });
-  if (!pre.ok) {
-    logs.push(`[${ts()}] quota.blocked ${pre.blockedReason} window=${pre.blockedWindow}`);
-    return {
-      success: false,
-      errorCode: AI_ERROR_CODES.QUOTA_EXCEEDED,
-      errorMessage: `${pre.blockedReason} (window=${pre.blockedWindow})`,
-      output: {
-        blocked_reason: pre.blockedReason,
-        blocked_window: pre.blockedWindow,
-        current_count: pre.currentCount,
-        limit_count: pre.limitCount,
-      },
-      logs,
-    };
-  }
-  logs.push(`[${ts()}] quota.ok`);
+  // Step 2: quota pre-check is now owned by the orchestrator (LB1 #834,
+  // ORCHESTRATOR_ERROR_CODES.QUOTA_EXCEEDED). The adapter only calls
+  // `consume()` in Step 5 with real token/cost usage; calling `peek()` here
+  // would duplicate the orchestrator's gate and split the source of truth.
 
   // Step 3: provider call + result build.
   let outcome;

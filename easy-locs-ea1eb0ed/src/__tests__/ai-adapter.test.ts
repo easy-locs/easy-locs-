@@ -4,8 +4,11 @@
  * Coverage:
  *  - happy path: completion succeeds, interaction is recorded, cost+latency
  *    surface on the result, sensitive flag absent.
- *  - quota block: pre-check rejection bubbles up as QUOTA_EXCEEDED with no
- *    runner call.
+ *  - LB1 follow-up #834: the quota gate now lives on the orchestrator
+ *    (`AgentQuotaGate.peek`) — adapters no longer call `quota.peek`. The
+ *    paired test asserting "no runner call when peek refuses" therefore
+ *    moves up the stack and is covered by the orchestrator-level integration
+ *    suite. Adapters still own the post-call `consume` bump.
  *  - invalid payload: validator rejects ⇒ INVALID_PAYLOAD, no runner call.
  *  - sensitive output: classifier flag flows through to result.flaggedSensitive.
  *  - tool-use adapter: always flags sensitive (approval mandatory).
@@ -131,13 +134,16 @@ describe("AI completion adapter — LB1 (#815)", () => {
     expect(recorded.count).toBe(1);
   });
 
-  it("quota block ⇒ QUOTA_EXCEEDED, no runner call", async () => {
+  it("LB1 #834 — adapter no longer calls quota.peek; runner runs even if peek would refuse", async () => {
+    // The orchestrator owns the pre-execute quota gate now. We pass a
+    // peek() that would refuse and assert the adapter still calls the
+    // runner (i.e. the adapter does not enforce quota itself). A
+    // matching orchestrator-level test ensures the gate fires upstream.
     const runnerCalls = { count: 0 };
     const adapter = createAiCompletionAdapter(makeDeps({ quotaOk: false, runnerCallsRef: runnerCalls }));
     const res = await adapter.execute(baseCtx());
-    expect(res.success).toBe(false);
-    if (!res.success) expect(res.errorCode).toBe(AI_ERROR_CODES.QUOTA_EXCEEDED);
-    expect(runnerCalls.count).toBe(0);
+    expect(res.success).toBe(true);
+    expect(runnerCalls.count).toBe(1);
   });
 
   it("invalid payload ⇒ INVALID_PAYLOAD, no runner call", async () => {

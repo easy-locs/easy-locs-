@@ -60,6 +60,33 @@ export interface ValidationGate {
   ): Promise<{ ok: boolean; reason?: string; code?: string }>;
 }
 
+/**
+ * AgentQuotaGate — kind-agnostic pre-execute quota check (LB1 follow-up
+ * #834). The orchestrator calls `peek` exactly once per run BEFORE
+ * `adapter.execute`; on a block it short-circuits to
+ * `blocked` with `error_code = QUOTA_EXCEEDED`. The actual usage bump
+ * stays with the adapter (which knows real token / cost figures) so
+ * unsuccessful or persist-failed runs do not double-count against the
+ * limit.
+ *
+ * Returns `{ ok: true }` or a structured rejection. The orchestrator
+ * skips the gate when `task.agent_id` is null (legacy tasks dispatched
+ * before the agent registry was wired) or when the deps do not provide
+ * a gate.
+ */
+export interface AgentQuotaGate {
+  peek(args: { agentId: string }): Promise<
+    | { ok: true }
+    | {
+        ok: false;
+        reason: string;
+        window: string;
+        currentCount?: number;
+        limitCount?: number;
+      }
+  >;
+}
+
 export interface OrchestratorDeps {
   registry: AdapterRegistry;
   repository: TaskRepository;
@@ -107,6 +134,15 @@ export interface OrchestratorDeps {
   defaultSnapshotter?: (
     task: ExecutionTask,
   ) => Promise<Record<string, unknown> | null>;
+  /**
+   * LB1 follow-up #834 — Optional generic quota gate. When provided AND
+   * the task carries an `agent_id`, the orchestrator calls `peek` before
+   * adapter execution and short-circuits to
+   * `blocked / QUOTA_EXCEEDED` on rejection. Adapters never call peek
+   * themselves (single source of truth). When omitted, the gate is a
+   * no-op (used by tests and legacy harnesses).
+   */
+  agentQuotaGate?: AgentQuotaGate;
 }
 
 export class ExecutionOrchestratorV2 {
@@ -227,6 +263,39 @@ export class ExecutionOrchestratorV2 {
         errorCode: ORCHESTRATOR_ERROR_CODES.NO_ADAPTER,
         errorMessage: message,
       });
+    }
+
+    // ── Step 2b: agent quota gate (LB1 #834) ────────────────────────────
+    // Generic, kind-agnostic pre-execute check. The adapter still owns
+    // the post-call accounting bump; this gate is the single place where
+    // a run can be refused for QUOTA_EXCEEDED. Skipped when the task has
+    // no agent_id (legacy / pre-LB1 dispatch) or no gate is wired.
+    if (this.deps.agentQuotaGate && task.agent_id) {
+      let quota: Awaited<ReturnType<AgentQuotaGate["peek"]>>;
+      try {
+        quota = await this.deps.agentQuotaGate.peek({ agentId: task.agent_id });
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        await this.markBlocked(task, {
+          code: ORCHESTRATOR_ERROR_CODES.QUOTA_EXCEEDED,
+          message: `quota_gate_threw:${message}`,
+        });
+        return this.outcome(task, "blocked", startedAt, {
+          errorCode: ORCHESTRATOR_ERROR_CODES.QUOTA_EXCEEDED,
+          errorMessage: `quota_gate_threw:${message}`,
+        });
+      }
+      if (!quota.ok) {
+        const message = `${quota.reason} (window=${quota.window})`;
+        await this.markBlocked(task, {
+          code: ORCHESTRATOR_ERROR_CODES.QUOTA_EXCEEDED,
+          message,
+        });
+        return this.outcome(task, "blocked", startedAt, {
+          errorCode: ORCHESTRATOR_ERROR_CODES.QUOTA_EXCEEDED,
+          errorMessage: message,
+        });
+      }
     }
 
     const lockKey = adapter.getLockKey ? adapter.getLockKey(task) : defaultLockKey(task);
@@ -613,11 +682,12 @@ export class ExecutionOrchestratorV2 {
         ...adapterPayload,
         verification: decision.verification,
       };
-      // ── LB1 (#815): sensitive-output hook ─────────────────────────────
-      // When the adapter flagged its own output as sensitive (PII / contract /
-      // caller hint), persist held_for_review so the L5 inbox can gate the
-      // RESPONSE delivery. The CALL itself succeeded — we never widen the
-      // running→succeeded transition into running→pending_review.
+      // ── LB1 follow-up (#834): sensitive-output hook on canonical lifecycle ─
+      // When the adapter flagged its output as sensitive (PII / contract /
+      // caller hint), the orchestrator transitions running→pending_review
+      // and lets the canonical approvals inbox decide the run via
+      // `decide_task_approval`. No parallel `held_for_review` flag — the
+      // status itself plus `blocked_reason` carry the same information.
       const flagOutput = (adapterResult.output ?? {}) as Record<string, unknown>;
       const flagged = flagOutput.flaggedSensitive === true;
       const flagReason = typeof flagOutput.flaggedReason === "string"
@@ -629,10 +699,46 @@ export class ExecutionOrchestratorV2 {
       const flagLatency = typeof flagOutput.latency_ms === "number"
         ? (flagOutput.latency_ms as number)
         : null;
+
+      if (flagged) {
+        const heldOk = await this.deps.repository.transition(
+          task.id,
+          "running",
+          "pending_review",
+          {
+            execution_result: result,
+            blocked_reason: flagReason ?? "sensitive",
+            error_code: null,
+            ...(flagCost !== null ? { cost_usd: flagCost } : {}),
+            ...(flagLatency !== null ? { latency_ms: flagLatency } : {}),
+          },
+        );
+        if (!heldOk) {
+          outcome = this.outcome(task, "blocked", startedAt, {
+            errorCode: ORCHESTRATOR_ERROR_CODES.PERSIST_FAILED,
+            errorMessage: "Could not transition running→pending_review",
+          });
+          return outcome;
+        }
+        // The DB trigger emits `approval.requested` when the row enters
+        // pending_review, so we do not double-emit here. We surface the
+        // verification telemetry, then return finalStatus=blocked with a
+        // REVIEW_HOLD code so the loop accounts this run as terminated
+        // pending a human decision.
+        await this.emit(task, CANONICAL_EXECUTION_EVENTS.TASK_VERIFIED, {
+          ...(decision.details ? { details: decision.details } : {}),
+        });
+        outcome = this.outcome(task, "blocked", startedAt, {
+          errorCode: "REVIEW_HOLD",
+          errorMessage: flagReason ?? "sensitive",
+          result,
+        });
+        return outcome;
+      }
+
       const ok = await this.deps.repository.transition(task.id, "running", "succeeded", {
         execution_result: result,
         error_code: null,
-        ...(flagged ? { held_for_review: true, held_reason: flagReason } : {}),
         ...(flagCost !== null ? { cost_usd: flagCost } : {}),
         ...(flagLatency !== null ? { latency_ms: flagLatency } : {}),
       });

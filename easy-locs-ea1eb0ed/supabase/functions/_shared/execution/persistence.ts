@@ -16,7 +16,12 @@ const TASK_COLUMNS =
   "parent_task_id,requested_by,idempotency_key,lock_key,entity_type,entity_id," +
   "correlation_id,root_task_id,requires_approval,approval_policy," +
   "previous_state,rollback_result,rollback_reason,rollback_strategy," +
-  "pre_rollback_status,error_code,execution_result";
+  "pre_rollback_status,error_code,execution_result," +
+  // LB1 #834 — orchestrator quota gate keys off `agent_id`; missing this
+  // mapping silently disabled the gate in production (held runs went
+  // through). `blocked_reason` is mirrored so adapter / inbox UIs can read
+  // the pending_review reason without a second query.
+  "agent_id,blocked_reason,approved_at,rejected_by";
 
 /**
  * Repository contract used by ExecutionOrchestratorV2.
@@ -74,6 +79,11 @@ export function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
     error_code: (row.error_code as string | null) ?? null,
     execution_result:
       (row.execution_result as Record<string, unknown> | null) ?? null,
+    // LB1 #834 — quota gate input + canonical pending_review surface.
+    agent_id: (row.agent_id as string | null) ?? null,
+    blocked_reason: (row.blocked_reason as string | null) ?? null,
+    approved_at: (row.approved_at as string | null) ?? null,
+    rejected_by: (row.rejected_by as string | null) ?? null,
   };
 }
 

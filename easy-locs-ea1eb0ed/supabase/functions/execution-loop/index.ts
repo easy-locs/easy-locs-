@@ -388,6 +388,44 @@ async function getOrchestratorV2(): Promise<ExecutionOrchestratorV2> {
     // explicit `snapshotProvider` still get true pre-mutation row state
     // captured into `previous_state`.
     defaultSnapshotter: createSupabaseDefaultSnapshotter(sb),
+    // LB1 follow-up #834 — generic pre-execute quota gate. Reuses the
+    // shared `system.peek_agent_quota` RPC (no AI-specific behaviour) so
+    // any agent-bound task is gated uniformly. Adapters never call peek
+    // themselves; the orchestrator is the single source of truth.
+    agentQuotaGate: {
+      async peek({ agentId }: { agentId: string }) {
+        const { data, error } = await sb
+          .schema("system")
+          .rpc("peek_agent_quota", { p_agent_id: agentId });
+        if (error) {
+          // Fail closed: refuse rather than silently bypass quota.
+          return {
+            ok: false as const,
+            reason: `quota_rpc_error:${error.message}`,
+            window: "rpc",
+          };
+        }
+        const row = (Array.isArray(data) ? data[0] : data) as
+          | {
+              ok?: boolean;
+              blocked_reason?: string;
+              blocked_window?: string;
+              current_count?: number;
+              limit_count?: number;
+            }
+          | null;
+        if (!row || row.ok !== true) {
+          return {
+            ok: false as const,
+            reason: row?.blocked_reason ?? "unknown",
+            window: row?.blocked_window ?? "unknown",
+            currentCount: row?.current_count,
+            limitCount: row?.limit_count,
+          };
+        }
+        return { ok: true as const };
+      },
+    },
   });
   return _orchestrator;
 }
