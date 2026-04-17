@@ -353,7 +353,28 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
     costUsd: interaction.costUsd,
   });
   if (!post.ok) {
-    logs.push(`[${ts()}] quota.consume_warning ${post.blockedReason}`);
+    // LB1 #834 — post-execute accounting MUST be authoritative. If the
+    // quota RPC refuses (race with another worker, clock drift, RPC
+    // outage), we fail loud rather than recording a warning and
+    // continuing. Silent continuation here would let agents drift past
+    // their daily budget by exactly one extra run per occurrence — the
+    // governance layer treats that as a hard violation.
+    logs.push(`[${ts()}] quota.consume_failed ${post.blockedReason ?? "rejected"}`);
+    return {
+      success: false,
+      error: `Quota accounting failed: ${post.blockedReason ?? "rejected"}`,
+      errorCode: "QUOTA_EXCEEDED",
+      logs,
+      actionsTaken: [`ai.${opts.taskType.toLowerCase()}`],
+      effects: {
+        provider: interaction.provider,
+        model: interaction.model,
+        prompt_tokens: interaction.promptTokens,
+        completion_tokens: interaction.completionTokens,
+        tokens: interaction.promptTokens + interaction.completionTokens,
+        cost_usd: interaction.costUsd,
+      },
+    };
   }
 
   // Step 6: surface the sensitive signal in the result so the orchestrator's

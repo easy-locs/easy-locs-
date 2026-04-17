@@ -50,6 +50,7 @@ function makeDeps(opts: {
   runnerCallsRef?: { count: number };
   resolveOk?: boolean;
   consumeCallsRef?: { count: number };
+  consumeOk?: boolean;
   recordThrows?: boolean;
 } = {}): AiAdapterDeps {
   const recorded = opts.recordedRef ?? { count: 0 };
@@ -88,7 +89,9 @@ function makeDeps(opts: {
           : { ok: true },
       consume: async () => {
         opts.consumeCallsRef && (opts.consumeCallsRef.count = (opts.consumeCallsRef.count ?? 0) + 1);
-        return { ok: true };
+        return opts.consumeOk === false
+          ? { ok: false as const, blockedReason: "daily_budget_exhausted", blockedWindow: "day", currentCount: 999, limitCount: 999 }
+          : { ok: true as const };
       },
     },
     interactions: {
@@ -180,6 +183,19 @@ describe("AI completion adapter — LB1 (#815)", () => {
     const res = await adapter.execute(baseCtx());
     expect(res.success).toBe(true);
     expect(consume.count).toBe(1);
+  });
+
+  it("LB1 #834 — quota.consume() failure is HARD: adapter returns QUOTA_EXCEEDED, not silent success", async () => {
+    // Post-execute accounting MUST be authoritative. If consume rejects
+    // (race / RPC failure / budget overrun discovered post-call), the
+    // adapter must surface failure rather than warning-and-continuing.
+    const adapter = createAiCompletionAdapter(makeDeps({ consumeOk: false }));
+    const res = await adapter.execute(baseCtx());
+    expect(res.success).toBe(false);
+    if (!res.success) {
+      expect(res.errorCode).toBe("QUOTA_EXCEEDED");
+      expect(res.error).toMatch(/Quota accounting failed/i);
+    }
   });
 
   it("purpose=contract forces sensitive flag pre-execution", async () => {
