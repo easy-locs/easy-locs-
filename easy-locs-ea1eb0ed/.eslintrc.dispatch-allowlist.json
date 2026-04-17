@@ -1954,6 +1954,14 @@
       "owning_phase": "P2"
     },
     {
+      "pattern": "supabase/functions/execution-runner-callback/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/execution-runner-callback/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
       "pattern": "supabase/functions/expire-listings/index.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"
@@ -1972,6 +1980,22 @@
       "pattern": "supabase/functions/gdpr-export/index.ts",
       "reason": "L7 P2: identity/security/firewall/gdpr — pending L7 phase 2 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P2"
+    },
+    {
+      "pattern": "supabase/functions/goal-create/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/goal-planner/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/goal-create/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
+    },
+    {
+      "pattern": "supabase/functions/goal-planner/index.ts",
+      "reason": "L7 migration sweep pending — pre-L1 mutation/rpc site, will be routed via dispatchExecutionTask. Flagged by task #895 (E2E wiring), owned by L7 sweep #814."
     },
     {
       "pattern": "supabase/functions/guest-session/index.ts",

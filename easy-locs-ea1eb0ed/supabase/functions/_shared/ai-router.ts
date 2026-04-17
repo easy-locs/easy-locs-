@@ -263,6 +263,41 @@ export async function parseChatResponse(
   };
 }
 
+/**
+ * Provider-aware non-stream chat parser. Normalises Anthropic's
+ * `{content:[{text}], usage:{input_tokens, output_tokens}}` into the
+ * canonical OpenAI-shaped `{text, promptTokens, completionTokens}` so
+ * the runner / telemetry never has to branch on provider name.
+ *
+ * Throws on non-2xx — consistent with the previous OpenAI-only parser.
+ */
+export async function parseChatResponse(
+  provider: "openai" | "anthropic",
+  response: Response,
+): Promise<{ text: string; promptTokens: number; completionTokens: number }> {
+  if (!response.ok) {
+    const text = await response.text().catch(() => "");
+    throw new Error(`provider HTTP ${response.status}: ${text.slice(0, 200)}`);
+  }
+  const data = await response.json() as Record<string, unknown>;
+  if (provider === "anthropic") {
+    const content = (data.content as Array<{ type: string; text: string }> | undefined)?.[0]?.text ?? "";
+    const usage = (data.usage as { input_tokens?: number; output_tokens?: number } | undefined) ?? {};
+    return {
+      text: content,
+      promptTokens: usage.input_tokens ?? 0,
+      completionTokens: usage.output_tokens ?? 0,
+    };
+  }
+  const choices = data.choices as Array<{ message?: { content?: string } }> | undefined;
+  const usage = (data.usage as { prompt_tokens?: number; completion_tokens?: number } | undefined) ?? {};
+  return {
+    text: choices?.[0]?.message?.content ?? "",
+    promptTokens: usage.prompt_tokens ?? 0,
+    completionTokens: usage.completion_tokens ?? 0,
+  };
+}
+
 async function callProvider(entry: AiProviderEntry, options: AIRouterOptions): Promise<Response> {
   return entry.provider === "anthropic" ? callAnthropic(entry, options) : callOpenAI(entry, options);
 }
