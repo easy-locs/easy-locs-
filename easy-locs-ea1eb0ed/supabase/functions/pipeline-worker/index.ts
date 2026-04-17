@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firewallCheck, guardedUpdate } from "../_shared/brain-firewall.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { runOrLog } from "../_shared/structured-error.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -501,8 +502,11 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
           updateFields.visibility_mode = "hidden";
           updateFields.publish_gate_status = "firewall_blocked";
           updateFields.gate_failures = [...gateFailures, ...fwResult.reasons];
-          try {
-            await db.from("engine_run_logs").insert({
+          // LB Closeout #853 — runOrLog replaces bare swallow so the
+          // validate-stage firewall-block audit row failure is visible.
+          await runOrLog(
+            { event: "pipeline_worker.validate_firewall_log_failed", entity_id: entityId, reasons: fwResult.reasons },
+            () => db.from("engine_run_logs").insert({
               engine_name: "pipeline-validate",
               trigger_source: "firewall",
               status: "blocked",
@@ -512,18 +516,8 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
               finished_at: now,
               duration_ms: 0,
               metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
-            });
-          } catch (err) {
-            // LB Closeout #853 — structured emission of the validate-stage
-            // firewall-block log failure (see issue: lost audit trail).
-            console.error(JSON.stringify({
-              level: "error",
-              event: "pipeline_worker.validate_firewall_log_failed",
-              entity_id: entityId,
-              reasons: fwResult.reasons,
-              message: err instanceof Error ? err.message : String(err),
-            }));
-          }
+            }),
+          );
         }
         await db.from("seed_merchants").update(updateFields).eq("id", entityId);
       }
@@ -552,8 +546,11 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
             publish_gate_status: "firewall_blocked",
             gate_failures: fwResult.reasons,
           }).eq("id", entityId);
-          try {
-            await db.from("engine_run_logs").insert({
+          // LB Closeout #853 — runOrLog replaces bare swallow for the
+          // publish-stage firewall-block audit row failure.
+          await runOrLog(
+            { event: "pipeline_worker.publish_firewall_log_failed", entity_id: entityId, reasons: fwResult.reasons },
+            () => db.from("engine_run_logs").insert({
               engine_name: "pipeline-publish",
               trigger_source: "firewall",
               status: "blocked",
@@ -561,18 +558,8 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
               side_effect_count: 0,
               started_at: now, finished_at: now, duration_ms: 0,
               metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
-            });
-          } catch (err) {
-            // LB Closeout #853 — structured emission of the publish-stage
-            // firewall-block log failure.
-            console.error(JSON.stringify({
-              level: "error",
-              event: "pipeline_worker.publish_firewall_log_failed",
-              entity_id: entityId,
-              reasons: fwResult.reasons,
-              message: err instanceof Error ? err.message : String(err),
-            }));
-          }
+            }),
+          );
         } else {
           await db.from("seed_merchants").update({
             pipeline_stage: "published",
