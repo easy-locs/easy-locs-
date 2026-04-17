@@ -271,7 +271,10 @@ export function seoValidatePlugin(): Plugin {
         fs.writeFileSync(path.resolve(distDir, "seo-report.txt"), report, "utf-8");
         console.log(`\n${report}`);
 
-        const SEO_GATE_BYPASS = process.env.SEO_GATE_BYPASS === "1" || process.env.VERCEL === "1";
+        // Emergency manual switch only — Vercel auto-bypass was removed once the
+        // generator was fixed to keep all descriptions ≤155 chars. Set
+        // SEO_GATE_BYPASS=1 only as a last-resort escape hatch.
+        const SEO_GATE_BYPASS = process.env.SEO_GATE_BYPASS === "1";
         const SEO_ISSUES_THRESHOLD = Number(process.env.SEO_ISSUES_THRESHOLD ?? 0);
 
         if (issues.length > SEO_ISSUES_THRESHOLD) {
