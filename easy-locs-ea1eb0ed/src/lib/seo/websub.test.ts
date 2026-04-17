@@ -74,7 +74,8 @@ describe("WebSub feed integration", () => {
     });
 
     it("getWebSubHubs honors WEBSUB_HUBS override and falls back to defaults", () => {
-      const original = process.env.WEBSUB_HUBS;
+      const originalHubs = process.env.WEBSUB_HUBS;
+      const originalHub = process.env.WEBSUB_HUB;
       try {
         delete process.env.WEBSUB_HUBS;
         delete process.env.WEBSUB_HUB;
@@ -86,11 +87,10 @@ describe("WebSub feed integration", () => {
         const override = getWebSubHubs();
         expect(override).toEqual(["https://a.example/", "https://b.example/"]);
       } finally {
-        if (original === undefined) {
-          delete process.env.WEBSUB_HUBS;
-        } else {
-          process.env.WEBSUB_HUBS = original;
-        }
+        if (originalHubs === undefined) delete process.env.WEBSUB_HUBS;
+        else process.env.WEBSUB_HUBS = originalHubs;
+        if (originalHub === undefined) delete process.env.WEBSUB_HUB;
+        else process.env.WEBSUB_HUB = originalHub;
       }
     });
   });
