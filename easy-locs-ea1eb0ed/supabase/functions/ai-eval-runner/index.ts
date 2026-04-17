@@ -135,7 +135,10 @@ Deno.serve(async (req) => {
         const model = interaction.model;
         const promptTokens = interaction.promptTokens;
         const completionTokens = interaction.completionTokens;
-        const provider = interaction.provider === "internal" ? "openai" : interaction.provider;
+        // Legacy ai_eval_runs.provider column is bi-valued — map "internal"
+        // (new transport) back to its underlying "openai" default.
+        const provider: "openai" | "anthropic" =
+          interaction.provider === "anthropic" ? "anthropic" : "openai";
         const fallbackUsed = interaction.fallbackUsed;
 
         const expectations = Array.isArray(g.expected) ? g.expected : [g.expected];

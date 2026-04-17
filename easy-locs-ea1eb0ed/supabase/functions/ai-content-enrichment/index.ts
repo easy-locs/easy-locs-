@@ -222,7 +222,11 @@ async function enrichOne(
   const promptTokens     = interaction.promptTokens;
   const completionTokens = interaction.completionTokens;
   const model = interaction.model;
-  const provider: "openai" | "anthropic" = interaction.provider === "internal" ? "openai" : interaction.provider;
+  // Map dispatch's tri-valued provider ("openai"|"anthropic"|"internal")
+  // back to the legacy bi-valued audit schema. "internal" is the new
+  // internal_router transport sitting in front of OpenAI by default.
+  const provider: "openai" | "anthropic" =
+    interaction.provider === "anthropic" ? "anthropic" : "openai";
   const fallbackUsed = interaction.fallbackUsed;
 
   const { error: upsertErr } = await db.from("content_enrichments").upsert({
