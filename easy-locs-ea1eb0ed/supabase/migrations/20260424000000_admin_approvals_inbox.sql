@@ -197,8 +197,11 @@ BEGIN
     RAISE EXCEPTION 'decide_task_approval denied: not authenticated'
       USING ERRCODE = '42501';
   END IF;
-  IF NOT public.has_role(v_caller, 'admin'::public.app_role) THEN
-    RAISE EXCEPTION 'decide_task_approval denied: caller % is not an admin', v_caller
+  -- Governance contract: only super_admin may decide approvals. The page
+  -- route is also gated by SuperAdminGate, but the RPC enforces the same
+  -- bound at the DB layer so direct API calls cannot bypass it.
+  IF NOT public.has_role(v_caller, 'super_admin'::public.app_role) THEN
+    RAISE EXCEPTION 'decide_task_approval denied: caller % is not a super_admin', v_caller
       USING ERRCODE = '42501';
   END IF;
 
@@ -339,8 +342,8 @@ STABLE
 SET search_path = public, system
 AS $$
 BEGIN
-  IF NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
-    RAISE EXCEPTION 'forbidden: admin role required'
+  IF NOT public.has_role(auth.uid(), 'super_admin'::public.app_role) THEN
+    RAISE EXCEPTION 'forbidden: super_admin role required'
       USING ERRCODE = '42501';
   END IF;
   RETURN QUERY
@@ -353,6 +356,40 @@ $$;
 REVOKE ALL ON FUNCTION system.list_task_approvals(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION system.list_task_approvals(UUID)
   TO authenticated, service_role;
+
+-- ── 5c. Extend the execution_task state machine ────────────────────────
+-- The `changes_requested` decision moves a task from `pending_review`
+-- back to `draft` so the requester can revise the proposal and resubmit.
+-- The base matrix in 20260418500000_execution_tasks_v2.sql does not
+-- include this edge — we add it here (and only here) so reviewer flow
+-- works without rewriting the v2 migration.
+CREATE OR REPLACE FUNCTION system.assert_task_transition(
+  _old system.execution_task_status,
+  _new system.execution_task_status
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+IMMUTABLE
+AS $$
+BEGIN
+  IF _old IS NULL THEN RETURN TRUE; END IF;
+  IF _old = _new  THEN RETURN TRUE; END IF;
+  RETURN CASE _old
+    WHEN 'draft'          THEN _new IN ('pending_review','approved','queued','cancelled')
+    -- L5 addition: 'draft' lets reviewers send tasks back for revision.
+    WHEN 'pending_review' THEN _new IN ('draft','approved','rejected','cancelled')
+    WHEN 'approved'       THEN _new IN ('queued','cancelled')
+    WHEN 'rejected'       THEN _new IN ('draft','cancelled')
+    WHEN 'queued'         THEN _new IN ('running','blocked','cancelled')
+    WHEN 'running'        THEN _new IN ('succeeded','failed','blocked','cancelled')
+    WHEN 'failed'         THEN _new IN ('queued','blocked','rolled_back','cancelled')
+    WHEN 'succeeded'      THEN _new IN ('rolled_back')
+    WHEN 'blocked'        THEN _new IN ('queued','cancelled')
+    WHEN 'rolled_back'    THEN FALSE
+    WHEN 'cancelled'      THEN FALSE
+    ELSE FALSE
+  END;
+END;
+$$;
 
 -- ── 6. Backfill: emit APPROVAL_REQUESTED for any rows already in
 --    pending_review at the time this migration runs, so the inbox UI
