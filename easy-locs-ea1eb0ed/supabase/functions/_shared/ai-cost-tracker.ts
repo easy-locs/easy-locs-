@@ -1,5 +1,14 @@
 // Cost / latency tracking for Next-Gen IA.
 // Logs every AI call to public.ai_interactions and increments ai_quotas.
+//
+// LB Closeout #853 — IMPORTANT: this helper is for *non-dispatched* AI
+// callsites only (e.g. cache-hit accounting in ai-recommendations). Any
+// AI call that flows through `dispatchAiCompletion` / `dispatchAiEmbedding`
+// is persisted by `createSupabaseInteractionSink` in
+// `_shared/execution/adapters/ai/ai-adapter.ts`, which is the SOLE writer
+// that fills `ai_interactions.execution_task_id`. Do NOT call
+// `logAiInteraction` from inside a dispatched run — it would produce a
+// duplicate, unlinked row.
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 

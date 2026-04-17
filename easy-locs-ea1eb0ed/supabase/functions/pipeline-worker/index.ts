@@ -513,7 +513,17 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
               duration_ms: 0,
               metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
             });
-          } catch (_) {}
+          } catch (err) {
+            // LB Closeout #853 — structured emission of the validate-stage
+            // firewall-block log failure (see issue: lost audit trail).
+            console.error(JSON.stringify({
+              level: "error",
+              event: "pipeline_worker.validate_firewall_log_failed",
+              entity_id: entityId,
+              reasons: fwResult.reasons,
+              message: err instanceof Error ? err.message : String(err),
+            }));
+          }
         }
         await db.from("seed_merchants").update(updateFields).eq("id", entityId);
       }
@@ -552,7 +562,17 @@ async function executeStageOnEntity(db: any, stage: string, entityId: string) {
               started_at: now, finished_at: now, duration_ms: 0,
               metadata_json: { entity_id: entityId, reasons: fwResult.reasons },
             });
-          } catch (_) {}
+          } catch (err) {
+            // LB Closeout #853 — structured emission of the publish-stage
+            // firewall-block log failure.
+            console.error(JSON.stringify({
+              level: "error",
+              event: "pipeline_worker.publish_firewall_log_failed",
+              entity_id: entityId,
+              reasons: fwResult.reasons,
+              message: err instanceof Error ? err.message : String(err),
+            }));
+          }
         } else {
           await db.from("seed_merchants").update({
             pipeline_stage: "published",
