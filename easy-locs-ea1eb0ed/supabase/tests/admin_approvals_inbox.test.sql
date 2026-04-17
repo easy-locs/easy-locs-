@@ -76,7 +76,7 @@ BEGIN
   INSERT INTO system.execution_tasks (
     type, domain, risk_level, status, payload, requested_by, blocked_reason
   ) VALUES (
-    'test.l5.approval_requested', 'marketplace', 'high', 'pending_review',
+    'test.l5.approval_requested', 'marketplace', 'MEDIUM', 'pending_review',
     '{}'::jsonb, NULL, 'price ceiling'
   ) RETURNING id INTO v_task_id;
 
@@ -116,8 +116,10 @@ BEGIN
   RAISE NOTICE 'PASS: direct SELECT denied for authenticated; RPC-only read path enforced';
 END $$;
 
--- ── 5. list_task_approvals exists and requires admin role ───────────────
+-- ── 5. list_task_approvals exists and requires super_admin role ─────────
 DO $$
+DECLARE
+  v_src TEXT;
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_proc p
@@ -127,6 +129,42 @@ BEGIN
     RAISE EXCEPTION 'FAIL: system.list_task_approvals RPC missing';
   END IF;
   RAISE NOTICE 'PASS: list_task_approvals RPC exists';
+
+  -- Source-level proof that BOTH RPCs gate on super_admin (the actual
+  -- runtime gate is exercised by app-layer integration tests under an
+  -- authenticated session; here we assert the static contract).
+  SELECT pg_get_functiondef(p.oid) INTO v_src
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'system' AND p.proname = 'list_task_approvals';
+  IF v_src NOT ILIKE '%super_admin%' THEN
+    RAISE EXCEPTION 'FAIL: list_task_approvals must gate on super_admin';
+  END IF;
+  SELECT pg_get_functiondef(p.oid) INTO v_src
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'system' AND p.proname = 'decide_task_approval';
+  IF v_src NOT ILIKE '%super_admin%' THEN
+    RAISE EXCEPTION 'FAIL: decide_task_approval must gate on super_admin';
+  END IF;
+  RAISE NOTICE 'PASS: both approval RPCs gate on super_admin';
+END $$;
+
+-- ── 6. State machine extension: pending_review → draft is now legal ─────
+DO $$
+BEGIN
+  IF NOT system.assert_task_transition(
+    'pending_review'::system.execution_task_status,
+    'draft'::system.execution_task_status
+  ) THEN
+    RAISE EXCEPTION 'FAIL: pending_review → draft must be allowed for changes_requested';
+  END IF;
+  -- Negative control: cancelled is still terminal.
+  IF system.assert_task_transition(
+    'cancelled'::system.execution_task_status,
+    'draft'::system.execution_task_status
+  ) THEN
+    RAISE EXCEPTION 'FAIL: cancelled must remain terminal';
+  END IF;
+  RAISE NOTICE 'PASS: state machine extended for changes_requested';
 END $$;
 
 ROLLBACK;
