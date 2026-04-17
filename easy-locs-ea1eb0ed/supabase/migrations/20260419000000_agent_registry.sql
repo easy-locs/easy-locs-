@@ -17,9 +17,10 @@
 --        - system.resolve_capability
 --   7. New columns on system.execution_tasks: agent_id, agent_version_id
 --   8. Updated system.dispatch_execution_task that stamps agent metadata on
---      every dispatched task; opt-in fail-closed mode for unregistered
---      (domain, task_type) pairs (controlled by GUC, defaults OFF until L7
---      completes the migration sweep).
+--      every dispatched task; fail-closed AGENT_NOT_REGISTERED is the
+--      DEFAULT (GUC `system.agent_strict_routing` defaults to ON). L7 may
+--      flip it OFF per session as a temporary escape hatch during the
+--      migration sweep.
 --   9. Seed rows for the marketplace.publish / marketplace.unpublish agents.
 --
 -- Hard contract:
@@ -532,9 +533,10 @@ GRANT SELECT ON system.v_agents_overview TO authenticated, service_role;
 
 -- ── 15. Wire dispatch_execution_task to stamp agent_id / agent_version_id ─
 -- We extend the existing v2 function. The fail-closed "AGENT_NOT_REGISTERED"
--- behaviour is opt-in via the per-domain `metadata->>'strict_routing'` flag
--- on the agent (default OFF), AND a global GUC `system.agent_strict_routing`
--- (default OFF). L7 will flip the global flag once all domains are migrated.
+-- behaviour is the DEFAULT — global GUC `system.agent_strict_routing`
+-- defaults to ON. L7's migration sweep can flip it OFF per session as a
+-- temporary escape hatch while individual domains are being registered.
+-- AGENT_DISABLED is enforced unconditionally regardless of strict mode.
 CREATE OR REPLACE FUNCTION system.dispatch_execution_task(
   p_type              TEXT,
   p_domain            TEXT,

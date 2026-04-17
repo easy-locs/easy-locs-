@@ -247,16 +247,23 @@ async function atomicClaim(taskId: string, nextAttempt: number): Promise<Executi
 // Phase-1 agent path. Tasks without a registered adapter continue through
 // the legacy agent flow below.
 let _orchestrator: ExecutionOrchestratorV2 | null = null;
-let _adaptersBootstrapped = false;
-function ensureAdaptersBootstrapped(sb: SupabaseClient): void {
-  if (_adaptersBootstrapped) return;
-  bootstrapMarketplaceAdapters(sb);
-  _adaptersBootstrapped = true;
+let _bootstrapPromise: Promise<void> | null = null;
+async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
+  if (!_bootstrapPromise) {
+    // Cache the promise so concurrent callers await the same reconcile;
+    // a thrown reconcile (production hard-fail) is re-cached so the next
+    // call retries — better than poisoning the loop forever.
+    _bootstrapPromise = bootstrapMarketplaceAdapters(sb).catch((e) => {
+      _bootstrapPromise = null;
+      throw e;
+    });
+  }
+  return _bootstrapPromise;
 }
-function getOrchestratorV2(): ExecutionOrchestratorV2 {
+async function getOrchestratorV2(): Promise<ExecutionOrchestratorV2> {
   if (_orchestrator) return _orchestrator;
   const sb = getSupabase();
-  ensureAdaptersBootstrapped(sb);
+  await ensureAdaptersBootstrapped(sb);
   const sink: ExecutionEventSink = {
     // Awaited so canonical-event ordering and durability survive across
     // pipeline steps; orchestrator surfaces any throw via outcome.sinkErrors.
@@ -322,7 +329,7 @@ async function processTask(
   // Phase-1 agent path below.
   ensureAdaptersBootstrapped(getSupabase());
   if (globalAdapterRegistry.has(task.domain, task.type)) {
-    const out = await getOrchestratorV2().run(task.id);
+    const out = await (await getOrchestratorV2()).run(task.id);
     if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
     if (out.finalStatus === "failed") {
       return { outcome: "FAILED", error: out.errorMessage };
