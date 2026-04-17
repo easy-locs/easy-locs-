@@ -1,7 +1,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { aiRoute } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -36,25 +36,27 @@ Deno.serve(async (req) => {
 
       const prompt = `Generate a compelling 2-sentence business description for: "${entity.name}", a ${entity.subcategory ?? entity.category} ${entity.vertical ?? "food"} business in ${entity.city}, ${entity.country}. Be factual and professional. No emojis.`;
 
-      const { response: aiResp, provider } = await aiRoute({
-        messages: [
-          { role: "system", content: "You generate concise, professional business descriptions. Reply with ONLY the description, nothing else." },
-          { role: "user", content: prompt },
-        ],
-      });
+      // LB1 Cleanup #842: migrated from aiRoute() to dispatchAiCompletion().
+      // Provider selection is registry-driven via the ai.completion agent.
+      const aiOutcome = await dispatchAiCompletion(
+        {
+          feature: "ai-entity-enrichment.enrich_description",
+          messages: [
+            { role: "system", content: "You generate concise, professional business descriptions. Reply with ONLY the description, nothing else." },
+            { role: "user", content: prompt },
+          ],
+          purpose: "general",
+        },
+        { feature: "ai-entity-enrichment", correlationId: String(entityId ?? "") },
+      );
 
-      if (!aiResp.ok) {
-        const errText = await aiResp.text();
-        throw new Error(`AI ${provider} error [${aiResp.status}]: ${errText}`);
+      if (aiOutcome.status !== "succeeded" || !aiOutcome.output) {
+        throw new Error(
+          `AI dispatch ${aiOutcome.status}: ${aiOutcome.errorCode ?? aiOutcome.errorMessage ?? "unknown"}`,
+        );
       }
 
-      const aiData = await aiResp.json();
-      let description: string | undefined;
-      if (provider === "anthropic") {
-        description = (aiData.content as Array<{type: string; text: string}>)?.[0]?.text?.trim();
-      } else {
-        description = aiData.choices?.[0]?.message?.content?.trim();
-      }
+      const description = aiOutcome.output.text?.trim();
 
       if (description) {
         await db.from("seed_merchants")
@@ -82,7 +84,13 @@ Deno.serve(async (req) => {
         });
       }
 
-      const prompt = `Classify each business into a precise subcategory. Return a JSON array of objects with "id" and "subcategory" fields.
+      // Note (#842): the classify_businesses tool-call schema is now expressed
+      // as a JSON contract in the prompt + responseFormat:"json". The model
+      // returns the same shape that the OpenAI tool-call would have produced.
+      const prompt = `Classify each business into a precise subcategory.
+
+You MUST respond with ONLY a single JSON object (no prose, no code fences) of EXACTLY this shape:
+{ "classifications": [ { "id": string, "subcategory": string }, ... ] }
 
 Businesses:
 ${entities.map((e) => `- id: ${e.id}, name: "${e.name}", category: ${e.category}, vertical: ${e.vertical}`).join("\n")}
@@ -91,64 +99,45 @@ Valid subcategories for food: pizza, burger, sushi, bakery, cafe, indian, chines
 Valid subcategories for hotel: hotel, resort, hostel, serviced_apartment, boutique_hotel, villa, guesthouse
 Valid subcategories for services: salon, spa, plumber, electrician, clinic, legal, cleaning, fitness, automotive`;
 
-      const { response: classifyResp, provider: classifyProvider } = await aiRoute({
-        messages: [
-          { role: "system", content: "You classify businesses. Return ONLY valid JSON array." },
-          { role: "user", content: prompt },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "classify_businesses",
-            description: "Classify businesses into subcategories",
-            parameters: {
-              type: "object",
-              properties: {
-                classifications: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      id: { type: "string" },
-                      subcategory: { type: "string" },
-                    },
-                    required: ["id", "subcategory"],
-                  },
-                },
-              },
-              required: ["classifications"],
-            },
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "classify_businesses" } },
-      });
+      const aiOutcome = await dispatchAiCompletion(
+        {
+          feature: "ai-entity-enrichment.classify_batch",
+          messages: [
+            { role: "system", content: "You classify businesses. Return ONLY a JSON object matching the requested shape." },
+            { role: "user", content: prompt },
+          ],
+          responseFormat: "json",
+          purpose: "general",
+          tools: [{ name: "classify_businesses", description: "Classify businesses into subcategories" }],
+        },
+        { feature: "ai-entity-enrichment" },
+      );
 
-      if (!classifyResp.ok) {
-        const errText = await classifyResp.text();
-        throw new Error(`AI ${classifyProvider} error [${classifyResp.status}]: ${errText}`);
+      if (aiOutcome.status !== "succeeded" || !aiOutcome.output) {
+        throw new Error(
+          `AI dispatch ${aiOutcome.status}: ${aiOutcome.errorCode ?? aiOutcome.errorMessage ?? "unknown"}`,
+        );
       }
 
-      const aiData = await classifyResp.json();
       interface ClassificationResult { id: string; subcategory: string }
       let classifications: ClassificationResult[] = [];
 
-      if (classifyProvider === "anthropic") {
-        const textContent = (aiData.content as Array<{type: string; text: string}>)?.[0]?.text ?? "";
-        try {
-          const parsed = JSON.parse(textContent) as ClassificationResult[] | { classifications: ClassificationResult[] };
-          classifications = Array.isArray(parsed) ? parsed : (parsed.classifications ?? []);
-        } catch (parseErr) {
-          console.warn("[ai-entity-enrichment] Failed to parse Anthropic response:", parseErr);
+      const maybe = aiOutcome.output.json;
+      const parseAttempts: unknown[] = [maybe];
+      if (maybe === undefined) {
+        try { parseAttempts.push(JSON.parse(aiOutcome.output.text)); }
+        catch (parseErr) {
+          console.warn("[ai-entity-enrichment] Failed to parse AI response:", parseErr);
         }
-      } else {
-        const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-        if (toolCall?.function?.arguments) {
-          try {
-            const parsed = JSON.parse(toolCall.function.arguments) as { classifications: ClassificationResult[] };
-            classifications = parsed.classifications ?? [];
-          } catch (parseErr) {
-            console.warn("[ai-entity-enrichment] Failed to parse OpenAI tool call:", parseErr);
-          }
+      }
+      for (const candidate of parseAttempts) {
+        if (Array.isArray(candidate)) {
+          classifications = candidate as ClassificationResult[];
+          break;
+        }
+        if (candidate && typeof candidate === "object" && Array.isArray((candidate as { classifications?: unknown }).classifications)) {
+          classifications = (candidate as { classifications: ClassificationResult[] }).classifications;
+          break;
         }
       }
 

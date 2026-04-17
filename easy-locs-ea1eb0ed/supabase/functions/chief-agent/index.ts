@@ -1,7 +1,7 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-import { aiRouteAndParse } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -432,19 +432,34 @@ Deno.serve(async (req) => {
 
       detailedLog.push(`[${new Date().toISOString()}] Calling AI router for intent interpretation and dispatch planning...`);
 
-      const { content, provider, fallbackUsed } = await aiRouteAndParse({
-        messages,
-        temperature: 0.3,
-        max_tokens: 2000,
-        response_format: { type: "json_object" },
-      });
+      // LB1 Cleanup #842: migrated from aiRouteAndParse() to
+      // dispatchAiCompletion() so the call passes through the registered
+      // ai.completion agent (policy + audit + agent quota).
+      const planOutcome = await dispatchAiCompletion(
+        {
+          feature: "chief-agent.plan",
+          messages: messages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
+          temperature: 0.3,
+          maxTokens: 2000,
+          responseFormat: "json",
+          purpose: "general",
+        },
+        { feature: "chief-agent.plan", correlationId },
+      );
 
-      detailedLog.push(`[${new Date().toISOString()}] AI provider: ${provider}${fallbackUsed ? " (fallback)" : ""}`);
+      if (planOutcome.status !== "succeeded" || !planOutcome.output) {
+        detailedLog.push(`[${new Date().toISOString()}] AI dispatch ${planOutcome.status} (${planOutcome.errorCode ?? "n/a"}); proceeding with empty plan`);
+        aiParsed = { understood: command || `action:${actionType}`, dispatchTargets: [] };
+      } else {
+        const content = planOutcome.output.text;
+        const interaction = planOutcome.output.interaction;
+        detailedLog.push(`[${new Date().toISOString()}] AI provider: ${interaction.provider}${interaction.fallbackUsed ? " (fallback)" : ""}`);
 
-      try {
-        aiParsed = JSON.parse(content);
-      } catch {
-        aiParsed = { understood: content, dispatchTargets: [], findings: [{ text: content, severity: "yellow" }] };
+        try {
+          aiParsed = (planOutcome.output.json as Record<string, unknown>) ?? JSON.parse(content);
+        } catch {
+          aiParsed = { understood: content, dispatchTargets: [], findings: [{ text: content, severity: "yellow" }] };
+        }
       }
 
       dispatchTargets = Array.isArray(aiParsed.dispatchTargets) ? aiParsed.dispatchTargets as string[] : [];
@@ -505,14 +520,23 @@ Deno.serve(async (req) => {
       ];
 
       try {
-        const synthesis = await aiRouteAndParse({
-          messages: synthMessages,
-          temperature: 0.2,
-          max_tokens: 2000,
-          response_format: { type: "json_object" },
-        });
+        const synthOutcome = await dispatchAiCompletion(
+          {
+            feature: "chief-agent.synthesize",
+            messages: synthMessages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
+            temperature: 0.2,
+            maxTokens: 2000,
+            responseFormat: "json",
+            purpose: "general",
+          },
+          { feature: "chief-agent.synthesize", correlationId },
+        );
 
-        const raw = JSON.parse(synthesis.content);
+        if (synthOutcome.status !== "succeeded" || !synthOutcome.output) {
+          throw new Error(`AI dispatch ${synthOutcome.status}: ${synthOutcome.errorCode ?? "unknown"}`);
+        }
+
+        const raw = (synthOutcome.output.json as Record<string, unknown>) ?? JSON.parse(synthOutcome.output.text);
         parsed = {
           understood: raw.understood || aiParsed.understood || "Processed your request",
           agentsUsed: dispatchResults.map((r) => r.agent),

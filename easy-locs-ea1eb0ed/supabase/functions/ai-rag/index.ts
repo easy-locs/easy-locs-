@@ -16,7 +16,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-import { aiRoute } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { generateEmbedding } from "../_shared/embedding-client.ts";
 import { applyGuardrails, sanitizeAssistantOutput } from "../_shared/ai-guardrails.ts";
 import { logAiInteraction, checkAiQuota } from "../_shared/ai-cost-tracker.ts";
@@ -202,42 +202,49 @@ ${formatContext(citations)}`;
       { role: "user", content: sanitizedQuery },
     ];
 
-    const { response, provider, fallbackUsed } = await aiRoute({
-      messages, max_tokens: 1200, temperature: 0.4,
-    });
+    // LB1 Cleanup #842: migrated from aiRoute() to dispatchAiCompletion()
+    // so the call passes through the registered ai.completion agent
+    // (policy gate, sensitive-output classifier, audit row, agent quota).
+    // Per-call provider override is no longer supported — the registry
+    // primary + fallback chain governs provider selection.
+    const aiOutcome = await dispatchAiCompletion(
+      {
+        feature: "ai-rag",
+        messages: messages as Array<{ role: "system" | "user" | "assistant"; content: string }>,
+        maxTokens: 1200,
+        temperature: 0.4,
+        purpose: "general",
+      },
+      { feature: "ai-rag" },
+    );
 
-    if (!response.ok) {
-      const err = await response.text();
-      logger.error("ai_rag_provider_error", { status: response.status, err });
+    if (aiOutcome.status !== "succeeded" || !aiOutcome.output) {
+      logger.error("ai_rag_provider_error", {
+        status: aiOutcome.status,
+        code: aiOutcome.errorCode,
+        msg: aiOutcome.errorMessage,
+      });
       await logAiInteraction({
-        userId, feature: "ai-rag", domain, provider, model: "unknown",
+        userId, feature: "ai-rag", domain,
+        provider: "openai", model: "unknown",
         promptTokens: 0, completionTokens: 0, latencyMs: Date.now() - start,
-        status: "error", fallbackUsed,
+        status: "error",
+        blockReason: aiOutcome.errorCode ?? aiOutcome.status,
       });
       return new Response(JSON.stringify({ error: "AI provider error" }), {
         status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const data = await response.json();
-    let reply = "";
-    let model = "";
-    let promptTokens = 0;
-    let completionTokens = 0;
-    if (provider === "anthropic") {
-      const content = data.content as Array<{ type: string; text?: string }>;
-      reply = content?.find((b) => b.type === "text")?.text ?? "";
-      model = data.model ?? "claude-3-5-haiku-20241022";
-      promptTokens = data.usage?.input_tokens ?? 0;
-      completionTokens = data.usage?.output_tokens ?? 0;
-    } else {
-      reply = data.choices?.[0]?.message?.content ?? "";
-      model = data.model ?? "gpt-4o-mini";
-      promptTokens = data.usage?.prompt_tokens ?? 0;
-      completionTokens = data.usage?.completion_tokens ?? 0;
-    }
-
-    reply = sanitizeAssistantOutput(reply || "Sorry, I could not generate a response.");
+    const interaction = aiOutcome.output.interaction;
+    const provider = interaction.provider === "internal" ? "openai" : interaction.provider;
+    const fallbackUsed = interaction.fallbackUsed;
+    const model = interaction.model;
+    const promptTokens = interaction.promptTokens;
+    const completionTokens = interaction.completionTokens;
+    let reply = sanitizeAssistantOutput(
+      aiOutcome.output.text || "Sorry, I could not generate a response.",
+    );
 
     // Persist memory
     if (userId) {

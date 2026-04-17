@@ -6,7 +6,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
-import { aiRoute } from "../_shared/ai-router.ts";
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { estimateCost } from "../_shared/ai-cost-tracker.ts";
 
 const corsHeaders = {
@@ -81,7 +81,11 @@ Deno.serve(async (req) => {
     const runLabel: string = body.runLabel ?? `run-${new Date().toISOString()}`;
     const feature: string | undefined = body.feature;
     const limit = Math.min(Math.max(Number(body.limit ?? 50), 1), 500);
-    const preferred = body.provider as "openai" | "anthropic" | undefined;
+    // body.provider is ACCEPTED for backwards-compat but IGNORED — Track 2
+    // (#842) routes every call through the registered ai.completion agent;
+    // provider selection is governed by metadata.router on that agent.
+    const _preferredIgnored = body.provider as "openai" | "anthropic" | undefined;
+    void _preferredIgnored;
 
     let query = db.from("ai_golden_sets").select("*").eq("active", true).limit(limit);
     if (feature) query = query.eq("feature", feature);
@@ -97,42 +101,42 @@ Deno.serve(async (req) => {
     for (const g of (golden ?? []) as GoldenRow[]) {
       const start = Date.now();
       try {
-        const messages = g.input.messages
-          ?? [{ role: "user", content: g.input.prompt ?? "" }];
-        const { response, provider, fallbackUsed } = await aiRoute({
-          messages, max_tokens: 800, temperature: 0.2,
-          preferredProvider: preferred ?? "auto",
-        });
-        if (!response.ok) {
-          const errText = await response.text();
+        const messages = (g.input.messages
+          ?? [{ role: "user", content: g.input.prompt ?? "" }]) as Array<
+            { role: "system" | "user" | "assistant"; content: string }
+          >;
+        const aiOutcome = await dispatchAiCompletion(
+          {
+            feature: "ai-eval-runner",
+            messages,
+            maxTokens: 800,
+            temperature: 0.2,
+            purpose: "general",
+          },
+          { feature: "ai-eval-runner", correlationId: runLabel },
+        );
+        if (aiOutcome.status !== "succeeded" || !aiOutcome.output) {
           const latency = Date.now() - start;
           await db.from("ai_eval_runs").insert({
             run_label: runLabel, feature: g.feature, golden_id: g.id,
-            provider, model: null, passed: false, score: 0,
-            error: `provider_${response.status}: ${errText.slice(0, 400)}`,
+            provider: null, model: null, passed: false, score: 0,
+            error: `dispatch_${aiOutcome.status}:${aiOutcome.errorCode ?? "unknown"}`.slice(0, 400),
             latency_ms: latency, cost_usd: 0,
           });
-          results.push({ golden_id: g.id, name: g.name, passed: false, score: 0, error: `provider_${response.status}` });
+          results.push({
+            golden_id: g.id, name: g.name, passed: false, score: 0,
+            error: `dispatch_${aiOutcome.status}`,
+          });
           continue;
         }
 
-        const data = await response.json();
-        let output = "";
-        let model = "";
-        let promptTokens = 0;
-        let completionTokens = 0;
-        if (provider === "anthropic") {
-          const content = data.content as Array<{ type: string; text?: string }>;
-          output = content?.find((b) => b.type === "text")?.text ?? "";
-          model = data.model ?? "claude-3-5-haiku-20241022";
-          promptTokens = data.usage?.input_tokens ?? 0;
-          completionTokens = data.usage?.output_tokens ?? 0;
-        } else {
-          output = data.choices?.[0]?.message?.content ?? "";
-          model = data.model ?? "gpt-4o-mini";
-          promptTokens = data.usage?.prompt_tokens ?? 0;
-          completionTokens = data.usage?.completion_tokens ?? 0;
-        }
+        const interaction = aiOutcome.output.interaction;
+        const output = aiOutcome.output.text;
+        const model = interaction.model;
+        const promptTokens = interaction.promptTokens;
+        const completionTokens = interaction.completionTokens;
+        const provider = interaction.provider === "internal" ? "openai" : interaction.provider;
+        const fallbackUsed = interaction.fallbackUsed;
 
         const expectations = Array.isArray(g.expected) ? g.expected : [g.expected];
         const checks = expectations.map((e) => checkExpectation(output, e));
