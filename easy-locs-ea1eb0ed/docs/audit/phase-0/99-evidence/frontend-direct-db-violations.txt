@@ -1,0 +1,74 @@
+# Violations: supabase.(from|rpc|storage|auth) used OUTSIDE allowed surfaces
+# Allowed: src/integrations/supabase/, src/domains/*/adapters/, src/services/db*
+src/components/admin/agents/AgentTriggerDialog.tsx:64:      const { data: { user } } = await supabase.auth.getUser();
+src/components/auth/SocialLoginButtons.tsx:50:      const { data, error } = await supabase.auth.signInWithOAuth({
+src/contexts/AuthContext.tsx:139:    supabase.auth.getSession()
+src/contexts/AuthContext.tsx:549:    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+src/contexts/AuthContext.tsx:590:      supabase.auth.getSession();
+src/contexts/AuthContext.tsx:604:    await supabase.auth.signOut().catch((err) => {
+src/families/identity/index.ts:67:  const { data } = await supabase.auth.getUser();
+src/families/identity/index.ts:73:  const { data } = await supabase.auth.getUser();
+src/families/orbit-dispatch/orbit-dispatch.ts:82:  const { data, error } = await supabase.auth.getSession();
+src/families/orbit-dispatch/orbit-dispatch.ts:92:supabase.auth.onAuthStateChange(() => {
+src/hooks/call/useOutgoingCall.ts:52:      const { data: authData, error: authError } = await supabase.auth.getUser();
+src/hooks/useAppHealthCheck.ts:37:        const { data, error } = await supabase.auth.getSession();
+src/hooks/useCacheMetrics.ts:63:        const { data: sessionData } = await supabase.auth.getSession();
+src/hooks/useMasterAppBootstrap.ts:145:          const { data: { session } } = await supabase.auth.getSession();
+src/hooks/useMasterAppBootstrap.ts:158:          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+src/hooks/useMasterAppBootstrap.ts:277:          const { data: { session: s3 } } = await supabase.auth.getSession();
+src/hooks/useMasterAppBootstrap.ts:413:      const { data: { session: s4 } } = await supabase.auth.getSession().catch(err => {
+src/lib/analytics/map-error-analytics.ts:216:    await supabase.from("map_error_analytics").insert(
+src/lib/analytics/map-error-alerting.ts:99:    await supabase.from("map_error_alert_log").insert({
+src/lib/auth/provider-health.ts:5: * No direct supabase.auth writes — all checks are read-only probes.
+src/lib/db/typed-queries.ts:54:  return (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
+src/lib/engines/backend-connectivity-engine.ts:59:      supabase.from("seed_merchants").select("id").limit(1),
+src/lib/engines/backend-connectivity-engine.ts:80:      supabase.auth.getSession(),
+src/lib/engines/backend-connectivity-engine.ts:101:      supabase.storage.listBuckets(),
+src/lib/observability/alert-dispatcher.ts:121:    await supabase.from("observability_alert_log").insert({
+src/lib/push/registerPush.ts:268:  const { data: { user } } = await supabase.auth.getUser();
+src/lib/push/registerPush.ts:272:      await supabase.from("push_tokens").upsert(
+src/lib/push/registerPush.ts:292:  const { data: { user } } = await supabase.auth.getUser();
+src/lib/shared/cross-app-reactions.ts:19:  const { data } = await supabase.auth.getUser();
+src/lib/storage/assets.ts:100:  const { error: uploadError } = await supabase.storage
+src/lib/storage/assets.ts:106:  const { data: publicUrlData } = supabase.storage.from(params.bucket).getPublicUrl(params.path);
+src/lib/storage/uploadFile.ts:65:  const { data, error } = await supabase.storage
+src/lib/storage/uploadFile.ts:122:  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+src/lib/wallet/wallet-identity-binding.ts:76:  const { error: regError } = await supabase.from("wallet_device_bindings").upsert(
+src/lib/smart/smart-bridge.ts:277:        const { data: auth } = await supabase.auth.getUser();
+src/lib/canonical-identity.ts:53:    supabase.auth.getSession(),
+src/lib/dlq/dlq-client.ts:11:    const { data: { session } } = await supabase.auth.getSession();
+src/lib/app-security.ts:236:    await supabase.auth.signOut({ scope: "others" });
+src/lib/app-security.ts:245:    await supabase.auth.signOut({ scope: "global" });
+src/lib/kyc/kyc-gate-service.ts:28:  const { data: session } = await supabase.auth.getSession();
+src/lib/api-gateway/orchestration-engine.ts:216:      const { data: { user } } = await supabase.auth.getUser();
+src/lib/auth-redirect.ts:12:    const { data, error } = await supabase.rpc("has_role", {
+src/lib/auth-redirect.ts:31:      } = await supabase.auth.getUser();
+src/pages/AuthCallbackPage.tsx:161:            // Wait for supabase.auth to fully persist the session before
+src/pages/CommandCenter.tsx:117:  const { data: { session } } = await supabase.auth.getSession();
+src/repositories/billing.repository.ts:19:  await supabase.auth.signOut();
+src/repositories/mfa.repository.ts:2: * mfa.repository — MFA operations via supabase.auth.mfa
+src/repositories/mfa.repository.ts:7:  const { data } = await supabase.auth.mfa.listFactors();
+src/repositories/mfa.repository.ts:12:  return supabase.auth.mfa.enroll({ factorType: "totp", friendlyName });
+src/repositories/mfa.repository.ts:16:  return supabase.auth.mfa.challenge({ factorId });
+src/repositories/mfa.repository.ts:20:  return supabase.auth.mfa.verify({ factorId, challengeId, code });
+src/repositories/mfa.repository.ts:24:  return supabase.auth.mfa.unenroll({ factorId });
+src/stores/auth.store.ts:5: *   - signUp/signIn/signOut: direct supabase.auth calls (used by non-React code)
+src/stores/auth.store.ts:62:    const { error } = await supabase.auth.signUp({
+src/stores/auth.store.ts:73:    const { error } = await supabase.auth.signInWithPassword({
+src/stores/auth.store.ts:81:    await supabase.auth.signOut();
+src/test/cross-domain.test.ts:128:    expect(content).not.toContain("supabase.from");
+src/test/e2e-flows.test.ts:122:    const query = supabase.from("properties").select("id, title").limit(1);
+src/test/smoke.test.ts:79:    expect(typeof mod.supabase.from).toBe("function");
+src/test/smoke.test.ts:80:    expect(typeof mod.supabase.auth).toBe("object");
+src/test/architecture-enforcement.test.ts:164:      expect(content).not.toContain("supabase.from");
+src/services/command-center-client.ts:10:  const { data: { session } } = await supabase.auth.getSession();
+src/services/micro-insurance.service.ts:79:  const { data } = await supabase.auth.getSession();
+src/services/virtual-cards.service.ts:44:  const { data } = await supabase.auth.getSession();
+src/services/bnpl.service.ts:42:  const { data } = await supabase.auth.getSession();
+src/services/e-signature.service.ts:64:  const { data } = await supabase.auth.getSession();
+src/services/plaid.service.ts:43:  const { data } = await supabase.auth.getSession();
+src/services/social-graph.service.ts:49:  const { data } = await supabase.auth.getSession();
+src/__tests__/eslint-plugin-easylocs.test.ts:38:            code: `supabase.from('orders').select('*');`,
+src/__tests__/eslint-plugin-easylocs.test.ts:64:            code: `supabase.from('orders').insert([{ id: 1 }]);`,
+src/__tests__/eslint-plugin-easylocs.test.ts:141:            code: `supabase.rpc('do_thing', {});`,
+src/__tests__/lc6-bootstrap-wiring.integration.test.ts:96:        from() { throw new Error("supabase.from() unexpected in LC6 wiring test"); },

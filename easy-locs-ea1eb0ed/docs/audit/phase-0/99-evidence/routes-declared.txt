@@ -1,0 +1,548 @@
+# Route path declarations (file:line:match)
+src/test/super-admin-gate.test.tsx:30:        <Route path="/login" element={<div>LOGIN</div>} />
+src/test/super-admin-gate.test.tsx:31:        <Route path="/dashboard" element={<div>DASHBOARD</div>} />
+src/test/super-admin-gate.test.tsx:32:        <Route path="/verify-email" element={<div>VERIFY_EMAIL</div>} />
+src/routes/auth.routes.tsx:14:      <Route path="/login" element={<FeatureErrorBoundary featureName="Auth"><Login /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:15:      <Route path="/signup" element={<FeatureErrorBoundary featureName="Auth"><Signup /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:16:      <Route path="/forgot-password" element={<FeatureErrorBoundary featureName="Auth"><ForgotPassword /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:17:      <Route path="/reset-password" element={<FeatureErrorBoundary featureName="Auth"><ResetPassword /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:18:      <Route path="/verify-email" element={<FeatureErrorBoundary featureName="Auth"><VerifyEmail /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:19:      <Route path="/auth/callback" element={<FeatureErrorBoundary featureName="Auth"><AuthCallbackPage /></FeatureErrorBoundary>} />
+src/routes/auth.routes.tsx:20:      <Route path="/auth/diagnostic" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><AuthDiagnosticPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/auth.routes.tsx:21:      <Route path="/onboarding" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><Onboarding /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/auth.routes.tsx:22:      <Route path="/install" element={<FeatureErrorBoundary featureName="Auth"><Install /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:16:      <Route path="/add-contact" element={<FeatureErrorBoundary featureName="DeepLink"><AddContactPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:17:      <Route path="/u/:userId" element={<FeatureErrorBoundary featureName="DeepLink"><UserProfilePage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:18:      <Route path="/product/:productId" element={<FeatureErrorBoundary featureName="DeepLink"><ProductDetailPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:19:      <Route path="/p/:productId" element={<FeatureErrorBoundary featureName="DeepLink"><ProductPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:20:      <Route path="/live/:liveId" element={<FeatureErrorBoundary featureName="DeepLink"><LivePage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:21:      <Route path="/pay/:payId" element={<FeatureErrorBoundary featureName="Wallet"><PayPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:22:      <Route path="/pay/request/:requestId" element={<FeatureErrorBoundary featureName="Wallet"><PayRequestPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:23:      <Route path="/pay/scan" element={<FeatureErrorBoundary featureName="Wallet"><QrScannerPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:24:      <Route path="/pay/link-resolver" element={<FeatureErrorBoundary featureName="Wallet"><PaymentLinkResolverPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:25:      <Route path="/pay/confirm" element={<FeatureErrorBoundary featureName="Wallet"><PaymentConfirmPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:26:      <Route path="/pay/success" element={<FeatureErrorBoundary featureName="Wallet"><GuestPaymentSuccess /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:27:      <Route path="/qr/pay/:code" element={<FeatureErrorBoundary featureName="DeepLink"><QrPayResolver /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:28:      <Route path="/qr/:code" element={<FeatureErrorBoundary featureName="DeepLink"><QrResolvePage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:29:      <Route path="/sl/:code" element={<FeatureErrorBoundary featureName="DeepLink"><ShortLinkResolvePage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:30:      <Route path="/qr/entry/:targetCode" element={<FeatureErrorBoundary featureName="DeepLink"><QrEntryPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:31:      <Route path="/qr/track" element={<FeatureErrorBoundary featureName="DeepLink"><QrTrackingPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:32:      <Route path="/qr/pickup" element={<FeatureErrorBoundary featureName="DeepLink"><QrPickupPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:33:      <Route path="/claim/:token" element={<FeatureErrorBoundary featureName="DeepLink"><ClaimPage /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:34:      <Route path="/go/:slug" element={<FeatureErrorBoundary featureName="DeepLink"><SlugResolver /></FeatureErrorBoundary>} />
+src/routes/deeplinks.routes.tsx:35:      <Route path="/go/:slug/:category" element={<FeatureErrorBoundary featureName="DeepLink"><SlugCategoryResolver /></FeatureErrorBoundary>} />
+src/routes/driver.routes.tsx:17:      <Route path="/driver/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverDashboardPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:18:      <Route path="/driver/payout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverPayoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:19:      <Route path="/driver/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:20:      <Route path="/driver/earnings-v2" element={<Navigate to="/driver/earnings" replace />} />
+src/routes/driver.routes.tsx:21:      <Route path="/driver/earnings-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><DriverEarningsSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:22:      <Route path="/driver/missions-board" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:23:      <Route path="/driver/missions-board/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverMissionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:24:      <Route path="/driver/proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:25:      <Route path="/driver/active-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverActiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:26:      <Route path="/driver/live-missions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverLiveMissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:27:      <Route path="/driver/completed-deliveries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverCompletedDeliveriesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:28:      <Route path="/driver/shift" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverShiftPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:29:      <Route path="/driver/availability-zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverAvailabilityZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:30:      <Route path="/driver/fuel-costs-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverFuelCostsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:31:      <Route path="/driver/breaks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverBreaksPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:34:      <Route path="/driver/taxi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverTaxiDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:35:      <Route path="/driver/taxi/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><DriverTaxiEarningsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:38:      <Route path="/seller" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><SellerDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:39:      <Route path="/seller/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:40:      <Route path="/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyBusinessHub /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/driver.routes.tsx:41:      <Route path="/claim-shop/:merchantId" element={<FeatureErrorBoundary featureName="Radar"><ClaimShopPage /></FeatureErrorBoundary>} />
+src/routes/index.tsx:42:      <Route path="/seo/*" element={<SEOCatchAll />} />
+src/routes/index.tsx:43:      <Route path="*" element={<AppNotFoundPage />} />
+src/routes/legal.routes.tsx:13:      <Route path="/terms" element={<FeatureErrorBoundary featureName="Legal"><TermsPage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:14:      <Route path="/privacy" element={<FeatureErrorBoundary featureName="Legal"><PrivacyPage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:15:      <Route path="/cookies" element={<FeatureErrorBoundary featureName="Legal"><CookiePage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:16:      <Route path="/legal" element={<FeatureErrorBoundary featureName="Legal"><LegalNoticePage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:17:      <Route path="/about" element={<FeatureErrorBoundary featureName="Legal"><AboutPage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:18:      <Route path="/contact" element={<FeatureErrorBoundary featureName="Legal"><ContactPage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:19:      <Route path="/help" element={<FeatureErrorBoundary featureName="Legal"><HelpPage /></FeatureErrorBoundary>} />
+src/routes/legal.routes.tsx:20:      <Route path="/vision" element={<FeatureErrorBoundary featureName="Legal"><PlatformVision /></FeatureErrorBoundary>} />
+src/routes/me.routes.tsx:24:      <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Suspense fallback={<PillarSkeleton pillar="me" />}><MeCommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:25:      <Route path="/me/edit-profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><EditProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:26:      <Route path="/me/spending-insights" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSpendingInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:27:      <Route path="/me/address-book" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAddressBookPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:28:      <Route path="/me/loyalty-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLoyaltyHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:29:      <Route path="/me/challenges" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerChallengesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:30:      <Route path="/me/referral" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerReferralPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:31:      <Route path="/me/referrals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerReferralPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:32:      <Route path="/me/social" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SocialHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:33:      <Route path="/me/badges" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><BadgesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:34:      <Route path="/me/reviews" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><MyReviewsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:35:      <Route path="/me/wishlist" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><WishlistPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:36:      <Route path="/me/loyalty" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLoyaltyHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:37:      <Route path="/me/creator" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:38:      <Route path="/me/creator/affiliates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:39:      <Route path="/me/creator/analytics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:40:      <Route path="/me/creator/tips" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CreatorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:41:      <Route path="/me/saved-cards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCardsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:42:      <Route path="/me/saved-carts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSavedCartsPage2 /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:43:      <Route path="/me/delivery-notes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerDeliveryNotesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:44:      <Route path="/me/payment-activity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerPaymentActivityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:45:      <Route path="/me/order-receipts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerOrderReceiptsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:46:      <Route path="/me/gestion-immo" element={<Navigate to="/property-hub" replace />} />
+src/routes/me.routes.tsx:47:      <Route path="/me/gestion-immo/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:48:      <Route path="/me/tenant-view" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantView /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:49:      <Route path="/me/property-hub" element={<Navigate to="/property-hub" replace />} />
+src/routes/me.routes.tsx:50:      <Route path="/me/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCockpit /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:51:      <Route path="/me/properties/list" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyListPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:52:      <Route path="/me/properties/create" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyCreatePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:53:      <Route path="/me/properties/:propertyId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyDetail /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:54:      <Route path="/me/properties/analytics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MePropertyAnalyticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:55:      <Route path="/me/tenants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeTenantsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:56:      <Route path="/me/leases" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeLeasesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:57:      <Route path="/me/leases/:leaseId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeLeasesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:58:      <Route path="/me/maintenance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:59:      <Route path="/me/maintenance/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Pages.MeMaintenancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:60:      <Route path="/me/auto-repeat" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAutoRepeatPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:61:      <Route path="/me/rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><RewardsHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:62:      <Route path="/me/redeem-rewards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerRewardRedemptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:63:      <Route path="/favorites" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><FavoritesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:64:      <Route path="/notifications" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><NotificationCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:65:      <Route path="/location/live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerLiveLocationPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:66:      <Route path="/permissions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><PermissionCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:67:      <Route path="/support/tickets" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SupportTicketsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:68:      <Route path="/support/tickets/:ticketId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SupportTicketDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:69:      <Route path="/team/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><TeamCommandCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:70:      <Route path="/team/permissions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><TeamPermissionsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:73:      <Route path="/settings" element={<Navigate to="/me" replace />} />
+src/routes/me.routes.tsx:74:      <Route path="/settings/account" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsAccountPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:75:      <Route path="/settings/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsOrbitPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:76:      <Route path="/settings/business" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsBusinessPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:77:      <Route path="/settings/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsWalletPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:78:      <Route path="/settings/addresses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsAddressesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:79:      <Route path="/settings/notifications" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsNotificationsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:80:      <Route path="/settings/security" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSecurityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:81:      <Route path="/settings/preferences" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPreferencesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:82:      <Route path="/settings/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:83:      <Route path="/settings/subscription" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsSubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:84:      <Route path="/settings/privacy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsPrivacyPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:85:      <Route path="/settings/marketing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><SettingsMarketingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/me.routes.tsx:86:      <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
+src/routes/me.routes.tsx:87:      <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
+src/routes/merchant.routes.tsx:22:      <Route path="/merchant/claim" element={<FeatureErrorBoundary featureName="Dashboard"><MerchantClaimPage /></FeatureErrorBoundary>} />
+src/routes/merchant.routes.tsx:23:      <Route path="/merchant/onboarding" element={<FeatureErrorBoundary featureName="Dashboard"><MerchantOnboardingPage /></FeatureErrorBoundary>} />
+src/routes/merchant.routes.tsx:24:      <Route path="/merchant/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:25:      <Route path="/merchant/dashboard/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:26:      <Route path="/merchant/finance" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantFinancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:27:      <Route path="/merchant/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPosPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:28:      <Route path="/merchant/kitchen" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:29:      <Route path="/merchant/orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:30:      <Route path="/merchant/orders/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantOrderBoardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:31:      <Route path="/merchant/qr/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ShopQrCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:32:      <Route path="/merchant/menu" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:33:      <Route path="/merchant/menu/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:34:      <Route path="/merchant/menu-bulk/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuBulkEditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:35:      <Route path="/merchant/menu-categories/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuCategoryManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:37:      <Route path="/merchant/menu/edit/:itemId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantMenuItemEditorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:38:      <Route path="/merchant/store-settings/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantStoreSettingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:39:      <Route path="/merchant/promos/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:40:      <Route path="/merchant/banner-editor/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantPromoBannerEditorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:41:      <Route path="/merchant/inventory/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantInventoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:42:      <Route path="/merchant/inventory-alerts/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantInventoryAlertsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:43:      <Route path="/merchant/live/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantLiveControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:44:      <Route path="/merchant/coupons/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCouponManagerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:45:      <Route path="/merchant/analytics/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBasicAnalyticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:46:      <Route path="/merchant/customers/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCustomersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:47:      <Route path="/merchant/customer-insights/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantCustomerInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:48:      <Route path="/merchant/product-performance/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantProductPerformancePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:49:      <Route path="/merchant/business-summary/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:50:      <Route path="/merchant/closing-mode/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantClosingModePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:51:      <Route path="/merchant/auto-accept/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantAutoAcceptSettingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:52:      <Route path="/merchant/staff-access/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantStaffAccessPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:53:      <Route path="/merchant/daily-sales/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDailySalesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:54:      <Route path="/merchant/reviews/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantReviewRepliesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:55:      <Route path="/merchant/refund-requests/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantRefundRequestsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:56:      <Route path="/merchant/delivery-zones/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantDeliveryZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:57:      <Route path="/merchant/kitchen-display/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantKitchenDisplayPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:58:      <Route path="/merchant/business-hours/:merchantId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantBusinessHoursPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/merchant.routes.tsx:59:      <Route path="/merchant/returns" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MerchantReturnsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/onboarding.routes.tsx:14:      <Route path="/onboarding/hotel" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><HotelOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/onboarding.routes.tsx:15:      <Route path="/onboarding/taxi" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><TaxiDriverOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/onboarding.routes.tsx:16:      <Route path="/onboarding/service-provider" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><ServiceProviderOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/onboarding.routes.tsx:17:      <Route path="/onboarding/consumer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Onboarding"><ConsumerOnboardingWizard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:15:      <Route path="/orbit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><Suspense fallback={<PillarSkeleton pillar="orbit" />}><CommunicationCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:16:      <Route path="/orbit/:conversationId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><CommunicationCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:17:      <Route path="/orbit/contacts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitContactsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:18:      <Route path="/orbit/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAddContactPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:19:      <Route path="/orbit/identity" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitIdentityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/orbit.routes.tsx:20:      <Route path="/orbit/support" element={<ProtectedRoute><FeatureErrorBoundary featureName="Orbit"><OrbitAISupportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/pro.routes.tsx:15:      <Route path="/pro" element={<ProtectedRoute><FeatureErrorBoundary featureName="Pro"><ProShell /></FeatureErrorBoundary></ProtectedRoute>}>
+src/routes/pro.routes.tsx:17:      <Route path="onboarding" element={<ProOnboarding />} />
+src/routes/pro.routes.tsx:18:      <Route path="profile" element={<ProProfile />} />
+src/routes/pro.routes.tsx:19:      <Route path="media" element={<ProMedia />} />
+src/routes/pro.routes.tsx:20:      <Route path="catalog" element={<ProCatalog />} />
+src/routes/pro.routes.tsx:21:      <Route path="availability" element={<ProAvailability />} />
+src/routes/pro.routes.tsx:22:      <Route path="pricing" element={<ProPricing />} />
+src/routes/pro.routes.tsx:23:      <Route path="orders" element={<ProOrders />} />
+src/routes/pro.routes.tsx:24:      <Route path="inbox" element={<ProInbox />} />
+src/routes/pro.routes.tsx:25:      <Route path="reviews" element={<ProReviews />} />
+src/routes/pro.routes.tsx:26:      <Route path="wallet" element={<ProWallet />} />
+src/routes/pro.routes.tsx:27:      <Route path="team" element={<ProTeam />} />
+src/routes/pro.routes.tsx:28:      <Route path="analytics" element={<ProAnalytics />} />
+src/routes/pro.routes.tsx:29:      <Route path="monitor" element={<ProLiveMonitor />} />
+src/routes/pro.routes.tsx:30:      <Route path="settings" element={<ProSettings />} />
+src/routes/pro.routes.tsx:31:      <Route path="compliance" element={<ProCompliance />} />
+src/routes/radar.routes.tsx:30:      <Route path="/radar" element={<FeatureErrorBoundary featureName="Radar"><Suspense fallback={<PillarSkeleton pillar="radar" />}><HyperRadarPage /></Suspense></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:31:      <Route path="/map" element={<Navigate to="/radar" replace />} />
+src/routes/radar.routes.tsx:32:      <Route path="/discover" element={<Navigate to="/radar" replace />} />
+src/routes/radar.routes.tsx:33:      <Route path="/search" element={<Navigate to="/radar" replace />} />
+src/routes/radar.routes.tsx:34:      <Route path="/explore" element={<FeatureErrorBoundary featureName="Radar"><Suspense fallback={<PillarSkeleton pillar="radar" />}><ExplorePage /></Suspense></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:35:      <Route path="/geo-explorer" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:36:      <Route path="/geo-explorer/:countryCode" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:37:      <Route path="/geo-explorer/:countryCode/:cityId" element={<FeatureErrorBoundary featureName="Radar"><GeoExplorerPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:38:      <Route path="/search-results" element={<FeatureErrorBoundary featureName="Radar"><SearchResultsPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:39:      <Route path="/browse" element={<FeatureErrorBoundary featureName="Radar"><DiscoverPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:40:      <Route path="/browse/:vertical" element={<FeatureErrorBoundary featureName="Radar"><BrowseVerticalPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:41:      <Route path="/food" element={<Navigate to="/browse/food" replace />} />
+src/routes/radar.routes.tsx:42:      <Route path="/grocery" element={<Navigate to="/browse/grocery" replace />} />
+src/routes/radar.routes.tsx:43:      <Route path="/services-hub" element={<Navigate to="/browse/services" replace />} />
+src/routes/radar.routes.tsx:44:      <Route path="/shops" element={<Navigate to="/browse/retail" replace />} />
+src/routes/radar.routes.tsx:45:      <Route path="/healthcare" element={<Navigate to="/browse/healthcare" replace />} />
+src/routes/radar.routes.tsx:46:      <Route path="/experiences" element={<Navigate to="/browse/experiences" replace />} />
+src/routes/radar.routes.tsx:47:      <Route path="/utility" element={<Navigate to="/browse/utility" replace />} />
+src/routes/radar.routes.tsx:48:      <Route path="/electronics" element={<Navigate to="/browse/shops?sub=electronics" replace />} />
+src/routes/radar.routes.tsx:49:      <Route path="/gifts" element={<Navigate to="/browse/shops?sub=gifts" replace />} />
+src/routes/radar.routes.tsx:50:      <Route path="/pets" element={<Navigate to="/browse/services?sub=pet_care" replace />} />
+src/routes/radar.routes.tsx:51:      <Route path="/food/restaurant/:restaurantId" element={<FeatureErrorBoundary featureName="Radar"><FoodRestaurantPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:52:      <Route path="/food/r/:cuisine/:restaurantId" element={<FeatureErrorBoundary featureName="Radar"><FoodRestaurantPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:53:      <Route path="/food/:type" element={<FeatureErrorBoundary featureName="Radar"><FoodTypePage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:54:      <Route path="/food/:type/:cuisine" element={<FeatureErrorBoundary featureName="Radar"><CuisineListPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:55:      <Route path="/shop" element={<FeatureErrorBoundary featureName="Radar"><RetailIndexPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:56:      <Route path="/shop/category/:categorySlug" element={<FeatureErrorBoundary featureName="Radar"><RetailCategoryPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:57:      <Route path="/shop/subcategory/:categorySlug/:subcategorySlug" element={<FeatureErrorBoundary featureName="Radar"><RetailCategoryPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:58:      <Route path="/shop/mall/:mallSlug" element={<FeatureErrorBoundary featureName="Radar"><RetailMallPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:59:      <Route path="/shop/store/:slug" element={<FeatureErrorBoundary featureName="Radar"><RetailStorePage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:60:      <Route path="/property" element={<FeatureErrorBoundary featureName="Radar"><PropertyHubPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:61:      <Route path="/real-estate" element={<Navigate to="/property" replace />} />
+src/routes/radar.routes.tsx:62:      <Route path="/real-estate/dubai-analytics" element={<FeatureErrorBoundary featureName="Radar"><Pages.DubaiAnalyticsPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:63:      <Route path="/real-estate/:listingType" element={<Navigate to="/property" replace />} />
+src/routes/radar.routes.tsx:64:      <Route path="/real-estate/:listingType/:slug" element={<FeatureErrorBoundary featureName="Radar"><Pages.RealEstateDetailPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:65:      <Route path="/property-hub" element={<FeatureErrorBoundary featureName="Radar"><PropertyManagementHub /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:66:      <Route path="/property-hub/seasonal/reservations" element={<ProtectedRoute><FeatureErrorBoundary featureName="PropertyHub"><SeasonalRentals /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:67:      <Route path="/travel" element={<FeatureErrorBoundary featureName="Radar"><TravelHub /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:68:      <Route path="/travel/flights" element={<FeatureErrorBoundary featureName="Radar"><TravelFlights /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:69:      <Route path="/travel/stays" element={<FeatureErrorBoundary featureName="Radar"><TravelStays /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:70:      <Route path="/travel/hotels" element={<Navigate to="/travel/stays" replace />} />
+src/routes/radar.routes.tsx:71:      <Route path="/travel/hotel/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelHotelDetail /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:72:      <Route path="/travel/hotel-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><HotelCheckout /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:74:      <Route path="/hotel/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:75:      <Route path="/hotel/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:76:      <Route path="/hotel/rooms" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelRoomsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:77:      <Route path="/hotel/pricing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Hotel"><HotelPricingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:78:      <Route path="/travel/stay/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelStayDetail /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:79:      <Route path="/travel/flight/:id" element={<FeatureErrorBoundary featureName="Radar"><TravelFlightDetail /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:80:      <Route path="/travel/flight-search" element={<FeatureErrorBoundary featureName="Radar"><FlightSearchPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:81:      <Route path="/travel/flight-results" element={<FeatureErrorBoundary featureName="Radar"><FlightResultsPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:82:      <Route path="/travel/flight-detail" element={<FeatureErrorBoundary featureName="Radar"><FlightDetailPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:83:      <Route path="/travel/flight-passengers" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPassengerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:84:      <Route path="/travel/flight-payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:85:      <Route path="/travel/flight-confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><FlightConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:86:      <Route path="/property/search" element={<FeatureErrorBoundary featureName="Radar"><PropertySearchPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:87:      <Route path="/property/results" element={<FeatureErrorBoundary featureName="Radar"><PropertyResultsPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:88:      <Route path="/property/detail" element={<FeatureErrorBoundary featureName="Radar"><PropertyDetailPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:89:      <Route path="/property/booking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyBookingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:90:      <Route path="/property/payment" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyPaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:91:      <Route path="/property/confirmation" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><PropertyConfirmationPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:92:      <Route path="/mobility" element={<FeatureErrorBoundary featureName="Radar"><MobilityHubPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:93:      <Route path="/mobility/taxi" element={<FeatureErrorBoundary featureName="Radar"><MobilityTaxiPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:94:      <Route path="/mobility/delivery" element={<FeatureErrorBoundary featureName="Radar"><MobilityDeliveryPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:95:      <Route path="/mobility/delivery/bring" element={<FeatureErrorBoundary featureName="Radar"><DeliveryBringPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:96:      <Route path="/mobility/delivery/parcel" element={<FeatureErrorBoundary featureName="Radar"><DeliveryParcelPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:97:      <Route path="/mobility/delivery/gift" element={<FeatureErrorBoundary featureName="Radar"><DeliveryGiftPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:98:      <Route path="/mobility/delivery/errand" element={<FeatureErrorBoundary featureName="Radar"><DeliveryErrandPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:99:      <Route path="/rider/live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:100:      <Route path="/ride" element={<Navigate to="/mobility/taxi" replace />} />
+src/routes/radar.routes.tsx:101:      <Route path="/taxi" element={<Navigate to="/mobility/taxi" replace />} />
+src/routes/radar.routes.tsx:102:      <Route path="/send" element={<Navigate to="/mobility/delivery" replace />} />
+src/routes/radar.routes.tsx:103:      <Route path="/send-package" element={<Navigate to="/mobility/delivery" replace />} />
+src/routes/radar.routes.tsx:104:      <Route path="/delivery" element={<Navigate to="/mobility/delivery" replace />} />
+src/routes/radar.routes.tsx:105:      <Route path="/track/:rideRequestId" element={<FeatureErrorBoundary featureName="Radar"><TrackRidePage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:106:      <Route path="/call/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><CallDriverPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:107:      <Route path="/driver/heatmap" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><DemandHeatmapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:108:      <Route path="/subscription/priority" element={<ProtectedRoute><FeatureErrorBoundary featureName="Radar"><RiderPrioritySubscriptionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:109:      <Route path="/listing/:id" element={<FeatureErrorBoundary featureName="Radar"><PublicListing /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:110:      <Route path="/book/:slug" element={<FeatureErrorBoundary featureName="Radar"><PublicServiceBooking /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:111:      <Route path="/nearby" element={<FeatureErrorBoundary featureName="Radar"><LocalServices /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:112:      <Route path="/rentals/:country" element={<FeatureErrorBoundary featureName="Radar"><RentalCatalog /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:113:      <Route path="/rentals/:country/:city" element={<FeatureErrorBoundary featureName="Radar"><RentalCatalog /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:114:      <Route path="/stay" element={<FeatureErrorBoundary featureName="Radar"><TravelStays /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:115:      <Route path="/stays" element={<Navigate to="/stay" replace />} />
+src/routes/radar.routes.tsx:116:      <Route path="/stays/:country" element={<Navigate to="/stay" replace />} />
+src/routes/radar.routes.tsx:117:      <Route path="/stays/:country/:city" element={<Navigate to="/stay" replace />} />
+src/routes/radar.routes.tsx:118:      <Route path="/host/:orgId" element={<FeatureErrorBoundary featureName="Radar"><HostCatalog /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:119:      <Route path="/activities" element={<FeatureErrorBoundary featureName="Radar"><ActivitiesMarketplace /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:120:      <Route path="/guest/:orgId" element={<FeatureErrorBoundary featureName="Radar"><GuestPortal /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:121:      <Route path="/provider/availability" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:122:      <Route path="/provider/availability-v2" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderAvailabilityPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:123:      <Route path="/provider/zones" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderZonesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:124:      <Route path="/provider/bookings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderBookingsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:125:      <Route path="/provider/services" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:126:      <Route path="/provider/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:127:      <Route path="/provider/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderCalendarPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:128:      <Route path="/provider/services-crud" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderServicesCrudPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:129:      <Route path="/provider/earnings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Provider"><ProviderEarningsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/radar.routes.tsx:130:      <Route path="/provider/:providerId" element={<FeatureErrorBoundary featureName="Radar"><ProviderStorefront /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:131:      <Route path="/store/:storeId" element={<FeatureErrorBoundary featureName="Radar"><StorePage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:132:      <Route path="/s/:slug" element={<FeatureErrorBoundary featureName="Radar"><ShopPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:133:      <Route path="/s/:slug/:categorySlug" element={<FeatureErrorBoundary featureName="Radar"><ShopCategoryPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:134:      <Route path="/saved" element={<Navigate to="/favorites" replace />} />
+src/routes/radar.routes.tsx:135:      <Route path="/showcase/:orgId" element={<FeatureErrorBoundary featureName="Radar"><PropertiesShowcase /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:136:      <Route path="/account/:orgId" element={<FeatureErrorBoundary featureName="Radar"><AccountShowcase /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:137:      <Route path="/properties" element={<FeatureErrorBoundary featureName="Radar"><PropertiesShowcase /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:138:      <Route path="/top-rated" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:139:      <Route path="/trending" element={<FeatureErrorBoundary featureName="Radar"><RealEstateListings /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:140:      <Route path="/real-estate-listing/:slug" element={<FeatureErrorBoundary featureName="Radar"><PublicRealEstateListing /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:141:      <Route path="/concierge-services" element={<FeatureErrorBoundary featureName="Radar"><ConciergeServicesPage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:142:      <Route path="/city-market/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><CityMarketplacePage /></FeatureErrorBoundary>} />
+src/routes/radar.routes.tsx:143:      <Route path="/menu/:shopSlug" element={<FeatureErrorBoundary featureName="Radar"><ShopOrderPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:19:      <Route path="/browse/services" element={<FeatureErrorBoundary featureName="Radar"><ServicesPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:20:      <Route path="/browse/services/:providerId" element={<FeatureErrorBoundary featureName="Radar"><ServiceProviderPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:21:      <Route path="/marketplace-services" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceServicesPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:22:      <Route path="/activities-booking" element={<FeatureErrorBoundary featureName="Radar"><ActivitiesPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:23:      <Route path="/seasonal-rentals-booking" element={<FeatureErrorBoundary featureName="Radar"><SeasonalRentalsPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:24:      <Route path="/seasonal-rentals" element={<Navigate to="/seasonal-rentals-booking" replace />} />
+src/routes/seo.routes.tsx:25:      <Route path="/long-term-rentals" element={<FeatureErrorBoundary featureName="Radar"><LongTermRentalsPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:26:      <Route path="/property-owner-software" element={<FeatureErrorBoundary featureName="SEO"><CoreSEOPages /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:27:      <Route path="/property-management-platform" element={<FeatureErrorBoundary featureName="SEO"><PropertyManagementPlatformPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:28:      <Route path="/rental-management-software" element={<FeatureErrorBoundary featureName="SEO"><RentalManagementSoftwarePage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:29:      <Route path="/guide/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CityGuidePage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:30:      <Route path="/best/:serviceSlug/in/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><BestServiceCityPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:31:      <Route path="/compare/:serviceSlug/in/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CompareServiceCityPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:32:      <Route path="/services/:service/in/:city" element={<FeatureErrorBoundary featureName="SEO"><ServiceCitySEOPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:33:      <Route path="/activities/:activity/in/:city" element={<FeatureErrorBoundary featureName="SEO"><ActivityCitySEOPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:34:      <Route path="/services" element={<Navigate to="/browse/services" replace />} />
+src/routes/seo.routes.tsx:35:      <Route path="/services/:categorySlug" element={<FeatureErrorBoundary featureName="SEO"><ServiceCategoryPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:36:      <Route path="/services/city/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><ServiceCityPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:37:      <Route path="/provider/seo/:providerId" element={<FeatureErrorBoundary featureName="SEO"><ProviderSEOPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:38:      <Route path="/locations" element={<FeatureErrorBoundary featureName="SEO"><LocationsPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:39:      <Route path="/country/:countrySlug" element={<FeatureErrorBoundary featureName="SEO"><CountryHubPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:40:      <Route path="/city/:citySlug" element={<FeatureErrorBoundary featureName="SEO"><CityHubPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:41:      <Route path="/city/:citySlug/services" element={<FeatureErrorBoundary featureName="SEO"><CityServicesPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:42:      <Route path="/city/:citySlug/activities" element={<FeatureErrorBoundary featureName="SEO"><CityActivitiesPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:43:      <Route path="/city/:citySlug/concierge" element={<FeatureErrorBoundary featureName="SEO"><CityConciergePage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:44:      <Route path="/city/:citySlug/:categorySlug" element={<FeatureErrorBoundary featureName="SEO"><DynamicCityCategoryPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:45:      <Route path="/marketplace" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceHubPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:46:      <Route path="/marketplace/c2c" element={<Navigate to="/annonces" replace />} />
+src/routes/seo.routes.tsx:47:      <Route path="/marketplace/c2c/:id" element={<MarketplaceC2CDetailRedirect />} />
+src/routes/seo.routes.tsx:52:      <Route path="/annonces" element={<FeatureErrorBoundary featureName="Annonces"><Pages.AnnoncesHub /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:53:      <Route path="/annonces/publier" element={<FeatureErrorBoundary featureName="Annonces"><Pages.PublierAnnonce /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:54:      <Route path="/annonces/recherche" element={<FeatureErrorBoundary featureName="Annonces"><Pages.RechercheAnnonces /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:55:      <Route path="/annonces/vendeur/:id" element={<FeatureErrorBoundary featureName="Annonces"><Pages.SellerProfile /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:56:      <Route path="/annonces/mes-annonces" element={<FeatureErrorBoundary featureName="Annonces"><Pages.MesAnnonces /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:57:      <Route path="/annonces/:id" element={<FeatureErrorBoundary featureName="Annonces"><Pages.AnnonceDetail /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:58:      <Route path="/marketplace/:citySlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceCityPage /></FeatureErrorBoundary>} />
+src/routes/seo.routes.tsx:59:      <Route path="/marketplace/:citySlug/:serviceSlug" element={<FeatureErrorBoundary featureName="Radar"><MarketplaceServiceCityPage /></FeatureErrorBoundary>} />
+src/routes/wallet.routes.tsx:21:      <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Suspense fallback={<PillarSkeleton pillar="wallet" />}><WalletHubPage /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:22:      <Route path="/wallet/hub" element={<Navigate to="/wallet" replace />} />
+src/routes/wallet.routes.tsx:23:      <Route path="/wallet/top-up" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTopUpPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:24:      <Route path="/wallet/transfer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransferPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:25:      <Route path="/wallet/request" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:26:      <Route path="/wallet/forex" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><ForexDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:27:      <Route path="/wallet/transaction/:txId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransactionDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:28:      <Route path="/wallet/pay/:threadId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PayRidePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:29:      <Route path="/wallet/property/*" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Pages.WalletPropertyHub /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:30:      <Route path="/wallet/virtual-cards" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><VirtualCardsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:31:      <Route path="/wallet/installments" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><InstallmentsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:32:      <Route path="/wallet/accounts" element={<Navigate to="/settings/wallet" replace />} />
+src/routes/wallet.routes.tsx:33:      <Route path="/pos" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:34:      <Route path="/pos/:shopId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><POSPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:35:      <Route path="/checkout" element={<FeatureErrorBoundary featureName="Wallet"><CheckoutPage /></FeatureErrorBoundary>} />
+src/routes/wallet.routes.tsx:36:      <Route path="/checkout/address-selector" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerAddressSelectorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:37:      <Route path="/checkout/group-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerGroupOrderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:38:      <Route path="/checkout/gift-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerOrderGiftsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:39:      <Route path="/checkout/split-bill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerSplitBillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:40:      <Route path="/checkout/party-order" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerPartyOrderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:41:      <Route path="/checkout/share-cart" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerShareCartPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:42:      <Route path="/orders" element={<Navigate to="/my-orders" replace />} />
+src/routes/wallet.routes.tsx:43:      <Route path="/my-orders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><MyOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:44:      <Route path="/my-orders/active" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerActiveOrdersPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:45:      <Route path="/my-orders/archive" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerOrderArchivePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:46:      <Route path="/order/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><UnifiedOrderDetailPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:47:      <Route path="/order/receipt/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><OrderReceiptPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:48:      <Route path="/order/refund/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><OrderRefundRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:49:      <Route path="/order/reorder/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><ReorderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:50:      <Route path="/reorder" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><CustomerReorderPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:51:      <Route path="/tracking/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><TrackingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:52:      <Route path="/live-tracking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><LiveTrackingPageNew /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:53:      <Route path="/refund/:rideRequestId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><RefundRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:54:      <Route path="/payment/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><PaymentPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:55:      <Route path="/payments/stripe-elements" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><StripeElementsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:56:      <Route path="/payments/stripe-handler" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><StripeCheckoutHandlerPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/wallet.routes.tsx:57:      <Route path="/guest/checkout/:cartId" element={<GuestCheckoutPage />} />
+src/routes/dashboard.routes.tsx:27:      <Route path="/" element={<FeatureErrorBoundary featureName="Dashboard"><HomeRouter /></FeatureErrorBoundary>} />
+src/routes/dashboard.routes.tsx:28:      <Route path="/landing" element={<FeatureErrorBoundary featureName="Dashboard"><Index /></FeatureErrorBoundary>} />
+src/routes/dashboard.routes.tsx:29:      <Route path="/home" element={<FeatureErrorBoundary featureName="Dashboard"><MarketplaceHomeRouter /></FeatureErrorBoundary>} />
+src/routes/dashboard.routes.tsx:30:      <Route path="/pricing" element={<PricingScrollRedirect />} />
+src/routes/dashboard.routes.tsx:31:      <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><Dashboard /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:32:      <Route path="/dashboard/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><DashboardCommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:33:      <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:34:      <Route path="/dashboard/property/:id" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyDetailHub /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:35:      <Route path="/dashboard/create-listing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CreateListing /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:36:      <Route path="/dashboard/receipts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Receipts /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:37:      <Route path="/dashboard/reminders" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Reminders /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:38:      <Route path="/dashboard/documents" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Documents /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:39:      <Route path="/dashboard/ai" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AIAssistant /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:40:      <Route path="/dashboard/ai-search" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AISearch /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:41:      <Route path="/dashboard/leases" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Leases /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:42:      <Route path="/dashboard/company" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Company /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:43:      <Route path="/dashboard/billing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Billing /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:44:      <Route path="/dashboard/settings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Settings /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:45:      <Route path="/dashboard/tenants" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Tenants /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:46:      <Route path="/dashboard/rental-management" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RentalManagement /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:47:      <Route path="/dashboard/finances" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Finances /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:48:      <Route path="/dashboard/interventions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Interventions /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:49:      <Route path="/dashboard/tasks" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Tasks /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:50:      <Route path="/dashboard/messages" element={<Navigate to="/orbit" replace />} />
+src/routes/dashboard.routes.tsx:51:      <Route path="/dashboard/activities" element={<Navigate to="/activities" replace />} />
+src/routes/dashboard.routes.tsx:52:      <Route path="/dashboard/communication" element={<DashboardCommRedirect />} />
+src/routes/dashboard.routes.tsx:53:      <Route path="/dashboard/charges-regularization" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ChargesRegularization /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:54:      <Route path="/dashboard/fiscal-report" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FiscalReport /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:55:      <Route path="/dashboard/expenses" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Expenses /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:56:      <Route path="/dashboard/candidates" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Candidates /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:57:      <Route path="/dashboard/seasonal-rentals" element={<ProtectedRoute><Navigate to="/property-hub?section=seasonal" replace /></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:58:      <Route path="/dashboard/payment-notices" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PaymentNotices /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:59:      <Route path="/dashboard/dunning-letters" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DunningLetters /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:60:      <Route path="/dashboard/furniture-inventory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><FurnitureInventory /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:61:      <Route path="/dashboard/buildings" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Buildings /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:62:      <Route path="/dashboard/vault" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Vault /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:63:      <Route path="/dashboard/import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DataImport /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:64:      <Route path="/dashboard/cv-generator" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CVGenerator /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:65:      <Route path="/dashboard/subscriptions" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CategorySubscriptions /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:66:      <Route path="/dashboard/channels" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ChannelManager /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:67:      <Route path="/dashboard/accounting" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Accounting /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:68:      <Route path="/dashboard/rent-cockpit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><LandlordRentDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:69:      <Route path="/dashboard/accounting-entries" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AccountingEntries /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:70:      <Route path="/dashboard/reporting" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ReportingDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:71:      <Route path="/dashboard/dynamic-pricing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DynamicPricing /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:72:      <Route path="/dashboard/calendar" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyCalendar /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:73:      <Route path="/dashboard/real-estate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateListings /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:74:      <Route path="/dashboard/profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><LandlordProfile /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:75:      <Route path="/dashboard/referrals" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Referrals /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:76:      <Route path="/dashboard/referral-funnel" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ReferralFunnelDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:77:      <Route path="/dashboard/collaboration" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Collaboration /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:78:      <Route path="/dashboard/developer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortal /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:79:      <Route path="/dashboard/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AuditTrail /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:80:      <Route path="/dashboard/wallet" element={<Navigate to="/wallet" replace />} />
+src/routes/dashboard.routes.tsx:81:      <Route path="/dashboard/service-tracking" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ServiceTrackingPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:82:      <Route path="/dashboard/prayer-times" element={<Navigate to="/dashboard/islamic" replace />} />
+src/routes/dashboard.routes.tsx:83:      <Route path="/dashboard/islamic" element={<ProtectedRoute><FeatureErrorBoundary featureName="Islamic"><IslamicSectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:84:      <Route path="/dashboard/news" element={<ProtectedRoute><FeatureErrorBoundary featureName="News"><NewsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:85:      <Route path="/dashboard/seller" element={<Navigate to="/seller" replace />} />
+src/routes/dashboard.routes.tsx:86:      <Route path="/dashboard/driver" element={<Navigate to="/driver/dashboard" replace />} />
+src/routes/dashboard.routes.tsx:87:      <Route path="/dashboard/delivery" element={<Navigate to="/driver/dashboard" replace />} />
+src/routes/dashboard.routes.tsx:88:      <Route path="/dashboard/my-shop" element={<Navigate to="/dashboard/my-shops" replace />} />
+src/routes/dashboard.routes.tsx:89:      <Route path="/dashboard/my-shops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><MyShopsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:90:      <Route path="/dashboard/ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><OpsCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:91:      <Route path="/dashboard/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><CommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:92:      <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CountryWorkspace /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:93:      <Route path="/dashboard/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:94:      <Route path="/dashboard/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateModulePage /></FeatureErrorBoundary></ProtectedRoute>}>
+src/routes/dashboard.routes.tsx:96:      <Route path="units" element={<REUnitsPage />} />
+src/routes/dashboard.routes.tsx:97:      <Route path="tenants" element={<RETenantsPage />} />
+src/routes/dashboard.routes.tsx:98:      <Route path="leases" element={<RELeasesPage />} />
+src/routes/dashboard.routes.tsx:99:      <Route path="payments" element={<REPaymentsPage />} />
+src/routes/dashboard.routes.tsx:100:      <Route path="documents" element={<REDocumentsPage />} />
+src/routes/dashboard.routes.tsx:102:      <Route path="/real-estate/property/:propertyId" element={<FeatureErrorBoundary featureName="Radar"><REPropertyDetailPage /></FeatureErrorBoundary>} />
+src/routes/dashboard.routes.tsx:103:      <Route path="/real-estate/lease/:leaseId" element={<FeatureErrorBoundary featureName="Radar"><RELeaseDetailPage /></FeatureErrorBoundary>} />
+src/routes/dashboard.routes.tsx:104:      <Route path="/property-management" element={<Navigate to="/dashboard/real-estate" replace />} />
+src/routes/dashboard.routes.tsx:105:      <Route path="/rentals" element={<Navigate to="/dashboard/rental-management" replace />} />
+src/routes/dashboard.routes.tsx:106:      <Route path="/developer" element={<Navigate to="/dashboard/developer" replace />} />
+src/routes/dashboard.routes.tsx:107:      <Route path="/concierge-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><ConciergeOperations /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/dashboard.routes.tsx:108:      <Route path="/customer/:customerId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CustomerProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:57:      <Route path="/builder" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DevOSDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:58:      <Route path="/builder/architecture" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ArchitectureMapPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:59:      <Route path="/builder/audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AuditCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:60:      <Route path="/builder/repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RepairCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:61:      <Route path="/builder/memory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MemoryCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:62:      <Route path="/builder/deploy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeployCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:65:      <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:66:      <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:67:      <Route path="/admin/wiring-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:68:      <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:69:      <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:70:      <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:71:      <Route path="/admin/financial-recon" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FinancialReconPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:72:      <Route path="/admin/menu" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MenuAdminPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:73:      <Route path="/admin/support-inbox" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><SupportInboxPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:74:      <Route path="/admin/driver-live" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DriverLivePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:75:      <Route path="/admin/driver-monitor" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDriverMonitorPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:76:      <Route path="/admin/realtime-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRealtimeControlPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:77:      <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><LoyaltyRedeemPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:78:      <Route path="/admin/alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAlertCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:79:      <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:80:      <Route path="/admin/execution-proof" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutionProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:81:      <Route path="/admin/review-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReviewQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:82:      <Route path="/admin/growth-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:83:      <Route path="/admin/qr-generate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QrGeneratePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:84:      <Route path="/admin/ui-engine" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUiEnginePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:85:      <Route path="/admin/marketplace-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMarketplaceOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:86:      <Route path="/admin/pipeline" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPipelinePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:87:      <Route path="/admin/ai-control-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAIControlCenter /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:88:      <Route path="/admin/support-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:89:      <Route path="/admin/delivery-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDeliveryOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:90:      <Route path="/admin/merchant-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:91:      <Route path="/admin/merchant-approval-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMerchantApprovalQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:92:      <Route path="/admin/payments-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPaymentsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:93:      <Route path="/admin/notification-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:94:      <Route path="/admin/seed-tools" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSeedToolsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:95:      <Route path="/admin/shop-import" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopImportPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:96:      <Route path="/admin/shop-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShopQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:97:      <Route path="/admin/content-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminContentOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:98:      <Route path="/admin/analytics-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAnalyticsOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:99:      <Route path="/admin/quality-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminQualityOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:100:      <Route path="/admin/crm-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminCrmOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:101:      <Route path="/admin/retention-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRetentionOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:102:      <Route path="/admin/support-sla" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSupportSlaPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:103:      <Route path="/admin/source-audit" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSourceAuditPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:104:      <Route path="/admin/user-lookup" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminUserLookupPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:105:      <Route path="/admin/finance-summary" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFinanceSummaryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:106:      <Route path="/admin/order-watch" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOrderWatchPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:107:      <Route path="/admin/refund-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminRefundQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:108:      <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:109:      <Route path="/admin/firecrawl-usage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFirecrawlUsagePage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:110:      <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:111:      <Route path="/admin/map-errors" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapErrorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:112:      <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:113:      <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:114:      <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:115:      <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:116:      <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:117:      <Route path="/admin/super-dashboard" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></SuperAdminGate>} />
+src/routes/admin.routes.tsx:118:      <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:127:      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:128:      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:129:      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:130:      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:131:      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:132:      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:133:      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:143:      <Route path="/admin/agents/:slug/runs" element={<LegacyAgentRunsRedirect />} />
+src/routes/admin.routes.tsx:144:      <Route path="/admin/agents" element={<LegacyControlRedirect to="/admin/control/agents" />} />
+src/routes/admin.routes.tsx:145:      <Route path="/admin/command-center" element={<LegacyControlRedirect to="/admin/control/command" />} />
+src/routes/admin.routes.tsx:146:      <Route path="/admin/approvals" element={<LegacyControlRedirect to="/admin/control/approvals" />} />
+src/routes/admin.routes.tsx:147:      <Route path="/admin/autonomy" element={<LegacyControlRedirect to="/admin/control/autonomy" />} />
+src/routes/admin.routes.tsx:148:      <Route path="/admin/control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+src/routes/admin.routes.tsx:149:      <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+src/routes/admin.routes.tsx:150:      <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
+src/routes/admin.routes.tsx:153:      <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:154:      <Route path="/admin/performance-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPerformanceLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:155:      <Route path="/admin/data-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:156:      <Route path="/admin/security-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSecurityLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:157:      <Route path="/admin/release-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReleaseHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:158:      <Route path="/admin/notification-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:159:      <Route path="/admin/experiment-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminExperimentLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:160:      <Route path="/admin/architecture-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminArchitectureLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:161:      <Route path="/admin/integration-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminIntegrationHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:162:      <Route path="/admin/integration-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminClientIntegrationDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:163:      <Route path="/admin/statement" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><StatementDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:164:      <Route path="/developer-portal/docs" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortalDocs /></FeatureErrorBoundary></ProtectedRoute>} />
+src/__tests__/admin-agents-route-gate.test.tsx:59:          <Route path="/login" element={<div>LOGIN</div>} />
+src/__tests__/admin-agents-route-gate.test.tsx:60:          <Route path="/dashboard" element={<div>DASHBOARD</div>} />
+src/__tests__/admin-agents-route-gate.test.tsx:61:          <Route path="/verify-email" element={<div>VERIFY_EMAIL</div>} />
+src/__tests__/admin-role-detection.test.tsx:128:        <Route path="/dashboard" element={<div data-testid="dashboard">DASHBOARD</div>} />
+src/__tests__/admin-role-detection.test.tsx:129:        <Route path="/login" element={<div data-testid="login">LOGIN</div>} />

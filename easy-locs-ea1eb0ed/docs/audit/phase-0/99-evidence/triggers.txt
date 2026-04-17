@@ -1,0 +1,241 @@
+# CREATE TRIGGER (file:line)
+supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:230:CREATE TRIGGER on_auth_user_created
+supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:245:CREATE TRIGGER update_profiles_updated_at
+supabase/migrations/20260226002630_4a0acf18-be6d-4547-a243-87a28c3bf309.sql:35:CREATE TRIGGER update_subscriptions_updated_at
+supabase/migrations/20260226030620_f2858819-c272-4cd6-924f-5ffd818b3ecc.sql:48:CREATE TRIGGER update_properties_updated_at BEFORE UPDATE ON public.properties FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+supabase/migrations/20260226030620_f2858819-c272-4cd6-924f-5ffd818b3ecc.sql:84:CREATE TRIGGER update_tenants_updated_at BEFORE UPDATE ON public.tenants FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+supabase/migrations/20260226030620_f2858819-c272-4cd6-924f-5ffd818b3ecc.sql:135:CREATE TRIGGER update_inventory_reports_updated_at BEFORE UPDATE ON public.inventory_reports FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+supabase/migrations/20260226030620_f2858819-c272-4cd6-924f-5ffd818b3ecc.sql:222:CREATE TRIGGER update_rent_calls_updated_at BEFORE UPDATE ON public.rent_calls FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+supabase/migrations/20260226070836_f5a37481-a954-46e1-b0af-a7b2b52251d6.sql:42:CREATE TRIGGER update_buildings_updated_at
+supabase/migrations/20260226080125_03145368-d3ce-4c89-84ca-b952e1f5fed7.sql:44:CREATE TRIGGER update_owner_profiles_updated_at
+supabase/migrations/20260226080125_03145368-d3ce-4c89-84ca-b952e1f5fed7.sql:92:CREATE TRIGGER update_leases_updated_at
+supabase/migrations/20260226080125_03145368-d3ce-4c89-84ca-b952e1f5fed7.sql:124:CREATE TRIGGER update_ota_connections_updated_at
+supabase/migrations/20260226080125_03145368-d3ce-4c89-84ca-b952e1f5fed7.sql:164:CREATE TRIGGER update_reservations_updated_at
+supabase/migrations/20260228022509_a8c6155c-eb90-40b6-bee5-e2d0b060947f.sql:31:CREATE TRIGGER update_interventions_updated_at BEFORE UPDATE ON public.interventions FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:60:CREATE TRIGGER trg_notify_booking_created
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:66:CREATE TRIGGER trg_notify_booking_request
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:96:CREATE TRIGGER trg_notify_payment_received
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:102:CREATE TRIGGER trg_notify_lease_created
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:108:CREATE TRIGGER trg_notify_intervention_created
+supabase/migrations/20260303220425_7625b373-c17c-486f-90c1-cd0575e0cb74.sql:137:CREATE TRIGGER trg_notify_inventory_completed
+supabase/migrations/20260306023436_c5bc1c99-6aaa-4f4d-aa7d-a7f18f164ea9.sql:73:CREATE TRIGGER set_referral_code
+supabase/migrations/20260306030651_a72f0e89-1995-4478-9c95-289e016028d7.sql:4:CREATE TRIGGER trg_notify_intervention_created
+supabase/migrations/20260306030651_a72f0e89-1995-4478-9c95-289e016028d7.sql:10:CREATE TRIGGER trg_notify_booking_request
+supabase/migrations/20260306030651_a72f0e89-1995-4478-9c95-289e016028d7.sql:16:CREATE TRIGGER trg_notify_payment_received
+supabase/migrations/20260306030651_a72f0e89-1995-4478-9c95-289e016028d7.sql:22:CREATE TRIGGER trg_notify_inventory_completed
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:5:CREATE OR REPLACE TRIGGER trg_notify_booking_request
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:11:CREATE OR REPLACE TRIGGER trg_notify_lease_created
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:17:CREATE OR REPLACE TRIGGER trg_notify_intervention_created
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:23:CREATE OR REPLACE TRIGGER trg_notify_payment_received
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:29:CREATE OR REPLACE TRIGGER trg_notify_inventory_completed
+supabase/migrations/20260306034414_d2c05dec-67f4-4bd4-83f2-d76d72c4dad3.sql:35:CREATE OR REPLACE TRIGGER trg_notify_booking_created
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:5:CREATE OR REPLACE TRIGGER trg_notify_booking_request
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:11:CREATE OR REPLACE TRIGGER trg_notify_booking_created
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:17:CREATE OR REPLACE TRIGGER trg_notify_lease_created
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:23:CREATE OR REPLACE TRIGGER trg_notify_intervention_created
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:29:CREATE OR REPLACE TRIGGER trg_notify_payment_received
+supabase/migrations/20260306042052_d5c57c6e-5506-4360-aeff-6588282ef198.sql:35:CREATE OR REPLACE TRIGGER trg_notify_inventory_completed
+supabase/migrations/20260306042743_ea8e2b2b-7d1f-4aa1-839c-134e0f9754c0.sql:39:CREATE OR REPLACE TRIGGER trg_auto_generate_receipt
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:4:CREATE OR REPLACE TRIGGER trg_notify_booking_request
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:9:CREATE OR REPLACE TRIGGER trg_notify_booking_created
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:14:CREATE OR REPLACE TRIGGER trg_notify_lease_created
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:19:CREATE OR REPLACE TRIGGER trg_notify_intervention_created
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:24:CREATE OR REPLACE TRIGGER trg_notify_payment_received
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:29:CREATE OR REPLACE TRIGGER trg_notify_inventory_completed
+supabase/migrations/20260306043705_a4494475-c6a8-43c7-9773-484d08d036f3.sql:34:CREATE OR REPLACE TRIGGER trg_auto_generate_receipt
+supabase/migrations/20260307075134_3e99a264-9c8f-49a1-ac06-bb9cc46e7f8e.sql:2:-- Create trigger function for concierge order notifications
+supabase/migrations/20260307075134_3e99a264-9c8f-49a1-ac06-bb9cc46e7f8e.sql:49:-- Create triggers
+supabase/migrations/20260307075134_3e99a264-9c8f-49a1-ac06-bb9cc46e7f8e.sql:50:CREATE TRIGGER trg_concierge_order_insert
+supabase/migrations/20260307075134_3e99a264-9c8f-49a1-ac06-bb9cc46e7f8e.sql:54:CREATE TRIGGER trg_concierge_order_update
+supabase/migrations/20260308000026_aeb9e491-35a0-4a7c-a81b-7190cfedcef2.sql:131:CREATE TRIGGER update_marketplace_providers_updated_at BEFORE UPDATE ON public.marketplace_providers
+supabase/migrations/20260308000026_aeb9e491-35a0-4a7c-a81b-7190cfedcef2.sql:134:CREATE TRIGGER update_marketplace_services_updated_at BEFORE UPDATE ON public.marketplace_services
+supabase/migrations/20260308000026_aeb9e491-35a0-4a7c-a81b-7190cfedcef2.sql:137:CREATE TRIGGER update_marketplace_bookings_updated_at BEFORE UPDATE ON public.marketplace_bookings
+supabase/migrations/20260308000026_aeb9e491-35a0-4a7c-a81b-7190cfedcef2.sql:166:CREATE TRIGGER on_marketplace_booking_created
+supabase/migrations/20260308050505_f15f221a-a866-4d32-96cd-08de60d58037.sql:28:CREATE TRIGGER trg_marketplace_service_slug
+supabase/migrations/20260310000323_b7d6edf4-7a6c-4788-99dd-b777b438b118.sql:109:CREATE TRIGGER trg_real_estate_slug
+supabase/migrations/20260310002036_d4eec27a-fd24-42ea-814f-ed2890faf98e.sql:40:CREATE TRIGGER trg_notify_real_estate_lead
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:70:CREATE TRIGGER audit_properties_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:75:CREATE TRIGGER audit_tenants_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:80:CREATE TRIGGER audit_leases_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:85:CREATE TRIGGER audit_expenses_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:90:CREATE TRIGGER audit_interventions_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:95:CREATE TRIGGER audit_rent_calls_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:100:CREATE TRIGGER audit_booking_requests_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:105:CREATE TRIGGER audit_marketplace_bookings_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:110:CREATE TRIGGER audit_concierge_orders_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:115:CREATE TRIGGER audit_org_members_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:120:CREATE TRIGGER audit_real_estate_listings_change
+supabase/migrations/20260311054349_d588fdbf-5881-44ba-b554-6067093a4e0a.sql:125:CREATE TRIGGER audit_marketplace_services_change
+supabase/migrations/20260311081444_6f41d63f-a400-45c0-b8aa-ede21012c6e1.sql:61:CREATE TRIGGER trg_update_provider_review_stats
+supabase/migrations/20260311083327_606ec7c8-6be3-4358-90d7-194cc5079e04.sql:5:-- Create trigger function to send review request notification when booking is completed
+supabase/migrations/20260311083327_606ec7c8-6be3-4358-90d7-194cc5079e04.sql:63:CREATE TRIGGER trg_notify_review_request
+supabase/migrations/20260312080851_b5fca418-92d7-4047-83cf-9d8a354c01a7.sql:58:-- 3. Create trigger on leases table
+supabase/migrations/20260312080851_b5fca418-92d7-4047-83cf-9d8a354c01a7.sql:60:CREATE TRIGGER trg_lease_fully_signed
+supabase/migrations/20260312080851_b5fca418-92d7-4047-83cf-9d8a354c01a7.sql:135:CREATE TRIGGER trg_auto_route_document
+supabase/migrations/20260312205916_9cf78409-c7f8-47c0-aaf3-99c76864f9ef.sql:57:CREATE TRIGGER trg_audit_listing_change
+supabase/migrations/20260312205916_9cf78409-c7f8-47c0-aaf3-99c76864f9ef.sql:125:CREATE TRIGGER trg_notify_listing_event
+supabase/migrations/20260312211555_1435d51f-f154-499d-9b5a-e588abad0ced.sql:74:    CREATE TRIGGER trg_notify_marketplace_booking
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:101:CREATE TRIGGER update_deal_rooms_updated_at
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:163:CREATE TRIGGER trg_audit_deal_status
+supabase/migrations/20260312213211_105eb49a-b899-4f84-9dd0-9be426d621b6.sql:69:-- Create trigger on messages table
+supabase/migrations/20260312213211_105eb49a-b899-4f84-9dd0-9be426d621b6.sql:71:CREATE TRIGGER trg_auto_deal_room_on_inquiry
+supabase/migrations/20260312213211_105eb49a-b899-4f84-9dd0-9be426d621b6.sql:129:CREATE TRIGGER trg_auto_deal_room_on_marketplace_booking
+supabase/migrations/20260312214400_76eaa97b-f67a-4d3e-befd-0cf294a5cd60.sql:72:CREATE TRIGGER trg_auto_confirm_deal_on_payment
+supabase/migrations/20260312214400_76eaa97b-f67a-4d3e-befd-0cf294a5cd60.sql:115:CREATE TRIGGER trg_auto_confirm_deal_on_concierge_payment
+supabase/migrations/20260313222810_4692ff2d-8b06-42bc-9bfb-3e712cbf73db.sql:44:CREATE TRIGGER trg_audit_message_deletion
+supabase/migrations/20260314084151_5d479bc4-5986-4db1-b750-26c5aaed6115.sql:32:-- Create trigger to auto-generate reference codes
+supabase/migrations/20260314084151_5d479bc4-5986-4db1-b750-26c5aaed6115.sql:34:CREATE TRIGGER trg_wallet_reference_code
+supabase/migrations/20260315223757_431141e0-fcd9-48df-989a-7788bd5459d7.sql:34:CREATE TRIGGER trg_auto_expire_deal_offers
+supabase/migrations/20260316071439_51a197dc-242c-409b-9463-42dc4c9ee351.sql:109:CREATE TRIGGER trg_delivery_status_notify
+supabase/migrations/20260316185624_944aa58d-c62c-470b-b110-2e9e1daffcf1.sql:301:CREATE TRIGGER trg_storefront_slug
+supabase/migrations/20260316193414_0bc7086d-4465-4e13-86ce-c1c81f085d6e.sql:75:CREATE TRIGGER trg_increment_coupon_usage
+supabase/migrations/20260316195550_4af4fde9-aa01-4a02-9042-9c0d47687972.sql:71:CREATE TRIGGER trg_notify_storefront_order
+supabase/migrations/20260316195550_4af4fde9-aa01-4a02-9042-9c0d47687972.sql:109:CREATE TRIGGER trg_notify_low_stock
+supabase/migrations/20260316195848_3a89b322-130c-4da2-8dc8-188cd8056b1a.sql:74:CREATE TRIGGER trg_notify_storefront_return
+supabase/migrations/20260316200935_50615f72-fbd6-4075-9126-ea36bd7b6652.sql:198:CREATE TRIGGER trg_storefront_stock_on_order
+supabase/migrations/20260316200935_50615f72-fbd6-4075-9126-ea36bd7b6652.sql:239:CREATE TRIGGER trg_storefront_loyalty_on_complete
+supabase/migrations/20260316201856_35cc97ce-8895-4c36-91a0-bbae82a8dc00.sql:142:CREATE TRIGGER trg_social_likes_count
+supabase/migrations/20260316201856_35cc97ce-8895-4c36-91a0-bbae82a8dc00.sql:160:CREATE TRIGGER trg_social_comments_count
+supabase/migrations/20260316201856_35cc97ce-8895-4c36-91a0-bbae82a8dc00.sql:186:CREATE TRIGGER trg_vendor_commission
+supabase/migrations/20260316202912_195d4bcc-48ea-4ba0-9ad2-db3cc101b92c.sql:139:CREATE TRIGGER trg_auction_bid
+supabase/migrations/20260316203919_e5a8915f-e672-4fd3-b169-003c97516a39.sql:26:CREATE TRIGGER trg_generate_rma_code BEFORE INSERT ON public.storefront_returns FOR EACH ROW EXECUTE FUNCTION public.generate_rma_code();
+supabase/migrations/20260316203919_e5a8915f-e672-4fd3-b169-003c97516a39.sql:119:CREATE TRIGGER trg_update_loyalty_tier BEFORE UPDATE ON public.storefront_loyalty_members FOR EACH ROW EXECUTE FUNCTION public.update_loyalty_tier();
+supabase/migrations/20260316205905_c8c2915b-f671-4457-a341-10dde229e69f.sql:74:    CREATE TRIGGER trg_generate_invoice_number BEFORE INSERT ON public.storefront_invoices
+supabase/migrations/20260316230436_5975dea9-046a-4e89-8b58-1d93d06df02b.sql:57:-- Drop if exists then create trigger
+supabase/migrations/20260316230436_5975dea9-046a-4e89-8b58-1d93d06df02b.sql:59:CREATE TRIGGER trg_auto_delivery_on_paid
+supabase/migrations/20260316230436_5975dea9-046a-4e89-8b58-1d93d06df02b.sql:111:CREATE TRIGGER trg_auto_order_on_deal_accepted
+supabase/migrations/20260316230436_5975dea9-046a-4e89-8b58-1d93d06df02b.sql:167:CREATE TRIGGER trg_auto_review_on_delivery
+supabase/migrations/20260316231949_7eefb947-4be8-46ab-88b5-3cc801e43fba.sql:172:CREATE TRIGGER trg_auto_dispatch_delivery
+supabase/migrations/20260317040354_764ad782-e907-493b-ac87-f4ac54d35914.sql:68:-- Drop if exists, then create trigger
+supabase/migrations/20260317040354_764ad782-e907-493b-ac87-f4ac54d35914.sql:70:CREATE TRIGGER trg_autoflow_order_paid
+supabase/migrations/20260317040354_764ad782-e907-493b-ac87-f4ac54d35914.sql:131:CREATE TRIGGER trg_autoflow_deal_to_order
+supabase/migrations/20260317040354_764ad782-e907-493b-ac87-f4ac54d35914.sql:173:CREATE TRIGGER trg_autoflow_delivery_completed
+supabase/migrations/20260317040354_764ad782-e907-493b-ac87-f4ac54d35914.sql:196:CREATE TRIGGER trg_autoflow_deduct_stock
+supabase/migrations/20260317041139_2c3a0127-20d8-4c4d-ae7f-d25e173e1abe.sql:52:CREATE TRIGGER trg_autoflow_order_notify
+supabase/migrations/20260317041139_2c3a0127-20d8-4c4d-ae7f-d25e173e1abe.sql:76:CREATE TRIGGER trg_autoflow_catalog_seo
+supabase/migrations/20260317043954_f38c8544-f483-4141-a204-88ad879e7a0f.sql:108:CREATE TRIGGER trg_trust_on_review
+supabase/migrations/20260317043954_f38c8544-f483-4141-a204-88ad879e7a0f.sql:123:CREATE TRIGGER trg_trust_on_order
+supabase/migrations/20260317043954_f38c8544-f483-4141-a204-88ad879e7a0f.sql:193:CREATE TRIGGER trg_loyalty_on_order_complete
+supabase/migrations/20260317043954_f38c8544-f483-4141-a204-88ad879e7a0f.sql:270:CREATE TRIGGER trg_risk_on_new_order
+supabase/migrations/20260317043954_f38c8544-f483-4141-a204-88ad879e7a0f.sql:342:CREATE TRIGGER trg_growth_on_order
+supabase/migrations/20260317050012_1490193d-b9d7-4f5a-83ef-ecb7567acc58.sql:67:CREATE TRIGGER trg_auto_notify_order
+supabase/migrations/20260317050012_1490193d-b9d7-4f5a-83ef-ecb7567acc58.sql:136:CREATE TRIGGER trg_auto_invoice_on_complete
+supabase/migrations/20260317050012_1490193d-b9d7-4f5a-83ef-ecb7567acc58.sql:163:CREATE TRIGGER trg_notify_on_review
+supabase/migrations/20260317050421_82c093d3-8e77-456a-9fb3-538bae001a47.sql:20:CREATE TRIGGER trg_auto_confirm_paid
+supabase/migrations/20260317050421_82c093d3-8e77-456a-9fb3-538bae001a47.sql:68:CREATE TRIGGER trg_auto_process_return
+supabase/migrations/20260317050421_82c093d3-8e77-456a-9fb3-538bae001a47.sql:93:CREATE TRIGGER trg_notify_new_return
+supabase/migrations/20260317052336_e11d2b31-3c1f-4c0b-878a-dbd42ba2dab6.sql:123:CREATE TRIGGER trg_crm_on_order
+supabase/migrations/20260317052336_e11d2b31-3c1f-4c0b-878a-dbd42ba2dab6.sql:142:CREATE TRIGGER trg_crm_inactive_check
+supabase/migrations/20260317052336_e11d2b31-3c1f-4c0b-878a-dbd42ba2dab6.sql:192:CREATE TRIGGER trg_reorder_on_complete
+supabase/migrations/20260317053147_37e1442c-d79d-44da-83bb-14aef139fbe6.sql:22:-- Only create trigger if storefront_loyalty_points exists
+supabase/migrations/20260317053147_37e1442c-d79d-44da-83bb-14aef139fbe6.sql:25:    EXECUTE 'CREATE TRIGGER trg_loyalty_alert AFTER UPDATE ON public.storefront_loyalty_points FOR EACH ROW EXECUTE FUNCTION public.trg_loyalty_alert_notification()';
+supabase/migrations/20260317053147_37e1442c-d79d-44da-83bb-14aef139fbe6.sql:48:CREATE TRIGGER trg_crm_inactive_notif
+supabase/migrations/20260317160553_505196b1-7e51-4c06-99bb-3c92a48b7cca.sql:48:CREATE TRIGGER trg_wallet_crypto_id
+supabase/migrations/20260317160553_505196b1-7e51-4c06-99bb-3c92a48b7cca.sql:65:CREATE TRIGGER trg_wallet_reference_code
+supabase/migrations/20260317160553_505196b1-7e51-4c06-99bb-3c92a48b7cca.sql:121:CREATE TRIGGER trg_auto_delivery_on_order
+supabase/migrations/20260317192218_17d1d5f8-c35c-46b5-b7b4-5ee0ab316dc2.sql:33:create trigger trg_unified_wallet_tx_updated_at
+supabase/migrations/20260317192437_b0074cb6-ea1c-4717-b47e-edb4031e933d.sql:21:create trigger trg_wallet_balances_v2_updated_at
+supabase/migrations/20260318020114_f6ade744-ba0a-4737-b0a5-103e35c9f5cd.sql:66:CREATE TRIGGER trg_validate_marketplace_listing
+supabase/migrations/20260318073255_84169e2d-fee6-42da-8243-dba3dc6ebe53.sql:121:CREATE TRIGGER trg_rent_call_paid
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:177:create trigger trg_financial_reconciliation_updated_at
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:204:create trigger trg_recon_alert_on_insert
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:227:create trigger trg_orbit_identity_profiles_updated_at before update on public.orbit_identity_profiles for each row execute function public.handle_updated_at();
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:230:create trigger trg_wallet_accounts_updated_at before update on public.wallet_accounts for each row execute function public.handle_updated_at();
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:233:create trigger trg_dispatch_prediction_jobs_updated_at before update on public.dispatch_prediction_jobs for each row execute function public.handle_updated_at();
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:236:create trigger trg_merchant_onboarding_sources_updated_at before update on public.merchant_onboarding_sources for each row execute function public.handle_updated_at();
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:239:create trigger trg_merchant_onboarding_profiles_updated_at before update on public.merchant_onboarding_profiles for each row execute function public.handle_updated_at();
+supabase/migrations/20260318201659_79795c38-1dd4-4bbe-a474-67fe6174806f.sql:56:create trigger trg_fraud_entities_updated_at
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:309:create trigger trg_workspaces_updated_at before update on public.workspaces for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:312:create trigger trg_workspace_members_updated_at before update on public.workspace_members for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:315:create trigger trg_user_profiles_updated_at before update on public.user_profiles for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:318:create trigger trg_workspace_settings_updated_at before update on public.workspace_settings for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:321:create trigger trg_support_tickets_updated_at before update on public.support_tickets for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:324:create trigger trg_dispatch_jobs_updated_at before update on public.dispatch_jobs for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:327:create trigger trg_menu_items_updated_at before update on public.menu_items for each row execute function public.handle_updated_at();
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:345:create trigger on_auth_user_created
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:214:create trigger trg_service_profiles_updated_at before update on public.service_profiles for each row execute function public.handle_updated_at();
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:217:create trigger trg_driver_profiles_updated_at before update on public.driver_profiles for each row execute function public.handle_updated_at();
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:220:create trigger trg_saved_addresses_updated_at before update on public.saved_addresses for each row execute function public.handle_updated_at();
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:223:create trigger trg_orders_updated_at before update on public.orders for each row execute function public.handle_updated_at();
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:226:create trigger trg_taxi_ride_requests_updated_at before update on public.taxi_ride_requests for each row execute function public.handle_updated_at();
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:217:create trigger trg_public_storefront_settings_updated_at before update on public.public_storefront_settings for each row execute function public.handle_updated_at();
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:220:create trigger trg_guest_checkout_sessions_updated_at before update on public.guest_checkout_sessions for each row execute function public.handle_updated_at();
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:223:create trigger trg_payment_intents_updated_at before update on public.payment_intents for each row execute function public.handle_updated_at();
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:226:create trigger trg_merchant_coverage_areas_updated_at before update on public.merchant_coverage_areas for each row execute function public.handle_updated_at();
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:229:create trigger trg_loyalty_accounts_updated_at before update on public.loyalty_accounts for each row execute function public.handle_updated_at();
+supabase/migrations/20260318212025_8acd20b1-17a1-44e1-b5ec-a8bb60f9ea15.sql:144:create trigger trg_system_feature_flags_updated_at
+supabase/migrations/20260318212611_76409cc9-ece4-48d3-a5a3-2492c754dc48.sql:87:create trigger trg_incident_cases_updated_at
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:37:CREATE TRIGGER on_auth_user_created_orbit
+supabase/migrations/20260320092641_cbfdb097-5192-4a62-b908-7a25629b5a7a.sql:17:CREATE TRIGGER set_orbit_profiles_v2_updated_at
+supabase/migrations/20260320092641_cbfdb097-5192-4a62-b908-7a25629b5a7a.sql:39:CREATE TRIGGER set_orbit_call_sessions_v2_updated_at
+supabase/migrations/20260320095650_d86d76ba-c7ff-457f-8da4-ad7c19a02810.sql:116:create trigger trg_validate_review_rating
+supabase/migrations/20260320200734_70efdd05-47f3-4004-b9e6-0ade1612bfd0.sql:64:CREATE TRIGGER wallet_update_trigger
+supabase/migrations/20260320230342_6187e24a-b4b1-417f-8c1a-ee6b7c50784b.sql:75:CREATE TRIGGER trg_set_listing_expiry BEFORE INSERT ON public.marketplace_services FOR EACH ROW EXECUTE FUNCTION public.set_listing_expiry();
+supabase/migrations/20260320230342_6187e24a-b4b1-417f-8c1a-ee6b7c50784b.sql:78:CREATE TRIGGER trg_set_listing_expiry_update BEFORE UPDATE OF published_at ON public.marketplace_services FOR EACH ROW
+supabase/migrations/20260321042014_9295ff9b-433e-4bb2-9db5-c9b63d15c6d4.sql:166:CREATE TRIGGER trg_auto_wallet_limits
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:260:CREATE TRIGGER trg_catalog_searchable
+supabase/migrations/20260325233133_f292dfe8-6c7f-4a59-ac7e-c0a6b334bf61.sql:49:create trigger rides_set_updated_at before update on public.rides for each row execute function public.set_updated_at();
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:135:CREATE TRIGGER trg_cp_search_text
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:88:CREATE TRIGGER trg_cp_zone_key
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:160:CREATE TRIGGER audit_tenants AFTER INSERT OR UPDATE OR DELETE ON public.tenants
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:164:CREATE TRIGGER audit_leases AFTER INSERT OR UPDATE OR DELETE ON public.leases
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:168:CREATE TRIGGER audit_user_roles AFTER INSERT OR UPDATE OR DELETE ON public.user_roles
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:172:CREATE TRIGGER audit_org_members AFTER INSERT OR UPDATE OR DELETE ON public.org_members
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:176:CREATE TRIGGER audit_wallet_transactions AFTER INSERT OR UPDATE OR DELETE ON public.wallet_transactions
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:180:CREATE TRIGGER audit_owner_profiles AFTER INSERT OR UPDATE OR DELETE ON public.owner_profiles
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:45:create trigger trg_user_private_data_updated_at before update on public.user_private_data for each row execute function public.set_updated_at();
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:47:create trigger trg_owner_private_financials_updated_at before update on public.owner_private_financials for each row execute function public.set_updated_at();
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:49:create trigger trg_tenant_private_contacts_updated_at before update on public.tenant_private_contacts for each row execute function public.set_updated_at();
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:51:create trigger trg_merchant_private_contacts_updated_at before update on public.merchant_private_contacts for each row execute function public.set_updated_at();
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:101:create trigger audit_user_private_data after insert or update or delete on public.user_private_data for each row execute function public.audit_trigger_fn('pii');
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:103:create trigger audit_owner_private_financials after insert or update or delete on public.owner_private_financials for each row execute function public.audit_trigger_fn('fintech');
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:105:create trigger audit_tenant_private_contacts after insert or update or delete on public.tenant_private_contacts for each row execute function public.audit_trigger_fn('pii');
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:107:create trigger audit_merchant_private_contacts after insert or update or delete on public.merchant_private_contacts for each row execute function public.audit_trigger_fn('pii');
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:111:create trigger audit_wallet_ledger_entries after insert or update or delete on public.wallet_ledger_entries for each row execute function public.audit_trigger_fn('fintech');
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:354:CREATE TRIGGER trg_push_booking_status
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:384:    EXECUTE 'CREATE TRIGGER trg_push_wallet_transaction AFTER INSERT OR UPDATE OF status ON wallet_transactions FOR EACH ROW EXECUTE FUNCTION push_on_wallet_transaction()';
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:410:CREATE TRIGGER trg_push_order_status
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:440:    EXECUTE 'CREATE TRIGGER trg_push_message_received AFTER INSERT ON messages FOR EACH ROW EXECUTE FUNCTION push_on_message_received()';
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:468:CREATE TRIGGER trg_push_service_degraded
+supabase/migrations/20260414900000_legal_compliance.sql:46:CREATE TRIGGER trg_block_audit_update
+supabase/migrations/20260414900000_legal_compliance.sql:50:CREATE TRIGGER trg_block_audit_delete
+supabase/migrations/20260414900000_legal_compliance.sql:90:    CREATE TRIGGER trg_audit_wallet_tx
+supabase/migrations/20260415120000_commerce_services_complete.sql:221:    CREATE TRIGGER trg_variant_stock_on_order_item
+supabase/migrations/20260414610000_search_infrastructure.sql:64:CREATE TRIGGER trg_storefront_search_vector
+supabase/migrations/20260414610000_search_infrastructure.sql:91:CREATE TRIGGER trg_listings_search_vector
+supabase/migrations/20260414610000_search_infrastructure.sql:118:CREATE TRIGGER trg_properties_search_vector
+supabase/migrations/20260414610000_search_infrastructure.sql:143:CREATE TRIGGER trg_profiles_search_vector
+supabase/migrations/20260414610000_search_infrastructure.sql:167:CREATE TRIGGER trg_seed_products_search_vector
+supabase/migrations/20260414610000_search_infrastructure.sql:192:CREATE TRIGGER trg_categories_search_vector
+supabase/migrations/20260415410000_unified_providers.sql:234:CREATE TRIGGER trg_providers_updated_at
+supabase/migrations/20260415410000_unified_providers.sql:291:    CREATE TRIGGER trg_kyc_gate_withdrawal
+supabase/migrations/20260415_c2c_tables.sql:53:CREATE TRIGGER trg_update_listing_search_vector
+supabase/migrations/20260416400000_unified_identity_triggers.sql:23:    CREATE TRIGGER trg_identity_propagate_to_orbit
+supabase/migrations/20260416100000_cron_failure_notifications.sql:94:CREATE TRIGGER trg_cron_failure_notify
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:27:CREATE TRIGGER trg_storefront_search_sync
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:32:CREATE TRIGGER trg_listings_search_sync
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:37:CREATE TRIGGER trg_properties_search_sync
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:42:CREATE TRIGGER trg_products_search_sync
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:47:CREATE TRIGGER trg_profiles_search_sync
+supabase/migrations/20260417600000_search_sync_schedule.sql:104:      'CREATE TRIGGER trg_search_sync_%I
+supabase/migrations/20260418000000_database_fortress_layer1.sql:806:CREATE TRIGGER trg_bnpl_plans_insert
+supabase/migrations/20260418000000_database_fortress_layer1.sql:858:CREATE TRIGGER trg_bnpl_plans_update
+supabase/migrations/20260418000000_database_fortress_layer1.sql:916:CREATE TRIGGER trg_signature_envelopes_insert
+supabase/migrations/20260418000000_database_fortress_layer1.sql:939:CREATE TRIGGER trg_signature_envelopes_update
+supabase/migrations/20260418300000_execution_tasks.sql:56:CREATE TRIGGER trg_execution_tasks_touch_updated_at
+supabase/migrations/20260418300100_execution_tasks_hardening.sql:101:CREATE TRIGGER trg_execution_tasks_state_machine
+supabase/migrations/20260418500000_execution_tasks_v2.sql:278:CREATE TRIGGER trg_execution_tasks_state_machine
+supabase/migrations/20260419000000_next_gen_ia.sql:260:CREATE TRIGGER trg_content_enrichments_touch
+supabase/migrations/20260419000000_agent_registry.sql:134:CREATE TRIGGER trg_policy_profiles_touch
+supabase/migrations/20260419000000_agent_registry.sql:139:CREATE TRIGGER trg_agents_touch
+supabase/migrations/20260420100000_agent_heartbeats.sql:360:CREATE TRIGGER trg_agent_heartbeat_transition
+supabase/migrations/20260421100000_execution_tasks_rollback_l3.sql:177:CREATE TRIGGER trg_execution_tasks_state_machine
+supabase/migrations/20260422000000_goal_engine.sql:33:CREATE TRIGGER trg_goals_touch_updated_at
+supabase/migrations/20260424000000_admin_approvals_inbox.sql:170:CREATE TRIGGER trg_execution_tasks_approval_requested
+supabase/migrations/20260422000000_agent_tasks_command_center.sql:42:CREATE TRIGGER trg_agent_tasks_updated_at
+supabase/migrations/20260423000000_goals_planner_memory.sql:182:CREATE TRIGGER goals_set_updated_at
+supabase/migrations/20260423000000_goals_planner_memory.sql:187:CREATE TRIGGER learning_memory_set_updated_at
+supabase/migrations/20260501000000_lc6_rollback_strategies.sql:53:CREATE TRIGGER trg_rollback_strategies_updated_at
+supabase/migrations/20260501500000_backfill_embeddings_cron.sql:138:      CREATE TRIGGER trg_listings_embedding_stale
+supabase/migrations/20260501500000_backfill_embeddings_cron.sql:157:      CREATE TRIGGER trg_services_embedding_stale
+supabase/migrations/20260501500000_backfill_embeddings_cron.sql:175:      CREATE TRIGGER trg_products_embedding_stale
