@@ -1,26 +1,17 @@
 name: Edge Function Contract Matrix
 
-# Runs the frontend ↔ Edge Function contract matrix on every pull request.
-# The `--ci` flag (npm run contracts:matrix:ci) fails the step on any of:
-#   - orphaned frontend call (target function does not exist on disk)
-#   - method mismatch
-#   - missing required body field
-#   - missing body when handler requires JSON
-#   - missing Authorization header on a fetch() to a JWT-required function
-#   - stale committed matrix artifact (docs/edge-functions-contract-matrix.{md,json})
-#
-# This gates merges on contract drift instead of waiting for someone to
-# remember to re-run the script locally.
 on:
   pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   contract-matrix:
-    name: Edge function contract matrix
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -37,21 +28,74 @@ jobs:
           cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
+        run: npm ci
 
-      - name: Run contract matrix (CI mode — fails on mismatches or stale artifact)
+      # Gate runs FIRST against the checked-out (committed) state so the
+      # built-in stale-artifact check in `contracts:matrix:ci` still has
+      # teeth — comparing freshly-computed output against the committed
+      # docs files. We use continue-on-error so the comment-posting steps
+      # below still execute on failure; the final step propagates the
+      # exit status to keep the job red.
+      - name: Run contract matrix CI gate
+        id: gate
         run: npm run contracts:matrix:ci
+        continue-on-error: true
 
-      - name: Regenerate matrix artifact for inspection on failure
-        if: failure()
+      # Regenerate the docs after the gate so the comment body reflects
+      # the current state on this branch (including the very mismatches
+      # the gate is failing on). Safe because we're not committing the
+      # regenerated files — they're only used as input to the comment
+      # builder and the failure-only artifact upload.
+      - name: Regenerate contract matrix for comment + artifact
+        if: always()
         run: npm run contracts:matrix
 
-      - name: Upload regenerated matrix on failure
-        if: failure()
+      - name: Detect stale committed matrix docs
+        id: stale
+        if: always()
+        run: |
+          if git diff --quiet -- docs/edge-functions-contract-matrix.md docs/edge-functions-contract-matrix.json; then
+            echo "stale=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build PR comment body
+        if: always()
+        env:
+          STALE_ARTIFACT: ${{ steps.stale.outputs.stale }}
+        run: npx tsx scripts/edge-function-contract-matrix-comment.ts ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Ensure comment body exists
+        if: always()
+        run: |
+          if [ ! -s "${{ github.workspace }}/edge-fn-contract-comment.md" ]; then
+            cat > "${{ github.workspace }}/edge-fn-contract-comment.md" <<EOF
+          ## Edge Function Contract Matrix
+
+          The contract matrix workflow did not produce a report for this commit.
+          See the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          EOF
+          fi
+
+      - name: Post sticky PR comment
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: edge-fn-contract-matrix
+          path: ${{ github.workspace }}/edge-fn-contract-comment.md
+
+      - name: Upload regenerated matrix
+        if: steps.gate.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
-          name: edge-functions-contract-matrix-${{ github.sha }}
+          name: edge-fn-contract-matrix
           path: |
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.md
             easy-locs-ea1eb0ed/docs/edge-functions-contract-matrix.json
-          retention-days: 14
+
+      - name: Propagate gate result
+        if: steps.gate.outcome == 'failure'
+        run: |
+          echo "Edge Function contract matrix gate failed — see the sticky PR comment for the blocking mismatches."
+          exit 1
