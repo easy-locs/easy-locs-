@@ -32,6 +32,7 @@ import {
   runDevBuilderForPlan,
 } from "../_shared/execution/builders/dev-builder-runtime.ts";
 import { createGithubFetchOthers } from "../_shared/execution/builders/github-fetch-others.ts";
+import { preciseComputeCurrentChanges } from "../_shared/execution/builders/merge-conflict-recovery.ts";
 import {
   ExecutionOrchestratorV2,
   type OrchestratorDeps,
@@ -213,6 +214,12 @@ Deno.serve(async (req) => {
         branchCutAt,
         defaultBranch: githubBase,
       }),
+      // #939 — derive precise per-hunk new-side line ranges from the
+      // code.edit adapter result so the drift gate only fires on
+      // actual line overlap, not "same file touched anywhere". This
+      // matches the precision of the GitHub-side comparison set
+      // produced by `createGithubFetchOthers`.
+      computeCurrentChanges: preciseComputeCurrentChanges,
     },
     github: {
       pat: githubToken,
