@@ -2,7 +2,9 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — outbound email AI translation goes through the
+// platform agent registry; direct `openaiChat` is no longer permitted.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -493,16 +495,21 @@ Deno.serve(async (req) => {
         };
         const targetLang = LOCALE_NAMES[locale] || locale;
         try {
-          const aiRes = await openaiChat({
-            messages: [
-              { role: "system", content: `Translate the following email content to ${targetLang}. Return a JSON object with keys: "subject", "title", "body". Keep the same formatting, emojis, and tone. Return ONLY the JSON.` },
-              { role: "user", content: JSON.stringify({ subject, title, body }) },
-            ],
-            max_tokens: 2000, temperature: 0.1,
-          });
-          if (aiRes.ok) {
-            const aiData = await aiRes.json();
-            const content = aiData.choices?.[0]?.message?.content?.trim() || "";
+          const outcome = await dispatchAiCompletion(
+            {
+              feature: "send-notification-email.translate",
+              messages: [
+                { role: "system", content: `Translate the following email content to ${targetLang}. Return a JSON object with keys: "subject", "title", "body". Keep the same formatting, emojis, and tone. Return ONLY the JSON.` },
+                { role: "user", content: JSON.stringify({ subject, title, body }) },
+              ],
+              maxTokens: 2000,
+              temperature: 0.1,
+              purpose: "general",
+            },
+            { feature: "send-notification-email.translate" },
+          );
+          if (outcome.status === "succeeded" && outcome.output) {
+            const content = outcome.output.text?.trim() || "";
             // Parse JSON from AI response (may have markdown code fence)
             const jsonStr = content.replace(/^```json?\n?/i, "").replace(/\n?```$/i, "").trim();
             try {
@@ -512,6 +519,13 @@ Deno.serve(async (req) => {
               if (parsed.body) body = parsed.body;
               console.log(`[send-notification-email] AI translated to ${targetLang}`);
             } catch { console.warn("[send-notification-email] AI translation parse failed"); }
+          } else {
+            console.warn(
+              "[send-notification-email] AI translation dispatch not succeeded:",
+              outcome.status,
+              outcome.errorCode,
+              outcome.errorMessage ?? outcome.blockedReason,
+            );
           }
         } catch (e) { console.error("[send-notification-email] AI translation error:", e); }
       }

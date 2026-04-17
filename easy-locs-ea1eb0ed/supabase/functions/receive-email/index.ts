@@ -7,7 +7,9 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
  * Auto-translates for owner when languages differ.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — inbound email translation goes through the platform
+// agent registry; direct `openaiChat` is no longer permitted.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { constantTimeEqual } from "../_shared/webhook-signature.ts";
@@ -78,17 +80,36 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
     vi: "Vietnamese", hi: "Hindi",
   };
   try {
-    const res = await openaiChat({
-      messages: [
-        { role: "system", content: `Translate from ${names[fromLocale] || fromLocale} to ${names[toLocale] || toLocale}. Return ONLY the translation.` },
-        { role: "user", content: text },
-      ],
-      max_tokens: 2000, temperature: 0.1,
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.choices?.[0]?.message?.content?.trim() || null;
-  } catch { return null; }
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "receive-email.translate",
+        messages: [
+          { role: "system", content: `Translate from ${names[fromLocale] || fromLocale} to ${names[toLocale] || toLocale}. Return ONLY the translation.` },
+          { role: "user", content: text },
+        ],
+        maxTokens: 2000,
+        temperature: 0.1,
+        purpose: "general",
+      },
+      { feature: "receive-email.translate" },
+    );
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.warn(
+        "[receive-email] translate dispatch not succeeded:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      return null;
+    }
+    return outcome.output.text?.trim() || null;
+  } catch (err) {
+    console.warn(
+      "[receive-email] translate dispatch threw:",
+      err instanceof Error ? err.message : String(err),
+    );
+    return null;
+  }
 }
 
 async function handler(req: Request): Promise<Response> {

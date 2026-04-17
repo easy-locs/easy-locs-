@@ -1,7 +1,11 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
-import { getOpenAIApiKey } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — embedding generation goes through the platform agent
+// registry. Direct `fetch("https://api.openai.com/v1/embeddings")` is no
+// longer permitted; the AI_EMBEDDING adapter handles provider selection,
+// quota and ai_interactions persistence.
+import { dispatchAiEmbedding } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -49,29 +53,25 @@ const TARGETS: Record<string, EmbeddingTarget> = {
   },
 };
 
-async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  const apiKey = getOpenAIApiKey();
-
-  const resp = await fetch("https://api.openai.com/v1/embeddings", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: EMBEDDING_MODEL,
+async function generateEmbeddings(texts: string[], target: string): Promise<number[][]> {
+  const outcome = await dispatchAiEmbedding(
+    {
+      feature: `generate-embeddings.${target}`,
       input: texts,
+      model: EMBEDDING_MODEL,
       dimensions: EMBEDDING_DIMENSIONS,
-    }),
-  });
+    },
+    { feature: `generate-embeddings.${target}` },
+  );
 
-  if (!resp.ok) {
-    const err = await resp.text();
-    throw new Error(`OpenAI Embeddings error [${resp.status}]: ${err}`);
+  if (outcome.status !== "succeeded" || !outcome.output) {
+    throw new Error(
+      `AI_EMBEDDING dispatch ${outcome.status}` +
+        (outcome.errorCode ? ` [${outcome.errorCode}]` : "") +
+        (outcome.errorMessage ? `: ${outcome.errorMessage}` : ""),
+    );
   }
-
-  const data = await resp.json();
-  return data.data.map((d: { embedding: number[] }) => d.embedding);
+  return outcome.output.vectors;
 }
 
 function buildEmbeddingText(row: Record<string, unknown>, columns: string[]): string {
@@ -153,7 +153,7 @@ Deno.serve(async (req) => {
 
           if (nonEmpty.length === 0) continue;
 
-          const embeddings = await generateEmbeddings(nonEmpty);
+          const embeddings = await generateEmbeddings(nonEmpty, name);
 
           let embIdx = 0;
           for (let j = 0; j < batch.length; j++) {

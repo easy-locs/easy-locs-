@@ -1,5 +1,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — generate-cv now goes through the platform agent
+// registry. Direct `openaiChat` is no longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -38,41 +40,57 @@ Languages: ${languages || "Not specified"}
 
 IMPORTANT: Generate clean, professional HTML with modern styling. Use a clean font stack. Make the layout elegant and ATS-friendly. Output only the HTML body content, no <html> or <head> tags.`;
 
-    const response = await openaiChat({
-      messages: [
-        { role: "system", content: "You are a professional CV/resume writer. Generate clean, elegant HTML CVs with inline CSS styling. Output only HTML, no markdown." },
-        { role: "user", content: prompt },
-      ],
-    });
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "generate-cv",
+        messages: [
+          { role: "system", content: "You are a professional CV/resume writer. Generate clean, elegant HTML CVs with inline CSS styling. Output only HTML, no markdown." },
+          { role: "user", content: prompt },
+        ],
+        purpose: "general",
+      },
+      { feature: "generate-cv" },
+    );
 
-    if (!response.ok) {
-      const status = response.status;
-      if (status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (status === 402) {
-        return new Response(JSON.stringify({ error: "AI usage limit reached. Please try again later." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const errorText = await response.text();
-      console.error("AI gateway error:", status, errorText);
-      throw new Error(`AI gateway error: ${status}`);
+    if (outcome.status === "succeeded" && outcome.output) {
+      let cv = outcome.output.text ?? "";
+      cv = cv.replace(/```html\n?/g, "").replace(/```\n?/g, "").trim();
+      return new Response(JSON.stringify({ cv, task_id: outcome.taskId }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const data = await response.json();
-    let cv = data.choices?.[0]?.message?.content || "";
-    
-    // Clean up any markdown code fences
-    cv = cv.replace(/```html\n?/g, "").replace(/```\n?/g, "").trim();
+    if (outcome.status === "pending_review") {
+      return new Response(
+        JSON.stringify({
+          status: "pending_review",
+          task_id: outcome.taskId,
+          reason: outcome.blockedReason,
+        }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
-    return new Response(JSON.stringify({ cv }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    const httpStatus =
+      outcome.status === "timeout" ? 504 :
+      outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
+      (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
+      500;
+
+    console.error(
+      "[generate-cv] dispatch outcome:",
+      outcome.status,
+      outcome.errorCode,
+      outcome.errorMessage ?? outcome.blockedReason,
+    );
+    return new Response(
+      JSON.stringify({
+        error: outcome.errorMessage ?? outcome.blockedReason ?? "AI dispatch failed",
+        error_code: outcome.errorCode,
+        task_id: outcome.taskId,
+      }),
+      { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (e) {
     console.error("generate-cv error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {

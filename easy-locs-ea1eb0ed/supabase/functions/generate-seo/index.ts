@@ -1,7 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
+// LB1 Track 1 (#841) — generate-seo now goes through the platform agent
+// registry. Direct `openaiChat` is no longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -133,35 +135,54 @@ ONLY return valid JSON, no markdown.`;
       });
     }
 
-    const response = await openaiChat({
-      messages: [
-        { role: "system", content: "You are an SEO expert. Return ONLY valid JSON. No markdown fences." },
-        { role: "user", content: prompt },
-      ],
-      max_tokens: 1500,
-      temperature: 0.4,
-    });
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "generate-seo",
+        messages: [
+          { role: "system", content: "You are an SEO expert. Return ONLY valid JSON. No markdown fences." },
+          { role: "user", content: prompt },
+        ],
+        maxTokens: 1500,
+        temperature: 0.4,
+        purpose: "general",
+      },
+      { feature: "generate-seo" },
+    );
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("AI Gateway error:", response.status, err);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required" }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      return new Response(JSON.stringify({ error: "AI error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (outcome.status === "pending_review") {
+      return new Response(
+        JSON.stringify({
+          status: "pending_review",
+          task_id: outcome.taskId,
+          reason: outcome.blockedReason,
+        }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    const data = await response.json();
-    const raw = data.choices?.[0]?.message?.content || "{}";
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.error(
+        "[generate-seo] dispatch outcome:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      const httpStatus =
+        outcome.status === "timeout" ? 504 :
+        outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
+        (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
+        500;
+      return new Response(
+        JSON.stringify({
+          error: outcome.errorMessage ?? outcome.blockedReason ?? "AI error",
+          error_code: outcome.errorCode,
+          task_id: outcome.taskId,
+        }),
+        { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const raw = outcome.output.text || "{}";
 
     // Strip markdown fences if present
     const cleaned = raw.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
