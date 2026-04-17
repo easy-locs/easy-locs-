@@ -1,5 +1,6 @@
 import { Component, type ReactNode } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { captureException as sentryCapture, Sentry } from "@/lib/analytics/sentry";
 
 interface Props {
   children: ReactNode;
@@ -35,7 +36,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error(`[FeatureErrorBoundary:${this.props.featureName}]`, error.message, info.componentStack);
 
-    void import("@/lib/analytics/sentry").then(({ captureException: sentryCapture, Sentry }) => {
+    try {
       Sentry.withScope((scope: any) => {
         scope.setTag("feature", this.props.featureName);
         if (this.props.domain) scope.setTag("domain", this.props.domain);
@@ -44,7 +45,7 @@ export class FeatureErrorBoundary extends Component<Props, State> {
         scope.setExtra("retryCount", this.state.retryCount);
         sentryCapture(error);
       });
-    }).catch(() => {});
+    } catch {}
 
     void import("@/lib/observability/structured-logger").then(({ structuredLogger }) => {
       const domain = (this.props.domain || this.props.featureName.toLowerCase()) as any;
