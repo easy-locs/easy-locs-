@@ -1,38 +1,35 @@
-tree badb27a193bcc326c99f87532e88272413655976
-parent 25b5787c21bc5cac2ecd57840e8018a762995066
-author jstarbuzz <jstarbuzz@gmail.com> 1776465670 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776465670 +0000
+tree d7c59a0a69bbd370de93e29fc43868feb7f81f5d
+parent dab2597b90358ff923f02150f573a80b15f02025
+author jstarbuzz <jstarbuzz@gmail.com> 1776372389 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776372389 +0000
 
-Fix in-build SEO validator gate (task #896)
+Add GitHub Actions secret scanner workflow (Task #741)
 
-Root cause: the base index.html shipped a 251-char meta description, a
-canonical, hreflang, og:*, twitter:*, keywords, robots tags and JSON-LD
-with @types (SoftwareApplication, ContactPoint, EntryPoint) that the
-validator doesn't recognise. injectIntoHtml only stripped <title>, so
-every prerendered page inherited those tags, producing 10,426 critical
-issues (duplicate canonicals, over-length descriptions, unknown JSON-LD
-types). The build was kept passing only by SEO_GATE_BYPASS=1.
+Original task: extend the existing fast secret scanner
+(scripts/secret-scan.sh, added in Task #732, currently only run via
+scripts/post-merge.sh after Replit merges) to also run as a GitHub
+Actions check on every pull request and on pushes to main, so leaks
+are caught before reaching the main branch.
 
 Changes:
-- vite-plugin-prerender.ts: injectIntoHtml now also strips
-  <meta name="description|keywords|robots">, <link rel="canonical">,
-  <link rel="alternate" hreflang>, all og:*/twitter:* meta and every
-  <script type="application/ld+json"> from the base HTML before
-  injecting the route-specific headMeta. Verified via a unit-style
-  regex check against index.html that no leak vectors remain.
-- vite-plugin-seo-validate.ts: removed the SEO_GATE_BYPASS and
-  SEO_ISSUES_THRESHOLD env-var escape hatches. The validator now
-  unconditionally throws on any critical issue, missing trust file or
-  score < 50.
+- New workflow .github/workflows/secret-scan.yml
+  - Triggers: pull_request, push to main, workflow_dispatch
+  - Single job on ubuntu-latest that checks out the repo
+    (fetch-depth: 0 so git ls-files in the scanner sees the full
+    tracked file set) and runs `bash scripts/secret-scan.sh`
+  - The scanner exits 1 on any match, which fails the job and
+    produces a red required check on the PR.
+- New SECURITY.md at repo root documenting:
+  - What the scanner detects
+  - Where it runs (post-merge locally + GitHub Actions on PRs/main)
+  - What contributors should do on a failure (remove + rotate, or
+    narrow the pattern / add a SKIP_REGEX exclusion)
+  - How to run it locally
 
-Verification: confirmed CI workflows (bundle-size-gate.yml,
-deploy-now.yml, lc-governance-tests.yml) never set the bypass, so
-removing it is safe. End-to-end `vite build` could not complete in this
-environment because the long-running build process was repeatedly
-killed before reaching the seo-validate step; the strip logic was
-unit-tested directly against index.html instead.
+Verification:
+- Ran `bash scripts/secret-scan.sh` locally — clean
+  (5465 files scanned, no findings) with the new files in place.
 
-Follow-ups proposed: generate sitemap.xml at build time, add RSS/Atom
-feeds, and reduce build duration / circular chunks.
+No deviations from the task spec.
 
-Replit-Task-Id: 6bd5d164-e44c-43f3-9497-bab88226b199
+Replit-Task-Id: 6b27687c-14ee-4e1e-9052-27e8ea51278c
