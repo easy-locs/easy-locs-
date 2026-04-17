@@ -1046,17 +1046,9 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Stale Data Guard Fix**: `CronJobHistoryWidget` fetchIdRef changed from plain object to `useRef(0)`.
 - **New Env Vars**: `FIRECRAWL_COST_PER_CALL` (default 0.001), `CACHE_HIT_RATE_ALERT_THRESHOLD` (default 20%).
 
-## Multi-Agent Orchestrator (`orchestrator/`)
-- **Purpose**: AI team of 6 specialized agents that process GitHub Issues, decompose tasks, create PRs, and validate changes with human approval gates.
-- **Stack**: Node.js + TypeScript + Express + OpenAI API + Octokit (GitHub API)
-- **Entry point**: `orchestrator/src/index.ts` — Express server with webhook endpoint
-- **Agents**: Chief Architect (architecture review), Coding (implementation), QA Validation (testing/safety), Supabase (schema/RLS/Edge Functions), Deploy (Vercel deployment), Observability (health monitoring/incidents)
-- **Repo Rules**: `.agents/rules/` — 6 markdown files encoding architecture conventions (ORBIT bus, pillar boundaries, engine contracts, DB schema map, file organization, coding standards). Injected as agent context.
-- **Pipeline**: GitHub Issue → Task Decomposition (LLM) → Subtask routing → Agent execution → PR creation → Human approval gate
-- **Endpoints**: `POST /webhooks/github` (webhook), `GET /health`, `GET /audit`, `GET /tasks`, `GET /cost`
-- **Audit**: Every agent action logged with agent ID, timestamp, rationale, token usage
-- **Cost Controls**: Per-model token cost tracking, daily/monthly budget caps, alerts at 80%/90% thresholds
-- **Environment Variables**: `GITHUB_APP_ID`, `GITHUB_PRIVATE_KEY`, `GITHUB_WEBHOOK_SECRET`, `GITHUB_OWNER`, `GITHUB_REPO`, `OPENAI_API_KEY`, `OPENAI_MODEL` (default: gpt-4o), `COST_DAILY_LIMIT_USD` (default: 10), `COST_MONTHLY_LIMIT_USD` (default: 200), `VERCEL_TOKEN` (optional), `SUPABASE_URL` (optional), `SUPABASE_SERVICE_ROLE_KEY` (optional)
+## Multi-Agent Orchestrator — Level C target (planning only)
+- **Status**: The legacy standalone `orchestrator/` Express service (Node.js, OpenAI/Octokit, 6 agents) was removed in LB Closeout #852. It had no consumers in the runtime app and was the sole holder of direct `from "openai"` / `from "@openai/agents"` SDK imports. Removing it eliminated the last AI-call bypass.
+- **Future**: Level C will rebuild the dev/build agent family (dev.builder, dev.reviewer, dev.deployer) as first-class platform-native agents on top of `dispatchExecutionTask` + `dispatchAiCompletion`, governed by the same registry/policy/audit chain as Levels A and B. The complete planning bundle lives in `.local/level-c-planning/` (start at `LEVEL_C_READINESS.md`). No Level C code may merge until the readiness gates in `.local/level-c-planning/deep/F-readiness-gates.md` are green.
 
 ## Orbit AI Support Factory
 - **Route**: `/orbit/support` — protected, lazy-loaded via `app-route-registry.tsx`

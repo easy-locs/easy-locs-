@@ -83,10 +83,11 @@ export function parseEmailLocally(subject: string, body: string): ParsedEmail {
 }
 
 // LB Closeout #852 — frontend no longer holds a provider key. The AI parse
-// path is delegated to the `command-email-intake` Edge Function, which
-// routes through `dispatchAiCompletion` so the call is governed (quota,
-// audit, sensitive routing). Local rule-based fallback is preserved on
-// any error so the UI degrades gracefully.
+// path is delegated to the session-authenticated `command-email-parse`
+// Edge Function (sibling to the HMAC-gated `command-email-intake` webhook),
+// which routes through `dispatchAiCompletion` so the call is governed
+// (quota, audit, sensitive routing). Local rule-based fallback is preserved
+// on any error so the UI degrades gracefully.
 export async function parseEmailWithAI(
   subject: string,
   body: string,
@@ -94,8 +95,8 @@ export async function parseEmailWithAI(
   const localParsed = parseEmailLocally(subject, body);
 
   try {
-    const { data, error } = await supabase.functions.invoke("command-email-intake", {
-      body: { subject, body, mode: "parse-only" },
+    const { data, error } = await supabase.functions.invoke("command-email-parse", {
+      body: { subject, body },
     });
 
     if (error || !data) return localParsed;
