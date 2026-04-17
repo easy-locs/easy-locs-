@@ -1,8 +1,8 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function listMerchantInventory(merchantId: string) {
-  const { data, error } = await db
-    .from("seed_products")
+  const { data, error } = await cFrom("seed_products")
     .select("*")
     .eq("merchant_id", merchantId)
     .order("sort_order", { ascending: true });
@@ -29,8 +29,7 @@ export async function updateProductInventory(params: {
     patch.is_available = !!params.isAvailable;
   }
 
-  const { data, error } = await db
-    .from("seed_products")
+  const { data, error } = await cFrom("seed_products")
     .update(patch)
     .eq("id", params.productId)
     .select("*")

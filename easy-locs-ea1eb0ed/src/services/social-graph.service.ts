@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { supabase } from "@/integrations/supabase/client";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface FollowRelation {
   id: string;
   followerId: string;
@@ -55,8 +56,7 @@ export async function followUser(targetUserId: string): Promise<{ ok: boolean; e
   if (currentUserId === targetUserId) return { ok: false, error: "Cannot follow yourself" };
 
   try {
-    const { error } = await db
-      .from("user_follows")
+    const { error } = await cFrom("user_follows")
       .upsert(
         { follower_id: currentUserId, following_id: targetUserId },
         { onConflict: "follower_id,following_id" },
@@ -74,8 +74,7 @@ export async function unfollowUser(targetUserId: string): Promise<{ ok: boolean;
   if (!currentUserId) return { ok: false, error: "Not authenticated" };
 
   try {
-    const { error } = await db
-      .from("user_follows")
+    const { error } = await cFrom("user_follows")
       .delete()
       .eq("follower_id", currentUserId)
       .eq("following_id", targetUserId);
@@ -91,8 +90,7 @@ export async function getFollowers(userId: string): Promise<UserSocialProfile[]>
   const currentUserId = await getCurrentUserId();
 
   try {
-    const { data: followers } = await db
-      .from("user_follows")
+    const { data: followers } = await cFrom("user_follows")
       .select("follower_id, created_at")
       .eq("following_id", userId);
 
@@ -100,15 +98,13 @@ export async function getFollowers(userId: string): Promise<UserSocialProfile[]>
 
     const followerIds = (followers as FollowRow[]).map((f) => f.follower_id);
 
-    const { data: profiles } = await db
-      .from("profiles")
+    const { data: profiles } = await cFrom("profiles")
       .select("id, display_name, avatar_url")
       .in("id", followerIds);
 
     let currentUserFollowing = new Set<string>();
     if (currentUserId) {
-      const { data: myFollowing } = await db
-        .from("user_follows")
+      const { data: myFollowing } = await cFrom("user_follows")
         .select("following_id")
         .eq("follower_id", currentUserId);
       currentUserFollowing = new Set(
@@ -118,8 +114,7 @@ export async function getFollowers(userId: string): Promise<UserSocialProfile[]>
 
     let followingCurrentUser = new Set<string>();
     if (currentUserId) {
-      const { data: followingMe } = await db
-        .from("user_follows")
+      const { data: followingMe } = await cFrom("user_follows")
         .select("follower_id")
         .eq("following_id", currentUserId)
         .in("follower_id", followerIds);
@@ -146,8 +141,7 @@ export async function getFollowing(userId: string): Promise<UserSocialProfile[]>
   const currentUserId = await getCurrentUserId();
 
   try {
-    const { data: following } = await db
-      .from("user_follows")
+    const { data: following } = await cFrom("user_follows")
       .select("following_id, created_at")
       .eq("follower_id", userId);
 
@@ -155,15 +149,13 @@ export async function getFollowing(userId: string): Promise<UserSocialProfile[]>
 
     const followingIds = (following as FollowRow[]).map((f) => f.following_id);
 
-    const { data: profiles } = await db
-      .from("profiles")
+    const { data: profiles } = await cFrom("profiles")
       .select("id, display_name, avatar_url")
       .in("id", followingIds);
 
     let followersOfCurrent = new Set<string>();
     if (currentUserId) {
-      const { data: theirFollowing } = await db
-        .from("user_follows")
+      const { data: theirFollowing } = await cFrom("user_follows")
         .select("follower_id")
         .eq("following_id", currentUserId)
         .in("follower_id", followingIds);
@@ -189,8 +181,8 @@ export async function getFollowing(userId: string): Promise<UserSocialProfile[]>
 export async function getFollowCounts(userId: string): Promise<{ followers: number; following: number }> {
   try {
     const [{ count: followerCount }, { count: followingCount }] = await Promise.all([
-      db.from("user_follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
-      db.from("user_follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
+      cFrom("user_follows").select("*", { count: "exact", head: true }).eq("following_id", userId),
+      cFrom("user_follows").select("*", { count: "exact", head: true }).eq("follower_id", userId),
     ]);
     return { followers: followerCount || 0, following: followingCount || 0 };
   } catch {
@@ -203,8 +195,7 @@ export async function isFollowing(targetUserId: string): Promise<boolean> {
   if (!currentUserId) return false;
 
   try {
-    const { data } = await db
-      .from("user_follows")
+    const { data } = await cFrom("user_follows")
       .select("follower_id")
       .eq("follower_id", currentUserId)
       .eq("following_id", targetUserId)
@@ -221,8 +212,8 @@ export async function checkMutualFollow(targetUserId: string): Promise<boolean> 
 
   try {
     const [{ data: iFollow }, { data: theyFollow }] = await Promise.all([
-      db.from("user_follows").select("follower_id").eq("follower_id", currentUserId).eq("following_id", targetUserId).maybeSingle(),
-      db.from("user_follows").select("follower_id").eq("follower_id", targetUserId).eq("following_id", currentUserId).maybeSingle(),
+      cFrom("user_follows").select("follower_id").eq("follower_id", currentUserId).eq("following_id", targetUserId).maybeSingle(),
+      cFrom("user_follows").select("follower_id").eq("follower_id", targetUserId).eq("following_id", currentUserId).maybeSingle(),
     ]);
     return !!iFollow && !!theyFollow;
   } catch {
@@ -235,8 +226,7 @@ export async function getFollowingFeed(limit = 20): Promise<FeedItem[]> {
   if (!currentUserId) return [];
 
   try {
-    const { data: following } = await db
-      .from("user_follows")
+    const { data: following } = await cFrom("user_follows")
       .select("following_id")
       .eq("follower_id", currentUserId);
 
@@ -244,8 +234,7 @@ export async function getFollowingFeed(limit = 20): Promise<FeedItem[]> {
 
     const followingIds = (following as FollowRow[]).map((f) => f.following_id);
 
-    const { data: profiles } = await db
-      .from("profiles")
+    const { data: profiles } = await cFrom("profiles")
       .select("id, display_name, avatar_url")
       .in("id", followingIds);
 

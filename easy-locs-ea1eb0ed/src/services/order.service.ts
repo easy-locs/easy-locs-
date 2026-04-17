@@ -1,6 +1,7 @@
 import { db } from "./db";
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface OrderRow {
   id: string;
   user_id: string;
@@ -15,7 +16,7 @@ export interface OrderRow {
 
 export const orderService = {
   async fetchByUser(userId: string, limit = 50) {
-    const { data, error } = await db("orders")
+    const { data, error } = await cFrom("orders")
       .select("id, status, order_type, total_amount, currency, created_at, notes, merchant_profile_id")
       .eq("customer_user_id", userId)
       .order("created_at", { ascending: false })
@@ -25,7 +26,7 @@ export const orderService = {
   },
 
   async fetchById(orderId: string, userId: string) {
-    const { data, error } = await db("orders")
+    const { data, error } = await cFrom("orders")
       .select("*")
       .eq("id", orderId)
       .eq("customer_user_id", userId)
@@ -35,7 +36,7 @@ export const orderService = {
   },
 
   async updateStatus(orderId: string, userId: string, status: string) {
-    const { error } = await db("orders")
+    const { error } = await cFrom("orders")
       .update({ status, updated_at: new Date().toISOString() })
       .eq("id", orderId)
       .eq("customer_user_id", userId);
@@ -43,7 +44,7 @@ export const orderService = {
   },
 
   async fetchByShop(shopId: string, limit = 50) {
-    const { data, error } = await db("orders")
+    const { data, error } = await cFrom("orders")
       .select("*")
       .eq("shop_id", shopId)
       .order("created_at", { ascending: false })

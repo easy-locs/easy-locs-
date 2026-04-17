@@ -3,10 +3,10 @@
  */
 import { db } from "@/services/db";
 
+import { ctFrom as cFrom, ctRpc as cRpc } from "@/lib/execution/contacts-mutation";
 // ── Documents ──
 export async function fetchTenantUploadedDocs(tenantId: string) {
-  const { data } = await db
-    .from("tenant_documents")
+  const { data } = await cFrom("tenant_documents")
     .select("id, label, filename, file_url, status")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
@@ -14,8 +14,7 @@ export async function fetchTenantUploadedDocs(tenantId: string) {
 }
 
 export async function fetchLandlordDocs(orgId: string) {
-  const { data } = await db
-    .from("documents")
+  const { data } = await cFrom("documents")
     .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at")
     .eq("org_id", orgId)
     .order("created_at", { ascending: false });
@@ -29,7 +28,7 @@ export async function uploadTenantDoc(tenantId: string, orgId: string, userId: s
   const path = `${orgId}/${tenantId}/${Date.now()}_${file.name}`;
   const { error: upErr } = await db.storage.from("rental-docs").upload(path, file);
   if (upErr) throw upErr;
-  const { error } = await db("tenant_documents").insert({
+  const { error } = await cFrom("tenant_documents").insert({
     tenant_id: tenantId, org_id: orgId, uploaded_by: userId,
     doc_type: docType, label, filename: file.name, file_url: path,
   });
@@ -37,7 +36,7 @@ export async function uploadTenantDoc(tenantId: string, orgId: string, userId: s
 }
 
 export async function getDocLeaseId(docId: string) {
-  const { data } = await db("documents").select("lease_id").eq("id", docId).single();
+  const { data } = await cFrom("documents").select("lease_id").eq("id", docId).single();
   return (data as any)?.lease_id ?? null;
 }
 
@@ -49,8 +48,7 @@ export async function createSignedUrl(bucket: string, path: string, expiresIn = 
 
 // ── Receipts ──
 export async function fetchTenantReceipts(tenantId: string) {
-  const { data } = await db
-    .from("rent_calls")
+  const { data } = await cFrom("rent_calls")
     .select("id, month, rent_amount, charges_amount, total_amount, paid, receipt_pdf_url, receipt_validated")
     .eq("tenant_id", tenantId)
     .eq("receipt_validated", true)
@@ -66,8 +64,7 @@ export async function downloadFromStorage(bucket: string, path: string) {
 
 // ── Requests ──
 export async function fetchDocumentRequests(tenantId: string) {
-  const { data } = await db
-    .from("document_requests")
+  const { data } = await cFrom("document_requests")
     .select("*")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
@@ -75,19 +72,19 @@ export async function fetchDocumentRequests(tenantId: string) {
 }
 
 export async function insertDocumentRequest(tenantId: string, orgId: string, requestType: string, period: string | null) {
-  const { error } = await db("document_requests").insert({
+  const { error } = await cFrom("document_requests").insert({
     tenant_id: tenantId, org_id: orgId, request_type: requestType, period,
   });
   if (error) throw error;
 }
 
 export async function fetchOrgOwnerInfo(orgId: string) {
-  const { data } = await db("orgs").select("owner_user_id, email").eq("id", orgId).single();
+  const { data } = await cFrom("orgs").select("owner_user_id, email").eq("id", orgId).single();
   return data;
 }
 
 export async function insertNotification(record: Record<string, any>) {
-  await db("app_notifications").insert(record);
+  await cFrom("app_notifications").insert(record);
 }
 
 export async function invokeEmail(body: Record<string, any>) {
@@ -96,41 +93,40 @@ export async function invokeEmail(body: Record<string, any>) {
 
 // ── Reviews ──
 export async function fetchTenantInfo(userId: string) {
-  const { data } = await db("tenants").select("id, org_id, property_id").eq("tenant_user_id", userId).limit(1).single();
+  const { data } = await cFrom("tenants").select("id, org_id, property_id").eq("tenant_user_id", userId).limit(1).single();
   return data;
 }
 
 export async function fetchTenantReviews(tenantId: string) {
-  const { data } = await db("reviews").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
+  const { data } = await cFrom("reviews").select("*").eq("tenant_id", tenantId).order("created_at", { ascending: false });
   return data || [];
 }
 
 export async function insertReview(record: Record<string, any>) {
-  const { error } = await db("reviews").insert(record);
+  const { error } = await cFrom("reviews").insert(record);
   if (error) throw error;
 }
 
 export async function updateReview(id: string, updates: Record<string, any>) {
-  const { error } = await db("reviews").update(updates).eq("id", id);
+  const { error } = await cFrom("reviews").update(updates).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteReview(id: string) {
-  const { error } = await db("reviews").delete().eq("id", id);
+  const { error } = await cFrom("reviews").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Messages ──
 export async function fetchTenantMessages(conversationId: string) {
-  const { data } = await db
-    .from("chat_messages_v2").select("*")
+  const { data } = await cFrom("chat_messages_v2").select("*")
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true });
   return data || [];
 }
 
 export async function markNotificationsRead(userId: string) {
-  await db("app_notifications")
+  await cFrom("app_notifications")
     .update({ read_at: new Date().toISOString(), updated_at: new Date().toISOString() })
     .eq("user_id", userId).eq("category", "message").is("read_at", null);
 }
@@ -163,20 +159,20 @@ export async function invokeTranslation(text: string, fromLocale: string, toLoca
 }
 
 export async function updateMessageMetadata(msgId: string, metadata: Record<string, any>) {
-  await db("chat_messages_v2").update({ metadata }).eq("id", msgId);
+  await cFrom("chat_messages_v2").update({ metadata }).eq("id", msgId);
 }
 
 export async function insertAuditLog(record: Record<string, any>) {
-  await db("audit_logs").insert(record);
+  await cFrom("audit_logs").insert(record);
 }
 
 export async function fetchOrgEmailAndOwner(orgId: string) {
-  const { data } = await db("orgs").select("email, owner_user_id").eq("id", orgId).single();
+  const { data } = await cFrom("orgs").select("email, owner_user_id").eq("id", orgId).single();
   return data;
 }
 
 export async function fetchProfileEmail(userId: string) {
-  const { data } = await db("profiles").select("email").eq("id", userId).maybeSingle();
+  const { data } = await cFrom("profiles").select("email").eq("id", userId).maybeSingle();
   return data?.email ?? null;
 }
 

@@ -8,6 +8,7 @@ import { notifyOrderCreated, notifyOrderDelivered } from "@/lib/engines/notifica
 import { preTransactionCheck, postTransactionRecord } from "@/lib/security/anti-fraud-guard";
 import { platformBus } from "@/lib/shared/platform-bus";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type FulfillmentType = "delivery" | "pickup" | "dine_in";
 
 export interface CreateOrderInput {
@@ -31,8 +32,7 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
   if (!user) throw new Error("Not authenticated");
 
   if (input.idempotencyKey) {
-    const { data: existing } = await db
-      .from("storefront_orders")
+    const { data: existing } = await cFrom("storefront_orders")
       .select("id")
       .eq("notes", `idem:${input.idempotencyKey}`)
       .eq("buyer_id", user.id)
@@ -81,8 +81,7 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
     requires_delivery: input.fulfillmentType === "delivery",
   };
 
-  const { data: order, error: orderErr } = await db
-    .from("storefront_orders")
+  const { data: order, error: orderErr } = await cFrom("storefront_orders")
     .insert(orderPayload)
     .select("*")
     .single();
@@ -104,15 +103,13 @@ export async function createStorefrontOrder(input: CreateOrderInput) {
     },
   }));
 
-  const { error: itemsErr } = await db
-    .from("storefront_order_items")
+  const { error: itemsErr } = await cFrom("storefront_order_items")
     .insert(itemRows);
 
   if (itemsErr) throw itemsErr;
 
   // Insert initial status history
-  await db
-    .from("order_status_history")
+  await cFrom("order_status_history")
     .insert({
       order_id: order.id,
       status: "pending",
@@ -193,8 +190,7 @@ export async function updateStorefrontOrderStatus(params: {
     patch.payment_status = "pending_confirmation";
   }
 
-  const { data, error } = await db
-    .from("storefront_orders")
+  const { data, error } = await cFrom("storefront_orders")
     .update(patch)
     .eq("id", params.orderId)
     .select("*")
@@ -208,8 +204,7 @@ export async function updateStorefrontOrderStatus(params: {
   }
 
   // Log status change
-  await db
-    .from("order_status_history")
+  await cFrom("order_status_history")
     .insert({
       order_id: params.orderId,
       status: params.status,
@@ -237,8 +232,7 @@ export async function updateOrderPaymentStatus(
     updatePayload.payment_ref = metadata.payment_ref;
   }
 
-  const { error } = await db
-    .from("storefront_orders")
+  const { error } = await cFrom("storefront_orders")
     .update(updatePayload)
     .eq("id", orderId);
 
@@ -246,8 +240,7 @@ export async function updateOrderPaymentStatus(
 }
 
 export async function getOrderWithItems(orderId: string) {
-  const { data, error } = await db
-    .from("storefront_orders")
+  const { data, error } = await cFrom("storefront_orders")
     .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
     .eq("id", orderId)
     .single();
@@ -257,8 +250,7 @@ export async function getOrderWithItems(orderId: string) {
 }
 
 export async function getOrderStatusHistory(orderId: string) {
-  const { data } = await db
-    .from("order_status_history")
+  const { data } = await cFrom("order_status_history")
     .select("*")
     .eq("order_id", orderId)
     .order("created_at", { ascending: true });
@@ -270,8 +262,7 @@ export async function listCustomerOrders(limit = 50) {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return [];
 
-  const { data } = await db
-    .from("storefront_orders")
+  const { data } = await cFrom("storefront_orders")
     .select("*, storefront_order_items(*), storefront_pages!storefront_orders_shop_id_fkey(name, slug, logo_url)")
     .eq("buyer_id", user.id)
     .order("created_at", { ascending: false })
@@ -281,8 +272,7 @@ export async function listCustomerOrders(limit = 50) {
 }
 
 export async function listMerchantOrders(shopId: string, statusFilter?: string[], limit = 100) {
-  let query = db
-    .from("storefront_orders")
+  let query = cFrom("storefront_orders")
     .select("*, storefront_order_items(*)")
     .eq("shop_id", shopId)
     .order("created_at", { ascending: false })

@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface BadgeDefinition {
   id: string;
   name: string;
@@ -74,7 +75,7 @@ export function evaluateBadges(stats: UserStats): string[] {
 }
 
 export async function fetchUserBadges(userId: string): Promise<UserBadge[]> {
-  const { data, error } = await db("user_badges")
+  const { data, error } = await cFrom("user_badges")
     .select("*")
     .eq("user_id", userId)
     .order("unlocked_at", { ascending: false });
@@ -113,7 +114,7 @@ export async function syncUserBadges(userId: string, stats: UserStats): Promise<
     unlocked_at: now,
   }));
 
-  const { error } = await db("user_badges").insert(rows);
+  const { error } = await cFrom("user_badges").insert(rows);
   if (error && error.code !== "42P01") {
     console.warn("[badge-system] Insert failed:", error.message);
   }
@@ -130,7 +131,7 @@ export async function collectUserStats(userId: string): Promise<UserStats> {
 
   const [payments, reviews, messages, referrals, loyalty, profile] = await Promise.all([
     (async () => {
-      const r = await db("wallet_transactions").select("id, amount", { count: "exact" }).eq("user_id", userId);
+      const r = await cFrom("wallet_transactions").select("id, amount", { count: "exact" }).eq("user_id", userId);
       if (r.error) return { count: 0, total: 0 };
       return {
         count: r.count ?? 0,
@@ -150,7 +151,7 @@ export async function collectUserStats(userId: string): Promise<UserStats> {
     safeCount("referral_redemptions", "referrer_user_id", userId).then((n) => n ?? 0),
 
     (async () => {
-      const r = await db("loyalty_accounts").select("tier").eq("user_id", userId).maybeSingle();
+      const r = await cFrom("loyalty_accounts").select("tier").eq("user_id", userId).maybeSingle();
       return r.data?.tier ?? "bronze";
     })(),
 

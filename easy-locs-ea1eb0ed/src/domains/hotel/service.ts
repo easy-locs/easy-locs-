@@ -28,6 +28,7 @@ import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
 import { format, differenceInDays, addDays, parseISO } from "date-fns";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const log = createDomainLogger("hotel");
 
 interface DbBookingRow {
@@ -154,16 +155,14 @@ function mapRoom(row: DbRoomRow): HotelRoom {
 const bookingGuard = createActionGuard("hotel.booking");
 
 async function resolveOwnedHotelIds(userId: string): Promise<string[]> {
-  const { data } = await db
-    .from("hotels")
+  const { data } = await cFrom("hotels")
     .select("id")
     .eq("owner_user_id", userId);
   return (data ?? []).map((h: { id: string }) => h.id);
 }
 
 async function verifyHotelOwnership(userId: string, hotelId: string): Promise<boolean> {
-  const { data } = await db
-    .from("hotels")
+  const { data } = await cFrom("hotels")
     .select("id")
     .eq("id", hotelId)
     .eq("owner_user_id", userId)
@@ -172,8 +171,7 @@ async function verifyHotelOwnership(userId: string, hotelId: string): Promise<bo
 }
 
 async function verifyRoomOwnership(userId: string, roomId: string): Promise<boolean> {
-  const { data: room } = await db
-    .from("hotel_rooms")
+  const { data: room } = await cFrom("hotel_rooms")
     .select("hotel_id")
     .eq("id", roomId)
     .single();
@@ -182,8 +180,7 @@ async function verifyRoomOwnership(userId: string, roomId: string): Promise<bool
 }
 
 async function verifyBookingOwnership(userId: string, bookingId: string): Promise<boolean> {
-  const { data: booking } = await db
-    .from("hotel_bookings")
+  const { data: booking } = await cFrom("hotel_bookings")
     .select("hotel_id")
     .eq("id", bookingId)
     .single();
@@ -209,8 +206,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const nights = differenceInDays(parseISO(checkOut), parseISO(checkIn));
         if (nights <= 0) return { ok: false, error: "Invalid date range" };
 
-        const { data: room, error: roomErr } = await db
-          .from("hotel_rooms")
+        const { data: room, error: roomErr } = await cFrom("hotel_rooms")
           .select("*")
           .eq("id", roomTypeId)
           .eq("active", true)
@@ -225,8 +221,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const dates = getDateRange(checkIn, checkOut);
 
         if (ratePlanId) {
-          const { data: invRows, error: invErr } = await db
-            .from("hotel_inventory_calendar")
+          const { data: invRows, error: invErr } = await cFrom("hotel_inventory_calendar")
             .select("night_date, available, available_units, base_price, final_price, taxes_amount, fees_amount, currency, closed_to_arrival, closed_to_departure, min_stay")
             .eq("hotel_id", hotelId)
             .eq("room_type_id", roomTypeId)
@@ -263,8 +258,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           }
         }
 
-        const { data: blocked, error: blockErr } = await db
-          .from("hotel_room_availability")
+        const { data: blocked, error: blockErr } = await cFrom("hotel_room_availability")
           .select("date, status")
           .eq("room_id", roomTypeId)
           .in("date", dates)
@@ -275,8 +269,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: true, data: { available: false, pricePerNight: 0, totalPrice: 0, nights, appliedSeasonalPricing: null } };
         }
 
-        const { data: bookedRows, error: bookedErr } = await db
-          .from("hotel_room_availability")
+        const { data: bookedRows, error: bookedErr } = await cFrom("hotel_room_availability")
           .select("date")
           .eq("room_id", roomTypeId)
           .in("date", dates)
@@ -293,8 +286,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           }
         }
 
-        const { data: seasonal } = await db
-          .from("hotel_seasonal_pricing")
+        const { data: seasonal } = await cFrom("hotel_seasonal_pricing")
           .select("*")
           .eq("room_id", roomTypeId)
           .lte("start_date", checkOut)
@@ -348,8 +340,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           const timer = log.timed("create_booking", { roomTypeId: cmd.roomTypeId, checkIn: cmd.checkIn });
 
           try {
-            const { data: roomData } = await db
-              .from("hotel_rooms")
+            const { data: roomData } = await cFrom("hotel_rooms")
               .select("hotel_id, total_units")
               .eq("id", cmd.roomTypeId)
               .single();
@@ -385,8 +376,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
               insertPayload.rate_plan_id = cmd.ratePlanId;
             }
 
-            const { data: booking, error: bookErr } = await db
-              .from("hotel_bookings")
+            const { data: booking, error: bookErr } = await cFrom("hotel_bookings")
               .insert(insertPayload)
               .select()
               .single();
@@ -396,7 +386,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
             const dates = getDateRange(cmd.checkIn, cmd.checkOut);
             const totalUnits = roomData.total_units ?? 1;
 
-            const { data: reserved, error: reserveErr } = await db.rpc("reserve_hotel_dates", {
+            const { data: reserved, error: reserveErr } = await cRpc("reserve_hotel_dates", {
               p_room_id: cmd.roomTypeId,
               p_dates: dates,
               p_booking_id: booking.id,
@@ -404,7 +394,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
             });
 
             if (reserveErr || reserved === false) {
-              await db.from("hotel_bookings").delete().eq("id", booking.id);
+              await cFrom("hotel_bookings").delete().eq("id", booking.id);
               throw new Error("Failed to reserve dates — room may have been booked by someone else");
             }
 
@@ -433,8 +423,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyBookingOwnership(ctx!.userId, bookingId);
         if (!isOwner) return { ok: false, error: "Not authorized to manage this booking" };
 
-        const { data: booking, error } = await db
-          .from("hotel_bookings")
+        const { data: booking, error } = await cFrom("hotel_bookings")
           .select("*")
           .eq("id", bookingId)
           .single();
@@ -443,8 +432,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: `Cannot confirm a ${booking.status} booking` };
         }
 
-        const { data: updated, error: updErr } = await db
-          .from("hotel_bookings")
+        const { data: updated, error: updErr } = await cFrom("hotel_bookings")
           .update({ status: "confirmed" })
           .eq("id", bookingId)
           .select()
@@ -465,8 +453,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyBookingOwnership(ctx!.userId, bookingId);
         if (!isOwner) return { ok: false, error: "Not authorized to manage this booking" };
 
-        const { data: booking, error } = await db
-          .from("hotel_bookings")
+        const { data: booking, error } = await cFrom("hotel_bookings")
           .select("*")
           .eq("id", bookingId)
           .single();
@@ -475,16 +462,14 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: `Cannot reject a ${booking.status} booking` };
         }
 
-        const { data: updated, error: updErr } = await db
-          .from("hotel_bookings")
+        const { data: updated, error: updErr } = await cFrom("hotel_bookings")
           .update({ status: "rejected" })
           .eq("id", bookingId)
           .select()
           .single();
         if (updErr) return { ok: false, error: updErr.message };
 
-        await db
-          .from("hotel_room_availability")
+        await cFrom("hotel_room_availability")
           .delete()
           .eq("booking_id", bookingId);
 
@@ -513,12 +498,11 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           const isOwner = await verifyBookingOwnership(ctx!.userId, bookingId);
           if (!isOwner) return { ok: false, error: "Not authorized to cancel this booking" };
         } else {
-          const { data: bk } = await db.from("hotel_bookings").select("user_id").eq("id", bookingId).single();
+          const { data: bk } = await cFrom("hotel_bookings").select("user_id").eq("id", bookingId).single();
           if (!bk || bk.user_id !== ctx!.userId) return { ok: false, error: "Not authorized to cancel this booking" };
         }
 
-        const { data: booking, error } = await db
-          .from("hotel_bookings")
+        const { data: booking, error } = await cFrom("hotel_bookings")
           .select("*")
           .eq("id", bookingId)
           .single();
@@ -529,8 +513,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: `Cannot cancel a ${booking.status} booking` };
         }
 
-        const { data: policy } = await db
-          .from("hotel_policies")
+        const { data: policy } = await cFrom("hotel_policies")
           .select("*")
           .eq("hotel_id", booking.hotel_id)
           .single();
@@ -548,14 +531,12 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
 
         const refundAmount = Math.round(Number(booking.total_price) * (1 - penaltyPercent / 100));
 
-        const { error: updErr } = await db
-          .from("hotel_bookings")
+        const { error: updErr } = await cFrom("hotel_bookings")
           .update({ status: newStatus })
           .eq("id", bookingId);
         if (updErr) return { ok: false, error: updErr.message };
 
-        await db
-          .from("hotel_room_availability")
+        await cFrom("hotel_room_availability")
           .delete()
           .eq("booking_id", bookingId);
 
@@ -589,8 +570,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyBookingOwnership(ctx!.userId, bookingId);
         if (!isOwner) return { ok: false, error: "Not authorized to manage this booking" };
 
-        const { data: booking, error } = await db
-          .from("hotel_bookings")
+        const { data: booking, error } = await cFrom("hotel_bookings")
           .select("*")
           .eq("id", bookingId)
           .single();
@@ -599,14 +579,12 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: `Cannot check-in a ${booking.status} booking` };
         }
 
-        const { data: policy } = await db
-          .from("hotel_policies")
+        const { data: policy } = await cFrom("hotel_policies")
           .select("*")
           .eq("hotel_id", booking.hotel_id)
           .single();
 
-        const { error: updErr } = await db
-          .from("hotel_bookings")
+        const { error: updErr } = await cFrom("hotel_bookings")
           .update({ status: "checked_in" })
           .eq("id", bookingId);
         if (updErr) return { ok: false, error: updErr.message };
@@ -634,8 +612,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyBookingOwnership(ctx!.userId, bookingId);
         if (!isOwner) return { ok: false, error: "Not authorized to manage this booking" };
 
-        const { data: booking, error } = await db
-          .from("hotel_bookings")
+        const { data: booking, error } = await cFrom("hotel_bookings")
           .select("*")
           .eq("id", bookingId)
           .single();
@@ -644,8 +621,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: `Cannot check-out a ${booking.status} booking` };
         }
 
-        const { data: updated, error: updErr } = await db
-          .from("hotel_bookings")
+        const { data: updated, error: updErr } = await cFrom("hotel_bookings")
           .update({ status: "checked_out" })
           .eq("id", bookingId)
           .select()
@@ -670,8 +646,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const monthStart = format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), "yyyy-MM-dd");
         const monthEnd = format(new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0), "yyyy-MM-dd");
 
-        const { data: rooms } = await db
-          .from("hotel_rooms")
+        const { data: rooms } = await cFrom("hotel_rooms")
           .select("id, total_units")
           .eq("hotel_id", hotelId)
           .eq("active", true);
@@ -681,8 +656,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
 
         let occupiedRooms = 0;
         if (roomIds.length > 0) {
-          const { count } = await db
-            .from("hotel_room_availability")
+          const { count } = await cFrom("hotel_room_availability")
             .select("*", { count: "exact", head: true })
             .in("room_id", roomIds)
             .eq("date", today)
@@ -690,8 +664,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           occupiedRooms = count ?? 0;
         }
 
-        const { data: allBookings } = await db
-          .from("hotel_bookings")
+        const { data: allBookings } = await cFrom("hotel_bookings")
           .select("*")
           .eq("hotel_id", hotelId);
 
@@ -701,8 +674,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const departuresToday = bookings.filter(b => b.checkOut === today && b.status === "checked_in");
         const pendingBookings = bookings.filter(b => b.status === "pending");
 
-        const { data: revenueData } = await db
-          .from("hotel_bookings")
+        const { data: revenueData } = await cFrom("hotel_bookings")
           .select("total_price")
           .eq("hotel_id", hotelId)
           .in("status", ["confirmed", "checked_in", "checked_out"])
@@ -734,8 +706,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
       const isOwner = await verifyRoomOwnership(ctx!.userId, roomTypeId);
       if (!isOwner) return { ok: false, error: "Not authorized to manage this room" };
       try {
-        await db
-          .from("hotel_room_availability")
+        await cFrom("hotel_room_availability")
           .delete()
           .eq("room_id", roomTypeId)
           .in("date", dates)
@@ -747,8 +718,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           status: "blocked" as const,
           notes: reason ?? null,
         }));
-        const { error } = await db
-          .from("hotel_room_availability")
+        const { error } = await cFrom("hotel_room_availability")
           .insert(rows);
         if (error) return { ok: false, error: error.message };
         return { ok: true, data: undefined };
@@ -762,8 +732,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
       const isOwner = await verifyRoomOwnership(ctx!.userId, roomTypeId);
       if (!isOwner) return { ok: false, error: "Not authorized to manage this room" };
       try {
-        const { error } = await db
-          .from("hotel_room_availability")
+        const { error } = await cFrom("hotel_room_availability")
           .delete()
           .eq("room_id", roomTypeId)
           .in("date", dates)
@@ -781,8 +750,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyHotelOwnership(ctx!.userId, hotelId);
         if (!isOwner) return { ok: false, error: "Not authorized to view these rooms" };
 
-        const { data, error } = await db
-          .from("hotel_rooms")
+        const { data, error } = await cFrom("hotel_rooms")
           .select("*")
           .eq("hotel_id", hotelId)
           .order("sort_order", { ascending: true });
@@ -799,8 +767,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyHotelOwnership(ctx!.userId, room.hotelId);
         if (!isOwner) return { ok: false, error: "Not authorized to create rooms for this hotel" };
 
-        const { data, error } = await db
-          .from("hotel_rooms")
+        const { data, error } = await cFrom("hotel_rooms")
           .insert({
             hotel_id: room.hotelId,
             name: room.name,
@@ -854,8 +821,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         if (updates.active !== undefined) row.active = updates.active;
         if (updates.sortOrder !== undefined) row.sort_order = updates.sortOrder;
 
-        const { data, error } = await db
-          .from("hotel_rooms")
+        const { data, error } = await cFrom("hotel_rooms")
           .update(row)
           .eq("id", roomId)
           .select()
@@ -872,8 +838,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
       const isOwner = await verifyRoomOwnership(ctx!.userId, roomId);
       if (!isOwner) return { ok: false, error: "Not authorized to delete this room" };
       try {
-        const { count } = await db
-          .from("hotel_room_availability")
+        const { count } = await cFrom("hotel_room_availability")
           .select("*", { count: "exact", head: true })
           .eq("room_id", roomId)
           .eq("status", "booked")
@@ -883,7 +848,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
           return { ok: false, error: "Cannot delete room with future bookings" };
         }
 
-        const { error } = await db.from("hotel_rooms").delete().eq("id", roomId);
+        const { error } = await cFrom("hotel_rooms").delete().eq("id", roomId);
         if (error) return { ok: false, error: error.message };
         return { ok: true, data: undefined };
       } catch (err) {
@@ -893,8 +858,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
 
     async getSeasonalPricing(roomId) {
       try {
-        const { data, error } = await db
-          .from("hotel_seasonal_pricing")
+        const { data, error } = await cFrom("hotel_seasonal_pricing")
           .select("*")
           .eq("room_id", roomId)
           .order("start_date", { ascending: true });
@@ -920,8 +884,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
     async upsertSeasonalPricing(pricing) {
       requireAuth(ctx);
       try {
-        const { data, error } = await db
-          .from("hotel_seasonal_pricing")
+        const { data, error } = await cFrom("hotel_seasonal_pricing")
           .insert({
             room_id: pricing.roomId,
             period_name: pricing.periodName,
@@ -954,7 +917,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
     async deleteSeasonalPricing(pricingId) {
       requireAuth(ctx);
       try {
-        const { error } = await db.from("hotel_seasonal_pricing").delete().eq("id", pricingId);
+        const { error } = await cFrom("hotel_seasonal_pricing").delete().eq("id", pricingId);
         if (error) return { ok: false, error: error.message };
         return { ok: true, data: undefined };
       } catch (err) {
@@ -964,8 +927,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
 
     async getPolicy(hotelId) {
       try {
-        const { data, error } = await db
-          .from("hotel_policies")
+        const { data, error } = await cFrom("hotel_policies")
           .select("*")
           .eq("hotel_id", hotelId)
           .single();
@@ -996,8 +958,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
     async upsertPolicy(policy) {
       requireAuth(ctx);
       try {
-        const { data, error } = await db
-          .from("hotel_policies")
+        const { data, error } = await cFrom("hotel_policies")
           .upsert({
             hotel_id: policy.hotelId,
             check_in_time: policy.checkInTime,
@@ -1044,8 +1005,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyHotelOwnership(ctx!.userId, hotelId);
         if (!isOwner) return { ok: false, error: "Not authorized to view this calendar" };
 
-        const { data: rooms } = await db
-          .from("hotel_rooms")
+        const { data: rooms } = await cFrom("hotel_rooms")
           .select("id")
           .eq("hotel_id", hotelId)
           .eq("active", true);
@@ -1053,8 +1013,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const roomIds = rooms?.map((r: { id: string }) => r.id) ?? [];
         if (roomIds.length === 0) return { ok: true, data: [] };
 
-        const { data, error } = await db
-          .from("hotel_room_availability")
+        const { data, error } = await cFrom("hotel_room_availability")
           .select("*")
           .in("room_id", roomIds)
           .gte("date", monthStart)
@@ -1084,8 +1043,7 @@ export function createHotelService(ctx: SecurityContext | null): HotelUseCases {
         const isOwner = await verifyHotelOwnership(ctx!.userId, hotelId);
         if (!isOwner) return { ok: false, error: "Not authorized to view these bookings" };
 
-        let query = db
-          .from("hotel_bookings")
+        let query = cFrom("hotel_bookings")
           .select("*")
           .eq("hotel_id", hotelId)
           .order("created_at", { ascending: false });

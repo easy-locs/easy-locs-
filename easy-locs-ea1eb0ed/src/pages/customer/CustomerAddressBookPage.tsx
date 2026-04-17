@@ -9,6 +9,7 @@ import { db } from "@/services/db";
 import { userService } from "@/services/user.service";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 type AddressRow = {
   id: string;
   label: string;
@@ -46,8 +47,7 @@ export default function CustomerAddressBookPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const { data, error } = await db
-        .from("user_addresses")
+      const { data, error } = await cFrom("user_addresses")
         .select("*")
         .eq("user_id", user.id)
         .order("is_default", { ascending: false })
@@ -102,8 +102,7 @@ export default function CustomerAddressBookPage() {
       if (!addr) return;
 
       if (editingId.startsWith("temp-")) {
-        const { data, error } = await db
-          .from("user_addresses")
+        const { data, error } = await cFrom("user_addresses")
           .insert({
             user_id: user.id,
             label: form.label,
@@ -121,8 +120,7 @@ export default function CustomerAddressBookPage() {
           ...r, label: form.label, line1: form.line1, city: form.city, country: form.country, id: data.id,
         } : r));
       } else {
-        const { error } = await db
-          .from("user_addresses")
+        const { error } = await cFrom("user_addresses")
           .update({
             label: form.label,
             line1: form.line1,

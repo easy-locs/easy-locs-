@@ -4,6 +4,7 @@ import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -194,7 +195,7 @@ async function searchShops(
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_shops_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_shops_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: limit,
@@ -274,7 +275,7 @@ async function searchProducts(
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_products_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_products_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: limit,
@@ -349,7 +350,7 @@ async function searchProperties(
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_properties_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_properties_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: limit,
@@ -420,7 +421,7 @@ async function searchServices(
   filters: SearchRequest,
   limit: number,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_services_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_services_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: limit,
@@ -499,7 +500,7 @@ async function searchProfiles(
   ilike: string,
   limit: number,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_profiles_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_profiles_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: limit,
@@ -563,7 +564,7 @@ async function searchCategories(
   tsq: string,
   ilike: string,
 ): Promise<SearchResultItem[]> {
-  const { data, error } = await supabase.rpc("search_categories_fts", {
+  const { data, error } = await cRpcEdge(supabase, "search_categories_fts", {
     search_query: tsq,
     ilike_pattern: ilike,
     result_limit: 8,
@@ -622,7 +623,7 @@ async function searchCategoriesFallback(
 }
 
 function trackSearch(supabase: SupabaseClient, query: string, userId?: string) {
-  supabase.rpc("increment_search_count", {
+  cRpcEdge(supabase, "increment_search_count", {
     p_query: query,
     p_user_id: userId ?? null,
   }).then(() => {}).catch(() => {});

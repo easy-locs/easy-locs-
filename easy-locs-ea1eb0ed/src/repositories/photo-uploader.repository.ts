@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function uploadPropertyPhoto(path: string, file: File) {
   const { error } = await db.storage.from("property-photos").upload(path, file);
   if (error) throw error;
@@ -14,7 +15,7 @@ export function getPublicUrl(path: string) {
 }
 
 export async function updateListingPhotos(listingId: string, photos: string[]) {
-  await db("real_estate_listings").update({ photo_urls: photos } as any).eq("id", listingId);
+  await cFrom("real_estate_listings").update({ photo_urls: photos } as any).eq("id", listingId);
 }
 
 export async function removeStorageFile(path: string) {

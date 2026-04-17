@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface RecordingState {
   isRecording: boolean;
   isPaused: boolean;
@@ -183,7 +184,7 @@ export class CallRecorder {
         .from("private-media")
         .createSignedUrl(path, 7 * 24 * 60 * 60);
 
-      await db.from("call_logs").update({
+      await cFrom("call_logs").update({
         recording_path: path,
         recording_duration_ms: this._state.durationMs,
       }).eq("id", callId);

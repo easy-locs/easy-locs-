@@ -2,6 +2,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 import {
   meiliAddDocuments, meiliCreateIndex,
   meiliUpdateSettings, meiliDeleteDocuments,
@@ -225,8 +226,7 @@ async function processQueue(
   }
 
   if (succeededIds.length > 0) {
-    await supabase
-      .from("search_sync_queue")
+    await cFromEdge(supabase, "search_sync_queue")
       .update({ processed_at: new Date().toISOString() })
       .in("id", succeededIds);
   }
@@ -339,8 +339,7 @@ Deno.serve(async (req) => {
   const mode = body?.mode ?? "incremental";
   const startedAt = new Date().toISOString();
 
-  const { data: logRow } = await supabase
-    .from("search_sync_log")
+  const { data: logRow } = await cFromEdge(supabase, "search_sync_log")
     .insert({
       sync_type: mode,
       status: "running",
@@ -380,8 +379,7 @@ Deno.serve(async (req) => {
     const totalDocs = incrementalResult.totalDocuments + queueResult.processed;
 
     if (logId) {
-      await supabase
-        .from("search_sync_log")
+      await cFromEdge(supabase, "search_sync_log")
         .update({
           status: totalErrors > 0 ? "completed_with_errors" : "completed",
           indexes_synced: Object.keys(incrementalResult.results),
@@ -410,8 +408,7 @@ Deno.serve(async (req) => {
     console.error("[sync-meilisearch-cron] Fatal error:", msg);
 
     if (logId) {
-      await supabase
-        .from("search_sync_log")
+      await cFromEdge(supabase, "search_sync_log")
         .update({
           status: "failed",
           error_message: msg,

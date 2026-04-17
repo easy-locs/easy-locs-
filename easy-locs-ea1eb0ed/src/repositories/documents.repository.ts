@@ -3,24 +3,25 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ── Document Builder ──
 export async function insertDocument(record: Record<string, any>) {
-  const { error } = await db("documents").insert(record);
+  const { error } = await cFrom("documents").insert(record);
   if (error) throw error;
 }
 
 export async function updateDocument(id: string, updates: Record<string, any>) {
-  const { error } = await db("documents").update(updates as any).eq("id", id);
+  const { error } = await cFrom("documents").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteDocument(id: string) {
-  const { error } = await db("documents").delete().eq("id", id);
+  const { error } = await cFrom("documents").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function insertAuditLog(record: Record<string, any>) {
-  await db("audit_logs").insert(record);
+  await cFrom("audit_logs").insert(record);
 }
 
 // ── Document Center ──
@@ -41,7 +42,7 @@ export async function uploadSignature(path: string, blob: Blob) {
 }
 
 export async function fetchOrgOwnerUserId(orgId: string) {
-  const { data, error } = await db("orgs").select("owner_user_id").eq("id", orgId).single();
+  const { data, error } = await cFrom("orgs").select("owner_user_id").eq("id", orgId).single();
   if (error) {
     console.warn("[documents.repository] fetchOrgOwnerUserId error:", error.message);
     return null;
@@ -50,7 +51,7 @@ export async function fetchOrgOwnerUserId(orgId: string) {
 }
 
 export async function insertNotification(record: Record<string, any>) {
-  await db("app_notifications").insert(record);
+  await cFrom("app_notifications").insert(record);
 }
 
 // ── Storage general ──
@@ -73,45 +74,45 @@ export async function downloadFromStorage(bucket: string, path: string) {
 
 // ── Lease form ──
 export async function fetchProperties(orgId: string) {
-  const { data } = await db("properties").select("id, label, address, city, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, address, city, country").eq("org_id", orgId);
   return data ?? [];
 }
 
 export async function fetchTenants(orgId: string) {
-  const { data } = await db("tenants").select("id, name, email, property_id, rent_amount, charges_amount, deposit_amount, tenant_user_id").eq("org_id", orgId);
+  const { data } = await cFrom("tenants").select("id, name, email, property_id, rent_amount, charges_amount, deposit_amount, tenant_user_id").eq("org_id", orgId);
   return data ?? [];
 }
 
 export async function updateLease(leaseId: string, updates: Record<string, any>) {
-  const { error } = await db("leases").update(updates as any).eq("id", leaseId);
+  const { error } = await cFrom("leases").update(updates as any).eq("id", leaseId);
   if (error) throw error;
 }
 
 export async function insertLease(record: Record<string, any>) {
-  const { data, error } = await db("leases").insert(record).select("id").single();
+  const { data, error } = await cFrom("leases").insert(record).select("id").single();
   if (error) throw error;
   return data?.id;
 }
 
 // ── Inventory ──
 export async function fetchInventory(leaseId: string) {
-  const { data } = await db("inventory_items").select("*").eq("lease_id", leaseId).order("room");
+  const { data } = await cFrom("inventory_items").select("*").eq("lease_id", leaseId).order("room");
   return data ?? [];
 }
 
 export async function insertInventoryItem(record: Record<string, any>) {
-  const { data, error } = await db("inventory_items").insert(record).select("*").single();
+  const { data, error } = await cFrom("inventory_items").insert(record).select("*").single();
   if (error) throw error;
   return data;
 }
 
 export async function updateInventoryItem(id: string, updates: Record<string, any>) {
-  const { error } = await db("inventory_items").update(updates as any).eq("id", id);
+  const { error } = await cFrom("inventory_items").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteInventoryItem(id: string) {
-  const { error } = await db("inventory_items").delete().eq("id", id);
+  const { error } = await cFrom("inventory_items").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -124,8 +125,7 @@ export async function uploadInventoryPhoto(path: string, file: File) {
 
 // ── DocumentCenter extras ──
 export async function fetchDocumentsForOrg(orgId: string) {
-  const { data } = await db
-    .from("documents")
+  const { data } = await cFrom("documents")
     .select("id, title, doc_type, status, pdf_url, created_at, requires_signature, signed_by_owner_at, signed_by_tenant_at, emailed_at, country")
     .eq("org_id", orgId)
     .order("created_at", { ascending: false });
@@ -133,15 +133,15 @@ export async function fetchDocumentsForOrg(orgId: string) {
 }
 
 export async function fetchDocDataJson(docId: string) {
-  const { data } = await db("documents").select("data_json").eq("id", docId).single();
+  const { data } = await cFrom("documents").select("data_json").eq("id", docId).single();
   return data;
 }
 
 export async function fetchTenantById(tenantId: string) {
-  const { data } = await db("tenants").select("email, name, tenant_user_id").eq("id", tenantId).single();
+  const { data } = await cFrom("tenants").select("email, name, tenant_user_id").eq("id", tenantId).single();
   return data;
 }
 
 export async function markDocumentEmailed(docId: string) {
-  await db("documents").update({ emailed_at: new Date().toISOString() } as any).eq("id", docId);
+  await cFrom("documents").update({ emailed_at: new Date().toISOString() } as any).eq("id", docId);
 }

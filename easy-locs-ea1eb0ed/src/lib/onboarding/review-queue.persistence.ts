@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import type { CanonicalOnboardingRecord, OnboardingQualityResult } from "./types";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function enqueueForReview(
   canonicalRecordId: string,
   record: CanonicalOnboardingRecord,
@@ -14,8 +15,7 @@ export async function enqueueForReview(
     quality.score < 65 ? 80 :
     quality.score < 75 ? 65 : 40;
 
-  const { data, error } = await db
-    .from("onboarding_review_queue")
+  const { data, error } = await cFrom("onboarding_review_queue")
     .insert({
       canonical_record_id: canonicalRecordId,
       entity_id: record.entityId,

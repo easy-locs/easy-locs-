@@ -4,6 +4,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 import { APP_EVENTS } from "@/lib/platform/events";
 import { getCurrentUserId } from "@/families/identity";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 /**
  * Idempotent order creation.
  * If a draft order already exists for same user+workspace+type, return it.
@@ -22,8 +23,7 @@ export async function createOrder(params: {
 
   // Idempotency: check for existing draft order with same key or same workspace+type
   if (params.idempotencyKey) {
-    const { data: existing } = await db
-      .from("orders")
+    const { data: existing } = await cFrom("orders")
       .select("*")
       .eq("customer_user_id", userId)
       .eq("idempotency_key", params.idempotencyKey)
@@ -31,8 +31,7 @@ export async function createOrder(params: {
     if (existing) return existing;
   }
 
-  const { data, error } = await db
-    .from("orders")
+  const { data, error } = await cFrom("orders")
     .insert({
       workspace_id: params.workspaceId ?? null,
       customer_user_id: userId,
@@ -70,8 +69,7 @@ export async function addOrderItem(params: {
 }) {
   const totalPrice = Number((params.unitPrice * params.quantity).toFixed(2));
 
-  const { data, error } = await db
-    .from("order_items")
+  const { data, error } = await cFrom("order_items")
     .insert({
       order_id: params.orderId,
       menu_item_id: params.menuItemId ?? null,
@@ -90,8 +88,7 @@ export async function addOrderItem(params: {
 }
 
 export async function recalcOrderTotals(orderId: string) {
-  const { data: items } = await db
-    .from("order_items")
+  const { data: items } = await cFrom("order_items")
     .select("*")
     .eq("order_id", orderId);
 
@@ -99,8 +96,7 @@ export async function recalcOrderTotals(orderId: string) {
     (items ?? []).reduce((sum: number, row: any) => sum + Number(row.total_price), 0).toFixed(2)
   );
 
-  const { data, error } = await db
-    .from("orders")
+  const { data, error } = await cFrom("orders")
     .update({ subtotal, total_amount: subtotal } as any)
     .eq("id", orderId)
     .select("*")
@@ -125,8 +121,7 @@ export async function updateOrderStatus(params: {
     patch.completed_at = new Date().toISOString();
   }
 
-  const { data, error } = await db
-    .from("orders")
+  const { data, error } = await cFrom("orders")
     .update(patch as any)
     .eq("id", params.orderId)
     .select("*")

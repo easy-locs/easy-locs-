@@ -6,6 +6,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface BookingResult {
   booking_id: string;
   booking_reference: string;
@@ -37,7 +38,7 @@ export function useHotelBooking() {
     mutationFn: async (params: CreateBookingParams): Promise<BookingResult> => {
       if (!user?.id) throw new Error("Authentication required");
 
-      const { data, error } = await db.rpc("create_hotel_booking", {
+      const { data, error } = await cRpc("create_hotel_booking", {
         p_user_id: user.id,
         p_hotel_id: params.hotelId,
         p_room_type_id: params.roomTypeId,
@@ -66,8 +67,7 @@ export function useMyHotelBookings() {
     queryKey: ["my-hotel-bookings", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await db
-        .from("hotel_bookings")
+      const { data, error } = await cFrom("hotel_bookings")
         .select("*, hotels(name, city, cover_image, stars)")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });

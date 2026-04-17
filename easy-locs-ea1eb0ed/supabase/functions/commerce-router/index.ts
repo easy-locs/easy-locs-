@@ -6,6 +6,7 @@ import { cachedQuery, QUERY_CACHE_NAMESPACES, invalidateQueryCache } from "../_s
 import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const CACHE_NS = "commerce";
 
 function getSupabase() {
@@ -56,8 +57,7 @@ const router = createDomainRouter({
         const supabase = getSupabase();
         const booking = ctx.body as Record<string, unknown>;
 
-        const { data, error } = await supabase
-          .from("bookings")
+        const { data, error } = await cFromEdge(supabase, "bookings")
           .insert({ ...booking, user_id: ctx.userId })
           .select()
           .single();
@@ -100,8 +100,7 @@ const router = createDomainRouter({
           });
         }
 
-        const { data, error } = await supabase
-          .from("bookings")
+        const { data, error } = await cFromEdge(supabase, "bookings")
           .update(sanitized)
           .eq("id", id)
           .eq("user_id", ctx.userId)
@@ -193,8 +192,7 @@ const router = createDomainRouter({
           metadata?: Record<string, unknown>;
         };
 
-        const { data, error } = await supabase
-          .from("transactions")
+        const { data, error } = await cFromEdge(supabase, "transactions")
           .insert({
             user_id: ctx.userId,
             amount,

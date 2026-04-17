@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function saveSearchHistory(params: {
   userId?: string | null;
   queryText: string;
@@ -8,8 +9,7 @@ export async function saveSearchHistory(params: {
   const q = params.queryText.trim();
   if (!q) return null;
 
-  const { data, error } = await db
-    .from("activity_logs")
+  const { data, error } = await cFrom("activity_logs")
     .insert({
       id: crypto.randomUUID(),
       action: "search_history_saved",
@@ -29,8 +29,7 @@ export async function saveSearchHistory(params: {
 }
 
 export async function listRecentSearches(userId?: string | null, limit = 8) {
-  const { data, error } = await db
-    .from("activity_logs")
+  const { data, error } = await cFrom("activity_logs")
     .select("id, created_at, metadata")
     .eq("action", "search_history_saved")
     .eq("entity_id", userId ?? "anonymous")

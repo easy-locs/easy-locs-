@@ -4,6 +4,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const TIER_THRESHOLDS: Record<string, number> = {
   bronze: 0,
   silver: 500,
@@ -86,8 +87,7 @@ Deno.serve(async (req: Request) => {
     const tierChanged = newTier !== currentTier;
 
     if (account) {
-      const { error: updateErr } = await db
-        .from("loyalty_accounts")
+      const { error: updateErr } = await cFromEdge(db, "loyalty_accounts")
         .update({
           points_balance: newPoints,
           tier: newTier,
@@ -103,8 +103,7 @@ Deno.serve(async (req: Request) => {
         );
       }
     } else {
-      const { error: insertErr } = await db
-        .from("loyalty_accounts")
+      const { error: insertErr } = await cFromEdge(db, "loyalty_accounts")
         .insert({
           user_id: userId,
           points_balance: newPoints,
@@ -117,8 +116,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    await db
-      .from("loyalty_history")
+    await cFromEdge(db, "loyalty_history")
       .insert({
         user_id: userId,
         points: pointsToAward,
@@ -132,7 +130,7 @@ Deno.serve(async (req: Request) => {
 
     if (tierChanged) {
       const emojiMap: Record<string, string> = { silver: "🥈", gold: "🥇", platinum: "💎" };
-      await db.from("notifications").insert({
+      await cFromEdge(db, "notifications").insert({
         id: crypto.randomUUID(),
         user_id: userId,
         type: "engagement",

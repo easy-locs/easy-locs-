@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { typedQueries } from "@/lib/db/typed-queries";
 
+import { ctFrom as cFrom, ctRpc as cRpc } from "@/lib/execution/contacts-mutation";
 export async function resolveUserByEmail(email: string): Promise<{ userId: string; orbitId: string | null; avatarUrl: string | null } | null> {
   if (!email) return null;
   const { data: profileData } = await typedQueries.profiles.selectByEmail(email.toLowerCase());
@@ -14,12 +15,12 @@ export async function resolveUserByEmail(email: string): Promise<{ userId: strin
 export async function resolveUserByPhone(phone: string): Promise<{ userId: string; orbitId: string | null; avatarUrl: string | null } | null> {
   if (!phone) return null;
   const cleaned = phone.replace(/[\s\-\(\)]/g, "");
-  const { data: profileRow } = await db("profiles")
+  const { data: profileRow } = await cFrom("profiles")
     .select("id")
     .eq("phone", cleaned)
     .maybeSingle() as unknown as { data: { id: string } | null };
   if (!profileRow?.id) return null;
-  const { data: orbitRow } = await db("orbit_profiles_v2")
+  const { data: orbitRow } = await cFrom("orbit_profiles_v2")
     .select("id, orbit_id, avatar_url")
     .eq("id", profileRow.id)
     .maybeSingle() as unknown as { data: { id: string; orbit_id: string | null; avatar_url: string | null } | null };
@@ -33,11 +34,11 @@ export async function linkContactToUser(contactId: string, userId: string, orbit
   };
   if (orbitId) patch.peer_orbit_id = orbitId;
   if (avatarUrl) patch.avatar_url = avatarUrl;
-  await db("orbit_contacts_v2").update(patch).eq("id", contactId);
+  await cFrom("orbit_contacts_v2").update(patch).eq("id", contactId);
 }
 
 export async function listOrbitContacts(ownerUserId: string) {
-  const { data, error } = await db("orbit_contacts_v2")
+  const { data, error } = await cFrom("orbit_contacts_v2")
     .select("*")
     .eq("owner_user_id", ownerUserId)
     .order("is_favorite", { ascending: false })
@@ -93,19 +94,19 @@ export async function upsertOrbitContact(input: {
   };
 
   if (resolvedUserId) {
-    const { data: existing } = await db("orbit_contacts_v2")
+    const { data: existing } = await cFrom("orbit_contacts_v2")
       .select("id")
       .eq("owner_user_id", input.ownerUserId)
       .eq("peer_user_id", resolvedUserId)
       .maybeSingle() as unknown as { data: { id: string } | null };
 
     if (existing) {
-      await db("orbit_contacts_v2").update(payload).eq("id", existing.id);
+      await cFrom("orbit_contacts_v2").update(payload).eq("id", existing.id);
       return existing.id;
     }
   }
 
-  const { data, error } = await db("orbit_contacts_v2")
+  const { data, error } = await cFrom("orbit_contacts_v2")
     .insert(payload)
     .select("id")
     .single() as unknown as { data: { id: string } | null; error: Error | null };
@@ -115,23 +116,23 @@ export async function upsertOrbitContact(input: {
 }
 
 export async function updateOrbitContact(contactId: string, patch: Record<string, unknown>) {
-  await db("orbit_contacts_v2")
+  await cFrom("orbit_contacts_v2")
     .update({ ...patch, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }
 
 export async function toggleFavoriteContact(contactId: string, isFavorite: boolean) {
-  await db("orbit_contacts_v2")
+  await cFrom("orbit_contacts_v2")
     .update({ is_favorite: isFavorite, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }
 
 export async function deleteOrbitContact(contactId: string) {
-  await db("orbit_contacts_v2").delete().eq("id", contactId);
+  await cFrom("orbit_contacts_v2").delete().eq("id", contactId);
 }
 
 export async function toggleBlockedContact(contactId: string, isBlocked: boolean) {
-  await db("orbit_contacts_v2")
+  await cFrom("orbit_contacts_v2")
     .update({ is_blocked: isBlocked, updated_at: new Date().toISOString() })
     .eq("id", contactId);
 }

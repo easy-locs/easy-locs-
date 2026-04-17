@@ -3,8 +3,9 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchFurnitureData(orgId: string, countryFilter: string | null) {
-  let propQuery = db("properties").select("id, label, furnished, country").eq("org_id", orgId);
+  let propQuery = cFrom("properties").select("id, label, furnished, country").eq("org_id", orgId);
   if (countryFilter) propQuery = propQuery.eq("country", countryFilter);
   propQuery = propQuery.order("country").order("label");
   const { data: props } = await propQuery;
@@ -13,10 +14,10 @@ export async function fetchFurnitureData(orgId: string, countryFilter: string | 
   const propIds = filteredProps.map((p: any) => p.id);
   let items: any[] = [];
   if (propIds.length > 0) {
-    const { data } = await db("furniture_items").select("*").eq("org_id", orgId).in("property_id", propIds);
+    const { data } = await cFrom("furniture_items").select("*").eq("org_id", orgId).in("property_id", propIds);
     items = data || [];
   } else if (!countryFilter) {
-    const { data } = await db("furniture_items").select("*").eq("org_id", orgId);
+    const { data } = await cFrom("furniture_items").select("*").eq("org_id", orgId);
     items = data || [];
   }
 
@@ -27,7 +28,7 @@ export async function createFurnitureItem(orgId: string, form: {
   property_id: string; room_name: string; item_name: string;
   quantity: number; condition: string; notes: string;
 }) {
-  const { data, error } = await db("furniture_items").insert({
+  const { data, error } = await cFrom("furniture_items").insert({
     org_id: orgId, ...form,
   } as any).select().single();
   if (error) throw error;
@@ -35,7 +36,7 @@ export async function createFurnitureItem(orgId: string, form: {
 }
 
 export async function updateFurniturePhotoUrl(itemId: string, photoUrl: string) {
-  await db("furniture_items").update({ photo_url: photoUrl } as any).eq("id", itemId);
+  await cFrom("furniture_items").update({ photo_url: photoUrl } as any).eq("id", itemId);
 }
 
 export async function uploadFurniturePhoto(orgId: string, itemId: string, file: File): Promise<string | null> {
@@ -48,7 +49,7 @@ export async function uploadFurniturePhoto(orgId: string, itemId: string, file: 
 }
 
 export async function deleteFurnitureItem(id: string, orgId: string) {
-  const { error } = await db("furniture_items").delete().eq("id", id);
+  const { error } = await cFrom("furniture_items").delete().eq("id", id);
   if (error) throw error;
   await db.storage.from("property-photos").remove([
     `${orgId}/furniture/${id}.jpg`, `${orgId}/furniture/${id}.png`, `${orgId}/furniture/${id}.webp`,

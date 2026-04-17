@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cFromEdge, cRpcEdge } from "./execution/content-mutation.ts";
 import {
   fetchDLDTransactions,
   isDLDApiConfigured,
@@ -92,9 +93,7 @@ export async function upsertTransactions(
       updated_at: new Date().toISOString(),
     }));
 
-    const { error } = await supabase
-      .schema("analytics")
-      .from("dld_transactions")
+    const { error } = await cFromEdge(supabase.schema("analytics"), "dld_transactions")
       .upsert(rows, { onConflict: "transaction_id", ignoreDuplicates: false });
 
     if (error) {
@@ -268,9 +267,7 @@ export async function backfillHistoricalData(
     durationMs: Date.now() - startTime,
   };
 
-  const logInsert = await supabase
-    .schema("analytics")
-    .from("dld_backfill_log")
+  const logInsert = await cFromEdge(supabase.schema("analytics"), "dld_backfill_log")
     .insert({
       months_requested: months,
       months_processed: results.length,

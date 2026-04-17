@@ -1,8 +1,8 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function listAutoRepeatOrders(userId: string) {
-  const { data, error } = await db
-    .from("auto_repeat_orders")
+  const { data, error } = await cFrom("auto_repeat_orders")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -17,8 +17,7 @@ export async function createAutoRepeatOrder(params: {
   frequency: "daily" | "weekly" | "monthly";
   enabled?: boolean;
 }) {
-  const { data, error } = await db
-    .from("auto_repeat_orders")
+  const { data, error } = await cFrom("auto_repeat_orders")
     .insert({
       user_id: params.userId,
       source_order_id: params.orderId,
@@ -34,8 +33,7 @@ export async function createAutoRepeatOrder(params: {
 }
 
 export async function toggleAutoRepeatOrder(id: string, enabled: boolean) {
-  const { data, error } = await db
-    .from("auto_repeat_orders")
+  const { data, error } = await cFrom("auto_repeat_orders")
     .update({
       enabled,
       updated_at: new Date().toISOString(),
@@ -49,8 +47,7 @@ export async function toggleAutoRepeatOrder(id: string, enabled: boolean) {
 }
 
 export async function deleteAutoRepeatOrder(id: string) {
-  const { error } = await db
-    .from("auto_repeat_orders")
+  const { error } = await cFrom("auto_repeat_orders")
     .delete()
     .eq("id", id);
 

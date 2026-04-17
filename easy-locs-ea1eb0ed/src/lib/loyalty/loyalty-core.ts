@@ -1,6 +1,7 @@
 import { db } from "@/services/db";
 import { getGuestId } from "@/lib/guest-session";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 async function tryGetCurrentUserId(): Promise<string | null> {
   try {
     const { data } = await db.auth.getUser();
@@ -16,8 +17,7 @@ export async function getOrCreateLoyaltyAccount(params: {
   const userId = await tryGetCurrentUserId();
   const guestId = userId ? null : getGuestId();
 
-  let query = db
-    .from("loyalty_accounts")
+  let query = cFrom("loyalty_accounts")
     .select("*");
 
   if (params.workspaceId) {
@@ -31,8 +31,7 @@ export async function getOrCreateLoyaltyAccount(params: {
   if (existingError) throw existingError;
   if (existing) return existing;
 
-  const { data, error } = await db
-    .from("loyalty_accounts")
+  const { data, error } = await cFrom("loyalty_accounts")
     .insert({
       workspace_id: params.workspaceId ?? null,
       user_id: userId,
@@ -58,8 +57,7 @@ export async function addLoyaltyEntry(params: {
   referenceId?: string;
   metadata?: Record<string, any>;
 }) {
-  const { data, error } = await db
-    .from("loyalty_ledger")
+  const { data, error } = await cFrom("loyalty_ledger")
     .insert({
       loyalty_account_id: params.loyaltyAccountId,
       entry_type: params.entryType,
@@ -78,8 +76,7 @@ export async function addLoyaltyEntry(params: {
 }
 
 export async function rebuildLoyaltyAccount(loyaltyAccountId: string) {
-  const { data: entries, error: entriesError } = await db
-    .from("loyalty_ledger")
+  const { data: entries, error: entriesError } = await cFrom("loyalty_ledger")
     .select("*")
     .eq("loyalty_account_id", loyaltyAccountId);
 
@@ -98,8 +95,7 @@ export async function rebuildLoyaltyAccount(loyaltyAccountId: string) {
   else if (lifetimePoints >= 2000) tier = "gold";
   else if (lifetimePoints >= 500) tier = "silver";
 
-  const { data, error } = await db
-    .from("loyalty_accounts")
+  const { data, error } = await cFrom("loyalty_accounts")
     .update({ points_balance: pointsBalance, lifetime_points: lifetimePoints, total_cashback: totalCashback, tier })
     .eq("id", loyaltyAccountId)
     .select("*")

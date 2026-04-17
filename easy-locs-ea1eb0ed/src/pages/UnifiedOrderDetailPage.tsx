@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const RefundRequestButton = lazy(() => import("@/components/payments/RefundRequestButton"));
 
 const fmtPrice = (n: number, c = "EUR") => {
@@ -351,7 +352,7 @@ export default function UnifiedOrderDetailPage() {
                         onClick={async () => {
                           setSubmittingReturn(true);
                           try {
-                            await db.from("product_returns").insert({
+                            await cFrom("product_returns").insert({
                               order_id: orderId,
                               buyer_id: user.id,
                               seller_id: order.seller_id,

@@ -4,6 +4,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface NotificationPayload {
   userId: string;
   title: string;
@@ -17,7 +18,7 @@ export interface NotificationPayload {
 }
 
 export async function createNotification(payload: NotificationPayload) {
-  const { error } = await db("app_notifications").insert({
+  const { error } = await cFrom("app_notifications").insert({
     user_id: payload.userId,
     title: payload.title,
     body: payload.body || null,

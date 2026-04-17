@@ -4,6 +4,7 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const SPAM_KEYWORDS = ["buy now", "click here", "free money", "casino", "viagra", "http://"];
 const INSULT_KEYWORDS = ["idiot", "stupid", "moron", "trash", "garbage", "scam", "fraud"];
 
@@ -118,8 +119,7 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    const { data: existingReview } = await db
-      .from("reviews")
+    const { data: existingReview } = await cFromEdge(db, "reviews")
       .select("id")
       .eq("reviewer_user_id", auth.userId)
       .eq("merchant_id", targetId)
@@ -132,8 +132,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const { data: review, error: insertErr } = await db
-      .from("reviews")
+    const { data: review, error: insertErr } = await cFromEdge(db, "reviews")
       .insert({
         merchant_id: targetId,
         target_type: targetType,
@@ -166,15 +165,13 @@ Deno.serve(async (req: Request) => {
     };
     const targetTable = targetTableMap[targetType] ?? "seed_merchants";
 
-    const { data: allReviews } = await db
-      .from("reviews")
+    const { data: allReviews } = await cFromEdge(db, "reviews")
       .select("rating")
       .eq("merchant_id", targetId);
 
     if (allReviews && allReviews.length > 0) {
       const avg = allReviews.reduce((s: number, r: { rating: number }) => s + r.rating, 0) / allReviews.length;
-      await db
-        .from(targetTable)
+      await cFromEdge(db, targetTable)
         .update({
           rating: Number(avg.toFixed(2)),
           review_count: allReviews.length,
@@ -190,7 +187,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
 
     if (targetEntity?.user_id) {
-      await db.from("notifications").insert({
+      await cFromEdge(db, "notifications").insert({
         id: crypto.randomUUID(),
         user_id: targetEntity.user_id,
         type: "review",

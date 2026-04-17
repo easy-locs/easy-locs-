@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -179,7 +180,7 @@ Deno.serve(async (req) => {
         insertData.gallery_images = deepData.photos.slice(0, 10);
       }
 
-      await db.from("seed_merchants").insert(insertData);
+      await cFromEdge(db, "seed_merchants").insert(insertData);
       onboarded++;
 
       deepResults.push({
@@ -194,8 +195,7 @@ Deno.serve(async (req) => {
 
     // Enqueue for pipeline
     if (onboarded > 0) {
-      const { data: newEntities } = await db
-        .from("seed_merchants")
+      const { data: newEntities } = await cFromEdge(db, "seed_merchants")
         .select("id")
         .eq("city", city)
         .eq("pipeline_stage", "source_raw")
@@ -212,7 +212,7 @@ Deno.serve(async (req) => {
           priority: 8,
           status: "pending",
         }));
-        await db.from("entity_pipeline_queue").insert(rows);
+        await cFromEdge(db, "entity_pipeline_queue").insert(rows);
       }
     }
 

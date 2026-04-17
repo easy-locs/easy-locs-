@@ -8,6 +8,7 @@ import { db } from "@/services/db";
 import { resolveVerticalFromSubcategory } from "@/lib/taxonomy/subcategory-vertical-map";
 import type { NormalizationWorkerAPI } from "@/workers/normalization.worker";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ─── Types ───
 export interface RawShopInput {
   source_external_id?: string;
@@ -62,8 +63,7 @@ export interface PipelineResult {
 
 // ─── STEP 1: Create batch ───
 async function createBatch(config: BatchConfig): Promise<string> {
-  const { data, error } = await db
-    .from("import_batches")
+  const { data, error } = await cFrom("import_batches")
     .insert({
       source_type: config.source_type,
       source_name: config.source_name,
@@ -107,7 +107,7 @@ async function ingestRaw(batchId: string, sourceType: string, items: RawShopInpu
 
   for (let i = 0; i < rows.length; i += 50) {
     const chunk = rows.slice(i, i + 50);
-    const { error } = await db("imported_shop_raw").insert(chunk);
+    const { error } = await cFrom("imported_shop_raw").insert(chunk);
     if (error) throw new Error(`Raw ingest failed: ${error.message}`);
   }
 }
@@ -436,8 +436,7 @@ function extractVerticalAttributes(item: RawShopInput, vertical: string): Record
 async function checkDuplicate(name: string, phone: string | null, lat: number | null, lng: number | null, sourceExtId?: string): Promise<{ isDuplicate: boolean; existingId?: string; confidence: number }> {
   // Exact source_external_id match
   if (sourceExtId) {
-    const { data } = await db
-      .from("onboarding_shop_candidates")
+    const { data } = await cFrom("onboarding_shop_candidates")
       .select("id")
       .eq("source_external_id", sourceExtId)
       .limit(1);
@@ -446,8 +445,7 @@ async function checkDuplicate(name: string, phone: string | null, lat: number | 
 
   // Exact phone match
   if (phone) {
-    const { data } = await db
-      .from("onboarding_shop_candidates")
+    const { data } = await cFrom("onboarding_shop_candidates")
       .select("id")
       .eq("phone", phone)
       .limit(1);
@@ -456,8 +454,7 @@ async function checkDuplicate(name: string, phone: string | null, lat: number | 
 
   // Similar name + close geo
   if (lat && lng) {
-    const { data } = await db
-      .from("onboarding_shop_candidates")
+    const { data } = await cFrom("onboarding_shop_candidates")
       .select("id, canonical_name, latitude, longitude")
       .ilike("canonical_name", `%${name.slice(0, 15)}%`)
       .limit(20);
@@ -593,8 +590,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       }
 
       // Create candidate
-      const { data: candidate, error: candErr } = await db
-        .from("onboarding_shop_candidates")
+      const { data: candidate, error: candErr } = await cFrom("onboarding_shop_candidates")
         .insert({
           batch_id: batchId,
           source_type: config.source_type,
@@ -638,7 +634,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
         });
       }
       if (assetRows.length) {
-        await db("imported_shop_assets").insert(assetRows);
+        await cFrom("imported_shop_assets").insert(assetRows);
       }
 
       // Compute visual quality flags
@@ -660,7 +656,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
       const storefrontReady = storefrontScore >= 60 ? "ready" : storefrontScore >= 35 ? "needs_work" : "not_ready";
 
       // Create onboarding state with visual columns
-      await db("merchant_onboarding_state").insert({
+      await cFrom("merchant_onboarding_state").insert({
         entity_id: candidate.id,
         onboarding_mode: "imported_draft",
         import_source: config.source_type,
@@ -691,7 +687,7 @@ export async function runImportPipeline(config: BatchConfig, items: RawShopInput
 
   result.avg_completeness = result.total_created > 0 ? Math.round(totalCompleteness / result.total_created) : 0;
 
-  await db("import_batches").update({
+  await cFrom("import_batches").update({
     status: "completed",
     completed_at: new Date().toISOString(),
     total_raw: result.total_raw,

@@ -3,19 +3,20 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchUserOrgDetails(userId: string) {
-  const { data: member } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  const { data: member } = await cFrom("org_members").select("org_id").eq("user_id", userId).limit(1).single();
   if (!member) return null;
-  const { data: org } = await db("orgs").select("*").eq("id", member.org_id).single();
+  const { data: org } = await cFrom("orgs").select("*").eq("id", member.org_id).single();
   return org;
 }
 
 export async function fetchOrgMembers(orgId: string) {
-  const { data } = await db("org_members").select("id, user_id, role, created_at").eq("org_id", orgId);
+  const { data } = await cFrom("org_members").select("id, user_id, role, created_at").eq("org_id", orgId);
   if (!data) return [];
   const profiles = await Promise.all(
     data.map(async (m) => {
-      const { data: p } = await db("profiles").select("email, name").eq("id", m.user_id).single();
+      const { data: p } = await cFrom("profiles").select("email, name").eq("id", m.user_id).single();
       return { ...m, email: p?.email || "", name: p?.name || "" };
     })
   );
@@ -23,8 +24,7 @@ export async function fetchOrgMembers(orgId: string) {
 }
 
 export async function fetchCollabInvitations(orgId: string) {
-  const { data } = await db
-    .from("collaboration_invitations")
+  const { data } = await cFrom("collaboration_invitations")
     .select("*")
     .eq("org_id", orgId)
     .order("created_at", { ascending: false });
@@ -35,23 +35,23 @@ export async function fetchCollabInvitations(orgId: string) {
 }
 
 export async function insertInvitation(orgId: string, invitedBy: string, email: string, role: string) {
-  const { error } = await db("collaboration_invitations").insert({
+  const { error } = await cFrom("collaboration_invitations").insert({
     org_id: orgId, invited_by: invitedBy, email, role,
   });
   if (error) throw error;
 }
 
 export async function deleteInvitation(id: string) {
-  const { error } = await db("collaboration_invitations").delete().eq("id", id);
+  const { error } = await cFrom("collaboration_invitations").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function removeOrgMember(memberId: string) {
-  const { error } = await db("org_members").delete().eq("id", memberId);
+  const { error } = await cFrom("org_members").delete().eq("id", memberId);
   if (error) throw error;
 }
 
 export async function updateOrgMemberRole(memberId: string, newRole: string) {
-  const { error } = await db("org_members").update({ role: newRole } as any).eq("id", memberId);
+  const { error } = await cFrom("org_members").update({ role: newRole } as any).eq("id", memberId);
   if (error) throw error;
 }

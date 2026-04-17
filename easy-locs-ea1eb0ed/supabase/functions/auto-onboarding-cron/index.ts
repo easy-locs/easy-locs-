@@ -3,6 +3,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { ctFromEdge as cFromEdge, ctRpcEdge as cRpcEdge } from "../_shared/execution/contacts-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -80,8 +81,7 @@ Deno.serve(async (req) => {
 
     // ── Step 4: Update rankings for affected entities ──
     try {
-      const { data: candidates } = await supabase
-        .from("seed_merchants")
+      const { data: candidates } = await cFromEdge(supabase, "seed_merchants")
         .select("id")
         .is("visibility_score", null)
         .eq("country", "AE")
@@ -91,8 +91,7 @@ Deno.serve(async (req) => {
       if (candidates?.length) {
         for (const c of candidates) {
           const score = Math.random() * 40 + 30;
-          await supabase
-            .from("seed_merchants")
+          await cFromEdge(supabase, "seed_merchants")
             .update({ visibility_score: Math.round(score) })
             .eq("id", c.id);
           ranked++;
@@ -106,8 +105,7 @@ Deno.serve(async (req) => {
     // ── Step 5: Visibility sync ──
     try {
       // Hidden entities with decent coherence should be promoted
-      const { data: promotable } = await supabase
-        .from("seed_merchants")
+      const { data: promotable } = await cFromEdge(supabase, "seed_merchants")
         .select("id, coherence_score, coherence_status")
         .eq("visibility_mode", "hidden")
         .gte("coherence_score", 50)
@@ -118,8 +116,7 @@ Deno.serve(async (req) => {
       let promoted = 0;
       if (promotable?.length) {
         for (const e of promotable) {
-          await supabase
-            .from("seed_merchants")
+          await cFromEdge(supabase, "seed_merchants")
             .update({ visibility_mode: "search_only" })
             .eq("id", e.id);
           promoted++;
@@ -135,7 +132,7 @@ Deno.serve(async (req) => {
     report.elapsed_ms = elapsed;
     report.completed_at = new Date().toISOString();
 
-    const { error: insertErr } = await supabase.from("platform_recovery_runs").insert({
+    const { error: insertErr } = await cFromEdge(supabase, "platform_recovery_runs").insert({
       id: crypto.randomUUID(),
       trigger_type: "auto-onboarding-cron",
       status: "completed",

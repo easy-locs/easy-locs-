@@ -5,75 +5,76 @@
 import { db } from "@/services/db";
 import { createRealtimeChannel, removeRealtimeChannel } from "@/lib/realtime";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ── Property CRUD ──
 
 export async function fetchProperties(orgId: string) {
-  const { data, error } = await db("properties").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data, error } = await cFrom("properties").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
 export async function createProperty(orgId: string, userId: string, form: Record<string, any>) {
-  const { data, error } = await db("properties").insert({ ...form, org_id: orgId, user_id: userId } as any).select().single();
+  const { data, error } = await cFrom("properties").insert({ ...form, org_id: orgId, user_id: userId } as any).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function updateProperty(id: string, updates: Record<string, any>) {
-  const { error } = await db("properties").update(updates as any).eq("id", id);
+  const { error } = await cFrom("properties").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteProperty(id: string) {
-  const { error } = await db("properties").delete().eq("id", id);
+  const { error } = await cFrom("properties").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Tenant CRUD ──
 
 export async function fetchTenants(orgId: string) {
-  const { data, error } = await db("tenants").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data, error } = await cFrom("tenants").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
 export async function createTenant(orgId: string, userId: string, form: Record<string, any>) {
-  const { data, error } = await db("tenants").insert({ ...form, org_id: orgId, user_id: userId } as any).select().single();
+  const { data, error } = await cFrom("tenants").insert({ ...form, org_id: orgId, user_id: userId } as any).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function updateTenant(id: string, updates: Record<string, any>) {
-  const { error } = await db("tenants").update(updates as any).eq("id", id);
+  const { error } = await cFrom("tenants").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function deleteTenant(id: string) {
-  const { error } = await db("tenants").delete().eq("id", id);
+  const { error } = await cFrom("tenants").delete().eq("id", id);
   if (error) throw error;
 }
 
 // ── Rent Calls ──
 
 export async function fetchRentCalls(orgId: string) {
-  const { data, error } = await db("rent_calls").select("*").eq("org_id", orgId).order("due_date", { ascending: false });
+  const { data, error } = await cFrom("rent_calls").select("*").eq("org_id", orgId).order("due_date", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
 
 export async function createRentCall(orgId: string, call: Record<string, any>) {
-  const { data, error } = await db("rent_calls").insert({ ...call, org_id: orgId } as any).select().single();
+  const { data, error } = await cFrom("rent_calls").insert({ ...call, org_id: orgId } as any).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function updateRentCall(id: string, updates: Record<string, any>) {
-  const { error } = await db("rent_calls").update(updates as any).eq("id", id);
+  const { error } = await cFrom("rent_calls").update(updates as any).eq("id", id);
   if (error) throw error;
 }
 
 export async function fetchLeases(orgId: string) {
-  const { data, error } = await db("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
+  const { data, error } = await cFrom("leases").select("*").eq("org_id", orgId).order("created_at", { ascending: false });
   if (error) throw error;
   return data ?? [];
 }
@@ -82,9 +83,9 @@ export async function fetchLeases(orgId: string) {
 
 export async function fetchPropertyDetail(orgId: string, propertyId: string) {
   const [{ data: expenses }, { data: furniture }, { data: inventories }] = await Promise.all([
-    db("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }),
-    db("furniture_items").select("*").eq("org_id", orgId).eq("property_id", propertyId),
-    db("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
+    cFrom("expenses").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("expense_date", { ascending: false }),
+    cFrom("furniture_items").select("*").eq("org_id", orgId).eq("property_id", propertyId),
+    cFrom("inventory_reports").select("*").eq("org_id", orgId).eq("property_id", propertyId).order("report_date", { ascending: false }),
   ]);
   return { expenses: expenses ?? [], furniture: furniture ?? [], inventories: inventories ?? [] };
 }
@@ -93,8 +94,8 @@ export async function fetchPropertyDetail(orgId: string, propertyId: string) {
 
 export async function fetchPropertyModeBadges(orgId: string) {
   const [{ data: seasonal }, { data: realEstate }] = await Promise.all([
-    db("public_listings").select("property_id").eq("org_id", orgId).eq("active", true),
-    db("real_estate_listings").select("property_id, listing_type").eq("org_id", orgId).eq("status", "active"),
+    cFrom("public_listings").select("property_id").eq("org_id", orgId).eq("active", true),
+    cFrom("real_estate_listings").select("property_id, listing_type").eq("org_id", orgId).eq("status", "active"),
   ]);
   return {
     seasonalIds: new Set<string>((seasonal ?? []).map((s: any) => s.property_id).filter(Boolean)),
@@ -107,18 +108,18 @@ export async function fetchPropertyModeBadges(orgId: string) {
 export async function fetchLandlordProfile(userId: string, orgId?: string) {
   let name = "", address = "", signature = "", stamp = "";
   try {
-    const { data: profile } = await db("profiles").select("name, email, signature_url").eq("id", userId).single();
+    const { data: profile } = await cFrom("profiles").select("name, email, signature_url").eq("id", userId).single();
     if (profile?.name) name = profile.name;
     if (profile?.signature_url) signature = profile.signature_url;
   } catch { /* defaults */ }
 
   if (orgId) {
     try {
-      const { data: op } = await db("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
+      const { data: op } = await cFrom("owner_profiles").select("full_name, address, postal_code, city").eq("org_id", orgId).limit(1).maybeSingle();
       if (op) { name = op.full_name || name; address = [op.address, op.postal_code, op.city].filter(Boolean).join(", "); }
     } catch { /* ignore */ }
     try {
-      const { data: org } = await db("orgs").select("name, address, postal_code, city, stamp_url").eq("id", orgId).single();
+      const { data: org } = await cFrom("orgs").select("name, address, postal_code, city, stamp_url").eq("id", orgId).single();
       if (org) { if (!name) name = org.name || ""; if (!address) address = [org.address, org.postal_code, org.city].filter(Boolean).join(", "); if ((org as any)?.stamp_url) stamp = (org as any).stamp_url; }
     } catch { /* ignore */ }
   }
@@ -129,7 +130,7 @@ export async function fetchLandlordProfile(userId: string, orgId?: string) {
 
 export async function fetchRentalMessages(orgId: string, tenantId: string) {
   const contextId = `tenant_${orgId}_${tenantId}`;
-  const { data } = await db("chat_messages_v2").select("*").eq("conversation_id", contextId).order("created_at", { ascending: true });
+  const { data } = await cFrom("chat_messages_v2").select("*").eq("conversation_id", contextId).order("created_at", { ascending: true });
   return data ?? [];
 }
 
@@ -147,7 +148,7 @@ export async function sendRentalMessage(orgId: string, tenantId: string, userId:
 }
 
 export async function sendRentalNotification(tenantUserId: string, title: string, body: string) {
-  await db("app_notifications").insert({
+  await cFrom("app_notifications").insert({
     user_id: tenantUserId, scope: "global", category: "message",
     title, body, severity: "info", route: "/orbit",
   });
@@ -172,7 +173,7 @@ export function subscribeRentalMessages(tenantId: string, onInsert: (msg: any) =
 // ── Document insert ──
 
 export async function insertDocument(orgId: string, userId: string, title: string, docType: string, templateId: string, templateVersion: string, dataJson: Record<string, unknown>, country: string) {
-  await db("documents").insert({
+  await cFrom("documents").insert({
     org_id: orgId, user_id: userId, title, doc_type: docType,
     template_id: templateId, template_version: templateVersion,
     data_json: dataJson as any, status: "draft", country,

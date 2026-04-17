@@ -2,6 +2,7 @@ import { db } from "@/services/db";
 import { debugLog } from "@/lib/debug/runtime-debug-bus";
 import { safeErrorMessage, serializeForDebug } from "@/lib/debug/debug-helpers";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface ResolvedQrTarget {
   targetCode: string;
   merchantProfileId: string;
@@ -24,8 +25,7 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
 
   try {
     // Step 1: Fetch QR target WITHOUT join to avoid RLS recursion on storefront_pages
-    const { data, error } = await db
-      .from("qr_order_targets")
+    const { data, error } = await cFrom("qr_order_targets")
       .select("*")
       .eq("target_code", targetCode)
       .eq("active", true)
@@ -46,8 +46,7 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
 
     if (data.storefront_page_id) {
       try {
-        const { data: shop } = await db
-          .from("storefront_pages")
+        const { data: shop } = await cFrom("storefront_pages")
           .select("slug, name")
           .eq("id", data.storefront_page_id)
           .maybeSingle();
@@ -62,8 +61,7 @@ export async function resolveQrTarget(targetCode: string): Promise<ResolvedQrTar
     }
 
     // Increment scan count (fire-and-forget)
-    db
-      .from("qr_order_targets")
+    cFrom("qr_order_targets")
       .update({ 
         scan_count: (data.scan_count || 0) + 1,
         last_scanned_at: new Date().toISOString(),

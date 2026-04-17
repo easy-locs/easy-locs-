@@ -6,6 +6,7 @@ import { db } from "@/services/db";
 import { canTransition, type OrderStatus } from "./order-status";
 import { platformBus } from "@/lib/shared/platform-bus";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function setOrderStatus(params: {
   orderId: string;
   currentStatus: OrderStatus;
@@ -20,7 +21,7 @@ export async function setOrderStatus(params: {
     throw new Error(`Invalid status transition: ${params.currentStatus} → ${params.nextStatus}`);
   }
 
-  const { error } = await db("orders")
+  const { error } = await cFrom("orders")
     .update({
       status: params.nextStatus,
       updated_at: new Date().toISOString(),

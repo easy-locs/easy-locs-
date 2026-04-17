@@ -6,6 +6,7 @@ import { platformBus } from "@/lib/shared/platform-bus";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function updateOrbitGroup(params: {
   groupId: string;
   conversationId: string;
@@ -19,7 +20,7 @@ export async function updateOrbitGroup(params: {
   if (params.avatarUrl !== undefined) updates.avatar_url = params.avatarUrl;
 
   if (Object.keys(updates).length > 0) {
-    const { error } = await db("conversations_v2")
+    const { error } = await cFrom("conversations_v2")
       .update(updates)
       .eq("id", params.conversationId);
     if (error) throw error;

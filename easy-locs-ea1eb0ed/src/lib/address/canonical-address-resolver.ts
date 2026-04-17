@@ -8,6 +8,7 @@
  */
 import { db } from "@/services/db";
 import { platformBus } from "@/lib/shared/platform-bus";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import {
   computeZoneKey,
   simpleGeohash,
@@ -114,8 +115,7 @@ function normalizeInput(raw: string): string {
 async function findExistingPlace(place: CanonicalPlace): Promise<CanonicalPlaceRow | null> {
   // 1. By provider_place_id (exact match)
   if (place.provider_place_id) {
-    const { data } = await db
-      .from("canonical_places")
+    const { data } = await cFrom("canonical_places")
       .select("*")
       .eq("provider", place.provider)
       .eq("provider_place_id", place.provider_place_id)
@@ -127,8 +127,7 @@ async function findExistingPlace(place: CanonicalPlace): Promise<CanonicalPlaceR
   const gh = place.geohash ?? simpleGeohash(place.lat, place.lng);
   if (gh) {
     const prefix = gh.substring(0, 4);
-    const { data: nearby } = await db
-      .from("canonical_places")
+    const { data: nearby } = await cFrom("canonical_places")
       .select("*")
       .like("geohash", `${prefix}%`)
       .ilike("formatted_address", `%${normalizeInput(place.formatted_address).substring(0, 30)}%`)
@@ -145,8 +144,7 @@ export async function upsertCanonicalPlace(place: CanonicalPlace): Promise<Canon
   const existing = await findExistingPlace(place);
   if (existing) {
     // Bump popularity
-    await db
-      .from("canonical_places")
+    await cFrom("canonical_places")
       .update({ popularity_score: (existing.popularity_score ?? 0) + 1, updated_at: new Date().toISOString() })
       .eq("id", existing.id);
     return existing;
@@ -179,8 +177,7 @@ export async function upsertCanonicalPlace(place: CanonicalPlace): Promise<Canon
     metadata_json: place.metadata ?? {},
   };
 
-  const { data, error } = await db
-    .from("canonical_places")
+  const { data, error } = await cFrom("canonical_places")
     .insert(row)
     .select("*")
     .single();
@@ -195,8 +192,7 @@ export async function upsertCanonicalPlace(place: CanonicalPlace): Promise<Canon
 // ── Get canonical place by ID ──
 
 export async function getCanonicalPlace(id: string): Promise<CanonicalPlaceRow | null> {
-  const { data } = await db
-    .from("canonical_places")
+  const { data } = await cFrom("canonical_places")
     .select("*")
     .eq("id", id)
     .maybeSingle();
@@ -215,8 +211,7 @@ export async function searchCanonicalPlaces(params: {
 }): Promise<CanonicalPlaceRow[]> {
   const { query, countryCode, city, limit = 10 } = params;
 
-  let q = db
-    .from("canonical_places")
+  let q = cFrom("canonical_places")
     .select("*")
     .limit(limit);
 
@@ -236,8 +231,7 @@ export async function searchCanonicalPlaces(params: {
 // ── User Saved Addresses ──
 
 export async function getUserSavedAddresses(userId: string): Promise<UserSavedAddress[]> {
-  const { data } = await db
-    .from("user_saved_addresses")
+  const { data } = await cFrom("user_saved_addresses")
     .select("*, place:canonical_places(*)")
     .eq("user_id", userId)
     .order("is_default", { ascending: false })
@@ -259,15 +253,13 @@ export async function saveUserAddress(params: {
   isFavorite?: boolean;
 }): Promise<UserSavedAddress | null> {
   if (params.isDefault) {
-    await db
-      .from("user_saved_addresses")
+    await cFrom("user_saved_addresses")
       .update({ is_default: false })
       .eq("user_id", params.userId)
       .eq("is_default", true);
   }
 
-  const { data, error } = await db
-    .from("user_saved_addresses")
+  const { data, error } = await cFrom("user_saved_addresses")
     .insert({
       user_id: params.userId,
       canonical_place_id: params.canonicalPlaceId,
@@ -288,14 +280,13 @@ export async function saveUserAddress(params: {
 }
 
 export async function deleteUserAddress(addressId: string): Promise<void> {
-  await db("user_saved_addresses").delete().eq("id", addressId);
+  await cFrom("user_saved_addresses").delete().eq("id", addressId);
 }
 
 // ── Active Address Context (multi-context) ──
 
 export async function getActiveAddressContext(userId: string, contextType: AddressContextType = "global"): Promise<ActiveAddressContext | null> {
-  const { data } = await db
-    .from("user_active_address_context")
+  const { data } = await cFrom("user_active_address_context")
     .select("*")
     .eq("user_id", userId)
     .eq("context_type", contextType)
@@ -304,8 +295,7 @@ export async function getActiveAddressContext(userId: string, contextType: Addre
 }
 
 export async function getAllActiveContexts(userId: string): Promise<ActiveAddressContext[]> {
-  const { data } = await db
-    .from("user_active_address_context")
+  const { data } = await cFrom("user_active_address_context")
     .select("*")
     .eq("user_id", userId);
   return data ?? [];
@@ -340,8 +330,7 @@ export async function setActiveAddressContext(params: {
     updated_at: new Date().toISOString(),
   };
 
-  const { error } = await db
-    .from("user_active_address_context")
+  const { error } = await cFrom("user_active_address_context")
     .upsert(row, { onConflict: "user_id,context_type" });
 
   if (error) {
@@ -373,7 +362,7 @@ export async function trackAddressUsage(params: {
   actionType: AddressActionType;
   searchQuery?: string;
 }): Promise<void> {
-  await db("address_usage_events").insert({
+  await cFrom("address_usage_events").insert({
     user_id: params.userId,
     canonical_place_id: params.canonicalPlaceId,
     context_type: params.contextType,
@@ -382,14 +371,13 @@ export async function trackAddressUsage(params: {
   });
 
   // Bump popularity
-  try { await db.rpc("increment_popularity", { place_id: params.canonicalPlaceId }); } catch {}
+  try { await cRpc("increment_popularity", { place_id: params.canonicalPlaceId }); } catch {}
 }
 
 // ── Get recent places for a user ──
 
 export async function getRecentPlaces(userId: string, limit = 5): Promise<CanonicalPlaceRow[]> {
-  const { data } = await db
-    .from("address_usage_events")
+  const { data } = await cFrom("address_usage_events")
     .select("canonical_place_id, canonical_places:canonical_place_id(*)")
     .eq("user_id", userId)
     .eq("action_type", "selected")
@@ -540,8 +528,7 @@ export async function upsertMerchantGeoContext(params: {
   pickupEnabled?: boolean;
   deliveryEnabled?: boolean;
 }): Promise<void> {
-  const { error } = await db
-    .from("merchant_geo_context")
+  const { error } = await cFrom("merchant_geo_context")
     .upsert({
       merchant_id: params.merchantId,
       canonical_place_id: params.canonicalPlaceId,

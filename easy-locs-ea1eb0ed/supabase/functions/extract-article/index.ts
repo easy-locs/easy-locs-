@@ -8,6 +8,7 @@ import { detectPaywall } from "../_shared/paywall-detection.ts";
 import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -151,7 +152,7 @@ function maybeLogMetricsSummary(logger: ReturnType<typeof createEdgeLogger>): vo
       const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       if (supabaseUrl && serviceKey) {
         const sb = createClient(supabaseUrl, serviceKey);
-        sb.from("cache_metrics_history").insert({
+        cFromEdge(sb, "cache_metrics_history").insert({
           endpoint: "extract-article",
           hits: snapshot.hits,
           misses: snapshot.misses,
@@ -179,7 +180,7 @@ async function maybePersistMetrics(logger: ReturnType<typeof createEdgeLogger>):
   const snapshot = getCacheMetricsSnapshot();
   try {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { error } = await supabase.from("cache_metrics_log").insert({
+    const { error } = await cFromEdge(supabase, "cache_metrics_log").insert({
       function_name: "extract-article",
       hits: snapshot.hits,
       misses: snapshot.misses,
@@ -443,7 +444,7 @@ async function logFirecrawlUsage(
 ): Promise<void> {
   try {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
-    const { error } = await supabase.from("firecrawl_usage_log").insert({
+    const { error } = await cFromEdge(supabase, "firecrawl_usage_log").insert({
       user_id: userId,
       target_url: targetUrl,
       success,

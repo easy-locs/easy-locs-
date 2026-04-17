@@ -4,6 +4,7 @@ import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -178,7 +179,7 @@ Deno.serve(async (req) => {
       sizeBytes: 0,
     });
 
-    const { data: assetId, error: upsertError } = await supabase.rpc("upsert_media_asset", {
+    const { data: assetId, error: upsertError } = await cRpcEdge(supabase, "upsert_media_asset", {
       p_bucket: bucket,
       p_path: path,
       p_content_type: contentType,
@@ -198,7 +199,7 @@ Deno.serve(async (req) => {
 
     let transcodeStatus = "pending";
     try {
-      const { error: enqueueError } = await supabase.from("transcode_jobs").insert({
+      const { error: enqueueError } = await cFromEdge(supabase, "transcode_jobs").insert({
         source_bucket: bucket,
         source_path: path,
         output_format: "h264_hls",

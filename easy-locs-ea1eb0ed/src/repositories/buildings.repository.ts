@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface BuildingRecord {
   id: string;
   name: string;
@@ -15,8 +16,7 @@ export interface BuildingRecord {
 }
 
 export async function fetchBuildings(orgId: string): Promise<BuildingRecord[]> {
-  const { data } = await db
-    .from("buildings")
+  const { data } = await cFrom("buildings")
     .select("*")
     .eq("org_id", orgId)
     .order("name");
@@ -37,17 +37,17 @@ export async function insertBuilding(params: {
   country: string;
   units_count: number;
 }) {
-  const { data, error } = await db("buildings").insert(params).select().single();
+  const { data, error } = await cFrom("buildings").insert(params).select().single();
   if (error) throw error;
   return data;
 }
 
 export async function deleteBuilding(id: string) {
-  const { error } = await db("buildings").delete().eq("id", id);
+  const { error } = await cFrom("buildings").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function updateBuilding(id: string, record: Record<string, any>) {
-  const { error } = await db("buildings").update(record).eq("id", id);
+  const { error } = await cFrom("buildings").update(record).eq("id", id);
   if (error) throw error;
 }

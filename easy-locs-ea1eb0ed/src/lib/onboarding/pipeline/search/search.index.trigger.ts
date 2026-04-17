@@ -1,3 +1,4 @@
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 /**
  * search.index.trigger — Triggers search index update and map marker creation
  * after storefront persistence. Makes new shops immediately discoverable.
@@ -37,8 +38,7 @@ export async function triggerSearchIndex(
   try {
     const { db } = await import("@/services/db");
 
-    const { error: searchError } = await db
-      .from("search_index")
+    const { error: searchError } = await cFrom("search_index")
       .upsert(
         {
           storefront_id: payload.storefrontId,
@@ -68,8 +68,7 @@ export async function triggerSearchIndex(
     try {
       const { db } = await import("@/services/db");
 
-      const { error: mapError } = await db
-        .from("map_markers")
+      const { error: mapError } = await cFrom("map_markers")
         .upsert(
           {
             storefront_id: payload.storefrontId,

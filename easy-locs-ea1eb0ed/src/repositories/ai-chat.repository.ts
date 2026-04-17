@@ -5,18 +5,19 @@ import { db } from "@/services/db";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export const aiChatRepo = {
   threads: {
     insert(payload: Record<string, unknown>) {
-      return db("ai_chat_threads").insert(payload).select("*").single();
+      return cFrom("ai_chat_threads").insert(payload).select("*").single();
     },
   },
   messages: {
     insert(payload: Record<string, unknown>) {
-      return db("ai_chat_messages").insert(payload);
+      return cFrom("ai_chat_messages").insert(payload);
     },
     listByThread(threadId: string, limit = 30) {
-      return db("ai_chat_messages")
+      return cFrom("ai_chat_messages")
         .select("role,content")
         .eq("thread_id", threadId)
         .order("created_at", { ascending: true })
@@ -25,7 +26,7 @@ export const aiChatRepo = {
   },
   usage: {
     insert(payload: Record<string, unknown>) {
-      return db("ai_chat_usage").insert(payload);
+      return cFrom("ai_chat_usage").insert(payload);
     },
   },
   invoke(fnName: string, body: Record<string, unknown>) {

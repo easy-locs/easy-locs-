@@ -13,6 +13,7 @@
 import { db } from "@/services/db";
 import { buildAppLink } from "@/lib/link/build-link";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type QrPurpose = "order" | "pay" | "front_desk" | "table" | "tracking" | "review" | "staff" | "pickup" | "delivery";
 
 interface GeneratedQr {
@@ -143,8 +144,7 @@ export async function autoGenerateShopQrCodes(params: {
   }
 
   // Insert all QRs
-  const { data, error } = await db
-    .from("qr_order_targets")
+  const { data, error } = await cFrom("qr_order_targets")
     .insert(qrRows)
     .select("*");
 
@@ -171,8 +171,7 @@ export async function autoGenerateShopQrCodes(params: {
  * Get all QR codes for a shop.
  */
 export async function getShopQrCodes(shopId: string): Promise<GeneratedQr[]> {
-  const { data } = await db
-    .from("qr_order_targets")
+  const { data } = await cFrom("qr_order_targets")
     .select("*")
     .eq("storefront_page_id", shopId)
     .eq("active", true)
@@ -203,8 +202,7 @@ export async function addShopTables(params: {
   for (const label of params.labels) {
     // Create QR target
     const code = makeCode(params.shopId, "T", label.replace(/\s+/g, ""));
-    const { data: qr, error: qrErr } = await db
-      .from("qr_order_targets")
+    const { data: qr, error: qrErr } = await cFrom("qr_order_targets")
       .insert({
         target_code: code,
         merchant_profile_id: params.merchantProfileId || null,
@@ -224,8 +222,7 @@ export async function addShopTables(params: {
     }
 
     // Create shop_table entry
-    const { error: tableErr } = await db
-      .from("shop_tables")
+    const { error: tableErr } = await cFrom("shop_tables")
       .insert({
         shop_id: params.shopId,
         label,

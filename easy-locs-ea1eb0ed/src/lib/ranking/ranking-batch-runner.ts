@@ -5,6 +5,7 @@
  */
 import { db } from "@/services/db";
 import { passesCoherenceGate } from "@/lib/engines/coherence-engine";
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 import {
   computeCentralRank,
   buildRankingInputFromCandidate,
@@ -19,7 +20,7 @@ async function persistRanking(
   result: RankingResult
 ) {
   // Upsert current state
-  await db("current_ranking_state").upsert({
+  await cFrom("current_ranking_state").upsert({
     entity_id: entityId,
     entity_type: entityType,
     global_rank_score: result.globalRankScore,
@@ -31,7 +32,7 @@ async function persistRanking(
   });
 
   // Append snapshot
-  await db("ranking_snapshots").insert({
+  await cFrom("ranking_snapshots").insert({
     entity_id: entityId,
     entity_type: entityType,
     global_rank_score: result.globalRankScore,
@@ -51,8 +52,7 @@ async function persistRanking(
   });
 
   // Sync visibility to onboarding state
-  await db
-    .from("merchant_onboarding_state")
+  await cFrom("merchant_onboarding_state")
     .update({ visibility_status: result.visibilityClass })
     .eq("entity_id", entityId);
 
@@ -67,16 +67,14 @@ async function persistRanking(
       boost_ready: "live",
     };
     const newMode = modeMap[result.visibilityClass] ?? "coming_soon";
-    await db
-      .from("seed_merchants")
+    await cFrom("seed_merchants")
       .update({ visibility_mode: newMode })
       .eq("id", entityId);
   }
 }
 
 export async function rerankCandidates(limit = 500): Promise<number> {
-  const { data: candidates } = await db
-    .from("onboarding_shop_candidates")
+  const { data: candidates } = await cFrom("onboarding_shop_candidates")
     .select("*")
     .limit(limit);
 
@@ -101,8 +99,7 @@ export async function rerankCandidates(limit = 500): Promise<number> {
 }
 
 export async function rerankSeeds(limit = 500): Promise<number> {
-  const { data: seeds } = await db
-    .from("seed_merchants")
+  const { data: seeds } = await cFrom("seed_merchants")
     .select("*")
     .limit(limit);
 

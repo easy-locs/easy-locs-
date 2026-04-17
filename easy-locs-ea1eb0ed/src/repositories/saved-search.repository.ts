@@ -1,12 +1,13 @@
 /**
  * saved-search.repository — Canonical DB access for saved_searches table.
- * Replaces direct db("saved_searches") calls in savedSearchStore.ts.
+ * Replaces direct cFrom("saved_searches") calls in savedSearchStore.ts.
  */
 import { db } from "@/services/db";
 import type { ListingSearchFilters } from "@/lib/types/search";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type SavedSearchRow = {
   id: string;
   user_id: string;
@@ -20,8 +21,7 @@ export type SavedSearchRow = {
  * Fetch all saved searches for a user, newest first.
  */
 export async function fetchSavedSearches(userId: string): Promise<SavedSearchRow[]> {
-  const { data, error } = await db
-    .from("saved_searches")
+  const { data, error } = await cFrom("saved_searches")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -45,8 +45,7 @@ export async function createSavedSearch(payload: {
   name: string;
   filters: ListingSearchFilters;
 }): Promise<SavedSearchRow | null> {
-  const { data, error } = await db
-    .from("saved_searches")
+  const { data, error } = await cFrom("saved_searches")
     .insert({
       id: payload.id,
       user_id: payload.userId,
@@ -71,8 +70,7 @@ export async function createSavedSearch(payload: {
  * Returns true on success, false on error.
  */
 export async function deleteSavedSearch(id: string): Promise<boolean> {
-  const { error } = await db
-    .from("saved_searches")
+  const { error } = await cFrom("saved_searches")
     .delete()
     .eq("id", id);
 

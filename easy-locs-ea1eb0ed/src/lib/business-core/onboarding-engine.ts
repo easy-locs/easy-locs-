@@ -7,6 +7,7 @@ import type {
 import { ONBOARDING_STEPS, REQUIRED_STEPS, VERTICAL_MODULES } from './business-types';
 import { db } from '@/services/db';
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export interface OnboardingState {
   businessId: string;
   businessType: BusinessType;
@@ -98,7 +99,7 @@ const STEP_VALIDATORS: Record<OnboardingStepName, (b: BusinessCore) => StepValid
 
 export const onboardingEngine = {
   async getState(business: BusinessCore): Promise<OnboardingState> {
-    const { data } = await db('onboarding_steps')
+    const { data } = await cFrom('onboarding_steps')
       .select('*')
       .eq('business_id', business.business_id)
       .order('step_index');
@@ -141,7 +142,7 @@ export const onboardingEngine = {
       completed_at: null,
     }));
 
-    const { data } = await db('onboarding_steps').insert(steps).select();
+    const { data } = await cFrom('onboarding_steps').insert(steps).select();
     return (data ?? []) as OnboardingStep[];
   },
 
@@ -154,7 +155,7 @@ export const onboardingEngine = {
     const validation = this.validateStep(stepName, business);
 
     if (validation.valid) {
-      await db('onboarding_steps')
+      await cFrom('onboarding_steps')
         .update({
           status: 'completed',
           validation_errors: [],
@@ -163,7 +164,7 @@ export const onboardingEngine = {
         .eq('business_id', businessId)
         .eq('step_name', stepName);
     } else {
-      await db('onboarding_steps')
+      await cFrom('onboarding_steps')
         .update({
           status: 'blocked',
           validation_errors: validation.errors,
@@ -173,7 +174,7 @@ export const onboardingEngine = {
     }
 
     const state = await this.getState(business);
-    await db('business_core')
+    await cFrom('business_core')
       .update({ onboarding_progress: state.progress, updated_at: new Date().toISOString() })
       .eq('business_id', businessId);
 
@@ -191,7 +192,7 @@ export const onboardingEngine = {
       return { success: false, error: check.blockers.join('; ') };
     }
 
-    await db('business_core')
+    await cFrom('business_core')
       .update({ status: 'active', onboarding_progress: 100, updated_at: new Date().toISOString() })
       .eq('business_id', business.business_id);
 

@@ -6,6 +6,7 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -130,7 +131,7 @@ Deno.serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + CACHE_TTL_HOURS);
 
-    await supabase.from("prayer_times_cache").upsert({
+    await cFromEdge(supabase, "prayer_times_cache").upsert({
       cache_key: cacheId,
       prayer_data: result,
       expires_at: expiresAt.toISOString(),

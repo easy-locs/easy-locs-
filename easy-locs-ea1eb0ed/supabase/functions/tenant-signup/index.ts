@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
+import { ctFromEdge as cFromEdge, ctRpcEdge as cRpcEdge } from "../_shared/execution/contacts-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
     });
 
     // 1. Validate the invitation token
-    const { data: inv, error: invErr } = await adminClient.rpc("validate_tenant_invitation", { _token: token });
+    const { data: inv, error: invErr } = await cRpcEdge(adminClient, "validate_tenant_invitation", { _token: token });
     if (invErr || !inv || !(inv as any).valid) {
       return new Response(JSON.stringify({ error: "Invitation invalide ou expirée" }), {
         status: 400,
@@ -80,14 +81,13 @@ Deno.serve(async (req) => {
     }
 
     // 3. Ensure profile exists with tenant type
-    const { data: profile } = await adminClient
-      .from("profiles")
+    const { data: profile } = await cFromEdge(adminClient, "profiles")
       .select("id")
       .eq("id", userId)
       .single();
 
     if (!profile) {
-      await adminClient.from("profiles").insert({
+      await cFromEdge(adminClient, "profiles").insert({
         id: userId,
         email,
         name: name || (inv as any).tenant_name || "",
@@ -95,14 +95,14 @@ Deno.serve(async (req) => {
         onboarding_completed: true,
       });
     } else {
-      await adminClient.from("profiles").update({
+      await cFromEdge(adminClient, "profiles").update({
         user_type: "tenant",
         onboarding_completed: true,
       }).eq("id", userId);
     }
 
     // 4. Accept the invitation
-    const { data: acceptResult, error: acceptErr } = await adminClient.rpc("accept_tenant_invitation", {
+    const { data: acceptResult, error: acceptErr } = await cRpcEdge(adminClient, "accept_tenant_invitation", {
       _token: token,
       _user_id: userId,
     });

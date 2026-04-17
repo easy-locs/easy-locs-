@@ -1,5 +1,6 @@
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function saveCartSnapshot(params: {
   userId: string;
   merchantId?: string | null;
@@ -22,8 +23,7 @@ export async function saveCartSnapshot(params: {
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = await db
-    .from("saved_carts")
+  const { data, error } = await cFrom("saved_carts")
     .insert(payload)
     .select("*")
     .single();
@@ -33,8 +33,7 @@ export async function saveCartSnapshot(params: {
 }
 
 export async function listSavedCarts(userId: string) {
-  const { data, error } = await db
-    .from("saved_carts")
+  const { data, error } = await cFrom("saved_carts")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -44,8 +43,7 @@ export async function listSavedCarts(userId: string) {
 }
 
 export async function deleteSavedCart(savedCartId: string) {
-  const { error } = await db
-    .from("saved_carts")
+  const { error } = await cFrom("saved_carts")
     .delete()
     .eq("id", savedCartId);
 

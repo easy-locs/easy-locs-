@@ -3,6 +3,7 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 interface LoyaltyRow {
   user_id: string;
   points: number;
@@ -17,7 +18,7 @@ export async function addLoyaltyPoints(params: {
 }) {
   const { userId, points, referenceId } = params;
 
-  const { data } = await db("user_loyalty")
+  const { data } = await cFrom("user_loyalty")
     .select("*")
     .eq("user_id", userId)
     .single();
@@ -31,14 +32,14 @@ export async function addLoyaltyPoints(params: {
     newPoints > 300 ? "silver" :
     "bronze";
 
-  await db("user_loyalty").upsert({
+  await cFrom("user_loyalty").upsert({
     user_id: userId,
     points: newPoints,
     tier,
     updated_at: new Date().toISOString(),
   });
 
-  await db("loyalty_transactions").insert({
+  await cFrom("loyalty_transactions").insert({
     user_id: userId,
     points,
     type: "ride_reward",

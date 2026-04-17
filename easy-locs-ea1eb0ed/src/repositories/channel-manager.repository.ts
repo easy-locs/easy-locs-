@@ -4,20 +4,21 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function fetchOrgForUser(userId: string) {
-  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).single();
+  const { data } = await cFrom("org_members").select("org_id").eq("user_id", userId).limit(1).single();
   if (!data) return null;
-  const { data: o } = await db("orgs").select("*").eq("id", data.org_id).single();
+  const { data: o } = await cFrom("orgs").select("*").eq("id", data.org_id).single();
   return o;
 }
 
 export async function fetchProperties(orgId: string) {
-  const { data } = await db("properties").select("id, label, city, country").eq("org_id", orgId);
+  const { data } = await cFrom("properties").select("id, label, city, country").eq("org_id", orgId);
   return data || [];
 }
 
 export async function fetchOtaConnections(orgId: string) {
-  const { data } = await db.rpc("get_ota_connections", { _org_id: orgId });
+  const { data } = await cRpc("get_ota_connections", { _org_id: orgId });
   return (data || []) as Array<{
     id: string; provider: string; status: string; last_sync_at: string | null;
     linked_properties: any; created_at: string;
@@ -25,14 +26,14 @@ export async function fetchOtaConnections(orgId: string) {
 }
 
 export async function fetchPricingRules(orgId: string) {
-  const { data } = await db("pricing_rules").select("*").eq("org_id", orgId).eq("active", true);
+  const { data } = await cFrom("pricing_rules").select("*").eq("org_id", orgId).eq("active", true);
   return data || [];
 }
 
 export async function fetchChannelReservations(orgId: string) {
   const [{ data: seasonalData }, { data: requestsData }] = await Promise.all([
-    db("seasonal_bookings").select("*").eq("org_id", orgId),
-    db("bookings").select("*").eq("org_id", orgId),
+    cFrom("seasonal_bookings").select("*").eq("org_id", orgId),
+    cFrom("bookings").select("*").eq("org_id", orgId),
   ]);
 
   const seasonal = (seasonalData || []).map((b: any) => ({
@@ -74,7 +75,7 @@ export async function syncIcal(conn: any, orgId: string) {
 }
 
 export async function addOtaConnection(orgId: string, userId: string, provider: string, icalUrl: string, propertyId: string) {
-  const { error } = await db("ota_connections").insert({
+  const { error } = await cFrom("ota_connections").insert({
     org_id: orgId, user_id: userId, provider,
     status: "active", linked_properties: [{ property_id: propertyId, ical_url: icalUrl }],
   });
@@ -82,16 +83,16 @@ export async function addOtaConnection(orgId: string, userId: string, provider: 
 }
 
 export async function deleteOtaConnection(id: string) {
-  const { error } = await db("ota_connections").delete().eq("id", id);
+  const { error } = await cFrom("ota_connections").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function cancelReservation(res: { id: string; source_table: string; property_id: string; check_in: string; check_out: string; guest_name: string; guest_email?: string }, orgId: string) {
   if (res.source_table === "seasonal_bookings") {
-    await db("seasonal_bookings").update({ status: "cancelled" } as any).eq("id", res.id);
+    await cFrom("seasonal_bookings").update({ status: "cancelled" } as any).eq("id", res.id);
   } else {
-    await db("bookings").update({ status: "cancelled" } as any).eq("id", res.id);
-    await db("seasonal_bookings").delete()
+    await cFrom("bookings").update({ status: "cancelled" } as any).eq("id", res.id);
+    await cFrom("seasonal_bookings").delete()
       .eq("org_id", orgId).eq("property_id", res.property_id)
       .eq("check_in", res.check_in).eq("check_out", res.check_out)
       .eq("guest_name", res.guest_name);
@@ -114,7 +115,7 @@ export async function cancelReservation(res: { id: string; source_table: string;
 }
 
 export async function notifyOwner(userId: string, title: string, body: string, route: string) {
-  await db("app_notifications").insert({
+  await cFrom("app_notifications").insert({
     user_id: userId, scope: "global", category: "info", title, body, severity: "info", route,
   });
 }
@@ -124,10 +125,10 @@ export async function modifyReservationDates(
   newCheckIn: string, newCheckOut: string, orgId: string
 ) {
   if (res.source_table === "seasonal_bookings") {
-    await db("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
+    await cFrom("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
   } else {
-    await db("bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
-    await db("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any)
+    await cFrom("bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any).eq("id", res.id);
+    await cFrom("seasonal_bookings").update({ check_in: newCheckIn, check_out: newCheckOut } as any)
       .eq("org_id", orgId).eq("property_id", res.property_id)
       .eq("check_in", res.check_in).eq("check_out", res.check_out)
       .eq("guest_name", res.guest_name);

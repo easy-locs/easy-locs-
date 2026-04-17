@@ -1,5 +1,6 @@
 import { db as supabase } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export type CouponValidationResult = {
   valid: boolean;
   message: string;
@@ -9,8 +10,7 @@ export type CouponValidationResult = {
 };
 
 export async function listMerchantCoupons(merchantId: string) {
-  const { data, error } = await supabase
-    .from("seed_merchant_promos")
+  const { data, error } = await cFrom("seed_merchant_promos")
     .select("*")
     .eq("merchant_id", merchantId)
     .eq("is_active", true)
@@ -30,8 +30,7 @@ export async function validateCoupon(params: {
     return { valid: false, message: "Enter a coupon code" };
   }
 
-  const { data, error } = await supabase
-    .from("seed_merchant_promos")
+  const { data, error } = await cFrom("seed_merchant_promos")
     .select("*")
     .eq("merchant_id", params.merchantId)
     .eq("is_active", true);
@@ -78,8 +77,7 @@ export async function createCoupon(params: {
   minimumOrderAmount?: number;
   description?: string | null;
 }) {
-  const { data, error } = await supabase
-    .from("seed_merchant_promos")
+  const { data, error } = await cFrom("seed_merchant_promos")
     .insert({
       merchant_id: params.merchantId,
       title: params.title.trim(),

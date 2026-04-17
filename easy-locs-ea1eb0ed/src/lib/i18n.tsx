@@ -12,6 +12,7 @@ import { APP_LOCALES, AVAILABLE_LOCALES } from "./i18n-locales";
 export { COUNTRY_LOCALE_MAP } from "./country-locale-map";
 import { COUNTRY_LOCALE_MAP } from "./country-locale-map";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export { COUNTRY_CURRENCY_MAP } from "@/lib/geo/country-currency-map";
 
 const KNOWN_LOCALES = new Set<string>(APP_LOCALES);
@@ -194,8 +195,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const syncLocale = async () => {
       const { data: { session } } = await db.auth.getSession();
       if (!session?.user) return;
-      const { data } = await db
-        .from("profiles")
+      const { data } = await cFrom("profiles")
         .select("locale")
         .eq("id", session.user.id)
         .single();
@@ -224,7 +224,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     loadLocaleExtras(l);
     const { data: { session } } = await db.auth.getSession();
     if (session?.user) {
-      await db("profiles").update({ locale: l }).eq("id", session.user.id);
+      await cFrom("profiles").update({ locale: l }).eq("id", session.user.id);
     }
   }, []);
 

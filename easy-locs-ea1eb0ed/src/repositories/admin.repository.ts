@@ -3,21 +3,22 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export async function checkAdminRole(userId: string): Promise<boolean> {
-  const { data } = await db.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data } = await cRpc("has_role", { _user_id: userId, _role: "admin" });
   return !!data;
 }
 
 export async function fetchAdminStats() {
   const [users, subs, props, docs, refs, bookingReqs, paidRents, confirmedRes] = await Promise.all([
-    db("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
-    db("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
-    db("properties").select("id", { count: "exact", head: true }),
-    db("documents").select("id", { count: "exact", head: true }),
-    db("referrals").select("id", { count: "exact", head: true }),
-    db("booking_requests").select("id, status", { count: "exact" }),
-    db("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
-    db("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
+    cFrom("profiles").select("id, email, name, created_at, user_type", { count: "exact" }),
+    cFrom("subscriptions").select("id, plan, status, created_at", { count: "exact" }),
+    cFrom("properties").select("id", { count: "exact", head: true }),
+    cFrom("documents").select("id", { count: "exact", head: true }),
+    cFrom("referrals").select("id", { count: "exact", head: true }),
+    cFrom("booking_requests").select("id, status", { count: "exact" }),
+    cFrom("rent_calls").select("id, paid, total_amount, paid_date, month").eq("paid", true),
+    cFrom("reservations").select("id, amount, status, created_at").eq("status", "confirmed"),
   ]);
 
   return {
@@ -34,8 +35,7 @@ export async function fetchAdminStats() {
 
 // ── Moderation ──
 export async function fetchPendingReviews(orgId: string) {
-  const { data } = await db
-    .from("marketplace_reviews")
+  const { data } = await cFrom("marketplace_reviews")
     .select("id, reviewer_name, rating, comment, status, created_at, service_id")
     .eq("org_id", orgId)
     .in("status", ["pending", "flagged"])
@@ -45,58 +45,58 @@ export async function fetchPendingReviews(orgId: string) {
 }
 
 export async function moderateReview(reviewId: string, action: "published" | "rejected") {
-  const { error } = await db("marketplace_reviews").update({ status: action } as any).eq("id", reviewId);
+  const { error } = await cFrom("marketplace_reviews").update({ status: action } as any).eq("id", reviewId);
   if (error) throw error;
 }
 
 export async function fetchBlockedUsers() {
-  const { data } = await db("blocked_users").select("*").order("created_at", { ascending: false }).limit(50);
+  const { data } = await cFrom("blocked_users").select("*").order("created_at", { ascending: false }).limit(50);
   return data ?? [];
 }
 
 export async function unblockUser(blockId: string) {
-  const { error } = await db("blocked_users").delete().eq("id", blockId);
+  const { error } = await cFrom("blocked_users").delete().eq("id", blockId);
   if (error) throw error;
 }
 
 // ── Org Members ──
 export async function fetchOrgMembers(orgId: string) {
-  const { data } = await db("org_members").select("id, user_id, role, created_at").eq("org_id", orgId).order("created_at");
+  const { data } = await cFrom("org_members").select("id, user_id, role, created_at").eq("org_id", orgId).order("created_at");
   return data ?? [];
 }
 
 export async function fetchProfilesByIds(ids: string[]) {
-  const { data } = await db("profiles").select("id, name, email, first_name, last_name").in("id", ids);
+  const { data } = await cFrom("profiles").select("id, name, email, first_name, last_name").in("id", ids);
   return data ?? [];
 }
 
 export async function changeOrgMemberRole(memberId: string, newRole: string) {
-  const { error } = await db("org_members").update({ role: newRole } as any).eq("id", memberId);
+  const { error } = await cFrom("org_members").update({ role: newRole } as any).eq("id", memberId);
   if (error) throw error;
 }
 
 export async function removeOrgMember(memberId: string) {
-  const { error } = await db("org_members").delete().eq("id", memberId);
+  const { error } = await cFrom("org_members").delete().eq("id", memberId);
   if (error) throw error;
 }
 
 export async function sendCollaborationInvite(record: Record<string, any>) {
-  const { error } = await db("collaboration_invitations").insert(record as any);
+  const { error } = await cFrom("collaboration_invitations").insert(record as any);
   if (error) throw error;
 }
 
 // ── Rider Moderation ──
 export async function fetchRiderPresence() {
-  const { data } = await db("rider_presence").select("*").limit(100);
+  const { data } = await cFrom("rider_presence").select("*").limit(100);
   return data ?? [];
 }
 
 export async function updateRiderPresenceStatus(userId: string, updates: Record<string, any>) {
-  await db("rider_presence").update(updates).eq("user_id", userId);
+  await cFrom("rider_presence").update(updates).eq("user_id", userId);
 }
 
 export async function insertAppNotification(record: Record<string, any>) {
-  await db("app_notifications").insert(record);
+  await cFrom("app_notifications").insert(record);
 }
 
 // ── Bulk Seed ──
@@ -106,22 +106,22 @@ export async function getAuthUser() {
 }
 
 export async function getUserOrgId(userId: string) {
-  const { data } = await db("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
+  const { data } = await cFrom("org_members").select("org_id").eq("user_id", userId).limit(1).maybeSingle();
   return data?.org_id ?? null;
 }
 
 export async function insertStorefrontPage(record: Record<string, any>) {
-  const { data, error } = await db("storefront_pages").insert(record).select("id").single();
+  const { data, error } = await cFrom("storefront_pages").insert(record).select("id").single();
   if (error) throw error;
   return data;
 }
 
 export async function insertProducts(records: Record<string, any>[]) {
-  await db("products").insert(records);
+  await cFrom("products").insert(records);
 }
 
 export async function bulkLaunchStorefronts() {
-  const { error } = await db("storefront_pages").update({ visibility_mode: "live" }).eq("visibility_mode", "coming_soon");
+  const { error } = await cFrom("storefront_pages").update({ visibility_mode: "live" }).eq("visibility_mode", "coming_soon");
   if (error) throw error;
 }
 
@@ -155,7 +155,7 @@ export async function fetchCronExecutionLogs(
   endDate?: string,
   signal?: AbortSignal,
 ): Promise<CronExecutionLog[]> {
-  let query = db("cron_execution_log")
+  let query = cFrom("cron_execution_log")
     .select("*")
     .order("started_at", { ascending: false });
 
@@ -183,7 +183,7 @@ export interface CronAlertPrefs {
 }
 
 export async function fetchCronAlertPrefs(userId: string): Promise<CronAlertPrefs> {
-  const { data } = await db("admin_cron_alert_prefs")
+  const { data } = await cFrom("admin_cron_alert_prefs")
     .select("in_app_enabled, email_enabled")
     .eq("user_id", userId)
     .maybeSingle();
@@ -197,7 +197,7 @@ export async function upsertCronAlertPrefs(
   userId: string,
   prefs: CronAlertPrefs
 ): Promise<void> {
-  const { error } = await db("admin_cron_alert_prefs")
+  const { error } = await cFrom("admin_cron_alert_prefs")
     .upsert(
       {
         user_id: userId,
@@ -220,7 +220,7 @@ export interface FirecrawlUsageSummary {
 
 export async function fetchFirecrawlUsageSummary(days = 30): Promise<FirecrawlUsageSummary> {
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await db("firecrawl_usage_log")
+  const { data, error } = await cFrom("firecrawl_usage_log")
     .select("success, text_length, estimated_cost")
     .gte("created_at", cutoff);
 
@@ -248,7 +248,7 @@ export interface CacheMetricsHistoryEntry {
 
 export async function fetchCacheMetricsHistory(days = 7): Promise<CacheMetricsHistoryEntry[]> {
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await db("cache_metrics_history")
+  const { data, error } = await cFrom("cache_metrics_history")
     .select("recorded_at, hit_rate, hits, misses, current_size")
     .gte("recorded_at", cutoff)
     .order("recorded_at", { ascending: true });
@@ -278,7 +278,7 @@ export interface PrayerCronHealthRpc {
 
 export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await db("cron_execution_log")
+  const { data, error } = await cFrom("cron_execution_log")
     .select("*")
     .in("job_name", ["prayer-push-cron", "prayer-push-reconcile", "cron-response-reconcile"])
     .gte("started_at", cutoff)
@@ -310,7 +310,7 @@ export async function fetchPrayerCronHealth(): Promise<PrayerCronHealth> {
 const KNOWN_STATUSES = ["healthy", "warning", "degraded", "critical"] as const;
 
 export async function fetchPrayerCronHealthRpc(): Promise<PrayerCronHealthRpc> {
-  const { data, error } = await db.rpc("admin_check_prayer_cron_health");
+  const { data, error } = await cRpc("admin_check_prayer_cron_health");
   if (error) throw error;
   const result = data as Record<string, unknown>;
   const rawStatus = typeof result.status === "string" ? result.status : "";
@@ -343,7 +343,7 @@ export async function fetchReconciliationStats(
   jobName = "prayer-push-cron",
 ): Promise<ReconciliationStats> {
   const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await db("cron_execution_log")
+  const { data, error } = await cFrom("cron_execution_log")
     .select("metadata, started_at")
     .eq("job_name", jobName)
     .not("metadata->>pg_net_request_id", "is", null)

@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 export default function WishlistPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -18,8 +19,7 @@ export default function WishlistPage() {
   const { data: wishlistItems = [], isLoading } = useQuery({
     queryKey: ["wishlist", user?.id],
     queryFn: async () => {
-      const { data } = await db
-        .from("user_wishlist_items")
+      const { data } = await cFrom("user_wishlist_items")
         .select("*, catalog_items(id, title, price, photo_url, photo_urls, available, stock_quantity, compare_at_price, shop_id, storefront_pages!catalog_items_shop_id_fkey(name, slug, currency))")
         .eq("user_id", user!.id)
         .order("added_at", { ascending: false });
@@ -29,7 +29,7 @@ export default function WishlistPage() {
   });
 
   const removeItem = async (wishlistId: string) => {
-    await db.from("user_wishlist_items").delete().eq("id", wishlistId);
+    await cFrom("user_wishlist_items").delete().eq("id", wishlistId);
     qc.invalidateQueries({ queryKey: ["wishlist", user?.id] });
     toast.success("Removed from wishlist");
   };

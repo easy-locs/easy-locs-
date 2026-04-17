@@ -6,6 +6,7 @@ import { Plus, Package, Search, Edit, Trash2, GripVertical, Image, Tag, Loader2 
 import { toast } from 'sonner';
 import { useUiEngine } from "@/hooks/useUiEngine";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const NAVY = 'hsl(226 24% 11%)';
 const NAVY_LIGHT = 'hsl(0 0% 100% / 0.06)';
 const GOLD = 'hsl(var(--accent))';
@@ -23,7 +24,7 @@ export default function ProCatalog() {
   const { data: items = [], isLoading } = useQuery({
     queryKey: ['pro-catalog', user?.id],
     queryFn: async () => {
-      const { data, error } = await db('storefront_pages')
+      const { data, error } = await cFrom('storefront_pages')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -44,7 +45,7 @@ export default function ProCatalog() {
 
   const deleteMut = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await db('storefront_pages').delete().eq('id', id);
+      const { error } = await cFrom('storefront_pages').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

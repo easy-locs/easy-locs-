@@ -3,10 +3,10 @@
  */
 import { db } from "@/services/db";
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ── Saved Listings ──
 export async function fetchSavedListings(userId: string) {
-  const { data } = await db
-    .from("saved_listings")
+  const { data } = await cFrom("saved_listings")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -14,12 +14,11 @@ export async function fetchSavedListings(userId: string) {
 }
 
 export async function insertSavedListing(record: Record<string, any>) {
-  await db("saved_listings").insert(record);
+  await cFrom("saved_listings").insert(record);
 }
 
 export async function removeSavedListing(userId: string, listingType: string, listingId: string) {
-  await db
-    .from("saved_listings")
+  await cFrom("saved_listings")
     .delete()
     .eq("user_id", userId)
     .eq("listing_type", listingType)
@@ -28,20 +27,18 @@ export async function removeSavedListing(userId: string, listingType: string, li
 
 // ── Category Subscriptions ──
 export async function fetchCategorySubscriptions(userId: string) {
-  const { data } = await db
-    .from("category_subscriptions")
+  const { data } = await cFrom("category_subscriptions")
     .select("*")
     .eq("user_id", userId);
   return data ?? [];
 }
 
 export async function insertCategorySubscription(record: Record<string, any>) {
-  await db("category_subscriptions").insert(record);
+  await cFrom("category_subscriptions").insert(record);
 }
 
 export async function removeCategorySubscription(userId: string, category: string) {
-  await db
-    .from("category_subscriptions")
+  await cFrom("category_subscriptions")
     .delete()
     .eq("user_id", userId)
     .eq("category", category);

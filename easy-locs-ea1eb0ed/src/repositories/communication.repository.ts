@@ -3,16 +3,17 @@
  * Covers: messages, conversations, groups, calls, contacts, notifications, presence, activity logs.
  * No UI component should import db directly for these domains.
  */
-import { db, domainDb } from "@/services/db";
+import { db } from "@/services/db";
 import { ensureOrbitProfile } from "@/lib/orbit/ensureOrbitProfile";
 import { assertNoLegacyIds, assertValidMessageType, assertCanonicalMetadata } from "@/lib/governance";
 
 
 
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 // ═══ MESSAGES ═══
 
 export async function updateMessageFields(messageId: string, fields: Record<string, any>) {
-  const { error } = await db("chat_messages_v2").update(fields).eq("id", messageId);
+  const { error } = await cFrom("chat_messages_v2").update(fields).eq("id", messageId);
   if (error) throw error;
 }
 
@@ -54,7 +55,7 @@ export async function insertMessage(params: {
   }
   if (params.view_once) row.view_once = true;
 
-  const { data, error } = await db("chat_messages_v2").insert(row).select().single();
+  const { data, error } = await cFrom("chat_messages_v2").insert(row).select().single();
   if (error) {
     const code = (error as any).code;
     if (code === "42P01") {
@@ -68,8 +69,7 @@ export async function insertMessage(params: {
 }
 
 export async function fetchGroupMessages(conversationId: string, limit = 200) {
-  const { data, error } = await db
-    .from("chat_messages_v2")
+  const { data, error } = await cFrom("chat_messages_v2")
     .select("*")
     .eq("conversation_id", conversationId)
     .is("deleted_at", null)
@@ -80,19 +80,19 @@ export async function fetchGroupMessages(conversationId: string, limit = 200) {
 }
 
 export async function markViewOnceOpened(messageId: string, userId: string) {
-  await db("chat_messages_v2").update({
+  await cFrom("chat_messages_v2").update({
     view_once_opened_at: new Date().toISOString(),
     view_once_opened_by: userId,
   }).eq("id", messageId);
 }
 
 export async function starMessage(messageId: string, starred: boolean) {
-  const { error } = await db("chat_messages_v2").update({ starred }).eq("id", messageId);
+  const { error } = await cFrom("chat_messages_v2").update({ starred }).eq("id", messageId);
   if (error) throw error;
 }
 
 export async function deleteMessageForSender(messageId: string) {
-  await db("chat_messages_v2").update({
+  await cFrom("chat_messages_v2").update({
     deleted_for_sender: true,
     deleted_at: new Date().toISOString(),
     deletion_reason: "self_hide",
@@ -100,18 +100,18 @@ export async function deleteMessageForSender(messageId: string) {
 }
 
 export async function deleteMessageForUser(messageId: string, userId: string) {
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", messageId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", messageId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
   const currentIds: string[] = Array.isArray(meta.deleted_for_user_ids) ? meta.deleted_for_user_ids : [];
   if (!currentIds.includes(userId)) {
-    await db("chat_messages_v2").update({
+    await cFrom("chat_messages_v2").update({
       metadata: { ...meta, deleted_for_user_ids: [...currentIds, userId] },
     }).eq("id", messageId);
   }
 }
 
 export async function deleteMessageForAll(messageId: string, userId?: string) {
-  await db("chat_messages_v2").update({
+  await cFrom("chat_messages_v2").update({
     deleted_for_all: true,
     deleted_at: new Date().toISOString(),
     deleted_by: userId,
@@ -131,7 +131,7 @@ export async function updateConversationTimestamp(conversationId: string, previe
     updated_at: new Date().toISOString(),
   };
   if (preview) update.last_message_preview = preview;
-  await db("conversations_v2").update(update).eq("id", conversationId);
+  await cFrom("conversations_v2").update(update).eq("id", conversationId);
 }
 
 export async function createConversation(params: {
@@ -140,7 +140,7 @@ export async function createConversation(params: {
   participants: any[];
   createdByOrbitId?: string | null;
 }) {
-  const { data, error } = await db("conversations_v2").insert({
+  const { data, error } = await cFrom("conversations_v2").insert({
     type: params.type,
     title: params.title,
     participants: params.participants,
@@ -152,12 +152,12 @@ export async function createConversation(params: {
 }
 
 export async function getConversationParticipants(conversationId: string) {
-  const { data } = await db("conversations_v2").select("participants").eq("id", conversationId).single();
+  const { data } = await cFrom("conversations_v2").select("participants").eq("id", conversationId).single();
   return data?.participants ?? [];
 }
 
 export async function updateConversationParticipants(conversationId: string, participants: any[]) {
-  await db("conversations_v2").update({
+  await cFrom("conversations_v2").update({
     participants,
     updated_at: new Date().toISOString(),
   }).eq("id", conversationId);
@@ -166,7 +166,7 @@ export async function updateConversationParticipants(conversationId: string, par
 // ═══ GROUPS ═══
 
 export async function insertGroupMember(groupId: string, userId: string, role: string) {
-  const { error } = await db("group_members").insert({
+  const { error } = await cFrom("group_members").insert({
     group_id: groupId,
     user_id: userId,
     role,
@@ -175,20 +175,20 @@ export async function insertGroupMember(groupId: string, userId: string, role: s
 }
 
 export async function deleteGroupMember(memberId: string) {
-  await db("group_members").delete().eq("id", memberId);
+  await cFrom("group_members").delete().eq("id", memberId);
 }
 
 export async function deleteGroupMemberByUser(groupId: string, userId: string) {
-  await db("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
+  await cFrom("group_members").delete().eq("group_id", groupId).eq("user_id", userId);
 }
 
 export async function updateGroupMemberRole(memberId: string, role: string) {
-  const { error } = await db("group_members").update({ role } as any).eq("id", memberId);
+  const { error } = await cFrom("group_members").update({ role } as any).eq("id", memberId);
   if (error) throw error;
 }
 
 export async function fetchGroupMembers(groupId: string) {
-  const { data } = await db("group_members").select("*").eq("group_id", groupId);
+  const { data } = await cFrom("group_members").select("*").eq("group_id", groupId);
   return (data ?? []) as any[];
 }
 
@@ -196,16 +196,14 @@ export async function fetchGroupMembers(groupId: string) {
 
 export async function fetchCallLogs(userId: string, limit = 100) {
   // Resolve orbit_id for the user — call_logs stores orbit_ids, not auth UUIDs
-  const { data: profile } = await db
-    .from("orbit_profiles_v2")
+  const { data: profile } = await cFrom("orbit_profiles_v2")
     .select("orbit_id")
     .eq("id", userId)
     .maybeSingle();
   const orbitId = profile?.orbit_id || `orbit_${userId.replace(/-/g, "").substring(0, 8)}`;
 
   // Query by both auth UUID and orbit_id for backward compatibility
-  const { data, error } = await db
-    .from("call_logs")
+  const { data, error } = await cFrom("call_logs")
     .select("*")
     .or(`caller_orbit_id.eq.${userId},receiver_orbit_id.eq.${userId},caller_orbit_id.eq.${orbitId},receiver_orbit_id.eq.${orbitId}`)
     .order("created_at", { ascending: false })
@@ -215,15 +213,14 @@ export async function fetchCallLogs(userId: string, limit = 100) {
 }
 
 export async function deleteCallLog(callId: string) {
-  const { error } = await db("call_logs").delete().eq("id", callId);
+  const { error } = await cFrom("call_logs").delete().eq("id", callId);
   if (error) throw error;
 }
 
 // ═══ PROFILES ═══
 
 export async function resolveOrbitProfile(userId: string) {
-  const { data } = await db
-    .from("orbit_profiles_v2")
+  const { data } = await cFrom("orbit_profiles_v2")
     .select("orbit_id, display_name, email, avatar_url")
     .eq("id", userId)
     .maybeSingle();
@@ -232,7 +229,7 @@ export async function resolveOrbitProfile(userId: string) {
 
 export async function resolveProfilesByIds(ids: string[]) {
   if (ids.length === 0) return [];
-  const { data } = await db("profiles").select("id, full_name, email, phone").in("id", ids);
+  const { data } = await cFrom("profiles").select("id, full_name, email, phone").in("id", ids);
   return data ?? [];
 }
 
@@ -245,23 +242,23 @@ export async function resolveOrbitProfilesByUserIds(userIds: string[]) {
 
 export async function resolveProfilesByEmail(emails: string[]) {
   if (emails.length === 0) return [];
-  const { data } = await db("profiles").select("id, email").in("email", emails);
+  const { data } = await cFrom("profiles").select("id, email").in("email", emails);
   return data ?? [];
 }
 
 export async function resolveProfileByEmail(email: string) {
-  const { data } = await db("profiles").select("id").eq("email", email).single();
+  const { data } = await cFrom("profiles").select("id").eq("email", email).single();
   return data;
 }
 
 export async function resolveProfilesByPhone() {
-  const { data } = await db("profiles").select("id, phone, whatsapp_number").not("phone", "is", null);
+  const { data } = await cFrom("profiles").select("id, phone, whatsapp_number").not("phone", "is", null);
   return data ?? [];
 }
 
 export async function resolveOrgMemberships(userIds: string[]) {
   if (userIds.length === 0) return [];
-  const { data } = await db("org_members").select("user_id, org_id").in("user_id", userIds);
+  const { data } = await cFrom("org_members").select("user_id, org_id").in("user_id", userIds);
   return data ?? [];
 }
 
@@ -274,7 +271,7 @@ export async function upsertConversationPreference(
   archived: boolean,
   extras?: { favorited?: boolean; cleared_at?: string | null; marked_unread?: boolean }
 ) {
-  await db("conversation_preferences").upsert({
+  await cFrom("conversation_preferences").upsert({
     user_id: userId,
     context_id: contextId,
     muted,
@@ -287,14 +284,14 @@ export async function upsertConversationPreference(
 }
 
 export async function blockUser(blockerId: string, blockedId: string) {
-  await db("blocked_users").upsert({
+  await cFrom("blocked_users").upsert({
     blocker_id: blockerId,
     blocked_id: blockedId,
   } as any, { onConflict: "blocker_id,blocked_id" });
 }
 
 export async function reportUser(reporterId: string, reportedUserId: string, reason: string, contextId: string) {
-  await db("user_reports").insert({
+  await cFrom("user_reports").insert({
     reporter_id: reporterId,
     reported_user_id: reportedUserId,
     reason,
@@ -314,7 +311,7 @@ export async function insertAppNotification(params: {
   route?: string;
   metadata?: Record<string, any>;
 }) {
-  await db("app_notifications").insert({
+  await cFrom("app_notifications").insert({
     user_id: params.userId,
     scope: params.scope || "global",
     category: params.category || "info",
@@ -327,12 +324,12 @@ export async function insertAppNotification(params: {
 }
 
 export async function fetchNotificationPreferences(userId: string) {
-  const { data } = await db("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+  const { data } = await cFrom("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
   return data;
 }
 
 export async function upsertNotificationPreferences(userId: string, prefs: Record<string, any>) {
-  const { error } = await db("notification_preferences").upsert(
+  const { error } = await cFrom("notification_preferences").upsert(
     { user_id: userId, ...prefs, updated_at: new Date().toISOString() } as any,
     { onConflict: "user_id" }
   );
@@ -342,17 +339,16 @@ export async function upsertNotificationPreferences(userId: string, prefs: Recor
 // ═══ PRESENCE ═══
 
 export async function fetchPresenceSettings(userId: string) {
-  const { data } = await db("user_presence").select("visible_on_nearby, location_sharing, who_can_see").eq("user_id", userId).single();
+  const { data } = await cFrom("user_presence").select("visible_on_nearby, location_sharing, who_can_see").eq("user_id", userId).single();
   return data;
 }
 
 export async function updatePresence(userId: string, fields: Record<string, any>) {
-  await db("user_presence").update(fields as any).eq("user_id", userId);
+  await cFrom("user_presence").update(fields as any).eq("user_id", userId);
 }
 
 export async function fetchNearbyUsers(excludeUserId: string) {
-  const { data } = await db
-    .from("user_presence")
+  const { data } = await cFrom("user_presence")
     .select("user_id, display_name, avatar_url, status, professional_category, verified, lat, lng, last_seen_at")
     .eq("visible_on_nearby", true)
     .eq("location_sharing", true)
@@ -365,7 +361,7 @@ export async function fetchNearbyUsers(excludeUserId: string) {
 // ═══ NEARBY ITEMS ═══
 
 export async function searchNearbyItems(lat: number, lng: number, radiusKm: number, itemType?: string | null) {
-  const { data, error } = await db.rpc("search_nearby_items", {
+  const { data, error } = await cRpc("search_nearby_items", {
     _lat: lat, _lng: lng, _radius_km: radiusKm,
     _item_type: itemType || null,
   });
@@ -386,13 +382,13 @@ export async function uploadToStorage(bucket: string, path: string, file: File |
 
 export async function fetchPropertyContext(orgId: string, tenantId: string) {
   const [leaseRes, rentRes, interventionRes, docRes] = await Promise.all([
-    db("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
+    cFrom("leases").select("id, lease_type, start_date, end_date, rent_amount, charges_amount, status, country")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("start_date", { ascending: false }).limit(3),
-    db("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
+    cFrom("rent_calls").select("id, month, total_amount, paid, paid_amount, paid_date")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("month", { ascending: false }).limit(6),
-    db("interventions").select("id, title, status, priority, category, created_at")
+    cFrom("interventions").select("id, title, status, priority, category, created_at")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
-    db("documents").select("id, title, doc_type, status, created_at")
+    cFrom("documents").select("id, title, doc_type, status, created_at")
       .eq("org_id", orgId).eq("tenant_id", tenantId).order("created_at", { ascending: false }).limit(5),
   ]);
   return {
@@ -408,21 +404,21 @@ export async function fetchBookingContext(bookingId: string, bookingType: string
   let service: any = null;
 
   if (bookingType === "marketplace") {
-    const { data } = await db("marketplace_bookings").select("*").eq("id", bookingId).single();
+    const { data } = await cFrom("marketplace_bookings").select("*").eq("id", bookingId).single();
     booking = data;
     if (data?.service_id) {
-      const { data: svc } = await db("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
+      const { data: svc } = await cFrom("marketplace_services").select("id, title, description, price, currency, category, city, country, photo_urls, booking_slug").eq("id", data.service_id).single();
       service = svc;
     }
   } else if (bookingType === "concierge") {
-    const { data } = await db("concierge_orders").select("*").eq("id", bookingId).single();
+    const { data } = await cFrom("concierge_orders").select("*").eq("id", bookingId).single();
     booking = data;
     if (data?.service_id) {
-      const { data: svc } = await db("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
+      const { data: svc } = await cFrom("concierge_services").select("id, title, description, price, currency, category, city, country, photo_url").eq("id", data.service_id).single();
       service = svc;
     }
   } else if (bookingType === "seasonal") {
-    const { data } = await db("booking_requests").select("*").eq("id", bookingId).single();
+    const { data } = await cFrom("booking_requests").select("*").eq("id", bookingId).single();
     booking = data;
   }
 
@@ -433,9 +429,9 @@ export async function fetchBookingContext(bookingId: string, bookingType: string
 
 export async function fetchThreadStats(orgId: string) {
   const [docRes, overdueRes, maintRes] = await Promise.all([
-    db("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
-    db("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
-    db("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
+    cFrom("document_requests").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
+    cFrom("rent_calls").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("paid", false),
+    cFrom("interventions").select("id", { count: "exact", head: true }).eq("org_id", orgId).eq("status", "pending"),
   ]);
   return {
     pending_docs: docRes.count || 0,
@@ -447,7 +443,7 @@ export async function fetchThreadStats(orgId: string) {
 // ═══ ACTIVITY LOG ═══
 
 export async function fetchEntityMessages(entityType: string, entityId: string, maxItems: number) {
-  let query = db("chat_messages_v2").select("id, body, created_at, sender_user_id, type, metadata");
+  let query = cFrom("chat_messages_v2").select("id, body, created_at, sender_user_id, type, metadata");
   if (entityType === "property") query = query.eq("property_id", entityId);
   else if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   else if (entityType === "booking") query = query.eq("booking_id", entityId);
@@ -456,7 +452,7 @@ export async function fetchEntityMessages(entityType: string, entityId: string, 
 }
 
 export async function fetchEntityPayments(entityType: string, entityId: string, orgId: string, maxItems: number) {
-  let query = db("rent_calls").select("id, month, total_amount, paid, paid_date").eq("org_id", orgId);
+  let query = cFrom("rent_calls").select("id, month, total_amount, paid, paid_date").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("month", { ascending: false }).limit(maxItems);
@@ -464,14 +460,14 @@ export async function fetchEntityPayments(entityType: string, entityId: string, 
 }
 
 export async function fetchEntityDocuments(orgId: string, leaseIds?: string[], maxItems = 50) {
-  let query = db("documents").select("id, title, doc_type, created_at, status").eq("org_id", orgId);
+  let query = cFrom("documents").select("id, title, doc_type, created_at, status").eq("org_id", orgId);
   if (leaseIds?.length) query = query.in("lease_id", leaseIds);
   const { data } = await query.order("created_at", { ascending: false }).limit(maxItems);
   return data ?? [];
 }
 
 export async function fetchEntityInterventions(entityType: string, entityId: string, orgId: string, maxItems: number) {
-  let query = db("interventions").select("id, title, status, priority, created_at, category").eq("org_id", orgId);
+  let query = cFrom("interventions").select("id, title, status, priority, created_at, category").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("created_at", { ascending: false }).limit(maxItems);
@@ -479,8 +475,7 @@ export async function fetchEntityInterventions(entityType: string, entityId: str
 }
 
 export async function fetchEntityBookings(propertyId: string, orgId: string, maxItems: number) {
-  const { data } = await db
-    .from("booking_requests")
+  const { data } = await cFrom("booking_requests")
     .select("id, guest_name, check_in, check_out, status, created_at")
     .eq("property_id", propertyId)
     .eq("org_id", orgId)
@@ -490,7 +485,7 @@ export async function fetchEntityBookings(propertyId: string, orgId: string, max
 }
 
 export async function fetchEntityLeases(entityType: string, entityId: string, orgId: string) {
-  let query = db("leases").select("id, lease_type, start_date, end_date, rent_amount, status, created_at").eq("org_id", orgId);
+  let query = cFrom("leases").select("id, lease_type, start_date, end_date, rent_amount, status, created_at").eq("org_id", orgId);
   if (entityType === "property") query = query.eq("property_id", entityId);
   if (entityType === "tenant") query = query.eq("tenant_id", entityId);
   const { data } = await query.order("created_at", { ascending: false }).limit(10);
@@ -498,15 +493,14 @@ export async function fetchEntityLeases(entityType: string, entityId: string, or
 }
 
 export async function fetchLeaseIdsByProperty(propertyId: string, orgId: string) {
-  const { data } = await db("leases").select("id").eq("property_id", propertyId).eq("org_id", orgId);
+  const { data } = await cFrom("leases").select("id").eq("property_id", propertyId).eq("org_id", orgId);
   return data?.map(l => l.id) ?? [];
 }
 
 // ═══ UNREAD COUNT ═══
 
 export async function fetchUnreadCount(userId: string) {
-  const { count } = await db
-    .from("chat_messages_v2")
+  const { count } = await cFrom("chat_messages_v2")
     .select("id", { count: "exact", head: true })
     .is("read_at", null)
     .neq("sender_user_id", userId);
@@ -528,9 +522,9 @@ export async function sendInviteEmail(recipientEmail: string, subject: string, m
 
 // ── Chat message delete/edit ──
 export async function deleteChatMessageForEveryone(msgId: string, userId: string) {
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", msgId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
     deleted_for_all: true,
     deleted_by: userId,
@@ -541,9 +535,9 @@ export async function deleteChatMessageForEveryone(msgId: string, userId: string
 }
 
 export async function deleteChatMessageModeration(msgId: string, userId: string) {
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", msgId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
     deleted_for_all: true,
     deleted_by: userId,
@@ -554,18 +548,18 @@ export async function deleteChatMessageModeration(msgId: string, userId: string)
 }
 
 export async function hideChatMessageForSelf(msgId: string, userId: string) {
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", msgId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
   const currentHidden: string[] = Array.isArray(meta.hidden_for) ? meta.hidden_for : [];
   if (currentHidden.includes(userId)) return;
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     metadata: { ...meta, hidden_for: [...currentHidden, userId] },
   }).eq("id", msgId);
   if (error) throw error;
 }
 
 export async function editChatMessage(msgId: string, newBody: string) {
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     body: newBody, edited_at: new Date().toISOString(),
   }).eq("id", msgId);
   if (error) throw error;
@@ -573,9 +567,9 @@ export async function editChatMessage(msgId: string, newBody: string) {
 
 export async function setDisappearTimer(msgId: string, seconds: number) {
   const disappearAt = seconds > 0 ? new Date(Date.now() + seconds * 1000).toISOString() : null;
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", msgId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", msgId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     metadata: { ...meta, disappear_after_seconds: seconds, disappear_at: disappearAt },
   }).eq("id", msgId);
   if (error) throw error;
@@ -632,45 +626,45 @@ export async function insertChatMessage(payload: Record<string, any>) {
 }
 
 export async function insertWalletTransaction(payload: Record<string, any>) {
-  await db("unified_wallet_transactions").insert(payload);
+  await cFrom("unified_wallet_transactions").insert(payload);
 }
 
 // ── Group extras ──
 export async function fetchGroupMembersById(groupId: string) {
-  const { data } = await db("group_members").select("*").eq("group_id", groupId);
+  const { data } = await cFrom("group_members").select("*").eq("group_id", groupId);
   return data || [];
 }
 
 export async function countGroupMembers(groupId: string) {
-  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await cFrom("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 
 export async function fetchLastGroupMessage(conversationId: string) {
-  const { data } = await db("chat_messages_v2").select("body, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(1);
+  const { data } = await cFrom("chat_messages_v2").select("body, created_at").eq("conversation_id", conversationId).order("created_at", { ascending: false }).limit(1);
   return data?.[0] || null;
 }
 
 export async function fetchGroupsAndChannels() {
-  const { data, error } = await db("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
+  const { data, error } = await cFrom("conversations_v2").select("*").in("type", ["group", "channel", "community"]).order("updated_at", { ascending: false });
   if (error) throw error;
   return data || [];
 }
 
 export async function createGroupConversation(payload: Record<string, any>) {
-  const { data, error } = await db("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
+  const { data, error } = await cFrom("conversations_v2").insert(payload).select("id, type, title, created_at, created_by_orbit_id").single();
   if (error) throw error;
   return data;
 }
 
 export async function fetchOrbitProfile(userId: string) {
-  const { data } = await db("orbit_profiles_v2").select("orbit_id, display_name, email, avatar_url").eq("id", userId).maybeSingle();
+  const { data } = await cFrom("orbit_profiles_v2").select("orbit_id, display_name, email, avatar_url").eq("id", userId).maybeSingle();
   return data;
 }
 
 // ── Encryption key bundles ──
 export async function upsertKeyBundle(userId: string, publicKey: string, deviceId: string) {
-  await db("user_key_bundles").upsert({
+  await cFrom("user_key_bundles").upsert({
     user_id: userId,
     identity_public_key: publicKey,
     device_id: deviceId,
@@ -679,13 +673,13 @@ export async function upsertKeyBundle(userId: string, publicKey: string, deviceI
 }
 
 export async function fetchPeerKeyBundle(peerId: string) {
-  const { data } = await db("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
+  const { data } = await cFrom("user_key_bundles").select("identity_public_key").eq("user_id", peerId).maybeSingle();
   return (data as any)?.identity_public_key as string | undefined;
 }
 
 // ── Orbit permissions sync ──
 export async function updateOrbitPermissions(userId: string, permissions: Record<string, boolean>) {
-  await db("orbit_profiles_v2").update({ permissions } as any).eq("id", userId);
+  await cFrom("orbit_profiles_v2").update({ permissions } as any).eq("id", userId);
 }
 
 // ── Upload booking document ──
@@ -710,12 +704,12 @@ export async function signChatAttachmentUrl(path: string, expiresIn = 60 * 60 * 
 
 // ── Notification preferences ──
 export async function fetchNotificationPrefs(userId: string) {
-  const { data } = await db("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
+  const { data } = await cFrom("notification_preferences").select("*").eq("user_id", userId).maybeSingle();
   return data;
 }
 
 export async function upsertNotificationPrefs(userId: string, prefs: Record<string, any>) {
-  const { error } = await db("notification_preferences").upsert(
+  const { error } = await cFrom("notification_preferences").upsert(
     { user_id: userId, ...prefs, updated_at: new Date().toISOString() },
     { onConflict: "user_id" }
   );
@@ -724,25 +718,25 @@ export async function upsertNotificationPrefs(userId: string, prefs: Record<stri
 
 // ── Conversation participants fetch ──
 export async function fetchConversationParticipants(convId: string) {
-  const { data } = await db("conversations_v2").select("participants").eq("id", convId).single();
+  const { data } = await cFrom("conversations_v2").select("participants").eq("id", convId).single();
   return data;
 }
 
 // ── Group member count ──
 export async function fetchGroupMemberCount(groupId: string) {
-  const { count } = await db("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
+  const { count } = await cFrom("group_members").select("*", { count: "exact", head: true }).eq("group_id", groupId);
   return count || 0;
 }
 
 // ═══ CALL LIFECYCLE (canonical) ═══
 
 export async function markCallAsMissedV2(sessionId: string, reason: string) {
-  await db.rpc("mark_call_as_missed_v2", { p_session_id: sessionId, p_reason: reason });
+  await cRpc("mark_call_as_missed_v2", { p_session_id: sessionId, p_reason: reason });
 }
 
 export async function markCallActive(callId: string) {
   const now = new Date().toISOString();
-  return db("call_logs")
+  return cFrom("call_logs")
     .update({ status: "active", started_at: now, answered_at: now })
     .eq("id", callId)
     .select("id,status,started_at")
@@ -750,7 +744,7 @@ export async function markCallActive(callId: string) {
 }
 
 export async function markCallDeclined(callId: string) {
-  return db("call_logs")
+  return cFrom("call_logs")
     .update({ status: "declined", ended_at: new Date().toISOString() })
     .eq("id", callId)
     .neq("status", "declined")
@@ -759,7 +753,7 @@ export async function markCallDeclined(callId: string) {
 }
 
 export async function markCallEnded(callId: string, durationSec: number) {
-  return db("call_logs")
+  return cFrom("call_logs")
     .update({ status: "ended", ended_at: new Date().toISOString(), duration_sec: durationSec })
     .eq("id", callId)
     .neq("status", "ended")
@@ -768,44 +762,44 @@ export async function markCallEnded(callId: string, durationSec: number) {
 }
 
 export async function markCallMissedByCallId(callId: string) {
-  return db("call_logs")
+  return cFrom("call_logs")
     .update({ status: "missed", ended_at: new Date().toISOString() })
     .eq("id", callId);
 }
 
 export async function acceptCallSession(sessionId: string) {
   const now = new Date().toISOString();
-  const { error } = await db("call_sessions")
+  const { error } = await cFrom("call_sessions")
     .update({ status: "active", answered_at: now, updated_at: now })
     .eq("id", sessionId);
   if (error) throw error;
-  await db("call_logs")
+  await cFrom("call_logs")
     .update({ status: "answered", answered_at: now })
     .eq("session_id", sessionId);
 }
 
 export async function declineCallSession(sessionId: string) {
   const now = new Date().toISOString();
-  await db("call_sessions")
+  await cFrom("call_sessions")
     .update({ status: "declined", ended_at: now, updated_at: now, metadata: { ended_reason: "declined" } })
     .eq("id", sessionId);
-  await db("call_logs")
+  await cFrom("call_logs")
     .update({ status: "declined", ended_at: now, ended_reason: "declined" })
     .eq("session_id", sessionId);
 }
 
 export async function hangupCallSession(sessionId: string, reason = "hangup") {
   const now = new Date().toISOString();
-  await db("call_sessions")
+  await cFrom("call_sessions")
     .update({ status: "ended", ended_at: now, updated_at: now, metadata: { ended_reason: reason } })
     .eq("id", sessionId);
-  await db("call_logs")
+  await cFrom("call_logs")
     .update({ status: "ended", ended_at: now, ended_reason: reason })
     .eq("session_id", sessionId);
 }
 
 export async function markCallReconnecting(sessionId: string, reconnectCount: number) {
-  await db("call_sessions")
+  await cFrom("call_sessions")
     .update({ reconnect_count: reconnectCount, quality_state: "reconnecting", updated_at: new Date().toISOString() })
     .eq("id", sessionId);
 }
@@ -817,7 +811,7 @@ export async function createOutgoingCallSession(params: {
   mode: "audio" | "video";
 }) {
   const now = new Date().toISOString();
-  const { data: session, error: sessionErr } = await db("call_sessions").insert({
+  const { data: session, error: sessionErr } = await cFrom("call_sessions").insert({
     conversation_id: params.conversationId || null,
     caller_orbit_id: params.callerOrbitId,
     receiver_orbit_id: params.receiverOrbitId,
@@ -828,7 +822,7 @@ export async function createOutgoingCallSession(params: {
   }).select("*").single();
   if (sessionErr) throw sessionErr;
 
-  await db("call_logs").insert({
+  await cFrom("call_logs").insert({
     conversation_id: params.conversationId || null,
     session_id: session.id,
     caller_orbit_id: params.callerOrbitId,
@@ -861,7 +855,7 @@ export async function invokeCreateConciergePayment(body: Record<string, any>) {
 // ═══ BYPASS REMOVAL — NEW CANONICAL METHODS ═══
 
 export async function updateConversationMetadata(conversationId: string, metadata: Record<string, any>) {
-  await db("conversations_v2").update({
+  await cFrom("conversations_v2").update({
     metadata,
     updated_at: new Date().toISOString(),
   }).eq("id", conversationId);
@@ -869,14 +863,14 @@ export async function updateConversationMetadata(conversationId: string, metadat
 
 export async function resolveOrbitProfilesByOrbitIds(orbitIds: string[]) {
   if (orbitIds.length === 0) return [];
-  const { data } = await db("orbit_profiles_v2")
+  const { data } = await cFrom("orbit_profiles_v2")
     .select("orbit_id, display_name, email, id")
     .in("orbit_id", orbitIds);
   return data ?? [];
 }
 
 export async function resolveOrbitId(userId: string): Promise<string | null> {
-  const { data } = await db("orbit_profiles_v2")
+  const { data } = await cFrom("orbit_profiles_v2")
     .select("orbit_id")
     .eq("id", userId)
     .maybeSingle();
@@ -884,7 +878,7 @@ export async function resolveOrbitId(userId: string): Promise<string | null> {
 }
 
 export async function editMessageContent(messageId: string, newBody: string) {
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     body: newBody,
     edited_at: new Date().toISOString(),
   }).eq("id", messageId);
@@ -892,14 +886,14 @@ export async function editMessageContent(messageId: string, newBody: string) {
 }
 
 export async function hideMessageForUser(messageId: string, userId: string) {
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     metadata: { hidden_for: [userId] },
   }).eq("id", messageId);
   if (error) throw error;
 }
 
 export async function deleteMessageForEveryone(messageId: string, userId: string) {
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
     body: "🚫 This message was deleted",
     metadata: {
@@ -911,7 +905,7 @@ export async function deleteMessageForEveryone(messageId: string, userId: string
 }
 
 export async function moderateMessage(messageId: string, moderatorId: string) {
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     deleted_at: new Date().toISOString(),
     body: "🚫 This message was deleted",
     metadata: {
@@ -923,7 +917,7 @@ export async function moderateMessage(messageId: string, moderatorId: string) {
 }
 
 export async function fetchCallLogStatus(callId: string) {
-  const { data } = await db("call_logs")
+  const { data } = await cFrom("call_logs")
     .select("status, duration_sec")
     .eq("id", callId)
     .single();
@@ -931,8 +925,7 @@ export async function fetchCallLogStatus(callId: string) {
 }
 
 export async function fetchGroupConversations() {
-  const { data, error } = await domainDb.orbit
-    .from("conversations_v2")
+  const { data, error } = await cFrom("conversations_v2", { schema: "orbit" })
     .select("*")
     .in("type", ["group", "channel", "community"])
     .order("updated_at", { ascending: false });
@@ -941,8 +934,7 @@ export async function fetchGroupConversations() {
 }
 
 export async function fetchGroupMemberIds(userId: string) {
-  const { data, error } = await db
-    .from("group_members")
+  const { data, error } = await cFrom("group_members")
     .select("group_id")
     .eq("user_id", userId);
   if (error) throw error;
@@ -950,22 +942,21 @@ export async function fetchGroupMemberIds(userId: string) {
 }
 
 export async function addMessageReaction(messageId: string, userId: string, emoji: string) {
-  const { data: existing } = await db("chat_messages_v2").select("metadata").eq("id", messageId).single();
+  const { data: existing } = await cFrom("chat_messages_v2").select("metadata").eq("id", messageId).single();
   const meta = (existing?.metadata as Record<string, any>) || {};
   const reactions: Record<string, string[]> = meta.reactions || {};
   if (!reactions[emoji]) reactions[emoji] = [];
   if (!reactions[emoji].includes(userId)) {
     reactions[emoji].push(userId);
   }
-  const { error } = await db("chat_messages_v2").update({
+  const { error } = await cFrom("chat_messages_v2").update({
     metadata: { ...meta, reactions },
   }).eq("id", messageId);
   if (error) throw error;
 }
 
 export async function clearConversationMessages(conversationId: string, userId: string) {
-  const { data: existing } = await db
-    .from("conversation_preferences")
+  const { data: existing } = await cFrom("conversation_preferences")
     .select("muted, archived")
     .eq("user_id", userId)
     .eq("context_id", conversationId)
@@ -980,7 +971,7 @@ export async function clearConversationMessages(conversationId: string, userId: 
 }
 
 export async function exportChatMessages(conversationId: string, limit = 500) {
-  const { data, error } = await db("chat_messages_v2")
+  const { data, error } = await cFrom("chat_messages_v2")
     .select("body, sender_user_id, sender_orbit_id, type, created_at")
     .eq("conversation_id", conversationId)
     .is("deleted_at", null)
@@ -991,8 +982,7 @@ export async function exportChatMessages(conversationId: string, limit = 500) {
 }
 
 export async function toggleContactFavorite(userId: string, conversationId: string, favorited: boolean) {
-  const { data: existing } = await db
-    .from("conversation_preferences")
+  const { data: existing } = await cFrom("conversation_preferences")
     .select("muted, archived")
     .eq("user_id", userId)
     .eq("context_id", conversationId)
