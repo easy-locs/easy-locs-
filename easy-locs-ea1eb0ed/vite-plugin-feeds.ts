@@ -108,6 +108,12 @@ export function feedsPlugin(): Plugin {
             const bDesc = `Top-rated ${topSvc.label.toLowerCase()} providers in ${city.name}, vetted and ranked by Easy-Locs.`;
             globalItems.push(rssItem(bTitle, bLink, bDesc, buildDate));
             globalAtomEntries.push(atomEntry(bTitle, bLink, bDesc, `${CONTENT_LASTMOD.best}T00:00:00Z`));
+
+            const cTitle = `Compare ${topSvc.label} options in ${city.name}`;
+            const cLink = `${BASE_URL}/compare/${topSvc.slug}/in/${city.slug}`;
+            const cDesc = `Side-by-side comparison of ${topSvc.label.toLowerCase()} providers in ${city.name} — pricing, ratings, and availability.`;
+            globalItems.push(rssItem(cTitle, cLink, cDesc, buildDate));
+            globalAtomEntries.push(atomEntry(cTitle, cLink, cDesc, `${CONTENT_LASTMOD.compare}T00:00:00Z`));
           }
         }
 
