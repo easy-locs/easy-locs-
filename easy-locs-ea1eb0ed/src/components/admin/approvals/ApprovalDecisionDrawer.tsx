@@ -235,6 +235,46 @@ export function ApprovalDecisionDrawer({
     return ip ?? legacy?.after ?? legacy?.proposed ?? legacy;
   }, [intentPayload, task]);
 
+  /**
+   * LC5 (#873) — surface the dev-policy summary on sensitive code edits.
+   * The dispatch hook stamps `payload.dev_sensitive` (and mirrors it on
+   * `metadata.dev_sensitive`) whenever a `domain: 'code'` task touches
+   * shared edge-function code, SQL migrations, RLS files, or the
+   * `DEPLOY.PROD` task type. Reviewers MUST see this prominently before
+   * approving — the diff alone hides which paths triggered the review.
+   */
+  const devSensitive = useMemo(() => {
+    const fromPayload = (task?.payload as Record<string, unknown> | undefined)
+      ?.dev_sensitive as Record<string, unknown> | undefined;
+    const fromIntent = (intentPayload?.dev_sensitive ?? undefined) as
+      | Record<string, unknown>
+      | undefined;
+    const src = fromPayload ?? fromIntent;
+    if (!src) return null;
+    const matchedPaths = Array.isArray(src.matched_paths)
+      ? (src.matched_paths as unknown[]).filter(
+          (p): p is string => typeof p === "string",
+        )
+      : [];
+    const matchedTaskTypes = Array.isArray(src.matched_task_types)
+      ? (src.matched_task_types as unknown[]).filter(
+          (p): p is string => typeof p === "string",
+        )
+      : [];
+    const rules = Array.isArray(src.rules)
+      ? (src.rules as unknown[]).filter(
+          (p): p is string => typeof p === "string",
+        )
+      : [];
+    return {
+      profile: typeof src.profile === "string" ? src.profile : "dev-sensitive",
+      reason: typeof src.reason === "string" ? src.reason : null,
+      matchedPaths,
+      matchedTaskTypes,
+      rules,
+    };
+  }, [task, intentPayload]);
+
   const unifiedDiff = useMemo(() => {
     const ip = intentPayload;
     const legacy = task?.payload as Record<string, unknown> | undefined;
@@ -307,6 +347,58 @@ export function ApprovalDecisionDrawer({
                 <div className="text-xs text-warning-foreground bg-warning/10 border border-warning/30 rounded px-2 py-1.5 mb-2">
                   <span className="font-semibold">Blocked reason:</span>{" "}
                   {task.blocked_reason}
+                </div>
+              )}
+              {devSensitive && (
+                <div
+                  data-testid="dev-sensitive-panel"
+                  className="mb-3 rounded-lg border border-destructive/40 bg-destructive/5 p-3 space-y-2 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <Badge variant="destructive">DEV-SENSITIVE</Badge>
+                    <span className="font-semibold text-foreground">
+                      Fichiers sensibles touchés
+                    </span>
+                  </div>
+                  {devSensitive.reason && (
+                    <div className="font-mono text-[0.625rem] text-muted-foreground">
+                      {devSensitive.reason}
+                    </div>
+                  )}
+                  {devSensitive.rules.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {devSensitive.rules.map((r) => (
+                        <Badge key={r} variant="outline">
+                          {r}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {devSensitive.matchedTaskTypes.length > 0 && (
+                    <div>
+                      <div className="text-muted-foreground">Task type</div>
+                      <ul className="font-mono text-[0.625rem] list-disc pl-4">
+                        {devSensitive.matchedTaskTypes.map((t) => (
+                          <li key={t}>{t}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {devSensitive.matchedPaths.length > 0 && (
+                    <div>
+                      <div className="text-muted-foreground">
+                        Paths ({devSensitive.matchedPaths.length})
+                      </div>
+                      <ul
+                        data-testid="dev-sensitive-paths"
+                        className="font-mono text-[0.625rem] list-disc pl-4 max-h-32 overflow-y-auto"
+                      >
+                        {devSensitive.matchedPaths.map((p) => (
+                          <li key={p}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               )}
               {aiMeta && (

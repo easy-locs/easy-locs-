@@ -15,6 +15,7 @@
 
 // @ts-expect-error — Deno remote import, resolved at edge runtime.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { applyDevPolicyToDispatchInput } from "./policies/dev-policy.ts";
 
 export type DispatchRisk = "safe" | "medium" | "critical";
 
@@ -95,6 +96,24 @@ function getServiceClient(): ReturnType<typeof createClient> {
 export async function dispatchExecutionTask(
   input: DispatchExecutionTaskInput,
 ): Promise<DispatchedTaskHandle> {
+  // ── LC5 (#873) — pre-execute policy hook ────────────────────────────────
+  // For `domain: 'code'` tasks the dev-policy may flip the call into a
+  // pending_review dispatch by enriching payload + metadata and forcing
+  // `requires_approval` on the RPC. The hook is a no-op for every other
+  // domain (returns the input unchanged), so this stays safe to call
+  // unconditionally and adds zero overhead off the code path.
+  const {
+    input: applied,
+    decision: devDecision,
+    rpcOverrides,
+  } = applyDevPolicyToDispatchInput({
+    domain: input.domain,
+    taskType: input.taskType,
+    payload: input.payload ?? {},
+    metadata: input.metadata ?? {},
+    approvalPolicy: input.approvalPolicy ?? "policy-default",
+  });
+
   const {
     domain,
     taskType,
@@ -103,22 +122,34 @@ export async function dispatchExecutionTask(
     riskLevel,
     approvalPolicy = "policy-default",
     correlationId,
-    metadata = {},
-  } = input;
+  } = { ...input, ...applied };
+  const metadata = applied.metadata ?? input.metadata ?? {};
+
+  const rpcArgs: Record<string, unknown> = {
+    p_type: taskType,
+    p_domain: domain,
+    p_risk_level: riskLevel ?? null,
+    p_payload: payload,
+    p_idempotency_key: idempotencyKey ?? null,
+    p_correlation_id: correlationId ?? null,
+    p_approval_policy: approvalPolicy,
+    p_metadata: metadata,
+  };
+
+  if (devDecision.requiresReview) {
+    // Forward the extra params the SQL RPC needs to flip the new task
+    // into pending_review at creation time. We do not pass `p_status`
+    // unconditionally — only when the policy fires — so the existing
+    // dispatch wire shape for non-code domains stays untouched.
+    rpcArgs.p_status = rpcOverrides.status;
+    rpcArgs.p_requires_approval = rpcOverrides.requiresApproval;
+    rpcArgs.p_blocked_reason = rpcOverrides.blockedReason;
+  }
 
   const client = getServiceClient();
   const { data, error } = await client
     .schema("system")
-    .rpc("dispatch_execution_task", {
-      p_type: taskType,
-      p_domain: domain,
-      p_risk_level: riskLevel ?? null,
-      p_payload: payload,
-      p_idempotency_key: idempotencyKey ?? null,
-      p_correlation_id: correlationId ?? null,
-      p_approval_policy: approvalPolicy,
-      p_metadata: metadata,
-    });
+    .rpc("dispatch_execution_task", rpcArgs);
 
   if (error) {
     throw new DispatchError(error.message, {
