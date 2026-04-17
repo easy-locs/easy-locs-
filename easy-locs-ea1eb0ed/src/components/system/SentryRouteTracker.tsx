@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { setSectionContext } from "@/lib/analytics/sentry";
 
 const SECTION_PREFIXES: [string, string][] = [
   ["/dashboard", "Dashboard"],
@@ -39,9 +40,7 @@ export default function SentryRouteTracker() {
 
   useEffect(() => {
     const section = resolveSection(location.pathname);
-    void import("@/lib/analytics/sentry").then((m) => {
-      m.setSectionContext(section, location.pathname);
-    }).catch(() => {});
+    try { setSectionContext(section, location.pathname); } catch {}
   }, [location.pathname]);
 
   return null;
