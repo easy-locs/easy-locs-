@@ -47,6 +47,7 @@ import type {
   PreMergeCheckFn,
   PreMergeVerdict,
 } from "./dev-builder-loop.ts";
+import { evaluateAndAlertFileBursts } from "./merge-conflict-storm-alerts.ts";
 
 /** Minimal Supabase surface — `SupabaseClient` from supabase-js satisfies. */
 export interface SupabaseLike {
@@ -259,6 +260,19 @@ export function createMergeConflictAuditHandler(
     } catch (err) {
       console.warn(
         "[lc4-merge-conflict-recovery] audit write failed (non-fatal):",
+        err instanceof Error ? err.message : String(err),
+      );
+    }
+    // Server-side spike detection (#952). Best-effort; never throws.
+    try {
+      await evaluateAndAlertFileBursts({
+        sb,
+        builderTaskId,
+        affectedFiles: files,
+      });
+    } catch (err) {
+      console.warn(
+        "[lc4-merge-conflict-recovery] storm alert evaluation failed (non-fatal):",
         err instanceof Error ? err.message : String(err),
       );
     }
