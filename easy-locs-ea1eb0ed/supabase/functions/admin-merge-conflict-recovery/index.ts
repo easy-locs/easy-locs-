@@ -3,11 +3,22 @@
  * LC4 merge-conflict-recovery dashboard projection (events, perDay,
  * topFiles, affectedTasks). Auth mirrors the rest of the operator
  * surface (router origin + authenticated user + is_admin).
+ *
+ * The projection logic (`normalizeAudit` /
+ * `projectMergeConflictRecoverySummary`) is imported from the shared,
+ * runtime-agnostic module so this function and the React operator
+ * dashboard cannot drift (task #979).
  */
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import {
+  MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
+  type MergeConflictRecoveryEvent,
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+} from "../_shared/merge-conflict-recovery-projection.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,28 +27,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
-const LOOKBACK_DAYS = 14;
 const PAGE_SIZE = 500;
 const MAX_PAGES = 100;
-
-export interface MergeConflictRecoveryEvent {
-  kind: "merge_conflict_recovery";
-  task_id: string;
-  builder_task_id: string;
-  at: string;
-  severity: "hard" | "soft" | "none";
-  overlaps: number;
-  files: string[];
-  reason: string;
-}
-
-export interface MergeConflictRecoverySummary {
-  events: MergeConflictRecoveryEvent[];
-  totalEvents: number;
-  affectedTasks: number;
-  perDay: { day: string; count: number }[];
-  topFiles: { file: string; count: number }[];
-}
 
 interface ExecutionTaskRow {
   id: string;
@@ -45,83 +36,12 @@ interface ExecutionTaskRow {
   payload: Record<string, unknown> | null;
 }
 
-export function normalizeAudit(
-  raw: unknown,
-  rowId: string,
-): MergeConflictRecoveryEvent | null {
-  if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
-  if (r.kind !== "merge_conflict_recovery") return null;
-  const at = typeof r.at === "string" ? r.at : null;
-  if (!at) return null;
-  const builder_task_id = typeof r.builder_task_id === "string"
-    ? r.builder_task_id
-    : rowId;
-  const severity =
-    (r.severity === "hard" || r.severity === "soft" || r.severity === "none")
-      ? r.severity
-      : "hard";
-  const overlaps = typeof r.overlaps === "number" ? r.overlaps : 0;
-  const files = Array.isArray(r.files)
-    ? r.files.filter((f): f is string => typeof f === "string")
-    : [];
-  const reason = typeof r.reason === "string"
-    ? r.reason
-    : `hard_overlap:${overlaps}`;
-  return {
-    kind: "merge_conflict_recovery",
-    task_id: rowId,
-    builder_task_id,
-    at,
-    severity,
-    overlaps,
-    files,
-    reason,
-  };
-}
-
-export function projectMergeConflictRecoverySummary(
-  events: MergeConflictRecoveryEvent[],
-): MergeConflictRecoverySummary {
-  const perDayMap = new Map<string, number>();
-  const today = new Date();
-  for (let i = LOOKBACK_DAYS - 1; i >= 0; i--) {
-    const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-    perDayMap.set(d.toISOString().slice(0, 10), 0);
-  }
-  const fileCounts = new Map<string, number>();
-  const taskIds = new Set<string>();
-  for (const e of events) {
-    const day = e.at.slice(0, 10);
-    if (perDayMap.has(day)) {
-      perDayMap.set(day, (perDayMap.get(day) ?? 0) + 1);
-    }
-    taskIds.add(e.builder_task_id);
-    for (const f of new Set(e.files)) {
-      fileCounts.set(f, (fileCounts.get(f) ?? 0) + 1);
-    }
-  }
-  const perDay = Array.from(perDayMap.entries()).map(([day, count]) => ({
-    day,
-    count,
-  }));
-  const topFiles = Array.from(fileCounts.entries())
-    .map(([file, count]) => ({ file, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-  return {
-    events,
-    totalEvents: events.length,
-    affectedTasks: taskIds.size,
-    perDay,
-    topFiles,
-  };
-}
-
 export async function fetchMergeConflictRecoveryEvents(
   supabase: SupabaseClient,
 ): Promise<MergeConflictRecoveryEvent[]> {
-  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+  const since = new Date(
+    Date.now() - MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
+  );
   const sinceIso = since.toISOString();
 
   const events: MergeConflictRecoveryEvent[] = [];
@@ -229,3 +149,15 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: msg }, 500);
   }
 });
+
+// Re-export the shared types so callers that previously relied on
+// import-from-edge-function (older tests, generated clients) keep
+// working without reaching into the React tree.
+export type {
+  MergeConflictRecoveryEvent,
+  MergeConflictRecoverySummary,
+} from "../_shared/merge-conflict-recovery-projection.ts";
+export {
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+} from "../_shared/merge-conflict-recovery-projection.ts";
