@@ -4,6 +4,9 @@
  */
 import { describe, it } from "vitest";
 import { RuleTester } from "eslint";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 // @ts-expect-error — local plugin (.js, ESM, no .d.ts).
 import plugin from "../../tooling/eslint-plugin-easylocs/index.js";
 
@@ -142,6 +145,46 @@ describe("no-direct-rpc-mutation", () => {
           {
             code: `await db.rpc('mutate_x');`,
             filename: "src/lib/new-thing.ts",
+            errors: [{ messageId: "illegal" }],
+          },
+        ],
+      },
+    );
+  });
+});
+
+describe("allowlistPath rule option", () => {
+  it("loads exemptions from a custom allow-list file when option is set", () => {
+    // Write a throwaway allow-list and point the rule at it via options.
+    const dir = mkdtempSync(join(tmpdir(), "easylocs-allow-"));
+    const customAllow = join(dir, "custom-allow.json");
+    writeFileSync(
+      customAllow,
+      JSON.stringify({
+        globalExemptions: [],
+        exemptions: [
+          { pattern: "src/sandbox/**", reason: "scratch dir for option test" },
+        ],
+      }),
+    );
+    tester.run(
+      "require-dispatch-execution-task",
+      plugin.rules["require-dispatch-execution-task"],
+      {
+        valid: [
+          // File is NOT in the default allow-list but IS in the option-supplied
+          // one — so it must be exempt.
+          {
+            code: `db.from('x').update({ a: 1 });`,
+            filename: "src/sandbox/scratch.ts",
+            options: [{ allowlistPath: customAllow }],
+          },
+        ],
+        invalid: [
+          // Same file, no option → must still be flagged.
+          {
+            code: `db.from('x').update({ a: 1 });`,
+            filename: "src/sandbox/scratch.ts",
             errors: [{ messageId: "illegal" }],
           },
         ],

@@ -97,10 +97,17 @@ function chainIsBuilderChain(node) {
   return false;
 }
 
-function loadAllowlist(cwd) {
-  // ESLint runs from the workspace root; fall back to a fixed env var so
-  // the rule works no matter how the linter is invoked.
+function loadAllowlist(cwd, optionPath) {
+  // Resolution order:
+  //   1. Rule-options path (per-config override; absolute or cwd-relative)
+  //   2. EASYLOCS_DISPATCH_ALLOWLIST env var (CI / local override)
+  //   3. .eslintrc.dispatch-allowlist.json at the workspace root (default)
   const candidates = [
+    optionPath
+      ? path.isAbsolute(optionPath)
+        ? optionPath
+        : path.join(cwd || process.cwd(), optionPath)
+      : null,
     process.env.EASYLOCS_DISPATCH_ALLOWLIST,
     path.join(cwd || process.cwd(), ".eslintrc.dispatch-allowlist.json"),
   ].filter(Boolean);
@@ -116,17 +123,20 @@ function loadAllowlist(cwd) {
   return { exemptions: [], globalExemptions: [] };
 }
 
-let _allowlistCache = null;
-function getAllowlist(cwd) {
-  if (_allowlistCache) return _allowlistCache;
-  _allowlistCache = loadAllowlist(cwd);
-  return _allowlistCache;
+const _allowlistCache = new Map();
+function getAllowlist(cwd, optionPath) {
+  const key = `${cwd || ""}::${optionPath || ""}`;
+  const cached = _allowlistCache.get(key);
+  if (cached) return cached;
+  const al = loadAllowlist(cwd, optionPath);
+  _allowlistCache.set(key, al);
+  return al;
 }
 
-function isExempt(filename, cwd) {
+function isExempt(filename, cwd, optionPath) {
   if (!filename) return false;
   const rel = path.relative(cwd || process.cwd(), filename).split(path.sep).join("/");
-  const al = getAllowlist(cwd);
+  const al = getAllowlist(cwd, optionPath);
   const all = [
     ...(al.globalExemptions ?? []),
     ...(al.exemptions ?? []),
@@ -168,7 +178,8 @@ const requireDispatch = {
   create(context) {
     const filename = context.filename || context.getFilename();
     const cwd = context.cwd || (context.getCwd && context.getCwd()) || process.cwd();
-    if (isExempt(filename, cwd)) {
+    const opt = (context.options && context.options[0]) || {};
+    if (isExempt(filename, cwd, opt.allowlistPath)) {
       return {};
     }
     return {
@@ -235,7 +246,13 @@ const noDirectPostgrest = {
         "Forbid direct PostgREST mutation calls via fetch(). Mutations must go through `dispatchExecutionTask`.",
       url: "docs/architecture/dispatch-guard.md",
     },
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        properties: { allowlistPath: { type: "string" } },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       illegal:
         "[easylocs/no-direct-postgrest-mutation] Direct `fetch('{{url}}', { method: '{{method}}' })` against PostgREST is forbidden — use `dispatchExecutionTask({ domain, taskType, payload })` (see docs/architecture/dispatch-guard.md).",
@@ -244,7 +261,8 @@ const noDirectPostgrest = {
   create(context) {
     const filename = context.filename || context.getFilename();
     const cwd = context.cwd || (context.getCwd && context.getCwd()) || process.cwd();
-    if (isExempt(filename, cwd)) return {};
+    const opt = (context.options && context.options[0]) || {};
+    if (isExempt(filename, cwd, opt.allowlistPath)) return {};
     return {
       CallExpression(node) {
         const callee = node.callee;
@@ -289,7 +307,13 @@ const noDirectRpc = {
         "Forbid direct `db.rpc(...)` / `<builder>.rpc(...)` calls outside the dispatch path. RPCs can mutate state and must be allow-listed (read-only) or routed through `dispatchExecutionTask`.",
       url: "docs/architecture/dispatch-guard.md",
     },
-    schema: [],
+    schema: [
+      {
+        type: "object",
+        properties: { allowlistPath: { type: "string" } },
+        additionalProperties: false,
+      },
+    ],
     messages: {
       illegal:
         "[easylocs/no-direct-rpc-mutation] Direct `.rpc('{{name}}', ...)` is forbidden — RPCs may mutate state and must flow through `dispatchExecutionTask({ domain, taskType, payload })`. To exempt a known read-only RPC, add the file to .eslintrc.dispatch-allowlist.json with a written reason (see docs/architecture/dispatch-guard.md).",
@@ -298,7 +322,8 @@ const noDirectRpc = {
   create(context) {
     const filename = context.filename || context.getFilename();
     const cwd = context.cwd || (context.getCwd && context.getCwd()) || process.cwd();
-    if (isExempt(filename, cwd)) return {};
+    const opt = (context.options && context.options[0]) || {};
+    if (isExempt(filename, cwd, opt.allowlistPath)) return {};
     return {
       CallExpression(node) {
         const callee = node.callee;
