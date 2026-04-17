@@ -280,6 +280,9 @@ export const agentsRepo = {
         model: r.model ?? null,
         provider: r.provider ?? null,
         error: r.error ?? null,
+        verification: r.verification ?? null,
+        tools_used: r.tools_used ?? null,
+        purpose: r.purpose ?? null,
       }));
     }
     const { data, error } = await domainDb.system
@@ -307,6 +310,9 @@ export const agentsRepo = {
       model: null,
       provider: null,
       error: ((r.error ?? r.blocked_reason) as string) ?? null,
+      verification: ((r.execution_result as Record<string, unknown> | null)?.verification as unknown) ?? null,
+      tools_used: ((r.execution_result as Record<string, unknown> | null)?.tools_used as unknown) ?? null,
+      purpose: ((r.payload as Record<string, unknown> | null)?.purpose as string) ?? null,
     }));
   },
 
@@ -339,6 +345,9 @@ export interface AgentRunRichRow {
   model: string | null;
   provider: string | null;
   error: string | null;
+  verification: unknown | null;
+  tools_used: unknown | null;
+  purpose: string | null;
 }
 
 interface AiRunViewRow {
@@ -357,6 +366,9 @@ interface AiRunViewRow {
   model: string | null;
   provider: string | null;
   error: string | null;
+  verification: unknown | null;
+  tools_used: unknown | null;
+  purpose: string | null;
   agent_id: string;
 }
 

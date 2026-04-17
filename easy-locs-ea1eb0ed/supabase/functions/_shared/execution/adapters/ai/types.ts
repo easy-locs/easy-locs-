@@ -50,6 +50,21 @@ export interface AiMessage {
   name?: string;
 }
 
+/** Caller-declared purpose for a completion. Determines whether the
+ *  ai-sensitive policy profile is engaged BEFORE the model is called and
+ *  forces approval-on-delivery regardless of output content. */
+export type AiCompletionPurpose =
+  | "general"
+  | "contract"
+  | "pii_generation"
+  | "moderation_override";
+
+export const AI_SENSITIVE_PURPOSES: ReadonlyArray<AiCompletionPurpose> = [
+  "contract",
+  "pii_generation",
+  "moderation_override",
+];
+
 export interface AiCompletionPayload {
   feature: string; // free-text caller tag, e.g. "support.triage"
   messages: AiMessage[];
@@ -59,6 +74,12 @@ export interface AiCompletionPayload {
   responseFormat?: "text" | "json";
   /** Optional caller-side hint that this call is sensitive (e.g. KYC). */
   sensitive?: boolean;
+  /** Routes the call through the ai-sensitive policy when set to one of
+   *  the sensitive values; defaults to "general". */
+  purpose?: AiCompletionPurpose;
+  /** Optional list of tools/functions the model may call. Lifted into
+   *  v_ai_runs.tools_used so the conversation explorer can render them. */
+  tools?: Array<{ name: string; description?: string; arguments?: unknown }>;
 }
 
 export interface AiEmbeddingPayload {

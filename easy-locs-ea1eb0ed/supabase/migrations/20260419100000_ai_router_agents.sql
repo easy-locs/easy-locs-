@@ -155,12 +155,115 @@ RETURNS TIMESTAMPTZ LANGUAGE sql IMMUTABLE AS $$
   END
 $$;
 
--- ── 4. consume_agent_quota — atomic check-and-increment ──────────────────
--- Returns a row signalling whether the call is admitted. Caller (orchestrator
--- / AI adapter) MUST honour `ok = FALSE` by short-circuiting with QUOTA_EXCEEDED.
+-- ── 4a. _resolve_agent_quotas — agent.quotas JSONB takes precedence ──────
+-- Effective caps for an agent are the merge of agent.quotas (operator-set,
+-- per-agent) and the bound policy_profile (defaults). Agent JSONB wins
+-- when present so platform owners can override profile defaults without
+-- creating a new profile.
+CREATE OR REPLACE FUNCTION system._resolve_agent_quotas(p_agent_id UUID)
+RETURNS TABLE (
+  max_runs_per_min     INT,
+  max_runs_per_day     INT,
+  max_tokens_per_day   BIGINT,
+  max_cost_per_run_usd NUMERIC,
+  max_cost_per_day_usd NUMERIC
+)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public, system
+AS $$
+  SELECT
+    COALESCE((a.quotas->>'max_runs_per_min')::INT,     pp.max_runs_per_min),
+    COALESCE((a.quotas->>'max_runs_per_day')::INT,     pp.max_runs_per_day),
+    NULLIF((a.quotas->>'max_tokens_per_day'),'')::BIGINT,
+    COALESCE((a.quotas->>'max_cost_per_run_usd')::NUMERIC, pp.max_cost_per_run_usd),
+    NULLIF((a.quotas->>'max_cost_per_day_usd'),'')::NUMERIC
+  FROM system.agents a
+  LEFT JOIN system.policy_profiles pp ON pp.id = a.policy_profile_id
+  WHERE a.id = p_agent_id;
+$$;
+REVOKE ALL ON FUNCTION system._resolve_agent_quotas(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION system._resolve_agent_quotas(UUID)
+  TO authenticated, service_role;
+
+-- ── 4b. peek_agent_quota — READ-ONLY pre-flight check ────────────────────
+-- Returns whether the next run would be admitted. NEVER increments. Safe
+-- for pre-execute hooks. Authenticated callers can peek their own agents.
+CREATE OR REPLACE FUNCTION system.peek_agent_quota(p_agent_id UUID)
+RETURNS TABLE (
+  ok                 BOOLEAN,
+  blocked_reason     TEXT,
+  blocked_window     TEXT,
+  current_count      INT,
+  limit_count        INT
+)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public, system
+AS $$
+DECLARE
+  v_now           TIMESTAMPTZ := now();
+  v_min_start     TIMESTAMPTZ := system._quota_window_start('minute', v_now);
+  v_day_start     TIMESTAMPTZ := system._quota_window_start('day',    v_now);
+  v_min_limit     INT;
+  v_day_limit     INT;
+  v_tok_day_lim   BIGINT;
+  v_cost_run_lim  NUMERIC;
+  v_cost_day_lim  NUMERIC;
+  v_min_count     INT := 0;
+  v_day_count     INT := 0;
+  v_day_tokens    BIGINT := 0;
+  v_day_cost      NUMERIC := 0;
+BEGIN
+  SELECT max_runs_per_min, max_runs_per_day, max_tokens_per_day,
+         max_cost_per_run_usd, max_cost_per_day_usd
+    INTO v_min_limit, v_day_limit, v_tok_day_lim, v_cost_run_lim, v_cost_day_lim
+    FROM system._resolve_agent_quotas(p_agent_id);
+
+  SELECT run_count INTO v_min_count
+    FROM system.agent_quota_counters
+   WHERE agent_id = p_agent_id AND window_kind = 'minute' AND window_start = v_min_start;
+  v_min_count := COALESCE(v_min_count, 0);
+
+  SELECT run_count, total_tokens, total_cost_usd
+    INTO v_day_count, v_day_tokens, v_day_cost
+    FROM system.agent_quota_counters
+   WHERE agent_id = p_agent_id AND window_kind = 'day' AND window_start = v_day_start;
+  v_day_count  := COALESCE(v_day_count, 0);
+  v_day_tokens := COALESCE(v_day_tokens, 0);
+  v_day_cost   := COALESCE(v_day_cost, 0);
+
+  IF v_min_limit IS NOT NULL AND v_min_count + 1 > v_min_limit THEN
+    RETURN QUERY SELECT FALSE, 'rate_limit_per_minute'::TEXT, 'minute'::TEXT,
+      v_min_count, v_min_limit;
+    RETURN;
+  END IF;
+  IF v_day_limit IS NOT NULL AND v_day_count + 1 > v_day_limit THEN
+    RETURN QUERY SELECT FALSE, 'rate_limit_per_day'::TEXT, 'day'::TEXT,
+      v_day_count, v_day_limit;
+    RETURN;
+  END IF;
+  IF v_tok_day_lim IS NOT NULL AND v_day_tokens >= v_tok_day_lim THEN
+    RETURN QUERY SELECT FALSE, 'tokens_per_day_exceeded'::TEXT, 'day'::TEXT,
+      LEAST(v_day_tokens, 2147483647)::INT, LEAST(v_tok_day_lim, 2147483647)::INT;
+    RETURN;
+  END IF;
+  IF v_cost_day_lim IS NOT NULL AND v_day_cost >= v_cost_day_lim THEN
+    RETURN QUERY SELECT FALSE, 'cost_per_day_exceeded'::TEXT, 'day'::TEXT,
+      0, 0;
+    RETURN;
+  END IF;
+
+  RETURN QUERY SELECT TRUE, NULL::TEXT, NULL::TEXT, v_min_count, v_min_limit;
+END;
+$$;
+REVOKE ALL ON FUNCTION system.peek_agent_quota(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION system.peek_agent_quota(UUID) TO authenticated, service_role;
+
+-- ── 4c. consume_agent_quota — SINGLE post-call increment (admin/service)
+-- Called ONCE per actual run with the real token/cost usage. NEVER call this
+-- twice for the same run (the pre-flight is `peek_agent_quota`). Locked to
+-- service_role + admin via _assert_admin_or_service so authenticated users
+-- cannot exhaust counters of arbitrary agents.
 CREATE OR REPLACE FUNCTION system.consume_agent_quota(
   p_agent_id     UUID,
-  p_tokens       INT DEFAULT 0,
+  p_tokens       INT     DEFAULT 0,
   p_cost_usd     NUMERIC DEFAULT 0
 ) RETURNS TABLE (
   ok                 BOOLEAN,
@@ -175,49 +278,25 @@ DECLARE
   v_now           TIMESTAMPTZ := now();
   v_min_start     TIMESTAMPTZ := system._quota_window_start('minute', v_now);
   v_day_start     TIMESTAMPTZ := system._quota_window_start('day',    v_now);
-  v_min_limit     INT;
-  v_day_limit     INT;
-  v_max_cost      NUMERIC;
+  v_cost_run_lim  NUMERIC;
   v_min_count     INT := 0;
-  v_day_count     INT := 0;
-  v_day_cost      NUMERIC := 0;
+  v_min_limit     INT;
 BEGIN
-  -- Pull effective caps from the bound policy profile (NULL = unlimited).
-  SELECT pp.max_runs_per_min, pp.max_runs_per_day, pp.max_cost_per_run_usd
-    INTO v_min_limit, v_day_limit, v_max_cost
-    FROM system.agents a
-    LEFT JOIN system.policy_profiles pp ON pp.id = a.policy_profile_id
-   WHERE a.id = p_agent_id;
+  PERFORM system._assert_admin_or_service();
 
-  IF v_max_cost IS NOT NULL AND p_cost_usd > v_max_cost THEN
+  SELECT max_cost_per_run_usd, max_runs_per_min
+    INTO v_cost_run_lim, v_min_limit
+    FROM system._resolve_agent_quotas(p_agent_id);
+
+  IF v_cost_run_lim IS NOT NULL AND p_cost_usd > v_cost_run_lim THEN
     RETURN QUERY SELECT FALSE, 'cost_per_run_exceeded'::TEXT,
       'per_run'::TEXT, 0, 0;
     RETURN;
   END IF;
 
-  -- Count current window usage (read-modify-write under PK, so race-free).
-  SELECT run_count INTO v_min_count
-    FROM system.agent_quota_counters
-   WHERE agent_id = p_agent_id AND window_kind = 'minute' AND window_start = v_min_start;
-  v_min_count := COALESCE(v_min_count, 0);
-
-  SELECT run_count INTO v_day_count
-    FROM system.agent_quota_counters
-   WHERE agent_id = p_agent_id AND window_kind = 'day' AND window_start = v_day_start;
-  v_day_count := COALESCE(v_day_count, 0);
-
-  IF v_min_limit IS NOT NULL AND v_min_count + 1 > v_min_limit THEN
-    RETURN QUERY SELECT FALSE, 'rate_limit_per_minute'::TEXT,
-      'minute'::TEXT, v_min_count, v_min_limit;
-    RETURN;
-  END IF;
-  IF v_day_limit IS NOT NULL AND v_day_count + 1 > v_day_limit THEN
-    RETURN QUERY SELECT FALSE, 'rate_limit_per_day'::TEXT,
-      'day'::TEXT, v_day_count, v_day_limit;
-    RETURN;
-  END IF;
-
-  -- Admit the call; bump both counters.
+  -- Single atomic increment per window. The pre-flight `peek_agent_quota`
+  -- is responsible for refusing admission BEFORE we get here; this call is
+  -- post-execution accounting. We still re-bump run_count by exactly 1.
   INSERT INTO system.agent_quota_counters (
     agent_id, window_kind, window_start, run_count, total_tokens, total_cost_usd, updated_at
   ) VALUES (
@@ -227,7 +306,8 @@ BEGIN
     SET run_count      = system.agent_quota_counters.run_count + 1,
         total_tokens   = system.agent_quota_counters.total_tokens + GREATEST(p_tokens, 0),
         total_cost_usd = system.agent_quota_counters.total_cost_usd + GREATEST(p_cost_usd, 0),
-        updated_at     = v_now;
+        updated_at     = v_now
+  RETURNING run_count INTO v_min_count;
 
   INSERT INTO system.agent_quota_counters (
     agent_id, window_kind, window_start, run_count, total_tokens, total_cost_usd, updated_at
@@ -240,12 +320,12 @@ BEGIN
         total_cost_usd = system.agent_quota_counters.total_cost_usd + GREATEST(p_cost_usd, 0),
         updated_at     = v_now;
 
-  RETURN QUERY SELECT TRUE, NULL::TEXT, NULL::TEXT, v_min_count + 1, v_min_limit;
+  RETURN QUERY SELECT TRUE, NULL::TEXT, NULL::TEXT, v_min_count, v_min_limit;
 END;
 $$;
 REVOKE ALL ON FUNCTION system.consume_agent_quota(UUID, INT, NUMERIC) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION system.consume_agent_quota(UUID, INT, NUMERIC)
-  TO authenticated, service_role;
+  TO service_role;
 
 -- ── 5. v_ai_runs — generic per-agent conversation explorer view ──────────
 CREATE OR REPLACE VIEW system.v_ai_runs AS
@@ -284,18 +364,31 @@ SELECT
   ai.status           AS ai_status,
   ai.block_reason     AS ai_block_reason,
   ai.metadata         AS ai_metadata,
-  -- Convenience: prompt/response surface for the conversation explorer.
-  -- payload.payload.prompt and result.text are the canonical paths set by
-  -- the LB1 AI adapters; fall back to ai_interactions metadata when present.
+  -- Conversation surface for the explorer. Completion payloads carry a
+  -- `messages` array (canonical OpenAI-style) and/or a `prompt` string.
+  -- We surface the LAST user message as `prompt` and the model text as
+  -- `response`. Verifier verdict and any tool-use calls are also lifted
+  -- so the UI can render them without re-parsing the result blob.
   COALESCE(
     NULLIF(t.payload->'payload'->>'prompt', ''),
+    NULLIF(t.payload->'payload'->'messages'->-1->>'content', ''),
     NULLIF(ai.metadata->>'prompt', '')
   )                   AS prompt,
   COALESCE(
     NULLIF(t.execution_result->>'text', ''),
     NULLIF(t.execution_result->'output'->>'text', ''),
     NULLIF(ai.metadata->>'response', '')
-  )                   AS response
+  )                   AS response,
+  t.execution_result->'verification' AS verification,
+  COALESCE(
+    t.execution_result->'tool_calls',
+    t.execution_result->'tools_used',
+    t.payload->'payload'->'tools'
+  )                   AS tools_used,
+  -- Purpose-driven sensitive routing — populated by the AI adapter from
+  -- the completion payload (`purpose: 'contract' | 'pii_generation' |
+  -- 'moderation_override'`).
+  t.payload->'payload'->>'purpose' AS purpose
 FROM system.execution_tasks t
 LEFT JOIN system.agents a ON a.id = t.agent_id
 LEFT JOIN public.ai_interactions ai ON ai.execution_task_id = t.id
