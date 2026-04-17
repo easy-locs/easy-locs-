@@ -1764,6 +1764,11 @@
       "owning_phase": "P3"
     },
     {
+      "pattern": "src/repositories/merge-conflict-recovery.repository.ts",
+      "reason": "task #952 — operator-managed alert threshold persisted in public.platform_settings (key/value config row). Routing a single config upsert through dispatchExecutionTask would require introducing a new agent + adapter for a setting that is read by both the dashboard and the LC4 server-side audit handler, which is disproportionate for a 2-field config write.",
+      "owning_phase": "STRUCTURAL"
+    },
+    {
       "pattern": "src/repositories/merchant.repository.ts",
       "reason": "L7 P3: marketplace ops — pending L7 phase 3 sweep (file still issues a direct .insert/.update/.delete/.upsert/.rpc — verified 2026-04-17)",
       "owning_phase": "P3"

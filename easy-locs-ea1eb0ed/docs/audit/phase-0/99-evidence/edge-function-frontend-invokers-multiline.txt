@@ -1,0 +1,6 @@
+src/lib/media/media-upload.ts:146:    const { data, error } = await db.functions.invoke(processorName, {
+src/lib/watchdog/browserRepairClient.ts:6:  const { data, error } = await supabase.functions.invoke(
+src/repositories/admin-ops.repository.ts:173:  const { error } = await db.functions.invoke(action);
+src/repositories/ai-chat.repository.ts:33:    return db.functions.invoke(fnName, { body });
+src/repositories/payments.repository.ts:74:  const { data, error } = await db.functions.invoke(target, { method: "GET" });
+src/repositories/security-pin.repository.ts" },

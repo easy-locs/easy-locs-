@@ -1,4 +1,4 @@
-# CREATE POLICY statements (file:line:policy)
+# CREATE POLICY (relative_path:line:full_match)
 supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:153:CREATE POLICY "Users can read own profile" ON public.profiles FOR SELECT USING (id = auth.uid());
 supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:154:CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (id = auth.uid());
 supabase/migrations/20260225233034_fc482199-4011-4579-975e-2885342b445a.sql:155:CREATE POLICY "Users can insert own profile" ON public.profiles FOR INSERT WITH CHECK (id = auth.uid());

@@ -1,4 +1,4 @@
-# Route path declarations (file:line:match)
+# Route declarations with provenance (file:line:match)
 src/test/super-admin-gate.test.tsx:30:        <Route path="/login" element={<div>LOGIN</div>} />
 src/test/super-admin-gate.test.tsx:31:        <Route path="/dashboard" element={<div>DASHBOARD</div>} />
 src/test/super-admin-gate.test.tsx:32:        <Route path="/verify-email" element={<div>VERIFY_EMAIL</div>} />
@@ -507,40 +507,41 @@ src/routes/admin.routes.tsx:108:      <Route path="/admin/system-health" element
 src/routes/admin.routes.tsx:109:      <Route path="/admin/firecrawl-usage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFirecrawlUsagePage /></FeatureErrorBoundary></ProtectedRoute>} />
 src/routes/admin.routes.tsx:110:      <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
 src/routes/admin.routes.tsx:111:      <Route path="/admin/map-errors" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapErrorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:112:      <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:113:      <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:114:      <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:115:      <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:116:      <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:117:      <Route path="/admin/super-dashboard" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></SuperAdminGate>} />
-src/routes/admin.routes.tsx:118:      <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:127:      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:128:      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-src/routes/admin.routes.tsx:129:      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-src/routes/admin.routes.tsx:130:      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-src/routes/admin.routes.tsx:131:      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-src/routes/admin.routes.tsx:132:      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
-src/routes/admin.routes.tsx:133:      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:143:      <Route path="/admin/agents/:slug/runs" element={<LegacyAgentRunsRedirect />} />
-src/routes/admin.routes.tsx:144:      <Route path="/admin/agents" element={<LegacyControlRedirect to="/admin/control/agents" />} />
-src/routes/admin.routes.tsx:145:      <Route path="/admin/command-center" element={<LegacyControlRedirect to="/admin/control/command" />} />
-src/routes/admin.routes.tsx:146:      <Route path="/admin/approvals" element={<LegacyControlRedirect to="/admin/control/approvals" />} />
-src/routes/admin.routes.tsx:147:      <Route path="/admin/autonomy" element={<LegacyControlRedirect to="/admin/control/autonomy" />} />
-src/routes/admin.routes.tsx:148:      <Route path="/admin/control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
-src/routes/admin.routes.tsx:149:      <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
-src/routes/admin.routes.tsx:150:      <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
-src/routes/admin.routes.tsx:153:      <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:154:      <Route path="/admin/performance-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPerformanceLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:155:      <Route path="/admin/data-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:156:      <Route path="/admin/security-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSecurityLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:157:      <Route path="/admin/release-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReleaseHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:158:      <Route path="/admin/notification-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:159:      <Route path="/admin/experiment-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminExperimentLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:160:      <Route path="/admin/architecture-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminArchitectureLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:161:      <Route path="/admin/integration-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminIntegrationHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:162:      <Route path="/admin/integration-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminClientIntegrationDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:163:      <Route path="/admin/statement" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><StatementDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-src/routes/admin.routes.tsx:164:      <Route path="/developer-portal/docs" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortalDocs /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:112:      <Route path="/admin/merge-conflict-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMergeConflictRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:113:      <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:114:      <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:115:      <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:116:      <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:117:      <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:118:      <Route path="/admin/super-dashboard" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></SuperAdminGate>} />
+src/routes/admin.routes.tsx:119:      <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:128:      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:129:      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:130:      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:131:      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:132:      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:133:      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+src/routes/admin.routes.tsx:134:      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:144:      <Route path="/admin/agents/:slug/runs" element={<LegacyAgentRunsRedirect />} />
+src/routes/admin.routes.tsx:145:      <Route path="/admin/agents" element={<LegacyControlRedirect to="/admin/control/agents" />} />
+src/routes/admin.routes.tsx:146:      <Route path="/admin/command-center" element={<LegacyControlRedirect to="/admin/control/command" />} />
+src/routes/admin.routes.tsx:147:      <Route path="/admin/approvals" element={<LegacyControlRedirect to="/admin/control/approvals" />} />
+src/routes/admin.routes.tsx:148:      <Route path="/admin/autonomy" element={<LegacyControlRedirect to="/admin/control/autonomy" />} />
+src/routes/admin.routes.tsx:149:      <Route path="/admin/control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+src/routes/admin.routes.tsx:150:      <Route path="/admin/engine-control-room" element={<LegacyControlRedirect to="/admin/control/engines" />} />
+src/routes/admin.routes.tsx:151:      <Route path="/admin/master-control" element={<LegacyControlRedirect to="/admin/control/master" />} />
+src/routes/admin.routes.tsx:154:      <Route path="/admin/lab-hub" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminLabHubPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:155:      <Route path="/admin/performance-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPerformanceLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:156:      <Route path="/admin/data-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:157:      <Route path="/admin/security-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSecurityLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:158:      <Route path="/admin/release-history" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReleaseHistoryPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:159:      <Route path="/admin/notification-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminNotificationLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:160:      <Route path="/admin/experiment-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminExperimentLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:161:      <Route path="/admin/architecture-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminArchitectureLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:162:      <Route path="/admin/integration-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminIntegrationHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:163:      <Route path="/admin/integration-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminClientIntegrationDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:164:      <Route path="/admin/statement" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><StatementDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
+src/routes/admin.routes.tsx:165:      <Route path="/developer-portal/docs" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortalDocs /></FeatureErrorBoundary></ProtectedRoute>} />
 src/__tests__/admin-agents-route-gate.test.tsx:59:          <Route path="/login" element={<div>LOGIN</div>} />
 src/__tests__/admin-agents-route-gate.test.tsx:60:          <Route path="/dashboard" element={<div>DASHBOARD</div>} />
 src/__tests__/admin-agents-route-gate.test.tsx:61:          <Route path="/verify-email" element={<div>VERIFY_EMAIL</div>} />

@@ -16,7 +16,7 @@
  *     reason: "hard_overlap:<n>",
  *   }
  */
-import { domainDb } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 
 export interface MergeConflictRecoveryAudit {
   readonly kind: "merge_conflict_recovery";
@@ -98,7 +98,7 @@ export async function fetchMergeConflictRecoveryEvents(): Promise<
   return events;
 }
 
-export function normalizeAudit(
+function normalizeAudit(
   raw: unknown,
   rowId: string,
 ): MergeConflictRecoveryEvent | null {
@@ -162,9 +162,7 @@ export function projectMergeConflictRecoverySummary(
       perDayMap.set(day, (perDayMap.get(day) ?? 0) + 1);
     }
     taskIds.add(e.builder_task_id);
-    // Dedup files within a single event so a buggy/duplicated audit
-    // entry can't skew the top-files leaderboard.
-    for (const f of new Set(e.files)) {
+    for (const f of e.files) {
       fileCounts.set(f, (fileCounts.get(f) ?? 0) + 1);
     }
   }
