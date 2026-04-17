@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { findMissingRequiredEnv, type MissingEnvReport } from "@/lib/integrations";
 
 /**
@@ -7,35 +8,31 @@ import { findMissingRequiredEnv, type MissingEnvReport } from "@/lib/integration
  * Shown as a small fixed footer chip in development so engineers notice the
  * misconfiguration without losing the app to a hard throw on boot. Hidden in
  * production and never blocks rendering.
+ *
+ * Scope: only renders on internal/admin routes (paths under `/admin`) so it
+ * never overlays public/visitor-facing pages. The boot-time console warning
+ * about missing env vars is emitted once from `main.tsx` regardless of route,
+ * so engineers don't lose that signal.
  */
 export default function MissingIntegrationsBanner() {
   const [missing, setMissing] = useState<MissingEnvReport[]>([]);
   const [dismissed, setDismissed] = useState(false);
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
+    if (!isAdminRoute) return;
     try {
-      const reports = findMissingRequiredEnv();
-      setMissing(reports);
-      if (reports.length > 0) {
-        const lines = reports
-          .map((r) => `  - ${r.label} (${r.integration}): missing ${r.missing.join(", ")}`)
-          .join("\n");
-        // Console parity with the visible banner — listed even for warn-only
-        // (non-enforced) integrations so developers can grep logs for missing
-        // keys without opening the diagnostics page.
-        // eslint-disable-next-line no-console
-        console.warn(
-          "[integrations] Optional integration env vars missing (boot continues):\n" + lines,
-        );
-      }
+      setMissing(findMissingRequiredEnv());
     } catch {
       // Defensive: registry should never throw, but never let the banner
       // crash the tree.
     }
-  }, []);
+  }, [isAdminRoute]);
 
   if (!import.meta.env.DEV) return null;
+  if (!isAdminRoute) return null;
   if (dismissed) return null;
   if (missing.length === 0) return null;
 
