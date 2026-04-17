@@ -502,7 +502,19 @@ function esc(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 function esc155(s: string): string {
-  return esc(s.slice(0, 155));
+  // Escape first, then hard-cap at 155 chars so that HTML entities
+  // (e.g. "&" → "&amp;", which inflates a 1-char source by +4) never push
+  // the final attribute value over the 155-char SEO limit. We also avoid
+  // splitting an entity in half, which would emit invalid HTML.
+  const escaped = esc(s);
+  if (escaped.length <= 155) return escaped;
+  let cut = 155;
+  const lastAmp = escaped.lastIndexOf("&", cut - 1);
+  if (lastAmp !== -1) {
+    const semi = escaped.indexOf(";", lastAmp);
+    if (semi === -1 || semi >= cut) cut = lastAmp;
+  }
+  return escaped.slice(0, cut);
 }
 
 // ── HTML assembly ──────────────────────────────────────────────────────────────
