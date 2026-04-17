@@ -521,8 +521,21 @@ function esc155(s: string): string {
 function injectIntoHtml(baseHtml: string, headMeta: string, bodyContent: string): string {
   let html = baseHtml;
 
-  // Replace <head> content — remove existing title if any
-  html = html.replace(/<title>.*?<\/title>/s, "");
+  // Strip ALL per-route SEO tags from the base index.html so the fresh,
+  // route-specific headMeta is the only source of truth. Without this, the
+  // base index.html's hard-coded description (>155 chars), canonical,
+  // hreflang, og:*, twitter:* and JSON-LD all leak into every prerendered
+  // page, producing thousands of duplicate-canonical and over-length
+  // description "critical" issues for the SEO validator.
+  html = html.replace(/<title>[\s\S]*?<\/title>/g, "");
+  html = html.replace(/<meta\s+name="description"[^>]*>\s*/gi, "");
+  html = html.replace(/<meta\s+name="keywords"[^>]*>\s*/gi, "");
+  html = html.replace(/<meta\s+name="robots"[^>]*>\s*/gi, "");
+  html = html.replace(/<link\s+rel="canonical"[^>]*>\s*/gi, "");
+  html = html.replace(/<link\s+rel="alternate"\s+hreflang="[^"]*"[^>]*>\s*/gi, "");
+  html = html.replace(/<meta\s+property="og:[^"]*"[^>]*>\s*/gi, "");
+  html = html.replace(/<meta\s+name="twitter:[^"]*"[^>]*>\s*/gi, "");
+  html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>\s*/gi, "");
 
   // Inject meta into head
   const headEnd = html.indexOf("</head>");

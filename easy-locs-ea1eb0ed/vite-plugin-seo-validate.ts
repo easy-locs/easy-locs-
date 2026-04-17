@@ -271,41 +271,22 @@ export function seoValidatePlugin(): Plugin {
         fs.writeFileSync(path.resolve(distDir, "seo-report.txt"), report, "utf-8");
         console.log(`\n${report}`);
 
-        // Emergency manual switch only — Vercel auto-bypass was removed once the
-        // generator was fixed to keep all descriptions ≤155 chars. Set
-        // SEO_GATE_BYPASS=1 only as a last-resort escape hatch.
-        const SEO_GATE_BYPASS = process.env.SEO_GATE_BYPASS === "1";
-        const SEO_ISSUES_THRESHOLD = Number(process.env.SEO_ISSUES_THRESHOLD ?? 0);
-
-        if (issues.length > SEO_ISSUES_THRESHOLD) {
-          const msg = `[seo-validate] BUILD GATE: ${issues.length} critical SEO issue(s) detected (threshold ${SEO_ISSUES_THRESHOLD}) — see report above`;
-          if (SEO_GATE_BYPASS) {
-            console.warn(`⚠️  ${msg}`);
-            console.warn(`⚠️  SEO_GATE_BYPASS active — build will continue. Fix issues then remove bypass.`);
-          } else {
-            console.error(msg);
-            throw new Error(msg);
-          }
+        if (issues.length > 0) {
+          const msg = `[seo-validate] BUILD GATE: ${issues.length} critical SEO issue(s) detected — see report above`;
+          console.error(msg);
+          throw new Error(msg);
         }
 
         if (missingTrust.length > 0) {
           const msg = `[seo-validate] BUILD GATE: Missing trust files: ${missingTrust.join(", ")}`;
-          if (SEO_GATE_BYPASS) {
-            console.warn(`⚠️  ${msg}`);
-          } else {
-            console.error(msg);
-            throw new Error(msg);
-          }
+          console.error(msg);
+          throw new Error(msg);
         }
 
         if (score < 50) {
           const msg = `[seo-validate] BUILD GATE: SEO score ${score}/100 is below minimum threshold of 50`;
-          if (SEO_GATE_BYPASS) {
-            console.warn(`⚠️  ${msg}`);
-          } else {
-            console.error(msg);
-            throw new Error(msg);
-          }
+          console.error(msg);
+          throw new Error(msg);
         }
       },
     },
