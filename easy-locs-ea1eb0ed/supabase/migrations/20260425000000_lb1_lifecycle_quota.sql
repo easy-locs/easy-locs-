@@ -268,7 +268,10 @@ SELECT
   -- with the adapter's flagged reason on blocked_reason. Once the
   -- reviewer decides, status moves to succeeded/failed and held_for_review
   -- naturally returns to FALSE.
-  (t.status = 'pending_review')                                 AS held_for_review,
+  -- Only post-execute holds count as "held_for_review" — a row that is
+  -- in pending_review WITHOUT an execution_result is a pre-execute
+  -- approval (LB0 lifecycle) and would mislead the agent-runs UI.
+  (t.status = 'pending_review' AND t.execution_result IS NOT NULL) AS held_for_review,
   CASE WHEN t.status = 'pending_review' THEN t.blocked_reason
        ELSE NULL END                                             AS held_reason,
   CASE WHEN t.status IN ('succeeded','failed')
