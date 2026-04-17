@@ -1,6 +1,15 @@
-Saved your changes before starting work
+Fix broken "Open diagnostics" link in dev integrations banner
 
-Replit-Commit-Author: Agent
-Replit-Commit-Session-Id: 937ddb49-9481-4cd0-b5f9-4d4234efcb15
-Replit-Commit-Checkpoint-Type: full_checkpoint
-Replit-Commit-Event-Id: d0620b0a-d82c-470b-b4c4-f935d11a64e5
+The dev-only MissingIntegrationsBanner linked to /admin/diagnostics,
+which is not a registered route, so clicking "Open diagnostics →"
+landed on the 404 page. The actual route registered in
+src/routes/admin.routes.tsx is /admin/integration-diagnostics.
+
+Updated the anchor href in
+easy-locs-ea1eb0ed/src/components/dev/MissingIntegrationsBanner.tsx
+from "/admin/diagnostics" to "/admin/integration-diagnostics" so
+engineers following the link reach the real diagnostics surface.
+
+No deviations from the task description.
+
+Replit-Task-Id: 0a43fb61-11d8-417f-b32b-84ab0b983fa0
