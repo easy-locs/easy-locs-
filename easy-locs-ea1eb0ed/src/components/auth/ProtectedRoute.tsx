@@ -70,9 +70,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function AdminGate({ children }: { children: React.ReactNode }) {
-  const { isAdmin, isLoading } = useIsAdmin();
+  const { isAdmin, isLoading, denialReason, email } = useIsAdmin();
   if (isLoading) return <InlineSkeleton />;
-  if (!isAdmin) return <AdminAccessDenied />;
+  if (!isAdmin) {
+    return (
+      <AdminAccessDenied
+        reason={denialReason ?? "unknown"}
+        email={email}
+      />
+    );
+  }
   return <>{children}</>;
 }
 

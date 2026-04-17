@@ -27,7 +27,15 @@ export async function signInWithPassword(email: string, password: string) {
 }
 
 export async function hasRole(userId: string, role: "accountant" | "admin" | "agent" | "member" | "owner" | "staff" | "super_admin") {
-  const { data } = await db.rpc("has_role", { _user_id: userId, _role: role });
+  // Propagate RPC errors (network, RLS, missing function, unknown enum value)
+  // so callers can distinguish a real failure from a legitimate "false".
+  // SuperAdminGate / useIsAdmin map thrown errors to explicit `rpc-error`
+  // / `super-admin-rpc-error` denial reasons (audit #946).
+  const { data, error } = await db.rpc("has_role", { _user_id: userId, _role: role });
+  if (error) {
+    const message = error.message || `has_role RPC failed for role=${role}`;
+    throw new Error(message);
+  }
   return !!data;
 }
 
