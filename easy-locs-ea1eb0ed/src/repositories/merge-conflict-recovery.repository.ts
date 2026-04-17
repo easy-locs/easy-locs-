@@ -18,6 +18,68 @@
  */
 import { db, domainDb } from "@/services/db";
 
+// ── Recent merge-conflict alert log (task #982) ──────────────────────────
+//
+// The cron-driven spike detector dispatches via `alert-dispatcher`, which
+// records every send / throttle / flood-suppress decision into
+// `admin_alert_log`. The recovery dashboard surfaces the most recent rows
+// whose `alert_type` starts with `merge_conflict_recovery.` so operators
+// can correlate a spike on the daily chart with the alert that fired.
+
+export interface MergeConflictRecoveryAlertLogEntry {
+  readonly id: string;
+  readonly alertType: string;
+  readonly severity: string;
+  readonly title: string;
+  readonly message: string | null;
+  readonly status: string;
+  readonly channelType: string | null;
+  readonly channelTarget: string | null;
+  readonly createdAt: string;
+}
+
+const ALERT_LOG_TYPE_PREFIX = "merge_conflict_recovery.";
+const ALERT_LOG_LIMIT = 20;
+
+export async function fetchMergeConflictRecoveryAlertLog(
+  limit: number = ALERT_LOG_LIMIT,
+): Promise<MergeConflictRecoveryAlertLogEntry[]> {
+  const { data, error } = await db("admin_alert_log")
+    .select(
+      "id, alert_type, severity, title, message, status, channel_type, channel_target, created_at",
+    )
+    .like("alert_type", `${ALERT_LOG_TYPE_PREFIX}%`)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) {
+    throw new Error(
+      `fetchMergeConflictRecoveryAlertLog failed: ${error.message}`,
+    );
+  }
+  const rows = (data ?? []) as Array<{
+    id: string;
+    alert_type: string;
+    severity: string | null;
+    title: string | null;
+    message: string | null;
+    status: string | null;
+    channel_type: string | null;
+    channel_target: string | null;
+    created_at: string;
+  }>;
+  return rows.map((r) => ({
+    id: r.id,
+    alertType: r.alert_type,
+    severity: r.severity ?? "high",
+    title: r.title ?? r.alert_type,
+    message: r.message,
+    status: r.status ?? "sent",
+    channelType: r.channel_type,
+    channelTarget: r.channel_target,
+    createdAt: r.created_at,
+  }));
+}
+
 export interface MergeConflictRecoveryAudit {
   readonly kind: "merge_conflict_recovery";
   readonly at: string;
