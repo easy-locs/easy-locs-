@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // LB Closeout #852 — orbit-ai-support routes through the platform agent
 // registry so support classification is governed (quota, sensitive routing,
-// audit). Direct `fetch("https://api.openai.com/...")` is no longer permitted
+// audit). Direct fetches against the OpenAI HTTP API are no longer permitted
 // on this surface; provider fallback (anthropic) is configured at the
 // adapter / router level, not in the callsite.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";

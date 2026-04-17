@@ -207,14 +207,19 @@ describe("LB Closeout #852 — repo-wide bypass scan", () => {
     expect(files.length).toBeGreaterThan(50);
   });
 
-  it("no file outside the allow-list calls api.openai.com directly", () => {
+  it("no file outside the allow-list mentions api.openai.com (literal scan, comments included)", () => {
+    // LB Closeout #852 reviewer hardening: do NOT strip comments here.
+    // The done-condition wording is "zero non-test files match the literal",
+    // so even doc-comments must use neutral wording (e.g. "the OpenAI HTTP
+    // API") rather than the host string itself. Allow-listed canonical
+    // homes are exempted because they hold the const URL.
     const offenders: string[] = [];
     for (const rel of files) {
       if (OPENAI_HOST_ALLOWLIST.has(rel)) continue;
-      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
-      if (/api\.openai\.com/.test(code)) offenders.push(rel);
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/api\.openai\.com/.test(src)) offenders.push(rel);
     }
-    expect(offenders, `Direct api.openai.com calls found in:\n${offenders.join("\n")}`)
+    expect(offenders, `Direct api.openai.com mentions found in:\n${offenders.join("\n")}`)
       .toEqual([]);
   });
 
@@ -253,14 +258,15 @@ describe("LB Closeout #852 — repo-wide bypass scan", () => {
       .toEqual([]);
   });
 
-  it("no file outside the allow-list calls api.anthropic.com directly", () => {
+  it("no file outside the allow-list mentions api.anthropic.com (literal scan, comments included)", () => {
+    // Same hardening as the OpenAI literal check above — comments included.
     const offenders: string[] = [];
     for (const rel of files) {
       if (ANTHROPIC_HOST_ALLOWLIST.has(rel)) continue;
-      const code = stripComments(readFileSync(resolve(REPO_ROOT, rel), "utf8"));
-      if (/api\.anthropic\.com/.test(code)) offenders.push(rel);
+      const src = readFileSync(resolve(REPO_ROOT, rel), "utf8");
+      if (/api\.anthropic\.com/.test(src)) offenders.push(rel);
     }
-    expect(offenders, `Direct api.anthropic.com calls found in:\n${offenders.join("\n")}`)
+    expect(offenders, `Direct api.anthropic.com mentions found in:\n${offenders.join("\n")}`)
       .toEqual([]);
   });
 

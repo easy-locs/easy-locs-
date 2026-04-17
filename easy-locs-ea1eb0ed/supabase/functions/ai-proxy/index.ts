@@ -7,7 +7,7 @@ import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // LB Closeout #852 — every chat completion goes through the platform
 // agent registry so quota / sensitive routing / audit are guaranteed. Direct
-// `fetch("https://api.openai.com/...")` is no longer permitted on this surface.
+// Direct fetches against the OpenAI HTTP API are no longer permitted on this surface.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import type { AiMessage } from "../_shared/execution/adapters/ai/types.ts";
 
