@@ -7,7 +7,7 @@ import { APP_VERSION } from "@/lib/version-check";
 import { initSentryBoot, captureBootCrash, reportTimeToFirstRender } from "@/lib/analytics/sentry";
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
-import { validateIntegrationsBoot } from "@/lib/integrations";
+import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
@@ -84,6 +84,9 @@ try {
   // boot. Wrapped here so any throw lands in the visible Boot Error UI below
   // instead of aborting module evaluation and producing a blank screen.
   validateIntegrationsBoot();
+  // Always log missing optional integration env vars once at boot, even on
+  // public routes where the dev banner is intentionally hidden.
+  warnMissingIntegrationsOnce();
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>

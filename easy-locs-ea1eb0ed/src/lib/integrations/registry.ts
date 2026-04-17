@@ -201,6 +201,38 @@ export function validateIntegrationsBoot(): void {
 /** Test-only: reset the boot-validation latch. */
 export function __resetBootValidationForTests(): void {
   bootValidated = false;
+  bootWarnedMissing = false;
+}
+
+let bootWarnedMissing = false;
+
+/**
+ * Single-shot console warning listing every integration (enforced or warn-only)
+ * that is missing required env vars. Runs once at boot regardless of which
+ * route the user lands on, so engineers still see the signal in the console
+ * even when the dev banner is hidden on public pages.
+ */
+export function warnMissingIntegrationsOnce(): void {
+  if (bootWarnedMissing) return;
+  bootWarnedMissing = true;
+  // Match the previous (banner-bound) behavior: only emit in development so
+  // production logs are not polluted by warn-only optional integrations.
+  const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+  const isDev = env?.DEV === true || env?.MODE === "development";
+  if (!isDev) return;
+  try {
+    const reports = findMissingRequiredEnv();
+    if (reports.length === 0) return;
+    const lines = reports
+      .map((r) => `  - ${r.label} (${r.integration}): missing ${r.missing.join(", ")}`)
+      .join("\n");
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[integrations] Optional integration env vars missing (boot continues):\n" + lines,
+    );
+  } catch {
+    // Defensive: never let a registry hiccup crash boot.
+  }
 }
 
 /** Convenience: env presence snapshot used by the diagnostics page. */

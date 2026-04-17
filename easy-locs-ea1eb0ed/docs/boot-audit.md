@@ -46,7 +46,11 @@ visibly stuck instead of looking like a blank page.
   visible to the user instead of aborting module evaluation.
 - **Surface:** `MissingIntegrationsBanner` (dev-only) lists every
   integration with missing keys as a fixed footer chip with a link to the
-  diagnostics page. Console warning is also emitted.
+  diagnostics page. The banner only mounts on internal admin routes
+  (paths under `/admin`) so it never overlays public/visitor-facing pages
+  in the Replit preview. The boot-time console warning is emitted once
+  from `main.tsx` via `warnMissingIntegrationsOnce()` regardless of route,
+  so engineers still see the signal in logs even when the banner is hidden.
 
 ### `startTrace()` / `installFetchTracePropagation()` — `src/lib/observability/trace-context.ts`
 - **Tier:** non-critical.

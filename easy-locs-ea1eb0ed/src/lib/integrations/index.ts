@@ -2,6 +2,7 @@ export {
   INTEGRATION_REGISTRY,
   findMissingRequiredEnv,
   validateIntegrationsBoot,
+  warnMissingIntegrationsOnce,
   snapshotEnv,
   type IntegrationId,
   type IntegrationDefinition,
