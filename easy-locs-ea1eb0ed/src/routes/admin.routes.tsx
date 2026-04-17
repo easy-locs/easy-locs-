@@ -34,7 +34,7 @@ const {
   AdminAutonomyDashboardPage, AdminContentOpsPage, AdminControlRoomPage, AdminCrmOpsPage, AdminDashboard,
   AdminDataLabPage, AdminDataQualityPage, AdminDeliveryOpsPage, AdminDisputesPage, AdminDldBackfillPage,
   AdminDriverMonitorPage, AdminEnginesDashboardPage, AdminExperimentLabPage, AdminFinanceSummaryPage,
-  AdminFirecrawlUsagePage, AdminFraudDetectionPage, AdminGrowthOpsPage, AdminIntegrationHealthPage,
+  AdminFirecrawlUsagePage, AdminFraudDetectionPage, AdminGrowthOpsPage, AdminIntegrationHealthPage, AdminClientIntegrationDiagnosticsPage,
   AdminKycReviewPage, AdminLabHubPage, AdminMapErrorDashboardPage, AdminMarketplaceOpsPage,
   AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminAgentRunsPage, AdminControlShellPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
   AdminNotificationLabPage, AdminNotificationOpsPage, AdminOpsDashboardPage, AdminOrderWatchPage,
@@ -158,6 +158,7 @@ export function AdminRoutes() {
       <Route path="/admin/experiment-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminExperimentLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/architecture-lab" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminArchitectureLabPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/integration-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminIntegrationHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/integration-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminClientIntegrationDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/statement" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><StatementDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/developer-portal/docs" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><DeveloperPortalDocs /></FeatureErrorBoundary></ProtectedRoute>} />
 
