@@ -1,35 +1,35 @@
-LC8 (#875) — Dev runs explorer (UI)
+Task #953: Add tests for merge-conflict recovery dashboard projection
 
-Adds a dev-run renderer to the existing runs explorer so `domain: 'code'`
-execution_tasks render their diff, build log, test output, PR status,
-Actions URL, and drift report. AI-run rendering is untouched; the
-selector branches purely on `domain`.
+Adds 16 unit tests covering the pure dashboard projection in
+`merge-conflict-recovery.repository.ts`:
 
-Changes:
-- New component `src/components/admin/DevRunDetail.tsx` rendering
-  Diff (via existing TextDiffView), Build log, Test output, Drift
-  report, PR status badge, View PR + Replay actions, error panel,
-  held-for-review banner that deep-links to /admin/approvals.
-- `agents-repo.listAgentRunsRich` now selects `pr_url`,
-  `external_run_url`, `runner` and surfaces optional dev fields
-  (`dev_diff`, `dev_build_log`, `dev_test_output`, `dev_drift`,
-  `dev_logs`, `pr_url`, `external_run_url`, `pr_status`, raw
-  `payload`) on the rich row. Reads execution_result with several
-  fallback key names because LC1-7 backend is still out of scope.
-- Wired the renderer switch in BOTH the legacy
-  `src/pages/admin/AdminAgentRunsPage.tsx` (relevant file in the
-  task) and the canonical `src/pages/admin/control/runs/RunsExplorer.tsx`
-  (the `/admin/control` shell mentioned by the task). AdminAgentRunsPage
-  also gains the existing `ReplayDialog` so its Replay button goes
-  through the canonical `taskDispatcher` (no direct builder call).
-- Test: `src/components/admin/__tests__/DevRunDetail.test.tsx`
-  (8 cases) — sections render, View PR is an external link to
-  pr_url, Replay fires onReplay, fallback to logs[] when build_log
-  empty, drift section hidden when missing, held-for-review deep
-  link to approvals.
+- `projectMergeConflictRecoverySummary`:
+  - 14-day perDay seed (oldest → newest, all valid YYYY-MM-DD)
+  - per-day UTC bucketing
+  - 14-day lookback boundary (events outside the window stay in totals
+    but never inflate a perDay bucket)
+  - top-files cutoff at 5, descending by count
+  - dedup of files within a single event
+  - affectedTasks counts unique builder_task_ids
+  - input events array is preserved verbatim
+- `normalizeAudit` (audit envelope normalizer):
+  - rejects non-objects, wrong/missing `kind`, missing/non-string `at`
+  - clamps unknown severity to `hard`
+  - falls back to row id for builder_task_id, defaults overlaps to 0,
+    files to [], reason to `hard_overlap:<n>`
+  - filters non-string entries from `files`
+  - treats non-array `files` as empty
 
-All 8 component tests pass. Type-check clean for changed files.
-ESLint reports one pre-existing error in agents-repo.ts:13
-(direct supabase client import) that existed before this task.
+Small in-scope code touches to make the projection trustworthy and the
+normalizer testable:
 
-Replit-Task-Id: a9571f4a-4c41-4a39-88d2-c148905e7d82
+- Exported `normalizeAudit` so the audit normalizer can be unit-tested
+  directly (previously private).
+- Added defensive `new Set(e.files)` dedup in the projection so a
+  duplicated audit entry can't skew the top-files leaderboard. This
+  matches the documented audit envelope contract (`files: unique
+  conflicting paths`) and what the dashboard tests now pin.
+
+Test file: `easy-locs-ea1eb0ed/src/__tests__/lc4-merge-conflict-recovery-projection.test.ts`
+All 16 new tests pass; the existing 42-test
+`lc4-merge-conflict-recovery.test.ts` suite continues to pass.
