@@ -21,6 +21,10 @@ write_status() {
   printf '%s\t%s\t%s\t%s\n' "$1" "$(date -u +%FT%TZ)" "$(git rev-parse HEAD 2>/dev/null || echo unknown)" "$2" > "${STATUS_FILE}" 2>/dev/null || true
 }
 
+write_status() {
+  printf '%s\t%s\t%s\t%s\n' "$1" "$(date -u +%FT%TZ)" "$(git rev-parse HEAD 2>/dev/null || echo unknown)" "$2" > "${STATUS_FILE}" 2>/dev/null || true
+}
+
 if [ -z "${BRANCH}" ] || [ "${BRANCH}" = "HEAD" ]; then
   echo "[auto-push] detached HEAD, skipping push"
   write_status ok "detached HEAD, skipped"
