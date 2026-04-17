@@ -18,7 +18,7 @@ interface ForexChartProps {
 
 const PERIODS: Period[] = ["1D", "1W", "1M", "3M", "1Y"];
 
-function generateMockHistory(rate: number, period: Period): DataPoint[] {
+function buildSyntheticHistory(rate: number, period: Period): DataPoint[] {
   const now = Date.now();
   const points: DataPoint[] = [];
   let count: number;
@@ -55,7 +55,7 @@ function ForexChartInner({
 
   const data = useMemo(() => {
     if (historicalData && historicalData.length > 0) return historicalData;
-    return generateMockHistory(currentRate, activePeriod);
+    return buildSyntheticHistory(currentRate, activePeriod);
   }, [currentRate, activePeriod, historicalData]);
 
   const { minVal, maxVal, change, changePercent } = useMemo(() => {

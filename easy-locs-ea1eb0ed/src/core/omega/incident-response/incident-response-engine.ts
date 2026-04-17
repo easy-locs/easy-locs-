@@ -75,6 +75,7 @@ class IncidentResponseEngine {
     const mitigation = this.determineMitigation(action.category, action.severity);
     action.mitigation_action = mitigation.action;
     action.mitigation_type = mitigation.type;
+    omegaPersistence.writeIncidentAction(action).catch(() => {});
     return action;
   }
 
@@ -115,11 +116,13 @@ class IncidentResponseEngine {
 
     if (action.mitigation_type === "unsafe") {
       action.status = "escalated";
+      omegaPersistence.writeIncidentAction(action).catch(() => {});
       return action;
     }
 
     action.status = "mitigating";
     action.status = "re_auditing";
+    omegaPersistence.writeIncidentAction(action).catch(() => {});
     return action;
   }
 
@@ -128,6 +131,7 @@ class IncidentResponseEngine {
     if (!action) return null;
     action.status = "resolved";
     action.re_audit_ref = reAuditRef;
+    omegaPersistence.writeIncidentAction(action).catch(() => {});
     return action;
   }
 
@@ -135,6 +139,7 @@ class IncidentResponseEngine {
     const action = this.actions.get(actionId);
     if (!action) return null;
     action.status = "escalated";
+    omegaPersistence.writeIncidentAction(action).catch(() => {});
     return action;
   }
 

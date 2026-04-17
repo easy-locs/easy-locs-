@@ -1,16 +1,14 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
-/**
- * dispatch-cron — Scheduled Edge Function for dispatch expiry/escalation.
- * Replaces the former client-side setInterval in smart-dispatch-controller.
- *
- * Schedule via pg_cron:
- *   SELECT cron.schedule('dispatch-cron', '*/5 * * * * *',
- *     $$SELECT net.http_post(
- *       url := '<SUPABASE_URL>/functions/v1/dispatch-cron',
- *       headers := jsonb_build_object('Authorization', 'Bearer ' || '<SERVICE_ROLE_KEY>')
- *     )$$
- *   );
- */
+// dispatch-cron — Scheduled Edge Function for dispatch expiry/escalation.
+// Replaces the former client-side setInterval in smart-dispatch-controller.
+//
+// Schedule via pg_cron:
+//   SELECT cron.schedule('dispatch-cron', '*/5 * * * * *',
+//     $$SELECT net.http_post(
+//       url := '<SUPABASE_URL>/functions/v1/dispatch-cron',
+//       headers := jsonb_build_object('Authorization', 'Bearer ' || '<SERVICE_ROLE_KEY>')
+//     )$$
+//   );
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 

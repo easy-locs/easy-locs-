@@ -60,6 +60,7 @@ class PredictionEngine {
     if (this.historicalAccuracy.length > 5_000) {
       this.historicalAccuracy = this.historicalAccuracy.slice(-5_000);
     }
+    omegaPersistence.writePrediction(pred).catch(() => {});
     return true;
   }
 

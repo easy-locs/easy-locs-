@@ -30,6 +30,7 @@ async function acquireNativeToken(pn: PushNotificationsPlugin): Promise<string |
   const handles: ListenerHandle[] = [];
   let resolved = false;
 
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise<string | null>(async (resolve) => {
     const cleanup = async () => {
       for (const h of handles) {
