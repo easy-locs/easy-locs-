@@ -192,7 +192,11 @@ DECLARE
   v_comment   TEXT := NULLIF(BTRIM(p_comment_md), '');
   v_clientreq TEXT := NULLIF(BTRIM(p_client_request_id), '');
 BEGIN
-  -- Caller must be authenticated and admin (service_role bypasses).
+  -- Caller must be an authenticated super_admin user. Note: this RPC
+  -- requires a non-NULL `auth.uid()` even when invoked under the
+  -- service_role JWT, because every approval row must be attributable
+  -- to a real reviewer for audit. Service-role callers without a user
+  -- context will be rejected by the auth check below.
   IF v_caller IS NULL THEN
     RAISE EXCEPTION 'decide_task_approval denied: not authenticated'
       USING ERRCODE = '42501';
