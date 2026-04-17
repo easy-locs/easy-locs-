@@ -1,5 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// LB Closeout #852 — orbit-ai-support routes through the platform agent
+// registry so support classification is governed (quota, sensitive routing,
+// audit). Direct `fetch("https://api.openai.com/...")` is no longer permitted
+// on this surface; provider fallback (anthropic) is configured at the
+// adapter / router level, not in the callsite.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -131,10 +137,13 @@ serve(async (req: Request) => {
     });
 
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
-      ...conversation_history.slice(-10),
+      { role: "system" as const, content: SYSTEM_PROMPT },
+      ...conversation_history.slice(-10).map((m) => ({
+        role: (m.role === "assistant" ? "assistant" : "user") as "assistant" | "user",
+        content: String(m.content ?? ""),
+      })),
       {
-        role: "user",
+        role: "user" as const,
         content: context
           ? `[Context: order=${context.order_id || "none"}, shop=${context.shop_id || "none"}, booking=${context.booking_id || "none"}, lang=${language}]\n\n${message}`
           : message,
@@ -262,75 +271,30 @@ function mapActionToRouting(
 }
 
 async function callAI(
-  messages: Array<{ role: string; content: string }>,
+  messages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }>,
 ): Promise<string> {
-  const openaiKey = Deno.env.get("OPENAI_API_KEY");
-  const anthropicKey = Deno.env.get("ANTHROPIC_API_KEY");
+  const outcome = await dispatchAiCompletion(
+    {
+      feature: "orbit-ai-support",
+      messages,
+      maxTokens: 1024,
+      temperature: 0.3,
+      responseFormat: "json",
+      purpose: "general",
+    },
+    { feature: "orbit-ai-support" },
+  );
 
-  if (openaiKey) {
-    try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-
-      const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${openaiKey}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages,
-          max_tokens: 1024,
-          temperature: 0.3,
-          response_format: { type: "json_object" },
-        }),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timer);
-
-      if (resp.ok) {
-        const data = await resp.json();
-        return data.choices?.[0]?.message?.content ?? "";
-      }
-
-      console.warn("[orbit-ai-support] OpenAI failed:", resp.status);
-    } catch (err) {
-      console.warn("[orbit-ai-support] OpenAI error:", err);
-    }
+  if (outcome.status === "succeeded" && outcome.output) {
+    return outcome.output.text ?? "";
   }
 
-  if (anthropicKey) {
-    try {
-      const systemMsg = messages.find((m) => m.role === "system")?.content ?? "";
-      const userMsgs = messages
-        .filter((m) => m.role !== "system")
-        .map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }));
-
-      const resp = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": anthropicKey,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 1024,
-          system: systemMsg,
-          messages: userMsgs,
-        }),
-      });
-
-      if (resp.ok) {
-        const data = await resp.json();
-        return data.content?.[0]?.text ?? "";
-      }
-    } catch (err) {
-      console.warn("[orbit-ai-support] Anthropic error:", err);
-    }
-  }
+  console.warn(
+    "[orbit-ai-support] dispatch outcome:",
+    outcome.status,
+    outcome.errorCode,
+    outcome.errorMessage ?? outcome.blockedReason,
+  );
 
   return JSON.stringify({
     message: "I apologize, but I'm unable to process your request right now. A support ticket has been created for you.",

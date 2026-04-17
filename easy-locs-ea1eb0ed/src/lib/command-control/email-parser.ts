@@ -1,4 +1,5 @@
 import type { ParsedEmail, EmailPriority, EmailTaskType } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 
 const PILLAR_KEYWORDS: Record<string, string[]> = {
   dashboard: ["dashboard", "home", "overview", "stats", "analytics", "kpi"],
@@ -81,58 +82,25 @@ export function parseEmailLocally(subject: string, body: string): ParsedEmail {
   return { title, description, pillar, priority, type, labels };
 }
 
+// LB Closeout #852 — frontend no longer holds a provider key. The AI parse
+// path is delegated to the `command-email-intake` Edge Function, which
+// routes through `dispatchAiCompletion` so the call is governed (quota,
+// audit, sensitive routing). Local rule-based fallback is preserved on
+// any error so the UI degrades gracefully.
 export async function parseEmailWithAI(
   subject: string,
   body: string,
-  apiKey: string,
 ): Promise<ParsedEmail> {
   const localParsed = parseEmailLocally(subject, body);
 
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are a task parser for a property management super-app (Easy-Locs). Parse the email into a structured task.
-
-The app has these pillars: dashboard, radar, orbit, wallet, me, marketplace, property, admin, infrastructure.
-
-Return ONLY valid JSON:
-{
-  "title": "concise task title (max 120 chars)",
-  "description": "detailed task description",
-  "pillar": "affected pillar",
-  "priority": "critical|high|medium|low",
-  "type": "feature|bug|refactor|docs|test|task"
-}`,
-          },
-          {
-            role: "user",
-            content: `Subject: ${subject}\n\nBody:\n${body}`,
-          },
-        ],
-        max_tokens: 500,
-        temperature: 0.1,
-      }),
+    const { data, error } = await supabase.functions.invoke("command-email-intake", {
+      body: { subject, body, mode: "parse-only" },
     });
 
-    if (!res.ok) return localParsed;
+    if (error || !data) return localParsed;
 
-    const data = await res.json();
-    const content = data.choices?.[0]?.message?.content?.trim();
-    if (!content) return localParsed;
-
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return localParsed;
-
-    const parsed = JSON.parse(jsonMatch[0]) as Partial<ParsedEmail>;
+    const parsed = (data.parsed ?? data) as Partial<ParsedEmail>;
     return {
       title: parsed.title || localParsed.title,
       description: parsed.description || localParsed.description,

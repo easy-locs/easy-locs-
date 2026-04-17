@@ -147,12 +147,9 @@ Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
       if (!userRl.allowed) return rateLimitResponse(userRl);
     }
 
-    if (!Deno.env.get("OPENAI_API_KEY") && !Deno.env.get("ANTHROPIC_API_KEY")) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // LB Closeout #852 — provider-key gating removed. The dispatch chain
+    // resolves provider availability via the registered AI router metadata
+    // and surfaces a clear failure outcome when no provider is wired.
 
     const userLocale = locale || "fr";
     const langRule = LANG_PROMPTS[userLocale] || LANG_PROMPTS.en;

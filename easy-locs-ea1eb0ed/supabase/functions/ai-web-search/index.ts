@@ -1,8 +1,14 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
-import { aiModelRoute, aiModelStream } from "../_shared/ai-model-router.ts";
+// LB Closeout #852 — ai-web-search routes through the platform agent
+// registry so every model call is governed (quota, sensitive routing, audit).
+// Direct `fetch("https://api.openai.com/...")` and the parallel
+// `_shared/ai-model-router.ts` helper are no longer permitted on this surface.
+// Streaming clients still receive `text/event-stream`, but because the
+// dispatch contract is poll-based the body is delivered as a single SSE
+// chunk followed by `[DONE]` — see comment around `streamFromText`.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 const corsHeaders = {
@@ -94,7 +100,6 @@ async function searchDuckDuckGo(query: string): Promise<WebSource[]> {
     const html = await resp.text();
 
     const results: WebSource[] = [];
-    // Parse result links from DDG HTML
     const linkPattern = /<a class="result__a" href="([^"]+)"[^>]*>([^<]+)<\/a>/g;
     const snippetPattern = /<a class="result__snippet"[^>]*>([^<]+)<\/a>/g;
 
@@ -106,7 +111,6 @@ async function searchDuckDuckGo(query: string): Promise<WebSource[]> {
     while ((linkMatch = linkPattern.exec(html)) !== null && links.length < 5) {
       const rawUrl = linkMatch[1];
       const title = linkMatch[2].trim();
-      // DDG URLs are relative redirects; try to extract actual URL
       let url = rawUrl;
       if (rawUrl.startsWith("//duckduckgo.com/l/?uddg=")) {
         const uddg = new URL("https:" + rawUrl).searchParams.get("uddg");
@@ -143,7 +147,6 @@ async function searchDuckDuckGo(query: string): Promise<WebSource[]> {
   }
 }
 
-// ── Main search dispatcher ──
 async function performWebSearch(query: string): Promise<WebSource[]> {
   const googleKey = Deno.env.get("GOOGLE_CUSTOM_SEARCH_API_KEY");
   const googleCx = Deno.env.get("GOOGLE_CUSTOM_SEARCH_CX");
@@ -170,12 +173,28 @@ async function performWebSearch(query: string): Promise<WebSource[]> {
   return searchDuckDuckGo(query);
 }
 
-// ── Build context prompt from sources ──
 function buildSearchContext(sources: WebSource[]): string {
   if (sources.length === 0) return "";
   return sources
     .map((s, i) => `[${i + 1}] ${s.title}\nURL: ${s.url}\nSnippet: ${s.snippet}`)
     .join("\n\n");
+}
+
+// Streaming-as-single-chunk: the dispatch contract is poll-based, so we
+// emit `sources`, the full reply, then `[DONE]` to satisfy clients that
+// expect the OpenAI SSE wire format.
+function streamFromText(text: string, sources: WebSource[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ sources })}\n\n`));
+      controller.enqueue(encoder.encode(
+        `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`,
+      ));
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
 }
 
 Deno.serve(async (req) => {
@@ -217,18 +236,10 @@ Deno.serve(async (req) => {
     const userRl = await checkUserRateLimit(user.id, "ai-web-search");
     if (!userRl.allowed) return rateLimitResponse(userRl);
 
-    if (!Deno.env.get("OPENAI_API_KEY")) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     const userLocale = locale || "fr";
     const langRule = LANG_PROMPTS[userLocale] || LANG_PROMPTS.fr;
     const currentQuestion = question || (messages?.[messages.length - 1]?.content ?? "");
 
-    // Step 1: Perform web search
     let sources: WebSource[] = [];
     try {
       sources = await performWebSearch(currentQuestion);
@@ -238,7 +249,6 @@ Deno.serve(async (req) => {
 
     const searchContext = buildSearchContext(sources);
 
-    // Step 2: Build system prompt with web context
     const systemPrompt = `You are an AI Web Search Assistant integrated into Easy-Locs, a property management platform.
 Your role is to search the web and provide accurate, up-to-date information synthesized from real sources.
 
@@ -253,99 +263,67 @@ Guidelines:
 
 ${searchContext ? `Web search results for context:\n\n${searchContext}\n\nUse these sources to inform your response.` : "No web sources were available. Answer based on your knowledge."}`;
 
-    const chatMessages: Array<{ role: string; content: string }> = [
+    const chatMessages: Array<{ role: "system" | "user" | "assistant" | "tool"; content: string }> = [
       { role: "system", content: systemPrompt },
     ];
 
     if (messages && Array.isArray(messages)) {
-      chatMessages.push(...messages);
+      for (const m of messages) {
+        const role = (m.role === "system" || m.role === "user" || m.role === "assistant" || m.role === "tool")
+          ? m.role
+          : "user";
+        chatMessages.push({ role, content: String(m.content ?? "") });
+      }
     } else {
       chatMessages.push({ role: "user", content: currentQuestion });
     }
 
-    if (stream) {
-      try {
-        const streamResult = await aiModelStream({
-          messages: chatMessages,
-          max_tokens: 2000,
-          temperature: 0.5,
-        });
-
-        const sourcesLine = `data: ${JSON.stringify({ sources })}\n\n`;
-        const encoder = new TextEncoder();
-
-        const { readable, writable } = new TransformStream();
-        const writer = writable.getWriter();
-
-        (async () => {
-          try {
-            await writer.write(encoder.encode(sourcesLine));
-            const reader = streamResult.stream.getReader();
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              await writer.write(value);
-            }
-          } finally {
-            await writer.close();
-          }
-        })();
-
-        return new Response(readable, {
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "text/event-stream",
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-AI-Provider": streamResult.provider,
-          },
-        });
-      } catch (err) {
-        console.error("[ai-web-search] Stream error:", err);
-        return new Response(JSON.stringify({ error: "AI stream failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-    }
-
-    try {
-      const aiResult = await aiModelRoute({
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "ai-web-search",
         messages: chatMessages,
-        max_tokens: 2000,
+        maxTokens: 2000,
         temperature: 0.5,
-      });
+        purpose: "general",
+      },
+      { feature: "ai-web-search" },
+    );
 
-      if (!aiResult.response.ok) {
-        const err = await aiResult.response.text();
-        console.error("[ai-web-search] AI API error:", aiResult.response.status, err);
-        if (aiResult.response.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        return new Response(JSON.stringify({ error: "AI service error" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      console.error(
+        "[ai-web-search] dispatch outcome:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      if (outcome.errorCode === "AI_QUOTA_EXCEEDED") {
+        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-
-      const data = await aiResult.response.json();
-      let reply: string;
-      if (aiResult.provider === "anthropic") {
-        reply = data.content?.find((b: { type: string; text?: string }) => b.type === "text")?.text ?? "";
-      } else {
-        reply = data.choices?.[0]?.message?.content ?? "";
-      }
-      if (!reply) reply = "Sorry, I couldn't generate a response.";
-
-      return new Response(JSON.stringify({ reply, sources, provider: aiResult.provider }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    } catch (err) {
-      console.error("[ai-web-search] All AI providers failed:", err);
-      return new Response(JSON.stringify({ error: "All AI providers are currently unavailable" }), {
+      return new Response(JSON.stringify({ error: "AI service error" }), {
         status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const reply = outcome.output.text || "Sorry, I couldn't generate a response.";
+
+    if (stream) {
+      return new Response(streamFromText(reply, sources), {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+          "X-AI-Provider": outcome.output.interaction.provider,
+        },
+      });
+    }
+
+    return new Response(
+      JSON.stringify({ reply, sources, provider: outcome.output.interaction.provider }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   } catch (error) {
     console.error("[ai-web-search] Error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), {

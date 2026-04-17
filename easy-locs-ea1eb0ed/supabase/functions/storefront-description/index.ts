@@ -143,11 +143,9 @@ Deno.serve(async (req: Request) => {
 
   const fallback = buildFallback(body);
 
-  if (!Deno.env.get("OPENAI_API_KEY")) {
-    return new Response(JSON.stringify({ ...fallback, source: "fallback" } as DescriptionResponse), {
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
+  // LB Closeout #852 — provider-key gating removed. The dispatch chain
+  // resolves provider availability via the registered AI router metadata
+  // and falls through to the catch-block fallback when no provider is wired.
 
   const location = [body.district, body.city, body.country].filter(Boolean).join(", ");
   const catalogHint = body.menuItemCount

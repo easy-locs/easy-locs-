@@ -1,5 +1,11 @@
 // Next-Gen IA guardrails: prompt-injection, PII redaction, moderation.
 // Returns structured decisions; callers decide whether to block or sanitize.
+//
+// LB Closeout #852 — moderation HTTP call now lives inside `_shared/ai-router.ts`
+// (the canonical, allow-listed home for `api.openai.com` host calls). This
+// module just consumes the helper so guardrail logic stays focused on
+// classification, not transport.
+import { moderateText } from "./ai-router.ts";
 
 export type GuardrailDecision =
   | { allowed: true; sanitized: string; flags: string[] }
@@ -49,29 +55,6 @@ export function redactPii(input: string): { output: string; flags: string[] } {
   return { output: out, flags };
 }
 
-async function callOpenAIModeration(text: string): Promise<{ flagged: boolean; categories: string[] } | null> {
-  const key = Deno.env.get("OPENAI_API_KEY");
-  if (!key) return null;
-  try {
-    const resp = await fetch("https://api.openai.com/v1/moderations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify({ model: "omni-moderation-latest", input: text.slice(0, 8000) }),
-      signal: AbortSignal.timeout(5000),
-    });
-    if (!resp.ok) return null;
-    const data = await resp.json();
-    const r = data.results?.[0];
-    if (!r) return null;
-    const cats = Object.entries(r.categories ?? {})
-      .filter(([, v]) => v === true)
-      .map(([k]) => k);
-    return { flagged: !!r.flagged, categories: cats };
-  } catch (_err) {
-    return null; // moderation is best-effort
-  }
-}
-
 export async function applyGuardrails(
   input: string,
   opts: GuardrailOptions = {},
@@ -102,7 +85,7 @@ export async function applyGuardrails(
   }
 
   if (checkModeration) {
-    const mod = await callOpenAIModeration(sanitized);
+    const mod = await moderateText(sanitized);
     if (mod?.flagged) {
       return { allowed: false, reason: "moderation", details: mod.categories.join(",") };
     }

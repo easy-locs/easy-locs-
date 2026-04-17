@@ -107,18 +107,10 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  if (!Deno.env.get("OPENAI_API_KEY")) {
-    const fallback: ClassifyResponse = {
-      vertical: "services",
-      subcategory: null,
-      confidence: 10,
-      reason: "OPENAI_API_KEY not configured",
-      source: "fallback",
-    };
-    return new Response(JSON.stringify(fallback), {
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  }
+  // LB Closeout #852 — provider-key gating removed. Dispatch chain
+  // surfaces unavailable-provider errors as a normal failed outcome,
+  // which the catch below converts into the same fallback response.
+
 
   const prompt = [
     "You are a business taxonomy classifier for a UAE super-app. Classify the following business.",
