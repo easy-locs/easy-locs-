@@ -1,27 +1,35 @@
-tree 1494ca5f1f0a474400de978081052d00144f3415
-parent 9732e1ba5c20e01ed541c654db187762211d9d2f
-author jstarbuzz <jstarbuzz@gmail.com> 1776443810 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776443810 +0000
+tree 683437579b57e50d0b5ba5b8ffcacf9e1a9c62ca
+parent 3519929f74084fca444841c00b9b48bce83731c9
+author jstarbuzz <jstarbuzz@gmail.com> 1776466329 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776466329 +0000
 
-Vercel build: duplicate vercel-build.sh into easy-locs-ea1eb0ed/scripts/
+Task #966: Add RSS/Atom feeds so SEO score reaches 100
 
-Architect review caught a real path bug: if the Vercel project's
-'Root Directory' setting is `easy-locs-ea1eb0ed` (the exact scenario
-the previous patch was meant to harden against), the buildCommand
-`bash scripts/vercel-build.sh` would resolve to
-`easy-locs-ea1eb0ed/scripts/vercel-build.sh` and fail with the same
-'No such file or directory' that broke the original deploy.
+The validator (vite-plugin-seo-validate.ts) checks for 6 feed files:
+feed.xml, feed/cities.xml, feed/services.xml, feed/atom.xml,
+feed/cities-atom.xml, feed/services-atom.xml. The feedsPlugin already
+existed and was wired into vite.config.ts, but only listed cities and
+services — content hub coverage was missing per the task spec.
 
-Fix: ship the same script in both locations. Now `scripts/vercel-build.sh`
-resolves correctly whether Vercel runs from the repo root or from inside
-the inner project. The script body itself is identical and already
-self-detects the cwd layout, so the duplicate is a pure path-resolution
-safety net — not a behavioural fork.
+Changes
+- vite-plugin-feeds.ts: extended the global RSS + Atom feed to include
+  per-city content hub entries (/guide/<city> and
+  /best/<service>/in/<city> using BUILD_SERVICE_CATEGORIES[0]) for the
+  first 15 phase-1 cities. URLs match the real prerender routes in
+  vite-plugin-prerender.ts (verified against /best/:service/in/:city).
+  Timestamps use CONTENT_LASTMOD.guides / CONTENT_LASTMOD.best.
+- Updated the [feeds] log line to report item counts per feed for build
+  visibility.
 
-Self-tested both scenarios locally:
-- repo-root cwd: detects easy-locs-ea1eb0ed/, cds, builds, symlinks dist
-- inner-cwd:     detects 'easy-locs' name in package.json, builds in
-  place, dist/ lands at cwd
+Verification
+- Ran the plugin standalone via tsx; all 6 expected files were written
+  to dist/ (feed.xml ~27KB / 70 items, feed/cities.xml ~25KB / 53 items,
+  feed/services.xml ~25KB / 67 items, plus 3 Atom variants).
+- Validator's missing-feeds check will now report 0 missing feeds, so
+  the 10-point feeds component of the SEO score is fully earned.
 
-If we later need to make the script smarter, both copies must change
-together; the script is small enough that this is acceptable for now.
+No deviations from the task scope. Did not run a full vite build (it
+exceeds the 2-minute tool timeout in this env); the plugin is exercised
+by the same code path on every production build.
+
+Replit-Task-Id: 6e76887e-99e4-4d26-8bd5-0ec135cd1ecc
