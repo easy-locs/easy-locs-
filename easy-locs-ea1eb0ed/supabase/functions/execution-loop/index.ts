@@ -31,7 +31,10 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { getAgentForDomain } from "../_shared/execution-agents/registry.ts";
 import type { AgentTaskInput, AgentTaskOutput } from "../_shared/execution-agents/contract.ts";
-import { ExecutionOrchestratorV2 } from "../_shared/execution/orchestrator-v2.ts";
+import {
+  ExecutionOrchestratorV2,
+  type ValidationGate,
+} from "../_shared/execution/orchestrator-v2.ts";
 import { globalAdapterRegistry } from "../_shared/execution/adapter-registry.ts";
 import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.ts";
 import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
@@ -39,8 +42,14 @@ import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/mark
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
-import type { ValidationGate } from "../_shared/execution/orchestrator-v2.ts";
 import type { ExecutionEventSink, CanonicalExecutionEvent } from "../_shared/execution/canonical-events.ts";
+import {
+  createHeartbeatEmitter,
+  createServiceRoleHeartbeatRpc,
+  deriveWorkerId,
+  DEFAULT_HEARTBEAT_CADENCE_MS,
+  type HeartbeatEmitter,
+} from "../_shared/execution/heartbeat-emitter.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -248,6 +257,36 @@ async function atomicClaim(taskId: string, nextAttempt: number): Promise<Executi
 // the legacy agent flow below.
 let _orchestrator: ExecutionOrchestratorV2 | null = null;
 let _bootstrapPromise: Promise<void> | null = null;
+
+// ── L2 (task #810): worker-process heartbeat ────────────────────────────────
+// The execution-loop worker registers itself as `system.execution_loop` and
+// emits a heartbeat at the configured cadence. ExecutionOrchestratorV2 also
+// pings emitNow() on every task accept/complete so in_flight is accurate
+// without waiting for the next tick. Best-effort: never blocks task
+// execution and never throws.
+let _heartbeat: HeartbeatEmitter | null = null;
+let _inFlight = 0;
+function getHeartbeat(): HeartbeatEmitter {
+  if (_heartbeat) return _heartbeat;
+  _heartbeat = createHeartbeatEmitter({
+    agentSlug: "system.execution_loop",
+    workerId: deriveWorkerId(),
+    cadenceMs: DEFAULT_HEARTBEAT_CADENCE_MS,
+    getInFlight:  () => _inFlight,
+    getQueueDepth: () => 0,  // not tracked — pickEligibleTasks is on-demand
+    region: Deno.env.get("FLY_REGION") ?? Deno.env.get("REGION") ?? null,
+    rpc: createServiceRoleHeartbeatRpc(),
+    onResult: (r) => {
+      if (!r.ok) {
+        // Visible in logs but does NOT affect task execution.
+        console.warn("[execution-loop] heartbeat rpc failed:", r.errorMessage);
+      }
+    },
+  });
+  _heartbeat.start();
+  return _heartbeat;
+}
+
 async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
   if (!_bootstrapPromise) {
     // Cache the promise so concurrent callers await the same reconcile;
@@ -317,6 +356,9 @@ async function getOrchestratorV2(): Promise<ExecutionOrchestratorV2> {
     // → NO_VERIFIER → blocked.
     verification: new TaskVerificationService(globalVerifierRegistry),
     ownerId: `execution-loop-${crypto.randomUUID()}`,
+    // L2 — heartbeat is started lazily by getHeartbeat() and shared across
+    // every orchestrator run on this worker.
+    heartbeat: getHeartbeat(),
   });
   return _orchestrator;
 }
@@ -329,12 +371,17 @@ async function processTask(
   // Phase-1 agent path below.
   ensureAdaptersBootstrapped(getSupabase());
   if (globalAdapterRegistry.has(task.domain, task.type)) {
-    const out = await (await getOrchestratorV2()).run(task.id);
-    if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
-    if (out.finalStatus === "failed") {
-      return { outcome: "FAILED", error: out.errorMessage };
+    _inFlight++;
+    try {
+      const out = await (await getOrchestratorV2()).run(task.id);
+      if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
+      if (out.finalStatus === "failed") {
+        return { outcome: "FAILED", error: out.errorMessage };
+      }
+      return { outcome: "BLOCKED", error: out.errorMessage };
+    } finally {
+      _inFlight = Math.max(0, _inFlight - 1);
     }
-    return { outcome: "BLOCKED", error: out.errorMessage };
   }
 
   const start = Date.now();
