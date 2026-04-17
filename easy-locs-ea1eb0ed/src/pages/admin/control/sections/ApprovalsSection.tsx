@@ -182,7 +182,12 @@ export default function ApprovalsSection() {
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [user?.id, user?.email, user?.user_metadata]);
+    // Re-subscribe only when the user identity actually changes. We
+    // intentionally exclude `user.user_metadata` (a fresh object reference on
+    // every render) and `user.email` from the dep list to prevent infinite
+    // channel re-subscriptions while the page is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const otherPeers = peers.filter((p) => p.user_id !== user?.id);
 
@@ -440,11 +445,26 @@ export default function ApprovalsSection() {
                     {filtered.map((row) => (
                       <TableRow
                         key={row.id}
-                        className="cursor-pointer hover:bg-muted/30"
+                        className="cursor-pointer hover:bg-muted/30 focus-visible:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         data-testid={`approval-row-${row.id}`}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Open approval ${row.type}`}
                         onClick={() => {
                           setDrawerTaskId(row.id);
                           setDrawerOpen(true);
+                        }}
+                        onKeyDown={(e) => {
+                          // Only handle when the row itself is focused —
+                          // keyboard events bubbling from inner controls
+                          // (checkbox, action buttons) must not reopen the
+                          // drawer.
+                          if (e.target !== e.currentTarget) return;
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            setDrawerTaskId(row.id);
+                            setDrawerOpen(true);
+                          }
                         }}
                       >
                         <TableCell
