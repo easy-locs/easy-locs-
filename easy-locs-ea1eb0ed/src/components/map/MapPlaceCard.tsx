@@ -255,7 +255,11 @@ export function MapPlaceCard({
                 <button
                   key={m.id}
                   onClick={() => {
-                    platformBus.emit("ENTITY_OPENED", { id: m.id, type: "merchant", source: "map_explore" }, "radar");
+                    platformBus.emit(
+                      "radar:entity_selected",
+                      { id: m.id, type: "merchant", source: "map", entityId: m.id, entityType: "merchant" },
+                      "radar",
+                    );
                     // Navigate to merchant storefront
                     window.location.href = `/s/${m.slug}`;
                   }}
