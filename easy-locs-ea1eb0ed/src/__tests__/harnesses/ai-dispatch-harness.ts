@@ -425,6 +425,10 @@ export interface AiHarnessOpts {
   consumeBlockedReason?: string;
   /** Throw inside the InteractionSink — exercises PERSIST_INTERACTION_FAILED. */
   recordThrows?: Error;
+  /** Override the InteractionSink entirely (e.g. plug in the real
+   *  `createSupabaseInteractionSink` against a mock supabase client to
+   *  prove the persisted ai_interactions row carries `execution_task_id`). */
+  interactions?: InteractionSink;
   /** Plug in an orchestrator-side quota gate (peek). */
   agentQuotaGate?: AgentQuotaGate;
   /** Verifier override (default: passing for COMPLETION). */
@@ -562,7 +566,12 @@ function makeInteractionSink(
 export function buildAiDispatchHarness(opts: AiHarnessOpts = {}): AiDispatchHarness {
   const { runner, counts } = makeRunner(opts);
   const { gate: quota, consumes } = makeQuotaGate(opts);
-  const { sink: interactions, recorded } = makeInteractionSink(opts);
+  const stubSink = makeInteractionSink(opts);
+  // If the caller plugged in their own InteractionSink (e.g. the real
+  // Supabase one wired against a mock client), use it; otherwise fall back
+  // to the recording stub so the existing tests keep working unchanged.
+  const interactions: InteractionSink = opts.interactions ?? stubSink.sink;
+  const recorded = stubSink.recorded;
 
   const adapterDeps: AiAdapterDeps = {
     runner,

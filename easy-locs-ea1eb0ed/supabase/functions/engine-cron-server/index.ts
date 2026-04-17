@@ -4,6 +4,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firewallCheck, guardedUpdate, getFirewallLog, getFirewallSummary, resetFirewallLog } from "../_shared/brain-firewall.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { runOrLog } from "../_shared/structured-error.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -104,19 +105,12 @@ Deno.serve(async (req) => {
       if (status === "running") payload.last_run_at = now;
       if (status === "ok") { payload.last_success_at = now; payload.consecutive_failures = 0; }
       if (status === "error") payload.last_error_at = now;
-      try {
-        await supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" });
-      } catch (err) {
-        // LB Closeout #853 — replace bare catch with structured emission so the
-        // audit pipeline can correlate supervisor heartbeat failures.
-        console.error(JSON.stringify({
-          level: "error",
-          event: "engine_cron.supervisor_upsert_failed",
-          engine_name: engineName,
-          status,
-          message: err instanceof Error ? err.message : String(err),
-        }));
-      }
+      // LB Closeout #853 — runOrLog replaces a bare swallow so the audit
+      // pipeline correlates supervisor heartbeat failures (engine + status).
+      await runOrLog(
+        { event: "engine_cron.supervisor_upsert_failed", engine_name: engineName, status },
+        () => supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" }),
+      );
     }
 
     async function callFunction(name: string, body: Record<string, any> = {}) {
@@ -1002,20 +996,15 @@ Deno.serve(async (req) => {
 
     await runEngine("fx-refresh", async () => {
       const now = new Date().toISOString();
-      try {
-        await supabase.from("fx_rates").upsert({ base: "AED", target: "USD", rate: 0.2723, updated_at: now } as any, { onConflict: "base,target" });
-        await supabase.from("fx_rates").upsert({ base: "AED", target: "EUR", rate: 0.2510, updated_at: now } as any, { onConflict: "base,target" });
-      } catch (err) {
-        // LB Closeout #853 — replace bare catch with structured emission so
-        // FX-refresh failures are visible to the audit pipeline.
-        console.error(JSON.stringify({
-          level: "error",
-          event: "engine_cron.fx_refresh_failed",
-          base: "AED",
-          targets: ["USD", "EUR"],
-          message: err instanceof Error ? err.message : String(err),
-        }));
-      }
+      // LB Closeout #853 — runOrLog wraps both upserts in a single
+      // structured emission with the fx pair context.
+      await runOrLog(
+        { event: "engine_cron.fx_refresh_failed", base: "AED", targets: ["USD", "EUR"] },
+        async () => {
+          await supabase.from("fx_rates").upsert({ base: "AED", target: "USD", rate: 0.2723, updated_at: now } as any, { onConflict: "base,target" });
+          await supabase.from("fx_rates").upsert({ base: "AED", target: "EUR", rate: 0.2510, updated_at: now } as any, { onConflict: "base,target" });
+        },
+      );
       return { refreshed: 2 };
     }, "standard");
 
