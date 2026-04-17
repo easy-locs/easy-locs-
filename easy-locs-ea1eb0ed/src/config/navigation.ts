@@ -4,6 +4,7 @@
  */
 import { LayoutDashboard, Radar, MessageCircle, Wallet, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { ORBIT_SUBSECTION_PATHS } from "@/routes/orbit.routes";
 
 export interface NavTab {
   key: string;
@@ -88,27 +89,27 @@ export const HIDE_NAV_PREFIXES = [
 ];
 
 /**
- * Task #988 — Orbit pillar landing + sub-sections must keep the bottom nav
- * visible (otherwise users entering Orbit from the bottom nav are trapped
- * with no way back to the other 4 pillars). The nav should only hide
+ * Task #988 / #992 — Orbit pillar landing + named sub-sections must keep the
+ * bottom nav visible (otherwise users entering Orbit from the bottom nav are
+ * trapped with no way back to the other 4 pillars). The nav should only hide
  * inside an actual conversation thread (/orbit/<conversationId>).
+ *
+ * The list of named sub-sections is derived from `orbit.routes.tsx` itself
+ * (the source of truth for what `/orbit/<segment>` routes exist), so adding
+ * a new sub-section there automatically keeps the bottom nav visible without
+ * any change required here.
  */
-const ORBIT_VISIBLE_PATHS = new Set([
-  "/orbit",
-  "/orbit/contacts",
-  "/orbit/add",
-  "/orbit/identity",
-  "/orbit/support",
-]);
-
 export function shouldHideBottomNav(pathname: string): boolean {
   // Normalize trailing slash so "/orbit" and "/orbit/" behave identically.
   const p = pathname.length > 1 && pathname.endsWith("/")
     ? pathname.slice(0, -1)
     : pathname;
   if (HIDE_NAV_PREFIXES.some((prefix) => p.startsWith(prefix))) return true;
-  if (p.startsWith("/orbit")) {
-    return !ORBIT_VISIBLE_PATHS.has(p);
+  if (p === "/orbit" || ORBIT_SUBSECTION_PATHS.has(p)) return false;
+  if (p.startsWith("/orbit/")) {
+    // Anything else under /orbit/ is treated as a conversation thread
+    // (/orbit/:conversationId) — hide the nav for an immersive chat UI.
+    return true;
   }
   return false;
 }
