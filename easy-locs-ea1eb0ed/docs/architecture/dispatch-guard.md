@@ -127,6 +127,34 @@ Two sections:
 3. Reviewers should treat new exemptions as a code-review red flag —
    they are intended to shrink, not grow.
 
+## Known limitations (intentional, tracked)
+
+The rules are **AST-shape based** and do not perform data-flow analysis,
+so a determined developer can still bypass them by aliasing the builder
+into an intermediate variable:
+
+```ts
+const q = db.from("users");   // not flagged here
+q.update({ name: "x" });      // …or here — receiver is `q`, not a chain
+```
+
+This is a known and accepted limitation of the L6 guard:
+
+- It is loud about the natural form of the call (95%+ of real sites).
+- Closing the alias bypass requires either inter-procedural data-flow
+  (heavy, brittle) or a stricter "any `.update/.insert/.delete/.upsert`
+  on an unknown receiver" rule that would generate a tidal wave of
+  false positives in unrelated APIs (`state.update(...)`,
+  `cache.delete(...)`, `set.insert(...)`).
+- The L7 migration sweep (#814) physically removes the writes from
+  callers, so by the time L7 lands the alias surface is already gone.
+- Code review in PRs is the second line of defence; a `const x = db.from(...)`
+  pattern in a non-allow-listed file is treated as a review red flag.
+
+If a more aggressive form is ever needed (e.g. for build/dev agents in
+Level C) we will add a separate rule scoped to agent-authored diffs
+rather than tighten the global guard.
+
 ## CI gate
 
 `pnpm lint` runs the rules as `error`. A violation breaks CI, with a
