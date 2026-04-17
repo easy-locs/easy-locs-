@@ -1,30 +1,9 @@
-Add GitHub Actions secret scanner workflow (Task #741)
+Add comparison content to website feeds and improve URL routing
 
-Original task: extend the existing fast secret scanner
-(scripts/secret-scan.sh, added in Task #732, currently only run via
-scripts/post-merge.sh after Replit merges) to also run as a GitHub
-Actions check on every pull request and on pushes to main, so leaks
-are caught before reaching the main branch.
+Update vite-plugin-feeds.ts to include comparison entries and adjust URL patterns for better routing.
 
-Changes:
-- New workflow .github/workflows/secret-scan.yml
-  - Triggers: pull_request, push to main, workflow_dispatch
-  - Single job on ubuntu-latest that checks out the repo
-    (fetch-depth: 0 so git ls-files in the scanner sees the full
-    tracked file set) and runs `bash scripts/secret-scan.sh`
-  - The scanner exits 1 on any match, which fails the job and
-    produces a red required check on the PR.
-- New SECURITY.md at repo root documenting:
-  - What the scanner detects
-  - Where it runs (post-merge locally + GitHub Actions on PRs/main)
-  - What contributors should do on a failure (remove + rotate, or
-    narrow the pattern / add a SKIP_REGEX exclusion)
-  - How to run it locally
-
-Verification:
-- Ran `bash scripts/secret-scan.sh` locally — clean
-  (5465 files scanned, no findings) with the new files in place.
-
-No deviations from the task spec.
-
-Replit-Task-Id: 6b27687c-14ee-4e1e-9052-27e8ea51278c
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: 01e87756-e7a8-4912-b6e0-4a07e75906d9
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Event-Id: 0f785b46-258d-4c5f-9a0c-9e074711a69f
+Replit-Helium-Checkpoint-Created: true
