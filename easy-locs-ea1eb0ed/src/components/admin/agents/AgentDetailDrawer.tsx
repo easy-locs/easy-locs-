@@ -29,6 +29,7 @@ import { agentsRepo, type AgentRow } from "@/lib/admin/agents-repo";
 import { getKindMeta } from "./agent-kind";
 import AgentActionsMenu from "./AgentActionsMenu";
 import AgentTriggerDialog from "./AgentTriggerDialog";
+import { ExecutionTaskPanel } from "@/components/admin/ExecutionTaskPanel";
 import { Loader2, Send, Activity, AlertTriangle } from "lucide-react";
 
 interface Props {
@@ -275,6 +276,12 @@ export default function AgentDetailDrawer({ agent, open, onOpenChange }: Props) 
                   ))}
                 </ul>
               )}
+              <div className="mt-4 pt-3 border-t border-border/40">
+                <p className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-2">
+                  Live execution tasks · platform-wide
+                </p>
+                <ExecutionTaskPanel />
+              </div>
             </TabsContent>
 
             <TabsContent value="health" className="mt-3 space-y-2 text-xs">

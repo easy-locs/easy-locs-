@@ -11,7 +11,8 @@
  * is constructed, so the test runs with no env or network.
  */
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
+import userEvent, { PointerEventsCheckLevel } from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 
@@ -91,13 +92,14 @@ const sampleAgents = [
 ];
 
 const listAgentsMock = vi.fn();
+const setAgentStatusMock = vi.fn();
 
 vi.mock("@/lib/admin/agents-repo", () => ({
   agentsRepo: {
     listAgents: (...args: unknown[]) => listAgentsMock(...args),
     listAgentRuns: vi.fn(async () => []),
     listAgentEvents: vi.fn(async () => []),
-    setAgentStatus: vi.fn(async () => ({ ok: true })),
+    setAgentStatus: (...args: unknown[]) => setAgentStatusMock(...args),
     getAgent: vi.fn(async () => null),
   },
 }));
@@ -119,6 +121,8 @@ function renderPage() {
 
 beforeEach(() => {
   listAgentsMock.mockReset();
+  setAgentStatusMock.mockReset();
+  setAgentStatusMock.mockResolvedValue({ ok: true });
 });
 
 describe("AdminAgentsPage", () => {
@@ -173,6 +177,73 @@ describe("AdminAgentsPage", () => {
     expect(
       await screen.findByText(/no agents match the current filters/i),
     ).toBeInTheDocument();
+  });
+
+  it("renders the new owner and in-flight columns per row", async () => {
+    listAgentsMock.mockResolvedValue(sampleAgents);
+    renderPage();
+    await screen.findByTestId("agent-row-ai.router");
+    expect(
+      within(screen.getByTestId("agent-row-ai.router-owner")).getByText(
+        "platform",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(screen.getByTestId("agent-row-ai.router-inflight")).getByText("0"),
+    ).toBeInTheDocument();
+    // Marketplace Onboarder has no health row, so in-flight falls back to 0.
+    expect(
+      within(
+        screen.getByTestId("agent-row-marketplace.onboarder-inflight"),
+      ).getByText("0"),
+    ).toBeInTheDocument();
+  });
+
+  it("destructive lifecycle actions require explicit confirmation before the RPC fires", async () => {
+    // Radix dropdown applies `pointer-events: none` to backgrounded
+    // siblings while the menu is open; that legitimately defends against
+    // misclicks in production but trips userEvent's default safety check.
+    const user = userEvent.setup({
+      pointerEventsCheck: PointerEventsCheckLevel.Never,
+    });
+    listAgentsMock.mockResolvedValue(sampleAgents);
+    renderPage();
+    await screen.findByTestId("agent-row-ai.router");
+
+    // Open the actions menu for the active AI Router agent.
+    await user.click(
+      screen.getByTestId(`agent-actions-${sampleAgents[0].id}`),
+    );
+    await user.click(await screen.findByTestId("agent-action-disable"));
+
+    // Confirmation dialog must mount with the consequence sentence,
+    // and the RPC must NOT have fired yet.
+    const dialog = await screen.findByTestId("agent-action-confirm");
+    expect(
+      within(dialog).getByText(/disable agent/i),
+    ).toBeInTheDocument();
+    expect(setAgentStatusMock).not.toHaveBeenCalled();
+
+    // Cancelling closes the dialog and still does not fire the RPC.
+    await user.click(screen.getByTestId("agent-action-confirm-cancel"));
+    await waitFor(() =>
+      expect(
+        screen.queryByTestId("agent-action-confirm"),
+      ).not.toBeInTheDocument(),
+    );
+    expect(setAgentStatusMock).not.toHaveBeenCalled();
+
+    // Re-open and confirm — now the RPC should fire with disabled.
+    await user.click(
+      screen.getByTestId(`agent-actions-${sampleAgents[0].id}`),
+    );
+    await user.click(await screen.findByTestId("agent-action-disable"));
+    await user.click(await screen.findByTestId("agent-action-confirm-ok"));
+
+    await waitFor(() => expect(setAgentStatusMock).toHaveBeenCalledTimes(1));
+    expect(setAgentStatusMock).toHaveBeenCalledWith(
+      expect.objectContaining({ slug: "ai.router", status: "disabled" }),
+    );
   });
 
   it("free-text search narrows by display name", async () => {
