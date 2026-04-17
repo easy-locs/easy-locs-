@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthSession, useAuthProfile } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
-import { hasRole } from "@/repositories/auth-utils.repository";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
+import AdminAccessDenied from "@/components/auth/AdminAccessDenied";
 
 /** Dashboard paths that require an active subscription (pro features) */
 const PRO_DASHBOARD_PREFIXES = [
@@ -70,28 +70,9 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 function AdminGate({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthSession();
-  const [checking, setChecking] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  useEffect(() => {
-    if (!user?.id) { setChecking(false); return; }
-    let cancelled = false;
-    (async () => {
-      const [admin, owner] = await Promise.all([
-        hasRole(user.id, "admin"),
-        hasRole(user.id, "owner"),
-      ]);
-      if (!cancelled) {
-        setIsAdmin(!!admin || !!owner);
-        setChecking(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [user?.id]);
-
-  if (checking) return <InlineSkeleton />;
-  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  const { isAdmin, isLoading } = useIsAdmin();
+  if (isLoading) return <InlineSkeleton />;
+  if (!isAdmin) return <AdminAccessDenied />;
   return <>{children}</>;
 }
 
