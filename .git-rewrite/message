@@ -1,0 +1,35 @@
+Task #919: Backfill pgvector embeddings for listings, services, products
+
+Problem
+- Migration 20260417200000_pgvector_embeddings.sql added vector(1536) columns
+  + match_embeddings / find_similar_* / semantic_search RPCs but every
+  existing row had embedding = NULL, so the recommendation engine silently
+  degraded to in-memory cosine.
+
+Changes
+- supabase/functions/generate-embeddings/index.ts: bumped per-call default
+  limit (100 -> 500) and per-target cap (200 -> 1000) so each cron tick
+  drains a meaningful chunk of NULL-embedded rows. Function logic
+  unchanged otherwise — it already targets listings, seed_products,
+  marketplace_services, profiles via the AI_EMBEDDING adapter.
+- supabase/migrations/20260501500000_backfill_embeddings_cron.sql (new):
+  * monitored_backfill_embeddings_cron() wraps the dispatch via the
+    existing monitored_http_dispatch logger.
+  * pg_cron schedule 'backfill-embeddings-cron' every 10 minutes.
+  * BEFORE UPDATE triggers on listings, marketplace_services, and
+    seed_products that NULL the embedding when contributing text columns
+    change, so edited rows get re-embedded on the next tick.
+  * Best-effort initial dispatch so the first batch starts immediately.
+  * embedding_coverage_report() RPC for ops verification (per-table
+    total / embedded / null / coverage_pct), service_role only.
+
+Notes / deviations
+- Done criterion "verified end-to-end via vector-similarity-search" was
+  not directly testable: that edge function is still a stub
+  (file header references task #226). The recommendation engine's actual
+  consumer path is match_embeddings, which now has populated rows to
+  return. Filed follow-up #932 to replace the stub.
+- Filed follow-up #933 to alert on embedding coverage regressions using
+  the new embedding_coverage_report() RPC.
+
+Replit-Task-Id: 15d9752a-3711-42a7-8f6a-0f22d368b501
