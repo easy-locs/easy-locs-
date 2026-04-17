@@ -424,9 +424,11 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION system.sweep_agent_health() FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION system.sweep_agent_health()
-  TO authenticated, service_role;
+-- SECURITY: sweep is a control-plane writer (mutates agents.last_health_*
+-- and emits engine_run_logs rows). Restrict to service_role; admin UI
+-- surfaces should call through a router that uses the service-role key.
+REVOKE ALL ON FUNCTION system.sweep_agent_health() FROM PUBLIC, authenticated, anon;
+GRANT EXECUTE ON FUNCTION system.sweep_agent_health() TO service_role;
 
 -- ── 8. Retention prune (7 days) ──────────────────────────────────────────
 CREATE OR REPLACE FUNCTION system.prune_agent_heartbeats(p_keep_days INT DEFAULT 7)
@@ -448,9 +450,10 @@ BEGIN
 END;
 $$;
 
-REVOKE ALL ON FUNCTION system.prune_agent_heartbeats(INT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION system.prune_agent_heartbeats(INT)
-  TO authenticated, service_role;
+-- SECURITY: retention prune is service_role-only. An end user could
+-- otherwise erase audit/observability evidence by mass-pruning heartbeats.
+REVOKE ALL ON FUNCTION system.prune_agent_heartbeats(INT) FROM PUBLIC, authenticated, anon;
+GRANT EXECUTE ON FUNCTION system.prune_agent_heartbeats(INT) TO service_role;
 
 -- ── 9. Sweep wrapper — fires twice within a single minute window ─────────
 -- pg_cron's smallest schedule granularity is one minute. We need ≤30s

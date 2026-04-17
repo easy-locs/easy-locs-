@@ -263,22 +263,30 @@ BEGIN
   RAISE NOTICE 'PASS: v_agent_health exposes the test agent';
 END $$;
 
--- ── 11. record_agent_heartbeat is NOT executable by `authenticated` ─────────
--- Hard security invariant: heartbeats are a control-plane write. Granting
--- EXECUTE to `authenticated` would let any logged-in end user spoof an
--- adapter's liveness and spam audit events.
+-- ── 11. Control-plane RPCs are NOT executable by `authenticated` ────────────
+-- Hard security invariant: heartbeat ingest, sweep, and prune are control-
+-- plane writes. Granting EXECUTE to `authenticated` would let any logged-in
+-- end user spoof liveness, churn audit events, or erase observability
+-- evidence.
 DO $$
-DECLARE v_grants INT;
+DECLARE v_grants INT; v_fn TEXT;
 BEGIN
-  SELECT COUNT(*) INTO v_grants
-    FROM information_schema.routine_privileges
-   WHERE routine_schema = 'system'
-     AND routine_name   = 'record_agent_heartbeat'
-     AND grantee        = 'authenticated';
-  IF v_grants <> 0 THEN
-    RAISE EXCEPTION 'FAIL: record_agent_heartbeat is granted to authenticated (security regression)';
-  END IF;
-  RAISE NOTICE 'PASS: record_agent_heartbeat is service_role-only';
+  FOREACH v_fn IN ARRAY ARRAY[
+    'record_agent_heartbeat',
+    'sweep_agent_health',
+    'prune_agent_heartbeats',
+    'run_agent_health_sweep_twice'
+  ] LOOP
+    SELECT COUNT(*) INTO v_grants
+      FROM information_schema.routine_privileges
+     WHERE routine_schema = 'system'
+       AND routine_name   = v_fn
+       AND grantee        = 'authenticated';
+    IF v_grants <> 0 THEN
+      RAISE EXCEPTION 'FAIL: system.% is granted to authenticated (security regression)', v_fn;
+    END IF;
+  END LOOP;
+  RAISE NOTICE 'PASS: heartbeat/sweep/prune RPCs are service_role-only';
 END $$;
 
 ROLLBACK;
