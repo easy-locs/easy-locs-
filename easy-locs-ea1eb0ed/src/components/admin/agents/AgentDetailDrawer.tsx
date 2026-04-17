@@ -153,10 +153,11 @@ export default function AgentDetailDrawer({ agent, open, onOpenChange }: Props) 
           </SheetHeader>
 
           <Tabs value={tab} onValueChange={setTab} className="mt-4">
-            <TabsList className="grid grid-cols-4 w-full">
+            <TabsList className="grid grid-cols-5 w-full">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="capabilities">Capabilities</TabsTrigger>
               <TabsTrigger value="runs">Runs</TabsTrigger>
+              <TabsTrigger value="health">Health</TabsTrigger>
               <TabsTrigger value="events">Events</TabsTrigger>
             </TabsList>
 
@@ -273,6 +274,47 @@ export default function AgentDetailDrawer({ agent, open, onOpenChange }: Props) 
                     </li>
                   ))}
                 </ul>
+              )}
+            </TabsContent>
+
+            <TabsContent value="health" className="mt-3 space-y-2 text-xs">
+              {!agent.health ? (
+                <Empty msg="No heartbeat recorded for this agent yet." />
+              ) : (
+                <>
+                  <Field
+                    label="Status"
+                    value={`${agent.health.health_status}${
+                      agent.health.health_reason
+                        ? ` · ${agent.health.health_reason}`
+                        : ""
+                    }`}
+                  />
+                  <Field
+                    label="Last seen"
+                    value={relTime(agent.health.last_seen_at)}
+                  />
+                  <Field
+                    label="Lag"
+                    value={
+                      agent.health.lag_ms != null
+                        ? `${agent.health.lag_ms}ms`
+                        : "—"
+                    }
+                  />
+                  <Field
+                    label="In flight"
+                    value={String(agent.health.in_flight ?? 0)}
+                  />
+                  <Field
+                    label="Queue depth"
+                    value={String(agent.health.queue_depth ?? 0)}
+                  />
+                  <Field
+                    label="Workers"
+                    value={String(agent.health.worker_count ?? 0)}
+                  />
+                </>
               )}
             </TabsContent>
 
