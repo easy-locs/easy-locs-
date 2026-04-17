@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { target, limit = 100 } = body;
+    const { target, limit = 500 } = body;
     const targetNames = target ? [target] : Object.keys(TARGETS);
 
     const results: Record<string, unknown> = {};
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
           .from(config.table)
           .select([config.idColumn, ...config.textColumns].join(", "))
           .is(config.vectorColumn, null)
-          .limit(Math.min(limit, 200));
+          .limit(Math.min(limit, 1000));
 
         if (config.filter) {
           const dotIdx = config.filter.indexOf(".");
@@ -163,10 +163,15 @@ Deno.serve(async (req) => {
             const embedding = embeddings[embIdx++];
             const vectorStr = `[${embedding.join(",")}]`;
 
+            // Guard against the stale-overwrite race: only write when the
+            // embedding column is still NULL. If a concurrent update (e.g. a
+            // text edit firing the embedding-stale trigger) has nulled it
+            // again or another worker has filled it, this no-ops.
             const { error: updateErr } = await supabase
               .from(config.table)
               .update({ [config.vectorColumn]: vectorStr })
-              .eq(config.idColumn, batch[j][config.idColumn]);
+              .eq(config.idColumn, batch[j][config.idColumn])
+              .is(config.vectorColumn, null);
 
             if (updateErr) {
               console.error(`[generate-embeddings] Update failed for ${config.table}/${batch[j][config.idColumn]}:`, updateErr.message);
