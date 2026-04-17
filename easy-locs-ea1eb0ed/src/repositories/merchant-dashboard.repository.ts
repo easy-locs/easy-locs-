@@ -59,8 +59,12 @@ export async function upsertMenuItem(item: { id?: string; isNew?: boolean; merch
 }
 
 export async function translateText(text: string, fromLocale: string, toLocale: string) {
-  const { data } = await db.functions.invoke("translate-message", {
+  const { data, error } = await db.functions.invoke("translate-message", {
     body: { text, from_locale: fromLocale, to_locale: toLocale },
   });
+  if (error) {
+    console.warn("[merchant-dashboard] translate-message failed", error);
+    return undefined;
+  }
   return data?.translated as string | undefined;
 }

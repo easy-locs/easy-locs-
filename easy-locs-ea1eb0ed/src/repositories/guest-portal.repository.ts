@@ -58,7 +58,7 @@ export async function notifyOrgOwner(orgId: string, title: string, body: string,
 }
 
 export async function sendGuestEmail(orgEmail: string, guestName: string, guestEmail: string, message: string, propertyLabel: string, checkIn: string, checkOut: string) {
-  await db.functions.invoke("send-email", {
+  const { error } = await db.functions.invoke("send-email", {
     body: {
       to: orgEmail,
       subject: `💬 Message from ${guestName}`,
@@ -72,6 +72,7 @@ export async function sendGuestEmail(orgEmail: string, guestName: string, guestE
       </div>`,
     },
   });
+  if (error) console.warn("[guest-portal] guest message email failed", error);
 }
 
 export async function fetchGuestMessages(userId: string) {

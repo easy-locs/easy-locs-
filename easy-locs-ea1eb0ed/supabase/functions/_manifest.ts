@@ -46,6 +46,7 @@ export const EDGE_FUNCTION_MANIFEST: Record<string, ManifestEntry> = {
   // but do not wrap with `withRateLimit`. Tracked in follow-up #772.
   "admin-router": { auth: "jwt", rateLimit: false, reason: "JWT verified inside router; rate-limit wrapper pending (follow-up #772)" },
   "ai-router": { auth: "jwt", rateLimit: false, reason: "JWT verified inside router; rate-limit wrapper pending" },
+  "vector-similarity-search": { auth: "jwt", rateLimit: false, reason: "Stub function; requireAuthenticatedUser enforces JWT. Real impl pending #226" },
   "ai-proxy": { auth: "jwt", rateLimit: false, reason: "JWT verified inside proxy; rate-limit wrapper pending" },
   "booking-router": { auth: "jwt", rateLimit: false, reason: "JWT verified inside router; rate-limit wrapper pending" },
   "commerce-router": { auth: "jwt", rateLimit: false, reason: "JWT verified inside router; rate-limit wrapper pending" },
