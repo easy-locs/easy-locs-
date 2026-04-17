@@ -1,35 +1,37 @@
-tree 683437579b57e50d0b5ba5b8ffcacf9e1a9c62ca
-parent 3519929f74084fca444841c00b9b48bce83731c9
-author jstarbuzz <jstarbuzz@gmail.com> 1776466329 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776466329 +0000
+tree 7950452eb8b373fd89a43019257f96a19829584d
+parent 12d7d44f82e9a597cc3266c98cc4b0323e6c6c80
+author jstarbuzz <jstarbuzz@gmail.com> 1776443894 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776443894 +0000
 
-Task #966: Add RSS/Atom feeds so SEO score reaches 100
+Task #858: Unify admin detection across sidebar and route guards
 
-The validator (vite-plugin-seo-validate.ts) checks for 6 feed files:
-feed.xml, feed/cities.xml, feed/services.xml, feed/atom.xml,
-feed/cities-atom.xml, feed/services-atom.xml. The feedsPlugin already
-existed and was wired into vite.config.ts, but only listed cities and
-services — content hub coverage was missing per the task spec.
+Original task: make the dashboard sidebar and the AdminRoute /
+ProtectedRoute admin gate read admin status from a single shared source
+so they cannot disagree (the split-brain bug Task #856 set out to fix).
 
-Changes
-- vite-plugin-feeds.ts: extended the global RSS + Atom feed to include
-  per-city content hub entries (/guide/<city> and
-  /best/<service>/in/<city> using BUILD_SERVICE_CATEGORIES[0]) for the
-  first 15 phase-1 cities. URLs match the real prerender routes in
-  vite-plugin-prerender.ts (verified against /best/:service/in/:city).
-  Timestamps use CONTENT_LASTMOD.guides / CONTENT_LASTMOD.best.
-- Updated the [feeds] log line to report item counts per feed for build
-  visibility.
+Findings:
+- The sidebar (`DashboardLayout.tsx`) already consumes `useIsAdmin` and
+  no longer reads `subscription.plan === "admin"` or
+  `user.user_metadata.role === "admin"` for admin detection.
+- `AdminRoute.tsx` already consumes `useIsAdmin`.
+- `ProtectedRoute.tsx`'s `AdminGate` already consumes `useIsAdmin`.
+- The contract test `admin-role-detection.test.tsx` already mocks only
+  the single `useIsAdmin` hook (not two independent sources), confirming
+  the unified source of truth.
 
-Verification
-- Ran the plugin standalone via tsx; all 6 expected files were written
-  to dist/ (feed.xml ~27KB / 70 items, feed/cities.xml ~25KB / 53 items,
-  feed/services.xml ~25KB / 67 items, plus 3 Atom variants).
-- Validator's missing-feeds check will now report 0 missing feeds, so
-  the 10-point feeds component of the SEO score is fully earned.
+Changes in this task:
+- Removed a stale comment in `DashboardLayout.tsx` that still referred to
+  admin being detected from "user metadata or subscription plan", and
+  replaced it with an accurate description of the current single-source
+  contract (email allowlist + server-side `has_role` RPC via
+  `useIsAdmin`).
 
-No deviations from the task scope. Did not run a full vite build (it
-exceeds the 2-minute tool timeout in this env); the plugin is exercised
-by the same code path on every production build.
+Verification:
+- `npx vitest run src/__tests__/admin-role-detection.test.tsx` — all 5
+  tests pass.
 
-Replit-Task-Id: 6e76887e-99e4-4d26-8bd5-0ec135cd1ecc
+No deviations from task scope. No follow-ups proposed (existing tasks
+in the project already cover related work like profile identity
+unification).
+
+Replit-Task-Id: 1fbab67f-4677-44eb-b0de-ca3e66f77788
