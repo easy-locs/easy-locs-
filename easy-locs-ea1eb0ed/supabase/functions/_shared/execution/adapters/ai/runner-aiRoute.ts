@@ -65,10 +65,17 @@ export function createAiRouteRunner(deps: AiRouteRunnerDeps = {}): LLMRunner {
     async completion(
       input: LLMRunnerCompletionInput,
     ): Promise<LLMRunnerCompletionOutput> {
-      const config = await loadOrDefault(deps, slugForTaskType(AI_TASK_TYPES.COMPLETION), "chat");
+      const completionSlug = slugForTaskType(AI_TASK_TYPES.COMPLETION);
+      const config = await loadOrDefault(deps, completionSlug, "chat");
       const routed = await aiRouteForAgent({
         config,
         feature: input.payload.feature,
+        // LB Closeout #852 — propagate registry slug + execution-task id so
+        // structured fallback logs in `aiRouteForAgent` carry the
+        // `ai_interactions ↔ execution_tasks` correlation. Without these,
+        // adapter-driven production paths emit null agent_slug/task_id.
+        agentSlug: completionSlug,
+        taskId: input.task.id,
         options: {
           messages: input.payload.messages.map((m) => ({ role: m.role, content: m.content })),
           model: input.payload.model,
@@ -141,10 +148,14 @@ export function createAiRouteRunner(deps: AiRouteRunnerDeps = {}): LLMRunner {
       // Default RAG runner: degenerate to a completion call with the query
       // as the user message. Real retrieval lives in domain-specific RAG
       // adapters that override this runner — kept here as a sane fallback.
-      const config = await loadOrDefault(deps, slugForTaskType(AI_TASK_TYPES.RAG), "chat");
+      const ragSlug = slugForTaskType(AI_TASK_TYPES.RAG);
+      const config = await loadOrDefault(deps, ragSlug, "chat");
       const routed = await aiRouteForAgent({
         config,
         feature: input.payload.feature,
+        // LB Closeout #852 — propagate correlation fields (see completion path).
+        agentSlug: ragSlug,
+        taskId: input.task.id,
         options: {
           messages: [
             { role: "system", content: `Answer using the ${input.payload.collection} collection. Be concise.` },
