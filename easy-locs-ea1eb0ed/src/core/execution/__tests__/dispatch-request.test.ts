@@ -53,8 +53,6 @@ describe("ExecutionTaskRow v2 surface", () => {
       risk_level: "SAFE",
       status: "queued" satisfies ExecutionTaskStatus,
       payload: {},
-      result: null,
-      error: null,
       requested_by: "system",
       parent_task_id: null,
       attempt_count: 0,

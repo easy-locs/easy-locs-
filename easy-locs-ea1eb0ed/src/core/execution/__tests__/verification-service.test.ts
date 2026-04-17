@@ -19,8 +19,6 @@ function makeTask(overrides: Partial<ExecutionTaskRow> = {}): ExecutionTaskRow {
     risk_level: "MEDIUM",
     status: "running",
     payload: {},
-    result: null,
-    error: null,
     requested_by: "tester",
     parent_task_id: null,
     attempt_count: 1,

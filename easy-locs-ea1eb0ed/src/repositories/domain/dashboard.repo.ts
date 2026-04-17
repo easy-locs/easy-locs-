@@ -101,8 +101,10 @@ export const dashboardRepo = {
 
   /**
    * Full-row variant of fetchExecutionTasks for the live execution panel
-   * (task #712). Includes payload, result and error so the dashboard can
-   * render structured logs, return values and error details inline.
+   * (task #712). Includes payload, execution_result and error_code so the
+   * dashboard can render structured logs, return values and error details
+   * inline. Reads only the canonical V2 columns — the legacy
+   * `result`/`error` pair was retired in task #851.
    */
   async fetchExecutionTasksFull(opts?: {
     status?: string;
@@ -115,9 +117,10 @@ export const dashboardRepo = {
       .select(
         // Task #850 — switched from legacy `result`/`error` to the V2
         // `execution_result`/`error_code` columns. The GitHub-runner
-        // callback (#848) no longer writes the legacy columns, so the
-        // admin Execution Tasks panel must read the canonical V2 shape
-        // to surface logs, github_status, and error details.
+        // callback (#848) no longer writes the legacy columns, and task
+        // #851 dropped them entirely, so the admin Execution Tasks panel
+        // must read the canonical V2 shape to surface logs, github_status,
+        // and error details.
         "id, type, domain, risk_level, status, payload, execution_result, error_code, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, runner, external_run_url, pr_url, created_at, updated_at",
       )
       .order("created_at", { ascending: false })
@@ -139,7 +142,8 @@ export const dashboardRepo = {
         // payload (includes verifier output, tool calls, generated
         // response). The decision drawer surfaces those AI fields, so
         // we MUST select the column or the inbox shows blank metadata.
-        "id, type, domain, risk_level, status, payload, previous_state, result, execution_result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, agent_id, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+        // Legacy `result`/`error` columns were retired in task #851.
+        "id, type, domain, risk_level, status, payload, previous_state, execution_result, error_code, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, agent_id, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
       )
       .eq("id", id)
       .maybeSingle();

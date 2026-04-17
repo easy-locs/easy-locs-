@@ -147,7 +147,6 @@ export function ApprovalDecisionDrawer({
         status: string;
         payload: unknown;
         previous_state?: unknown;
-        result?: unknown;
         execution_result?: unknown;
         blocked_reason?: string | null;
         agent_id?: string | null;
@@ -169,16 +168,14 @@ export function ApprovalDecisionDrawer({
     // Canonical orchestrator shape (LB1 #834):
     //   execution_result = { output, logs, actions_taken, verification }
     // and the AI adapter places its generated response/tools inside
-    // `output`. We read from `execution_result` first, fall back to the
-    // legacy `result` column, then `payload` for very old rows.
+    // `output`. We read from `execution_result` first, then `payload` for
+    // very old rows. The legacy `result` column was retired in #851.
     const exec = task?.execution_result as
       | Record<string, unknown>
       | undefined;
-    const legacyResult = task?.result as Record<string, unknown> | undefined;
     const payload = task?.payload as Record<string, unknown> | undefined;
     const output =
       ((exec?.output as Record<string, unknown> | undefined) ??
-        legacyResult ??
         payload) ?? undefined;
     if (!output && !exec && !payload) return null;
     const purpose =

@@ -95,7 +95,7 @@ export interface AgentRunRow {
   risk_level: string;
   attempt_count: number;
   max_attempts: number;
-  error: string | null;
+  error_code: string | null;
   blocked_reason: string | null;
   created_at: string;
   updated_at: string;
@@ -201,7 +201,7 @@ export const agentsRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, domain, status, risk_level, attempt_count, max_attempts, error, blocked_reason, created_at, updated_at",
+        "id, type, domain, status, risk_level, attempt_count, max_attempts, error_code, blocked_reason, created_at, updated_at",
       )
       .eq("agent_id", agentId)
       .order("created_at", { ascending: false })
@@ -288,7 +288,7 @@ export const agentsRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, status, risk_level, cost_usd, latency_ms, error, blocked_reason, created_at, completed_at, payload, execution_result",
+        "id, type, status, risk_level, cost_usd, latency_ms, error_code, blocked_reason, created_at, completed_at, payload, execution_result",
       )
       .eq("agent_id", agentId)
       .order("created_at", { ascending: false })
@@ -316,7 +316,7 @@ export const agentsRepo = {
       response: null,
       model: null,
       provider: null,
-      error: ((r.error ?? r.blocked_reason) as string) ?? null,
+      error: ((r.error_code ?? r.blocked_reason) as string) ?? null,
       verification: ((r.execution_result as Record<string, unknown> | null)?.verification as unknown) ?? null,
       tools_used: ((r.execution_result as Record<string, unknown> | null)?.tools_used as unknown) ?? null,
       purpose: ((r.payload as Record<string, unknown> | null)?.purpose as string) ?? null,

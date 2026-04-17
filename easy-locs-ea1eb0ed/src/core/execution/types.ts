@@ -36,8 +36,6 @@ export interface ExecutionTaskRow {
   risk_level: RiskLevel;
   status: ExecutionTaskStatus;
   payload: Record<string, unknown>;
-  result: Record<string, unknown> | null;
-  error: string | null;
   requested_by: string;
   parent_task_id: string | null;
   attempt_count: number;

@@ -149,9 +149,9 @@ Deno.serve(async (req: Request) => {
   // ── Build patch ───────────────────────────────────────────────────────
   // Write the canonical V2 columns (`execution_result` + `error_code`) so the
   // Command Center / orchestrator surfaces only have to read one shape. The
-  // legacy `result` / `error` columns kept around by migration
-  // 20260418500000_execution_tasks_v2.sql are no longer touched here; a
-  // companion backfill migration copies any in-flight legacy rows forward.
+  // legacy `result` / `error` columns were dropped in task #851 (migration
+  // 20260429000000_execution_tasks_drop_legacy_result_error.sql); a prior
+  // backfill (#848) copied any in-flight legacy rows forward before the drop.
   const prevResult = (taskRow.execution_result as Record<string, unknown> | null) ?? {};
   const patch: Record<string, unknown> = {};
 

@@ -5,8 +5,10 @@
  * execution timeline, structured logs (from `execution_result.logs` /
  * `output.text`), error details (from `execution_result.errorMessage`,
  * `execution_result.error`, or `error_code`), attempt count, blocked
- * reason, and approver info. Auto-refreshes via short polling (RLS
- * already restricts SELECT to admins).
+ * reason, and approver info. Reads only the canonical V2 columns
+ * (`execution_result` / `error_code`); the legacy `result`/`error`
+ * columns were retired in task #851. Auto-refreshes via short polling
+ * (RLS already restricts SELECT to admins).
  *
  * Provides a Retry control on FAILED tasks — dispatching a new task with
  * the same payload, parent_task_id linkage, and a fresh attempt_count.
@@ -56,7 +58,7 @@ type ExecRow = {
   payload: Record<string, unknown> | null;
   // Task #850 — V2 canonical columns. The GitHub-runner callback (#848)
   // and orchestrator V2 both write here; the legacy `result` / `error`
-  // columns are no longer populated.
+  // columns were retired in task #851.
   execution_result: Record<string, unknown> | null;
   error_code: string | null;
   requested_by: string;

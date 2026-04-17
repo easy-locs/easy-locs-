@@ -174,12 +174,12 @@ export class OrchestratorAdapter {
 
     if (response.status === "SUCCESS") {
       await this.transition(task.id, "succeeded", {
-        result: response.result ?? {},
-        error: null,
+        execution_result: response.result ?? {},
+        error_code: null,
       });
     } else {
       await this.transition(task.id, "failed", {
-        error: response.error ?? "unknown orchestrator failure",
+        error_code: response.error ?? "unknown orchestrator failure",
       });
     }
 
