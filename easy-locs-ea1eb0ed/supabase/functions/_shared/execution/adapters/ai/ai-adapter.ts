@@ -362,18 +362,24 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
     logs.push(`[${ts()}] quota.consume_failed ${post.blockedReason ?? "rejected"}`);
     return {
       success: false,
-      error: `Quota accounting failed: ${post.blockedReason ?? "rejected"}`,
       errorCode: "QUOTA_EXCEEDED",
-      logs,
-      actionsTaken: [`ai.${opts.taskType.toLowerCase()}`],
-      effects: {
+      errorMessage: `Quota accounting failed: ${post.blockedReason ?? "rejected"}`,
+      // Surface real provider/usage diagnostics on the failure path so
+      // governance dashboards (and the orchestrator's execution_result
+      // payload) can attribute the budget overrun to a specific call.
+      output: {
         provider: interaction.provider,
         model: interaction.model,
         prompt_tokens: interaction.promptTokens,
         completion_tokens: interaction.completionTokens,
         tokens: interaction.promptTokens + interaction.completionTokens,
         cost_usd: interaction.costUsd,
+        latency_ms: interaction.latencyMs,
+        quota_block_reason: post.blockedReason,
+        quota_block_window: post.blockedWindow,
       },
+      logs,
+      actionsTaken: [`ai.${opts.taskType.toLowerCase()}`],
     };
   }
 

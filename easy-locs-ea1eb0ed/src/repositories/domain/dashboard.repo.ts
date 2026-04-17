@@ -130,7 +130,11 @@ export const dashboardRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, domain, risk_level, status, payload, previous_state, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, agent_id, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+        // LB1 #834 — `execution_result` is the canonical post-execute
+        // payload (includes verifier output, tool calls, generated
+        // response). The decision drawer surfaces those AI fields, so
+        // we MUST select the column or the inbox shows blank metadata.
+        "id, type, domain, risk_level, status, payload, previous_state, result, execution_result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, agent_id, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
       )
       .eq("id", id)
       .maybeSingle();
