@@ -5,6 +5,12 @@ import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { aiRoute } from "../_shared/ai-router.ts";
 import { trackBackendEvent } from "../_shared/segment-client.ts";
+// LB1 #835 — non-streaming completions go through the platform-native AI
+// agent (registry, quota, sensitive routing, audit). Streaming responses
+// remain on the legacy `aiRoute` path because the AI adapter does not yet
+// expose a streaming transport; that surface is tracked for follow-up #837
+// (ai-router rewire).
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -186,34 +192,34 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
     }
 
-    const { response, provider, fallbackUsed } = await aiRoute({
-      messages: chatMessages,
-      max_tokens: 2000,
-      temperature: 0.7,
-      stream: !!stream,
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("AI Gateway error:", response.status, err, `provider=${provider}`);
-
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Payment required." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ error: "Service error" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
     if (stream) {
+      // Streaming path — kept on the legacy `aiRoute` transport; the AI
+      // adapter does not yet expose a streaming surface. Tracked by #837.
+      const { response, provider, fallbackUsed } = await aiRoute({
+        messages: chatMessages,
+        max_tokens: 2000,
+        temperature: 0.7,
+        stream: true,
+      });
+
+      if (!response.ok) {
+        const err = await response.text();
+        console.error("AI Gateway error:", response.status, err, `provider=${provider}`);
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Payment required." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ error: "Service error" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       logger.info("ai_stream_started", { provider, fallback: fallbackUsed });
       trackBackendEvent(userId, "ai.assistant_stream", {
         task: taskType,
@@ -232,16 +238,51 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       });
     }
 
-    const data = await response.json();
-    let reply: string;
-    if (provider === "anthropic") {
-      const content = data.content as Array<{ type: string; text?: string }>;
-      reply = content?.find((b: { type: string }) => b.type === "text")?.text ?? "";
-    } else {
-      reply = data.choices?.[0]?.message?.content ?? "";
+    // Non-streaming path — routed through the platform-native AI agent.
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "ai-assistant",
+        messages: chatMessages.map((m) => ({
+          role: m.role as "system" | "user" | "assistant" | "tool",
+          content: m.content,
+        })),
+        maxTokens: 2000,
+        temperature: 0.7,
+      },
+      { feature: "ai-assistant", requestedBy: `edge:ai-assistant:${userId}` },
+    );
+
+    if (outcome.status === "pending_review") {
+      // Sensitive output held for approval — tell the client without leaking
+      // the held content. The approvals UI surfaces the full draft.
+      logger.info("ai_response_pending_review", { taskId: outcome.taskId });
+      return new Response(
+        JSON.stringify({
+          reply: "Your response is being reviewed and will appear shortly.",
+          pendingReview: true,
+          taskId: outcome.taskId,
+        }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
-    if (!reply) reply = "Sorry, I couldn't generate a response.";
+    if (outcome.status !== "succeeded" || !outcome.output?.text) {
+      console.error(
+        "[ai-assistant] dispatch outcome:",
+        outcome.status,
+        outcome.errorCode,
+        outcome.errorMessage ?? outcome.blockedReason,
+      );
+      const status = outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 : 500;
+      return new Response(
+        JSON.stringify({ error: outcome.errorMessage ?? "Service error" }),
+        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    const reply = outcome.output.text || "Sorry, I couldn't generate a response.";
+    const provider = outcome.output.interaction?.provider ?? "openai";
+    const fallbackUsed = outcome.output.interaction?.fallbackUsed ?? false;
 
     logger.info("ai_response_completed", { provider, fallback: fallbackUsed });
     trackBackendEvent(userId, "ai.assistant_response", {

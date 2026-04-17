@@ -1,7 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
-import { createClient } from "npm:@supabase/supabase-js@2.57.2";
-import { aiRouteAndParse } from "../_shared/ai-router.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+// LB1 #835 — shopping chat goes through the platform-native AI agent so quota
+// / sensitive routing / audit are enforced. Direct `aiRouteAndParse` is no
+// longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,20 +17,40 @@ Deno.serve(async (req) => {
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
   try {
-    const { messages, system, shop_id } = await req.json();
+    const { messages, system } = await req.json();
 
     let reply: string;
     try {
-      const result = await aiRouteAndParse({
-        messages: [
-          { role: "system", content: system },
-          ...messages,
-        ],
-        max_tokens: 500,
-      });
-      reply = result.content || "I couldn't process that. Could you rephrase?";
+      const outcome = await dispatchAiCompletion(
+        {
+          feature: "ai-shopping-chat",
+          messages: [
+            { role: "system", content: system },
+            ...messages,
+          ],
+          maxTokens: 500,
+        },
+        { feature: "ai-shopping-chat" },
+      );
+
+      if (outcome.status === "succeeded" && outcome.output?.text) {
+        reply = outcome.output.text;
+      } else if (outcome.status === "pending_review") {
+        // The completion was held by the sensitive-output guard. Surface a
+        // friendly placeholder; an operator can release the result via the
+        // approvals inbox.
+        reply = "I need a moment to review my response. An advisor will follow up shortly.";
+      } else {
+        console.error(
+          "[ai-shopping-chat] dispatch outcome:",
+          outcome.status,
+          outcome.errorCode,
+          outcome.errorMessage ?? outcome.blockedReason,
+        );
+        reply = "I couldn't process that. Could you rephrase?";
+      }
     } catch (err) {
-      console.error("AI router error:", err);
+      console.error("AI dispatch error:", err);
       reply = "I'm having trouble thinking right now. Please try again!";
     }
 

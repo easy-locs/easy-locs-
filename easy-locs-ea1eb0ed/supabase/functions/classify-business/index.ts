@@ -8,8 +8,11 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
  * server-side pipeline code, never from browsers or unauthenticated callers.
  */
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { openaiChat } from "../_shared/openai-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+// LB1 #835 — classification routes through the platform-native AI agent so
+// quota / sensitive routing / audit are uniformly enforced. Direct
+// `openaiChat` is no longer permitted on this surface.
+import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
 const ALLOWED_ORIGINS = new Set([
   Deno.env.get("SITE_URL") ?? "",
@@ -131,28 +134,40 @@ Deno.serve(async (req: Request) => {
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await openaiChat({
-      messages: [{ role: "user", content: prompt }],
-      max_tokens: 200,
-      temperature: 0,
-      response_format: { type: "json_object" },
-    });
+    const outcome = await dispatchAiCompletion(
+      {
+        feature: "classify-business",
+        messages: [{ role: "user", content: prompt }],
+        maxTokens: 200,
+        temperature: 0,
+        responseFormat: "json",
+      },
+      { feature: "classify-business" },
+    );
 
-    if (!res.ok) throw new Error(`OpenAI HTTP ${res.status}`);
+    if (outcome.status !== "succeeded" || !outcome.output) {
+      throw new Error(
+        `dispatch ${outcome.status}: ${outcome.errorCode ?? ""} ${outcome.errorMessage ?? outcome.blockedReason ?? ""}`.trim(),
+      );
+    }
 
-    const json = await res.json();
-    const text = json.choices?.[0]?.message?.content;
-    if (!text) throw new Error("Empty OpenAI response");
-
-    const parsed = JSON.parse(text);
-    const vertical = VALID_VERTICALS.has(parsed.vertical) ? parsed.vertical : "services";
+    // Adapter exposes JSON via `output.json` when responseFormat="json";
+    // fall back to parsing `output.text` for legacy adapter shapes.
+    const parsed = (outcome.output.json as Record<string, unknown> | undefined) ??
+      (typeof outcome.output.text === "string" ? JSON.parse(outcome.output.text) : null);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Empty AI response");
+    }
+    const vertical = VALID_VERTICALS.has(parsed.vertical as string)
+      ? (parsed.vertical as string)
+      : "services";
     const confidence = Math.min(100, Math.max(0, Number(parsed.confidence) || 50));
 
     const response: ClassifyResponse = {
       vertical,
-      subcategory: typeof parsed.subcategory === "string" ? parsed.subcategory : null,
+      subcategory: typeof parsed.subcategory === "string" ? (parsed.subcategory as string) : null,
       confidence,
-      reason: typeof parsed.reason === "string" ? parsed.reason : "LLM classification",
+      reason: typeof parsed.reason === "string" ? (parsed.reason as string) : "LLM classification",
       source: "llm",
     };
 

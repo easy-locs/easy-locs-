@@ -3,6 +3,12 @@
  * Delegates to the storefront-description Supabase Edge Function so that OpenAI keys
  * remain strictly server-side. Falls back to template-based copy if the edge function
  * is unavailable or returns an error.
+ *
+ * LB1 #835 — Governed via the edge layer: `storefront-description` now
+ * dispatches through `dispatchExecutionTask({ domain: 'ai', task_type:
+ * 'AI_COMPLETION' })` so every call is gated by the platform-native AI
+ * agent (registry, quota, sensitive routing, audit). No direct provider
+ * SDK is used in this file.
  */
 
 export interface AIDescriptionInput {
