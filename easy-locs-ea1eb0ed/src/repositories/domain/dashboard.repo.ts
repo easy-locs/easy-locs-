@@ -185,6 +185,56 @@ export const dashboardRepo = {
   },
 
   /**
+   * LC7 (#874) — fetch every execution_task currently halted by the
+   * drift detector. These rows live at `status = 'blocked'` with the
+   * sentinel `blocked_reason = 'BLOCKED_BY_DRIFT'` and carry a
+   * `drift_report` JSONB describing the file/line conflict.
+   */
+  async fetchDriftBlockedTasks(opts?: { limit?: number }) {
+    const limit = opts?.limit ?? 100;
+    const { data, error } = await domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, domain, risk_level, status, requested_by, agent_id, blocked_reason, drift_report, created_at, updated_at",
+      )
+      .eq("status", "blocked")
+      .eq("blocked_reason", "BLOCKED_BY_DRIFT")
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (error)
+      throw new Error(`fetchDriftBlockedTasks failed: ${error.message}`);
+    return data ?? [];
+  },
+
+  /**
+   * LC7 (#874) — operator "Replan" action. Stamps a
+   * `replan_requested_at` marker into the existing drift_report so an
+   * LC3 planner trigger downstream can pick it up. NEVER calls LC4
+   * builder directly. Read-only on every other table.
+   */
+  async requestDriftReplan(taskId: string) {
+    // Control-plane invariant (#812): mutations on `system.execution_tasks`
+    // are RPC-only — `INSERT/UPDATE/DELETE` is REVOKED from `authenticated`
+    // (see migration 20260418300000_execution_tasks.sql). The Replan
+    // marker therefore goes through `system.request_drift_replan`, a
+    // SECURITY DEFINER RPC that asserts admin role, validates the
+    // BLOCKED_BY_DRIFT precondition, and stamps the marker into the
+    // existing `drift_report` JSONB. The RPC returns the updated
+    // drift_report so the UI can show "Replan requested at …" without
+    // a follow-up read.
+    const { data, error } = await (
+      supabase.schema("system") as unknown as {
+        rpc: (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: unknown; error: { message: string } | null }>;
+      }
+    ).rpc("request_drift_replan", { p_task_id: taskId });
+    if (error) throw new Error(`requestDriftReplan failed: ${error.message}`);
+    return { ok: true, drift_report: (data as Record<string, unknown> | null) ?? null } as const;
+  },
+
+  /**
    * Decisions log for a single task. Powers the “Decisions” tab on
    * ExecutionTaskPanel and the strip at the top of the decision drawer
    * (so an admin sees prior comments / changes_requested before voting).
