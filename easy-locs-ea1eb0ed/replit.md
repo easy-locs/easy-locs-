@@ -1079,6 +1079,11 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **DB hardening**: `supabase/migrations/20260424500000_set_agent_status_super_admin.sql` — adds `system._assert_super_admin_or_service` and rebinds `system.set_agent_status` to it (closes admin→super_admin privilege gap that existed in L1).
 - **Tests**: `src/__tests__/admin-agents-cockpit.test.ts` (kind-map exhaustiveness + repo write contract); `supabase/tests/agent_set_status_super_admin.test.sql` (DB-layer regression: admin rejected w/ 42501, super_admin succeeds, service_role bypass).
 
+## Sovereign Agent Control — L7 Migration Inventory (Task #814)
+- **Inventory document**: `docs/architecture/agent-migration-inventory.md` — snapshot of every domain still bypassing the orchestrator, the 626 dispatch-allowlist exemptions to drain, the (domain, task_type) → risk mapping for the L7 phases, and the per-phase exit criteria + SQL audit queries.
+- **Phase plan**: P1 payments+wallet → P2 kyc+identity → P3 rides+marketplace ops → P4 content+contacts → P5 notifications+otp. Each phase ships behind a feature flag (`agent.<domain>.enabled`) with its own canary + audit doc under `docs/audits/agent-migration/<phase>.md`. Per-phase implementation tasks are tracked separately so each can be reviewed and rolled back independently.
+- **Today's coverage**: only `marketplace.publish/unpublish` + `github-runner.smoke_noop` are governed; ~10 % of the platform. End-state: SQL audit `select count(*) from system.execution_tasks where agent_id is null and created_at > now() - interval '24h'` returns 0.
+
 ## Chief Agent Console — Unified Command Center (Task #697)
 - **Route**: `/admin/command-center` — accessible only to `super_admin` role via `SuperAdminGate` component
 - **Edge Function**: `supabase/functions/chief-agent/index.ts` — receives natural language commands, verifies `super_admin` role server-side via `has_role` RPC, uses `_shared/ai-router.ts` for LLM interpretation (OpenAI → Anthropic fallback), dispatches to real backend services (sentinel-server, command-center-api, health-check) in parallel, synthesizes results via second LLM pass, returns structured JSON responses with real execution data. Logs telemetry to `sentinel_telemetry` table
