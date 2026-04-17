@@ -460,6 +460,7 @@ export const AdminOrderWatchPage = safeLazy(() => import("@/pages/admin/AdminOrd
 export const AdminSystemHealthPage = safeLazy(() => import("@/pages/admin/AdminSystemHealthPage"), "AdminSystemHealthPage");
 export const AdminFraudDetectionPage = safeLazy(() => import("@/pages/admin/AdminFraudDetectionPage"), "AdminFraudDetectionPage");
 export const AdminMerchantApprovalQueuePage = safeLazy(() => import("@/pages/admin/AdminMerchantApprovalQueuePage"), "AdminMerchantApprovalQueuePage");
+export const AdminApprovalsPage = safeLazy(() => import("@/pages/admin/AdminApprovalsPage"), "AdminApprovalsPage");
 export const AdminSupportSlaPage = safeLazy(() => import("@/pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 export const AdminRefundQueuePage = safeLazy(() => import("@/pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
 export const AdminPlatformHealthPage = safeLazy(() => import("@/pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");

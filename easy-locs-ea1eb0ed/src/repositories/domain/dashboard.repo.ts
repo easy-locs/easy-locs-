@@ -1,4 +1,5 @@
 import { domainDb, db } from "@/services/db";
+import { supabase } from "@/integrations/supabase/client";
 
 export {
   fetchUserOrg,
@@ -145,5 +146,88 @@ export const dashboardRepo = {
     if (filters.riskLevel) query = query.eq("risk_level", filters.riskLevel);
     const { count } = await query;
     return count ?? 0;
+  },
+
+  // ── Sovereign Agent Control · L5 (#812) ─────────────────────────────
+  /**
+   * Returns the open approvals queue — every execution_task currently in
+   * `pending_review`, ordered oldest-first so reviewers attack the
+   * back-log FIFO. Selected fields stay in sync with the
+   * AdminApprovalsPage table; if the admin needs the raw payload they
+   * open the decision drawer which calls fetchExecutionTaskById.
+   */
+  async fetchPendingApprovals(opts?: { limit?: number }) {
+    const limit = opts?.limit ?? 100;
+    const { data, error } = await domainDb.system
+      .from("execution_tasks")
+      .select(
+        "id, type, domain, risk_level, status, requested_by, agent_id, blocked_reason, approval_policy, created_at, updated_at",
+      )
+      .eq("status", "pending_review")
+      .order("created_at", { ascending: true })
+      .limit(limit);
+    if (error)
+      throw new Error(`fetchPendingApprovals failed: ${error.message}`);
+    return data ?? [];
+  },
+
+  /**
+   * Decisions log for a single task. Powers the “Decisions” tab on
+   * ExecutionTaskPanel and the strip at the top of the decision drawer
+   * (so an admin sees prior comments / changes_requested before voting).
+   *
+   * IMPORTANT — read path is RPC-only (#812 control-plane invariant).
+   * Direct SELECT on `system.task_approvals` is REVOKED for the
+   * `authenticated` role; the only way to observe the audit trail is
+   * `system.list_task_approvals(p_task_id)`, which checks the admin
+   * role and returns rows ordered by `decided_at ASC`.
+   */
+  async fetchTaskApprovals(taskId: string) {
+    const { data, error } = await (
+      supabase.schema("system") as unknown as {
+        rpc: (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{
+          data: Array<Record<string, unknown>> | null;
+          error: { message: string } | null;
+        }>;
+      }
+    ).rpc("list_task_approvals", { p_task_id: taskId });
+    if (error) throw new Error(`fetchTaskApprovals failed: ${error.message}`);
+    return data ?? [];
+  },
+
+  /**
+   * Idempotent wrapper over `system.decide_task_approval`. The DB RPC
+   * enforces the legal state machine (pending_review → approved /
+   * rejected / changes_requested) and rejects illegal transitions with
+   * `invalid_state` so the UI can surface a precise error. Passing the
+   * same `clientRequestId` twice returns the original audit row instead
+   * of duplicating the decision — safe to retry.
+   */
+  async decideTaskApproval(input: {
+    taskId: string;
+    decision: "approved" | "rejected" | "changes_requested" | "comment";
+    reason?: string | null;
+    commentMd?: string | null;
+    clientRequestId?: string | null;
+  }) {
+    const { data, error } = await (
+      supabase.schema("system") as unknown as {
+        rpc: (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ data: unknown; error: { message: string } | null }>;
+      }
+    ).rpc("decide_task_approval", {
+      p_task_id: input.taskId,
+      p_decision: input.decision,
+      p_reason: input.reason ?? null,
+      p_comment_md: input.commentMd ?? null,
+      p_client_request_id: input.clientRequestId ?? null,
+    });
+    if (error) throw new Error(`decideTaskApproval failed: ${error.message}`);
+    return data;
   },
 };

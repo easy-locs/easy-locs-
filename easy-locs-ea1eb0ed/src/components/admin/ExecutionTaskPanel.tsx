@@ -308,6 +308,10 @@ function TaskRow({ row, onRetry, retrying }: {
               </ol>
             </div>
 
+            {/* L5 Decisions audit log (#812). Lazily fetched only when
+                the row is expanded so the queue stays light. */}
+            <ExecutionTaskDecisions taskId={row.id} />
+
             {/* Logs */}
             <div>
               <div className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1.5">
@@ -583,3 +587,53 @@ export function ExecutionTaskPanel() {
 }
 
 export default ExecutionTaskPanel;
+
+/**
+ * ExecutionTaskDecisions — L5 (#812). Renders the chronological audit
+ * trail from `system.task_approvals` for a given task. Hidden behind
+ * the row-expand state of TaskRow so the parent query stays cheap; the
+ * decisions query only fires once a reviewer expands the task.
+ */
+function ExecutionTaskDecisions({ taskId }: { taskId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-approvals", "decisions", taskId],
+    queryFn: () => dashboardRepo.fetchTaskApprovals(taskId),
+    staleTime: 10_000,
+  });
+  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  return (
+    <div data-testid="execution-task-decisions">
+      <div className="text-[0.625rem] uppercase tracking-wide text-muted-foreground mb-1.5">
+        Decisions ({rows.length})
+      </div>
+      {isLoading ? (
+        <p className="text-[0.625rem] text-muted-foreground italic">Loading…</p>
+      ) : rows.length === 0 ? (
+        <p className="text-[0.625rem] text-muted-foreground italic">
+          No reviewer decisions on this task yet.
+        </p>
+      ) : (
+        <ol className="space-y-1">
+          {rows.map((d) => (
+            <li
+              key={String(d.id)}
+              className="text-[0.6875rem] font-mono bg-muted/40 border border-border/40 rounded px-2 py-1 flex flex-wrap items-start gap-2"
+            >
+              <span className="font-semibold uppercase shrink-0">
+                {String(d.decision)}
+              </span>
+              <span className="text-muted-foreground shrink-0">
+                {new Date(String(d.decided_at)).toLocaleString()}
+              </span>
+              {d.reason ? (
+                <span className="break-words text-foreground">
+                  {String(d.reason)}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ol>
+      )}
+    </div>
+  );
+}

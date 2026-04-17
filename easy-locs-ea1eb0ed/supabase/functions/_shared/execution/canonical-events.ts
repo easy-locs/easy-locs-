@@ -64,6 +64,25 @@ export const CANONICAL_EXECUTION_EVENTS = {
    * it (fail-loud, never fail-silent).
    */
   TASK_ROLLBACK_FAILED: "task.rollback_failed",
+  /**
+   * Sovereign Agent Control · L5 (task #812). Emitted when a task lands
+   * in `pending_review` (insert path or transition from another state).
+   * Carries `{ task_id, agent_id, risk, summary, approval_policy,
+   * task_type, domain }` so a downstream notifier (Slack / email / push)
+   * has everything it needs to compose a message without a second
+   * round-trip. Emitted by the `system.trg_task_emit_approval_requested`
+   * SQL trigger (kind-agnostic, fires for AI tasks, marketplace tasks,
+   * and future build-agent code patches alike).
+   */
+  APPROVAL_REQUESTED: "approval.requested",
+  /**
+   * L5 — Emitted by `system.decide_task_approval` for every reviewer
+   * decision (`approved`, `rejected`, `changes_requested`, `comment`).
+   * Carries `{ approval_id, decision, reviewer, reason, has_comment }`.
+   * This is the single canonical signal that an approval inbox UI / bot
+   * subscribes to instead of polling `system.task_approvals` directly.
+   */
+  APPROVAL_DECIDED: "approval.decided",
 } as const;
 
 export type CanonicalExecutionEventName =
