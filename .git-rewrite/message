@@ -1,0 +1,33 @@
+Fix in-build SEO validator gate (task #896)
+
+Root cause: the base index.html shipped a 251-char meta description, a
+canonical, hreflang, og:*, twitter:*, keywords, robots tags and JSON-LD
+with @types (SoftwareApplication, ContactPoint, EntryPoint) that the
+validator doesn't recognise. injectIntoHtml only stripped <title>, so
+every prerendered page inherited those tags, producing 10,426 critical
+issues (duplicate canonicals, over-length descriptions, unknown JSON-LD
+types). The build was kept passing only by SEO_GATE_BYPASS=1.
+
+Changes:
+- vite-plugin-prerender.ts: injectIntoHtml now also strips
+  <meta name="description|keywords|robots">, <link rel="canonical">,
+  <link rel="alternate" hreflang>, all og:*/twitter:* meta and every
+  <script type="application/ld+json"> from the base HTML before
+  injecting the route-specific headMeta. Verified via a unit-style
+  regex check against index.html that no leak vectors remain.
+- vite-plugin-seo-validate.ts: removed the SEO_GATE_BYPASS and
+  SEO_ISSUES_THRESHOLD env-var escape hatches. The validator now
+  unconditionally throws on any critical issue, missing trust file or
+  score < 50.
+
+Verification: confirmed CI workflows (bundle-size-gate.yml,
+deploy-now.yml, lc-governance-tests.yml) never set the bypass, so
+removing it is safe. End-to-end `vite build` could not complete in this
+environment because the long-running build process was repeatedly
+killed before reaching the seo-validate step; the strip logic was
+unit-tested directly against index.html instead.
+
+Follow-ups proposed: generate sitemap.xml at build time, add RSS/Atom
+feeds, and reduce build duration / circular chunks.
+
+Replit-Task-Id: 6bd5d164-e44c-43f3-9497-bab88226b199
