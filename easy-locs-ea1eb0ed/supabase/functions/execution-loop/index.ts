@@ -40,6 +40,11 @@ import { globalVerifierRegistry } from "../_shared/execution/verifier-registry.t
 import { TaskVerificationService } from "../_shared/execution/verification-service.ts";
 import { bootstrapMarketplaceAdapters } from "../_shared/execution/adapters/marketplace/bootstrap.ts";
 import { bootstrapAiAdapters } from "../_shared/execution/adapters/ai/bootstrap.ts";
+// LC2 (#872) — dev-pipeline code.tool adapters
+import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/bootstrap.ts";
+import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
+import { bootstrapDeployPreviewAdapters } from "../_shared/execution/adapters/deploy/preview/bootstrap.ts";
+import { bootstrapDeployProdAdapters } from "../_shared/execution/adapters/deploy/prod/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import {
@@ -315,6 +320,13 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       // inside each bootstrap function).
       await bootstrapMarketplaceAdapters(sb);
       await bootstrapAiAdapters(sb);
+      // LC2 (#872) — dev pipeline. Each bootstrap reconciles its own
+      // agent rows in `system.agents`; in production a failed reconcile
+      // hard-fails the boot, in dev/preview it logs and continues.
+      await bootstrapBuildAdapters(sb);
+      await bootstrapTestAdapters(sb);
+      await bootstrapDeployPreviewAdapters(sb);
+      await bootstrapDeployProdAdapters(sb);
     })().catch((e) => {
       _bootstrapPromise = null;
       throw e;
