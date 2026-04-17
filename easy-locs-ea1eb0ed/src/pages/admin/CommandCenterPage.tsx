@@ -17,6 +17,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  SlashCommandInput,
+  type SlashCommandInputHandle,
+} from "@/components/admin/control/command/SlashCommandInput";
+import { InlineVisualizations } from "@/components/admin/control/command/InlineVisualizations";
+import { CommandGhostPreview } from "@/components/admin/control/command/CommandGhostPreview";
+import {
+  expandSlashCommand,
+  SLASH_COMMANDS,
+  type SlashCommand,
+} from "@/components/admin/control/command/slash-commands";
+import {
   Send,
   History,
   PanelRightOpen,
@@ -119,6 +130,8 @@ function StructuredResponse({
           ))}
         </div>
       )}
+
+      <InlineVisualizations response={response} />
 
       {response.recommendations.length > 0 && (
         <div className="space-y-1">
@@ -260,7 +273,7 @@ function AgentStatusSidebar() {
   );
 }
 
-function HistoryPanel() {
+function HistoryPanel({ variant = "split" }: { variant?: "split" | "overlay" }) {
   const { history, historyOpen, toggleHistory, loadHistoryConversation, historyLoaded } = useChiefAgentStore();
   const [search, setSearch] = useState("");
 
@@ -273,11 +286,16 @@ function HistoryPanel() {
       )
     : history;
 
+  const containerClass =
+    variant === "overlay"
+      ? "absolute inset-0 bg-background/95 backdrop-blur-sm z-20 flex flex-col"
+      : "w-80 border-r border-border/30 bg-card/40 flex flex-col flex-shrink-0";
+
   return (
-    <div className="absolute inset-0 bg-background/95 backdrop-blur-sm z-20 flex flex-col">
+    <div className={containerClass} aria-label="Command history">
       <div className="flex items-center justify-between px-4 py-3 border-b border-border/20">
         <h3 className="text-sm font-semibold">Command History</h3>
-        <button onClick={toggleHistory} className="p-1 rounded-lg hover:bg-muted">
+        <button onClick={toggleHistory} className="p-1 rounded-lg hover:bg-muted" aria-label="Close history">
           <X className="h-4 w-4" />
         </button>
       </div>
@@ -457,8 +475,14 @@ function CommandCenterInner() {
   const navigate = useNavigate();
   const { user } = useAuthSession();
   const [inputValue, setInputValue] = useState("");
+  const [pending, setPending] = useState<{
+    raw: string;
+    expanded: string;
+    command: SlashCommand | null;
+  } | null>(null);
+  const [showHelp, setShowHelp] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<SlashCommandInputHandle>(null);
   const sendCommand = useSendCommand();
 
   const {
@@ -552,22 +576,77 @@ function CommandCenterInner() {
     }
   }, [messages]);
 
-  const handleSend = () => {
-    const text = inputValue.trim();
-    if (!text) return;
-    setInputValue("");
-    sendCommand(text);
+  const runLocalCommand = useCallback(
+    (cmd: SlashCommand) => {
+      switch (cmd.localAction) {
+        case "clear":
+          clearMessages();
+          setShowHelp(false);
+          break;
+        case "history":
+          toggleHistory();
+          break;
+        case "sidebar":
+          toggleSidebar();
+          break;
+        case "help":
+          setShowHelp(true);
+          break;
+      }
+    },
+    [clearMessages, toggleHistory, toggleSidebar],
+  );
+
+  const submitPending = useCallback(
+    (p: { raw: string; expanded: string; command: SlashCommand | null }) => {
+      if (p.command?.kind === "local") {
+        runLocalCommand(p.command);
+      } else if (p.expanded) {
+        setShowHelp(false);
+        sendCommand(p.expanded);
+      }
+      setInputValue("");
+      setPending(null);
+      inputRef.current?.focus();
+    },
+    [runLocalCommand, sendCommand],
+  );
+
+  const handleSend = (skipPreview = false) => {
+    const raw = inputValue.trim();
+    if (!raw) return;
+    const { text, command } = expandSlashCommand(raw);
+    const next = { raw, expanded: text, command };
+    if (skipPreview) {
+      submitPending(next);
+      return;
+    }
+    setPending(next);
+  };
+
+  const handleConfirmPending = () => {
+    if (pending) submitPending(pending);
+  };
+
+  const handleCancelPending = () => {
+    setPending(null);
     inputRef.current?.focus();
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+  const handleEditPending = () => {
+    if (pending) inputRef.current?.setValue(pending.raw);
+    setPending(null);
+  };
+
+  const handlePickCommand = (cmd: SlashCommand) => {
+    if (cmd.kind === "local") {
+      const next = { raw: cmd.cmd, expanded: cmd.cmd, command: cmd };
+      setPending(next);
     }
   };
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isBusy = chiefStatus === "working" || chiefStatus === "checking";
 
   return (
     <SubPageShell>
@@ -615,9 +694,11 @@ function CommandCenterInner() {
         </div>
 
         <div className="flex flex-1 overflow-hidden relative">
-          <div className="flex-1 flex flex-col">
+          {!isMobile && historyOpen && <HistoryPanel variant="split" />}
+
+          <div className="flex-1 flex flex-col min-w-0">
             <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-              {messages.length === 0 && (
+              {messages.length === 0 && !showHelp && (
                 <div className="flex flex-col items-center justify-center h-full text-center px-6">
                   <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-4">
                     <Bot className="h-8 w-8 text-emerald-400" />
@@ -642,6 +723,37 @@ function CommandCenterInner() {
                       </button>
                     ))}
                   </div>
+                  <div className="text-[11px] text-muted-foreground/70 mt-4">
+                    Type <span className="font-mono">/</span> to see slash commands
+                  </div>
+                </div>
+              )}
+
+              {showHelp && (
+                <div className="rounded-2xl border border-border/30 bg-card/60 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold">Slash commands</h3>
+                    <button
+                      onClick={() => setShowHelp(false)}
+                      className="p-1 rounded-lg hover:bg-muted"
+                      aria-label="Close help"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <div className="grid gap-1.5 sm:grid-cols-2">
+                    {SLASH_COMMANDS.map((c) => (
+                      <div key={c.cmd} className="rounded-xl bg-muted/30 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-semibold">{c.cmd}</span>
+                          <span className="text-xs text-muted-foreground">{c.desc}</span>
+                        </div>
+                        {c.hint && (
+                          <div className="text-[11px] text-muted-foreground/70 mt-0.5">{c.hint}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -651,29 +763,41 @@ function CommandCenterInner() {
             </div>
 
             <div className="border-t border-border/20 bg-card/50 backdrop-blur-sm px-4 py-3 pb-[env(safe-area-inset-bottom,12px)]">
-              <div className="flex items-end gap-2 max-w-2xl mx-auto">
-                <Input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Type a command…"
-                  className="flex-1 h-11 rounded-xl text-sm"
-                  disabled={chiefStatus === "working" || chiefStatus === "checking"}
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!inputValue.trim() || chiefStatus === "working" || chiefStatus === "checking"}
-                  className="h-11 w-11 rounded-xl p-0"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+              <div className="max-w-2xl mx-auto space-y-2">
+                {pending && (
+                  <CommandGhostPreview
+                    rawInput={pending.raw}
+                    expanded={pending.expanded}
+                    command={pending.command}
+                    onConfirm={handleConfirmPending}
+                    onCancel={handleCancelPending}
+                    onEdit={handleEditPending}
+                  />
+                )}
+                <div className="flex items-end gap-2">
+                  <SlashCommandInput
+                    ref={inputRef}
+                    value={inputValue}
+                    onChange={setInputValue}
+                    onSubmit={(skip) => handleSend(skip)}
+                    onPickCommand={handlePickCommand}
+                    disabled={isBusy}
+                  />
+                  <Button
+                    onClick={() => handleSend(false)}
+                    disabled={!inputValue.trim() || isBusy || !!pending}
+                    className="h-11 w-11 rounded-xl p-0"
+                    aria-label="Preview command"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
 
           {!isMobile && <AgentStatusSidebar />}
-          <HistoryPanel />
+          {isMobile && <HistoryPanel variant="overlay" />}
         </div>
       </div>
     </SubPageShell>
