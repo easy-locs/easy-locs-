@@ -1071,6 +1071,14 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **DB Migration**: `supabase/migrations/20260418200000_orbit_ai_support_tables.sql` — support_sessions, support_messages, support_traces, shop_quality_scores, shop_quality_events, support_learning_insights, orbit_notifications. RLS enabled with user-scoped policies
 - **Platform Bus Events**: `support:session_created`, `support:ai_classification`, `support:shop_transfer_initiated/timeout`, `support:escalation_triggered`, `support:ticket_created`, `support:session_resolved`, `support:payment_anomaly_detected`, `support:agents_started`
 
+## Sovereign Agent Control — /admin/agents Cockpit (Task #813, L4)
+- **Route**: `/admin/agents` — `SuperAdminGate` + DB-layer super_admin guard. Registered in `src/routes/admin.routes.tsx`, lazy-loaded via `src/app/app-route-registry.tsx` (`AdminAgentsPage`).
+- **Page**: `src/pages/admin/AdminAgentsPage.tsx` — table view (slug, kind, status, health, domains, last_run). Search + kind/status filter. Click row → drawer.
+- **Repo**: `src/lib/admin/agents-repo.ts` — reads `system.v_agents_overview` + `system.v_agent_health` (joined client-side); writes only via `system.set_agent_status` RPC. Also exposes `listAgentRuns` (filtered `execution_tasks.agent_id`) and `listAgentEvents` (filtered `engine_run_logs.metadata_json->>agent_id`).
+- **Components**: `src/components/admin/agents/agent-kind.ts` (kind→icon/label map, kind-agnostic logic); `AgentDetailDrawer.tsx` (Overview/Capabilities/Runs/Events tabs, lazy fetch per tab); `AgentActionsMenu.tsx` (Enable/Disable/Canary 10%·50%/Deprecate via RPC, optimistic UI w/ rollback); `AgentTriggerDialog.tsx` (manual `taskDispatcher.dispatch` with capability picker — policy engine still gates approvals).
+- **DB hardening**: `supabase/migrations/20260424500000_set_agent_status_super_admin.sql` — adds `system._assert_super_admin_or_service` and rebinds `system.set_agent_status` to it (closes admin→super_admin privilege gap that existed in L1).
+- **Tests**: `src/__tests__/admin-agents-cockpit.test.ts` (kind-map exhaustiveness + repo write contract); `supabase/tests/agent_set_status_super_admin.test.sql` (DB-layer regression: admin rejected w/ 42501, super_admin succeeds, service_role bypass).
+
 ## Chief Agent Console — Unified Command Center (Task #697)
 - **Route**: `/admin/command-center` — accessible only to `super_admin` role via `SuperAdminGate` component
 - **Edge Function**: `supabase/functions/chief-agent/index.ts` — receives natural language commands, verifies `super_admin` role server-side via `has_role` RPC, uses `_shared/ai-router.ts` for LLM interpretation (OpenAI → Anthropic fallback), dispatches to real backend services (sentinel-server, command-center-api, health-check) in parallel, synthesizes results via second LLM pass, returns structured JSON responses with real execution data. Logs telemetry to `sentinel_telemetry` table
