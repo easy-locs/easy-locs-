@@ -1,40 +1,72 @@
-Task #925: Run the merge-conflict smoke against the live sandbox
+Next-Gen Sécurité — hardened public webhooks, RLS invariants, CSP report,
+E2EE tamper tests, and a ratcheted inventory gate
 
-Original task: execute the staged operator smoke that #915 was supposed
-to deliver, against a real sandbox Supabase project, and capture the
-audit row proving `payload.last_replan.reason` is stored verbatim and
-starts with `merge_conflict:overlap_with:`.
+Task #768 is a cross-cutting epic. This commit delivers concrete runtime
+hardening on the highest-risk surfaces and the automation that keeps the
+remaining gap from growing. Edge-function consolidation (#226) and full
+classification of the 186 remaining functions are tracked as follow-up
+#772; this change makes regression on those impossible.
 
-Scope deviations (cleared with the user beforehand):
-- The script #915 was meant to deliver did not exist in this branch.
-  Wrote `easy-locs-ea1eb0ed/scripts/smoke-merge-conflict-recovery.ts`
-  from scratch as part of this task.
-- No throwaway GitHub repo was provisioned. The pre-merge drift hook ->
-  loop -> request_dev_replan chain is already proven end-to-end
-  in-memory by the LC9 scenario 4b integration test. The only piece
-  needing real infra was the SQL RPC's audit-trail behaviour against a
-  real Postgres, which the smoke validates directly. This kept us
-  inside the user's "do not overbuild" constraint.
+Runtime hardening (code changes)
+- _shared/webhook-signature.ts (new): verifyHmacSha256 + constantTimeEqual
+  backed by node:crypto timingSafeEqual.
+- command-email-intake: HMAC-SHA-256 over raw body + constant-time legacy
+  secret fallback; withRateLimit 60/min.
+- command-approval-webhook: constant-time x-internal-secret compare;
+  withRateLimit 120/min.
+- receive-email: constant-time compare + withRateLimit 120/min;
+  config.toml verify_jwt=false added.
+- command-monitoring-cron: constant-time compare; verify_jwt=false.
+- public-api: withRateLimit 120/min.
+- csp-report (new function) + security_csp_reports table with RLS locked
+  to service_role; wired into inventory manifest.
 
-What ran:
-- Provisioned an ephemeral Supabase free-tier project
-  (smoke-task-925, ref rskjyebxodnsxawtvhrc, ap-southeast-1) via the
-  Management API.
-- Applied a minimal bootstrap (system schema, app_role enum, has_role
-  stub, minimal system.execution_tasks table) plus the actual LC4
-  migration `20260501100000_lc4_dev_replan_rpc.sql` verbatim.
-- Exposed `system` via PostgREST and granted service_role privileges.
-- Ran the new smoke script: all 9 assertions passed, exit code 0.
-- The captured audit row's `payload.last_replan.reason` was
-  `"merge_conflict:overlap_with:agent-task-A"` — verbatim, with the
-  required prefix.
-- Tore the sandbox project down via the Management API. No persistent
-  infra remains on the user's account.
+RLS invariants (DB)
+- 20260419000000_rls_invariants.sql: creates system.rls_whitelist +
+  system.assert_rls_invariants() + system.rls_audit_log. Checks every
+  table in sensitive schemas has row_security enabled AND ≥1 policy
+  (or an explicit whitelist row with a documented reason). Runs at
+  migration time and records any violation. The "raise warning" stops
+  short of breaking deploys today; upgraded to exception once the
+  RLS audit backlog reaches zero.
 
-Artifacts:
-- easy-locs-ea1eb0ed/scripts/smoke-merge-conflict-recovery.ts (new)
-- .local/artifacts/smoke-merge-conflict-recovery.log.json (run log)
-- .local/artifacts/task-925-notes.md (run-book / archive)
+E2EE (client)
+- src/lib/__tests__/orbit-double-ratchet.test.ts: AES-GCM ciphertext
+  tamper, IV tamper, and MAX_SKIP forged-header tests (5 tests, pass).
 
-Follow-up proposed (#934): wire this smoke into release sign-off so
-regressions in the RPC or PostgREST exposure are caught automatically.
+Deterministic inventory gate
+- supabase/functions/_manifest.ts: ground-truth classification (38 entries).
+- scripts/security-inventory-edge-functions.ts: cross-checks manifest vs
+  config.toml vs handler source, exits non-zero on mismatches (exit 2)
+  AND on unclassified-count regressions (exit 3). Baseline committed to
+  docs/security/unclassified-baseline.json; ratchet only moves down.
+
+CI (.github/workflows/security-audit.yml)
+- dependency-audit: npm audit --audit-level=high on prod deps.
+- sast: Semgrep p/owasp-top-ten + p/javascript + p/typescript + p/react
+  (severity ERROR).
+- secret-scan-weekly: belt-and-braces scan.
+- edge-functions-inventory: runs the gate + enforces baseline file drift.
+- e2ee-tests: runs the double-ratchet tamper + MAX_SKIP suite.
+
+Documentation
+- next-gen-security-hardening.md, owasp-top10-checklist.md,
+  rls-audit-checklist.md, e2ee-orbit-audit.md, secrets-rotation.md,
+  regenerated edge-functions-auth-inventory.md, unclassified-baseline.json.
+
+Deviations
+- 186 functions remain unclassified — ratcheted baseline prevents
+  regression; full closure is follow-up #772.
+- RLS invariant function emits warnings today (not exceptions) so the
+  backlog can be drained without blocking unrelated migrations.
+- HoundDog CLI intentionally excluded from CI until the CLI is stable.
+
+Rebase resolution
+- Resolved conflicts in easy-locs-ea1eb0ed/bundle-size-baseline.json and
+  easy-locs-ea1eb0ed/scripts/bundle-size-gate.ts (incoming bundle-size CI
+  gate, task #738). HEAD was a strict superset that also tracks cssBytes
+  and assetBytes with per-asset-type regression checks. Kept the HEAD
+  superset — it retains every feature from both sides while adding CSS +
+  static-asset gating.
+
+Replit-Task-Id: 6145e0fe-76ce-4908-8275-ef8e92e8dbaa
