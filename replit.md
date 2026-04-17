@@ -15,7 +15,14 @@ redeploy `easy-locs.com`.
   produced when a task merges) and (b) pushes the current branch to `origin`.
 - **Manual fallback**: if the hook fails or you want to force a push, run
   `bash scripts/auto-push-github.sh` from the workspace root. Logs are written
-  to `/tmp/auto-push-github.log`.
+  to `/tmp/auto-push-github.log`; the last result (ok/fail + commit + message)
+  lands in `/tmp/auto-push-github.status` and is echoed by `post-merge.sh`.
+- **Operational checks** (run anytime to confirm the pipeline is healthy):
+  ```bash
+  git remote -v                              # origin should be easy-locs/easy-locs-
+  git log -1 --format='%an <%ae>'            # should be: jstarbuzz <jstarbuzz@gmail.com>
+  cat /tmp/auto-push-github.status           # last auto-push result
+  ```
 - **Verification**: after a push, check Vercel — the deployment for the new
   commit should reach **Ready** within a couple of minutes and `easy-locs.com`
   (including `/admin/super-dashboard` and `/admin/master-control`) reflects the
