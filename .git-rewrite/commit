@@ -1,40 +1,7 @@
-tree 625e1ee73c9fe5307048783fa3538efc1102cc8d
-parent 2a2a67c2317b0334c90d51f64e1d05757905bb42
-author jstarbuzz <jstarbuzz@gmail.com> 1776449605 +0000
-committer jstarbuzz <jstarbuzz@gmail.com> 1776462190 +0000
+tree 46543ffcacc3231eb4d908755e8159af01314247
+parent d8ff04be6f510c20705ea2b4ba6efae5a64bd79d
+parent f75d20af52e55daeaa22455bd5ac37803bd3c26d
+author jstarbuzz <jstarbuzz@gmail.com> 1776467380 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776467380 +0000
 
-LC8 (#875) — Dev runs explorer (UI)
-
-Adds a dev-run renderer to the existing runs explorer so `domain: 'code'`
-execution_tasks render their diff, build log, test output, PR status,
-Actions URL, and drift report. AI-run rendering is untouched; the
-selector branches purely on `domain`.
-
-Changes:
-- New component `src/components/admin/DevRunDetail.tsx` rendering
-  Diff (via existing TextDiffView), Build log, Test output, Drift
-  report, PR status badge, View PR + Replay actions, error panel,
-  held-for-review banner that deep-links to /admin/approvals.
-- `agents-repo.listAgentRunsRich` now selects `pr_url`,
-  `external_run_url`, `runner` and surfaces optional dev fields
-  (`dev_diff`, `dev_build_log`, `dev_test_output`, `dev_drift`,
-  `dev_logs`, `pr_url`, `external_run_url`, `pr_status`, raw
-  `payload`) on the rich row. Reads execution_result with several
-  fallback key names because LC1-7 backend is still out of scope.
-- Wired the renderer switch in BOTH the legacy
-  `src/pages/admin/AdminAgentRunsPage.tsx` (relevant file in the
-  task) and the canonical `src/pages/admin/control/runs/RunsExplorer.tsx`
-  (the `/admin/control` shell mentioned by the task). AdminAgentRunsPage
-  also gains the existing `ReplayDialog` so its Replay button goes
-  through the canonical `taskDispatcher` (no direct builder call).
-- Test: `src/components/admin/__tests__/DevRunDetail.test.tsx`
-  (8 cases) — sections render, View PR is an external link to
-  pr_url, Replay fires onReplay, fallback to logs[] when build_log
-  empty, drift section hidden when missing, held-for-review deep
-  link to approvals.
-
-All 8 component tests pass. Type-check clean for changed files.
-ESLint reports one pre-existing error in agents-repo.ts:13
-(direct supabase client import) that existed before this task.
-
-Replit-Task-Id: a9571f4a-4c41-4a39-88d2-c148905e7d82
+Merge remote-tracking branch 'origin/main'
