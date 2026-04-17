@@ -525,12 +525,12 @@ async function dispatchGitHubRunnerTask(
     const reason = "GITHUB_RUNNER_MISSING_SECRETS: GITHUB_RUNNER_PAT, GITHUB_RUNNER_REPO, or RUNNER_HMAC_KEY not configured";
     if (currentAttempt >= maxAttempts) {
       await tasks()
-        .update({ status: "failed", error: reason })
+        .update({ status: "failed", error_code: reason })
         .eq("id", task.id);
     } else {
       const retryAt = new Date(Date.now() + backoffMs(currentAttempt)).toISOString();
       await tasks()
-        .update({ status: "queued", next_retry_at: retryAt, error: reason })
+        .update({ status: "queued", next_retry_at: retryAt, error_code: reason })
         .eq("id", task.id);
     }
     return { outcome: "FAILED", error: reason };
@@ -561,13 +561,13 @@ async function dispatchGitHubRunnerTask(
     const reason = "GITHUB_RUNNER_DISPATCH_FAILED: workflow_dispatch to GitHub returned non-204";
     if (currentAttempt >= maxAttempts) {
       await tasks()
-        .update({ status: "failed", error: reason, runner_token_hash: null })
+        .update({ status: "failed", error_code: reason, runner_token_hash: null })
         .eq("id", task.id);
       return { outcome: "FAILED", error: reason };
     }
     const retryAt = new Date(Date.now() + backoffMs(currentAttempt)).toISOString();
     await tasks()
-      .update({ status: "queued", next_retry_at: retryAt, error: reason, runner_token_hash: null })
+      .update({ status: "queued", next_retry_at: retryAt, error_code: reason, runner_token_hash: null })
       .eq("id", task.id);
     return { outcome: "FAILED", error: reason };
   }
@@ -685,7 +685,7 @@ async function processTask(
       .update({
         status: "blocked",
         blocked_reason: reason,
-        result: result.output ?? null,
+        execution_result: result.output ?? null,
       })
       .eq("id", task.id);
     await logRun({
@@ -714,14 +714,14 @@ async function processTask(
   await tasks()
     .update({
       status: "succeeded",
-      result: {
+      execution_result: {
         output: result.output ?? null,
         logs: result.logs,
         actions_taken: result.actionsTaken,
         duration_ms: durationMs,
         agent: agent.name,
       },
-      error: null,
+      error_code: null,
     })
     .eq("id", task.id);
 
@@ -756,7 +756,7 @@ async function handleFailure(
       .update({
         status: "blocked",
         blocked_reason: reason,
-        error: errorMsg,
+        error_code: errorMsg,
         next_retry_at: null,
       })
       .eq("id", task.id);
@@ -785,7 +785,7 @@ async function handleFailure(
   const backoff = backoffMs(attempt);
   const retryAt = new Date(Date.now() + backoff).toISOString();
   await tasks()
-    .update({ status: "failed", error: errorMsg })
+    .update({ status: "failed", error_code: errorMsg })
     .eq("id", task.id)
     .eq("status", "running");
   await tasks()

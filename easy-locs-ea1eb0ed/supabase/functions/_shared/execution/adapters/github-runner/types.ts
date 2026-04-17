@@ -26,7 +26,7 @@ export const GITHUB_RUNNER_ERROR_CODES = {
 export type GithubRunnerErrorCode =
   (typeof GITHUB_RUNNER_ERROR_CODES)[keyof typeof GITHUB_RUNNER_ERROR_CODES];
 
-/** Shape written to execution_tasks.result on a successful dispatch. */
+/** Shape written to execution_tasks.execution_result on a successful dispatch. */
 export interface GithubRunnerDispatchResult {
   dispatched: true;
   runner: "github";
