@@ -29,8 +29,9 @@ import { agentsRepo, type AgentRow } from "@/lib/admin/agents-repo";
 import { getKindMeta } from "./agent-kind";
 import AgentActionsMenu from "./AgentActionsMenu";
 import AgentTriggerDialog from "./AgentTriggerDialog";
+import { Link } from "react-router-dom";
 import { ExecutionTaskPanel } from "@/components/admin/ExecutionTaskPanel";
-import { Loader2, Send, Activity, AlertTriangle } from "lucide-react";
+import { Loader2, Send, Activity, AlertTriangle, MessagesSquare } from "lucide-react";
 
 interface Props {
   agent: AgentRow | null;
@@ -112,6 +113,18 @@ export default function AgentDetailDrawer({ agent, open, onOpenChange }: Props) 
                 </SheetDescription>
               </div>
               <div className="flex items-center gap-1.5">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  data-testid="agent-runs-link"
+                >
+                  <Link to={`/admin/agents/${agent.slug}/runs`}>
+                    <MessagesSquare className="w-3.5 h-3.5" />
+                    Conversations
+                  </Link>
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"

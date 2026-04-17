@@ -613,9 +613,28 @@ export class ExecutionOrchestratorV2 {
         ...adapterPayload,
         verification: decision.verification,
       };
+      // ── LB1 (#815): sensitive-output hook ─────────────────────────────
+      // When the adapter flagged its own output as sensitive (PII / contract /
+      // caller hint), persist held_for_review so the L5 inbox can gate the
+      // RESPONSE delivery. The CALL itself succeeded — we never widen the
+      // running→succeeded transition into running→pending_review.
+      const flagOutput = (adapterResult.output ?? {}) as Record<string, unknown>;
+      const flagged = flagOutput.flaggedSensitive === true;
+      const flagReason = typeof flagOutput.flaggedReason === "string"
+        ? (flagOutput.flaggedReason as string)
+        : flagged ? "sensitive" : null;
+      const flagCost = typeof flagOutput.cost_usd === "number"
+        ? (flagOutput.cost_usd as number)
+        : null;
+      const flagLatency = typeof flagOutput.latency_ms === "number"
+        ? (flagOutput.latency_ms as number)
+        : null;
       const ok = await this.deps.repository.transition(task.id, "running", "succeeded", {
         execution_result: result,
         error_code: null,
+        ...(flagged ? { held_for_review: true, held_reason: flagReason } : {}),
+        ...(flagCost !== null ? { cost_usd: flagCost } : {}),
+        ...(flagLatency !== null ? { latency_ms: flagLatency } : {}),
       });
       if (!ok) {
         outcome = this.outcome(task, "blocked", startedAt, {
