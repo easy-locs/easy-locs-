@@ -75,6 +75,27 @@ export interface MarketplaceBootstrapOverrides {
   reconcileAgents?: boolean;
 }
 
+/**
+ * Production-mode reconcile failure handler:
+ *   - Throws when SUPABASE_FUNCTION_ENV/DENO_ENV/NODE_ENV === 'production'.
+ *   - Logs and continues otherwise (so dev/preview can boot against a fresh
+ *     DB before the agent_registry migration has been applied).
+ */
+function bootEnv(): string {
+  try {
+    // deno-lint-ignore no-explicit-any
+    const denoEnv = (globalThis as any)?.Deno?.env?.get?.bind((globalThis as any).Deno.env);
+    return (
+      (denoEnv && (denoEnv("SUPABASE_FUNCTION_ENV") || denoEnv("DENO_ENV") || denoEnv("NODE_ENV"))) ||
+      // deno-lint-ignore no-explicit-any
+      (globalThis as any)?.process?.env?.NODE_ENV ||
+      "development"
+    );
+  } catch {
+    return "development";
+  }
+}
+
 export function bootstrapMarketplaceAdapters(
   sb: SupabaseClient,
   overrides: MarketplaceBootstrapOverrides = {},
@@ -103,13 +124,34 @@ export function bootstrapMarketplaceAdapters(
     { overwrite: true },
   );
 
-  // Sovereign Agent Control (L1, #808) — best-effort upsert of the in-process
-  // adapters into `system.agents`. Failure does NOT prevent boot; the seed in
-  // migration 20260419000000_agent_registry.sql guarantees the rows exist.
+  // Sovereign Agent Control (L1, #808) — synchronously upsert the in-process
+  // adapters into `system.agents`. In production a failed reconcile is a
+  // hard boot failure (the orchestrator MUST NOT serve traffic with an
+  // out-of-sync registry); in dev/preview we log and continue so a fresh
+  // DB without the migration can still boot.
   if (overrides.reconcileAgents !== false) {
-    reconcileAgents(sb).catch((e) =>
-      console.warn("[marketplace.bootstrap] reconcileAgents failed:", e),
-    );
+    reconcileAgents(sb)
+      .then((result) => {
+        if (!result.ok) {
+          const detail = result.failed
+            .map((f) => `${f.slug}: ${f.error}`)
+            .join("; ");
+          const msg = `[marketplace.bootstrap] reconcileAgents reported failures: ${detail}`;
+          if (bootEnv() === "production") {
+            throw new Error(msg);
+          }
+          console.warn(msg);
+        }
+      })
+      .catch((e) => {
+        const msg = `[marketplace.bootstrap] reconcileAgents threw: ${
+          e instanceof Error ? e.message : String(e)
+        }`;
+        if (bootEnv() === "production") {
+          throw e instanceof Error ? e : new Error(msg);
+        }
+        console.warn(msg);
+      });
   }
 }
 

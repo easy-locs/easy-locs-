@@ -17,7 +17,13 @@ import {
 } from "../../supabase/functions/_shared/execution/orchestrator-v2.ts";
 import {
   AdapterRegistry,
+  setStrictAgentRegistration,
 } from "../../supabase/functions/_shared/execution/adapter-registry.ts";
+
+// These tests pre-date the L1 sovereign-agent registry; they exercise the
+// orchestrator/registry contracts with bare stub adapters that have no
+// agent ref. Opt out of strict mode for the duration of this suite.
+setStrictAgentRegistration(false);
 import {
   MemoryLockService,
 } from "../../supabase/functions/_shared/execution/lock-service.ts";
