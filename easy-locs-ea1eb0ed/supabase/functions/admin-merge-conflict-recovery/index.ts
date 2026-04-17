@@ -1,28 +1,8 @@
 /**
- * admin-merge-conflict-recovery — Operator-facing endpoint that surfaces
- * the LC4 dev-builder merge-conflict recovery dashboard projection
- * (task #972).
- *
- * Mirrors the React page projection (see
- * `src/repositories/merge-conflict-recovery.repository.ts` and
- * `src/pages/admin/AdminMergeConflictRecoveryPage.tsx`) so on-call
- * tooling and alerting pipelines can react to a sudden spike in merge
- * conflicts without scraping the dashboard HTML.
- *
- * Auth mirrors the rest of the operator surface: requests must come
- * through `admin-router` (or carry the service-role bearer token), the
- * caller must be an authenticated user, and the user's profile must
- * have `is_admin = true`.
- *
- * Response shape:
- *   {
- *     events: MergeConflictRecoveryEvent[],   // newest first
- *     totalEvents: number,
- *     affectedTasks: number,                  // unique builder_task_id
- *     perDay:   { day: string; count: number }[],   // 14 buckets, oldest → newest
- *     topFiles: { file: string; count: number }[],  // top 5, descending
- *     timestamp: string,
- *   }
+ * admin-merge-conflict-recovery — Operator endpoint that returns the
+ * LC4 merge-conflict-recovery dashboard projection (events, perDay,
+ * topFiles, affectedTasks). Auth mirrors the rest of the operator
+ * surface (router origin + authenticated user + is_admin).
  */
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
