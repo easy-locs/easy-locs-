@@ -364,3 +364,298 @@ export function summarizeFileBurstsWithinWindow(
     .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
     .sort((a, b) => b.count - a.count);
 }
+
+// ── Cron alert thresholds (tasks #973 + #981) ────────────────────────────
+//
+// The scheduled `merge-conflict-recovery-alerts-cron` (task #973)
+// evaluates four operator-tunable thresholds. They used to come only
+// from edge-function env vars, which forced a redeploy to change. Task
+// #981 persists them in `public.merge_conflict_alert_thresholds` so
+// operators can tune the cron from the recovery dashboard. The cron
+// reads the table first and only falls back to env vars when the row
+// is missing.
+
+/**
+ * Operator-tunable thresholds for the merge-conflict spike alert
+ * evaluator. Each field can be set to 0 to disable that alert family.
+ *
+ * - `dailyEventThreshold` — fire when ANY single day in the 14-day
+ *   window has at least this many recovery events.
+ * - `totalEventsThreshold` — fire when the rolling 14-day total reaches
+ *   this value.
+ * - `topFileMinEvents` — minimum event count for the #1 top file before
+ *   it is considered for the dominance alert.
+ * - `topFileDominanceRatio` — fraction (0–1) of `totalEvents` the #1
+ *   top file must reach for the dominance alert.
+ */
+export interface MergeConflictRecoveryAlertThresholds {
+  readonly dailyEventThreshold: number;
+  readonly totalEventsThreshold: number;
+  readonly topFileMinEvents: number;
+  readonly topFileDominanceRatio: number;
+}
+
+export const DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS:
+  MergeConflictRecoveryAlertThresholds = {
+    dailyEventThreshold: 10,
+    totalEventsThreshold: 30,
+    topFileMinEvents: 5,
+    topFileDominanceRatio: 0.5,
+  };
+
+export type MergeConflictRecoveryAlertKind =
+  | "daily_spike"
+  | "total_spike"
+  | "file_dominance";
+
+export interface MergeConflictRecoveryAlert {
+  readonly kind: MergeConflictRecoveryAlertKind;
+  readonly severity: "high" | "medium";
+  readonly title: string;
+  readonly message: string;
+  readonly data: Record<string, unknown>;
+}
+
+/**
+ * Pure evaluator: turns a projection summary + thresholds into a list
+ * of alerts. Mirrors the algebra inlined in the
+ * `merge-conflict-recovery-alerts-cron` edge function so the cron and
+ * the dashboard agree on what counts as a spike.
+ *
+ * Alerts fire independently — the same summary may produce 0..3 alerts.
+ */
+export function evaluateMergeConflictRecoveryAlerts(
+  summary: MergeConflictRecoverySummary,
+  thresholds: MergeConflictRecoveryAlertThresholds =
+    DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS,
+): MergeConflictRecoveryAlert[] {
+  const alerts: MergeConflictRecoveryAlert[] = [];
+
+  if (thresholds.dailyEventThreshold > 0) {
+    let worst: { day: string; count: number } | null = null;
+    for (const d of summary.perDay) {
+      if (d.count >= thresholds.dailyEventThreshold) {
+        if (!worst || d.count > worst.count) worst = { ...d };
+      }
+    }
+    if (worst) {
+      alerts.push({
+        kind: "daily_spike",
+        severity: "high",
+        title: `Merge-conflict spike: ${worst.count} events on ${worst.day}`,
+        message:
+          `The dev-builder loop recorded ${worst.count} merge-conflict ` +
+          `recoveries on ${worst.day}, which is at or above the configured ` +
+          `daily threshold of ${thresholds.dailyEventThreshold}.`,
+        data: {
+          day: worst.day,
+          count: worst.count,
+          threshold: thresholds.dailyEventThreshold,
+        },
+      });
+    }
+  }
+
+  if (
+    thresholds.totalEventsThreshold > 0 &&
+    summary.totalEvents >= thresholds.totalEventsThreshold
+  ) {
+    alerts.push({
+      kind: "total_spike",
+      severity: "medium",
+      title:
+        `Merge-conflict volume elevated: ${summary.totalEvents} events in 14d`,
+      message:
+        `${summary.totalEvents} merge-conflict recoveries were recorded in ` +
+        `the last 14 days across ${summary.affectedTasks} builder task(s), ` +
+        `at or above the configured total threshold of ` +
+        `${thresholds.totalEventsThreshold}.`,
+      data: {
+        total: summary.totalEvents,
+        affectedTasks: summary.affectedTasks,
+        threshold: thresholds.totalEventsThreshold,
+      },
+    });
+  }
+
+  if (
+    summary.totalEvents > 0 &&
+    thresholds.topFileMinEvents > 0 &&
+    thresholds.topFileDominanceRatio > 0 &&
+    summary.topFiles.length > 0
+  ) {
+    const top = summary.topFiles[0]!;
+    const ratio = top.count / summary.totalEvents;
+    if (
+      top.count >= thresholds.topFileMinEvents &&
+      ratio >= thresholds.topFileDominanceRatio
+    ) {
+      const pct = Math.round(ratio * 100);
+      alerts.push({
+        kind: "file_dominance",
+        severity: "high",
+        title: `Merge-conflict hot file: ${top.file} (${pct}%)`,
+        message:
+          `'${top.file}' was involved in ${top.count} of ${summary.totalEvents} ` +
+          `merge-conflict recoveries (${pct}%) over the last 14 days, ` +
+          `at or above the configured dominance threshold of ` +
+          `${Math.round(thresholds.topFileDominanceRatio * 100)}% / ` +
+          `${thresholds.topFileMinEvents} events.`,
+        data: {
+          file: top.file,
+          count: top.count,
+          total: summary.totalEvents,
+          ratio,
+          minEventsThreshold: thresholds.topFileMinEvents,
+          ratioThreshold: thresholds.topFileDominanceRatio,
+        },
+      });
+    }
+  }
+
+  return alerts;
+}
+
+/** Bounds enforced both client-side (UI) and in the DB CHECK constraints. */
+export const MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS = {
+  dailyEventThresholdMin: 0,
+  dailyEventThresholdMax: 100_000,
+  totalEventsThresholdMin: 0,
+  totalEventsThresholdMax: 1_000_000,
+  topFileMinEventsMin: 0,
+  topFileMinEventsMax: 100_000,
+  topFileDominanceRatioMin: 0,
+  topFileDominanceRatioMax: 1,
+} as const;
+
+interface MergeConflictAlertThresholdsRow {
+  daily_event_threshold: number;
+  total_events_threshold: number;
+  top_file_min_events: number;
+  top_file_dominance_ratio: number | string;
+  updated_at?: string | null;
+}
+
+function clampInt(
+  raw: unknown,
+  min: number,
+  max: number,
+  fallback: number,
+): number {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, Math.floor(n)));
+}
+
+function clampRatio(
+  raw: unknown,
+  min: number,
+  max: number,
+  fallback: number,
+): number {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+/** Pure normalizer — exported so tests can pin the contract without a DB. */
+export function normalizeMergeConflictRecoveryAlertThresholds(
+  raw: Partial<MergeConflictRecoveryAlertThresholds> | null | undefined,
+): MergeConflictRecoveryAlertThresholds {
+  const b = MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS;
+  const d = DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS;
+  return {
+    dailyEventThreshold: clampInt(
+      raw?.dailyEventThreshold,
+      b.dailyEventThresholdMin,
+      b.dailyEventThresholdMax,
+      d.dailyEventThreshold,
+    ),
+    totalEventsThreshold: clampInt(
+      raw?.totalEventsThreshold,
+      b.totalEventsThresholdMin,
+      b.totalEventsThresholdMax,
+      d.totalEventsThreshold,
+    ),
+    topFileMinEvents: clampInt(
+      raw?.topFileMinEvents,
+      b.topFileMinEventsMin,
+      b.topFileMinEventsMax,
+      d.topFileMinEvents,
+    ),
+    topFileDominanceRatio: clampRatio(
+      raw?.topFileDominanceRatio,
+      b.topFileDominanceRatioMin,
+      b.topFileDominanceRatioMax,
+      d.topFileDominanceRatio,
+    ),
+  };
+}
+
+function rowToThresholds(
+  row: MergeConflictAlertThresholdsRow | null | undefined,
+): MergeConflictRecoveryAlertThresholds {
+  if (!row) return { ...DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS };
+  return normalizeMergeConflictRecoveryAlertThresholds({
+    dailyEventThreshold: row.daily_event_threshold,
+    totalEventsThreshold: row.total_events_threshold,
+    topFileMinEvents: row.top_file_min_events,
+    topFileDominanceRatio: Number(row.top_file_dominance_ratio),
+  });
+}
+
+export interface MergeConflictRecoveryAlertThresholdsRecord {
+  readonly thresholds: MergeConflictRecoveryAlertThresholds;
+  readonly updatedAt: string | null;
+}
+
+export async function loadMergeConflictRecoveryAlertThresholds(): Promise<
+  MergeConflictRecoveryAlertThresholdsRecord
+> {
+  const { data, error } = await db
+    .from("merge_conflict_alert_thresholds")
+    .select(
+      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
+    )
+    .eq("id", true)
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `loadMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
+    );
+  }
+  const row = (data ?? null) as MergeConflictAlertThresholdsRow | null;
+  return {
+    thresholds: rowToThresholds(row),
+    updatedAt: row?.updated_at ?? null,
+  };
+}
+
+export async function saveMergeConflictRecoveryAlertThresholds(
+  next: MergeConflictRecoveryAlertThresholds,
+): Promise<MergeConflictRecoveryAlertThresholdsRecord> {
+  const clamped = normalizeMergeConflictRecoveryAlertThresholds(next);
+  const { data, error } = await db
+    .from("merge_conflict_alert_thresholds")
+    .update({
+      daily_event_threshold: clamped.dailyEventThreshold,
+      total_events_threshold: clamped.totalEventsThreshold,
+      top_file_min_events: clamped.topFileMinEvents,
+      top_file_dominance_ratio: clamped.topFileDominanceRatio,
+    })
+    .eq("id", true)
+    .select(
+      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
+    )
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `saveMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
+    );
+  }
+  const row = (data ?? null) as MergeConflictAlertThresholdsRow | null;
+  return {
+    thresholds: rowToThresholds(row),
+    updatedAt: row?.updated_at ?? null,
+  };
+}
