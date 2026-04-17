@@ -1,0 +1,1046 @@
+# CREATE INDEX (file:line)
+supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:64:CREATE INDEX idx_messages_tenant_id ON public.messages(tenant_id);
+supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:65:CREATE INDEX idx_messages_org_id ON public.messages(org_id);
+supabase/migrations/20260226041627_0d2986c5-1d0a-4fd5-83ce-6e92d4ad5db9.sql:66:CREATE INDEX idx_messages_created_at ON public.messages(created_at DESC);
+supabase/migrations/20260226062424_7c81da1c-fa2b-41a9-8839-5406f60f3f86.sql:8:CREATE INDEX IF NOT EXISTS idx_properties_building ON public.properties(org_id, building_name);
+supabase/migrations/20260307074716_8b4f7c24-c51d-43d0-bc81-ecb354aec20a.sql:36:CREATE UNIQUE INDEX IF NOT EXISTS idx_concierge_services_slug ON public.concierge_services(booking_slug) WHERE booking_slug IS NOT NULL;
+supabase/migrations/20260309231118_431e7d21-f1fa-4441-9726-0c7a5090ad95.sql:12:CREATE INDEX IF NOT EXISTS idx_messages_booking_id ON public.messages (booking_id) WHERE booking_id IS NOT NULL;
+supabase/migrations/20260309231118_431e7d21-f1fa-4441-9726-0c7a5090ad95.sql:13:CREATE INDEX IF NOT EXISTS idx_messages_booking_type ON public.messages (booking_type) WHERE booking_type IS NOT NULL;
+supabase/migrations/20260309232151_be5a823a-60d3-4398-92d5-2e0a14cb4795.sql:7:CREATE INDEX IF NOT EXISTS idx_messages_inbound_id ON public.messages (inbound_message_id) WHERE inbound_message_id IS NOT NULL;
+supabase/migrations/20260309232151_be5a823a-60d3-4398-92d5-2e0a14cb4795.sql:8:CREATE INDEX IF NOT EXISTS idx_messages_reply_chain ON public.messages (reply_chain_id) WHERE reply_chain_id IS NOT NULL;
+supabase/migrations/20260309232151_be5a823a-60d3-4398-92d5-2e0a14cb4795.sql:9:CREATE INDEX IF NOT EXISTS idx_messages_contact_email ON public.messages (contact_email) WHERE contact_email IS NOT NULL;
+supabase/migrations/20260310013204_339c2133-4d25-4eb4-b15c-54f51367d136.sql:9:CREATE INDEX IF NOT EXISTS idx_messages_context ON public.messages (org_id, context_type, context_id);
+supabase/migrations/20260310013204_339c2133-4d25-4eb4-b15c-54f51367d136.sql:10:CREATE INDEX IF NOT EXISTS idx_messages_assigned ON public.messages (assigned_to) WHERE assigned_to IS NOT NULL;
+supabase/migrations/20260310013821_fded4bb4-e15d-4157-97d1-6173c324eae4.sql:13:-- Create index for quick payment config lookups
+supabase/migrations/20260310013821_fded4bb4-e15d-4157-97d1-6173c324eae4.sql:14:CREATE INDEX IF NOT EXISTS idx_orgs_payment_config ON public.orgs (id) WHERE stripe_account_id IS NOT NULL OR bank_iban IS NOT NULL;
+supabase/migrations/20260310164559_7cbfbf9f-a94b-45c2-afa8-a7e927ee0791.sql:25:CREATE INDEX idx_audit_reports_org_created ON public.audit_reports(org_id, created_at DESC);
+supabase/migrations/20260310185145_6d829255-3d51-45c2-9a3b-ceef7f208760.sql:32:CREATE INDEX idx_contact_clicks_org_created ON public.contact_clicks (org_id, created_at DESC);
+supabase/migrations/20260310185145_6d829255-3d51-45c2-9a3b-ceef7f208760.sql:33:CREATE INDEX idx_contact_clicks_listing ON public.contact_clicks (listing_id, created_at DESC);
+supabase/migrations/20260310185145_6d829255-3d51-45c2-9a3b-ceef7f208760.sql:34:CREATE INDEX idx_contact_clicks_service ON public.contact_clicks (service_id, created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:5:CREATE INDEX IF NOT EXISTS idx_properties_org_id ON public.properties (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:6:CREATE INDEX IF NOT EXISTS idx_properties_user_id ON public.properties (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:7:CREATE INDEX IF NOT EXISTS idx_properties_country ON public.properties (country);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:8:CREATE INDEX IF NOT EXISTS idx_properties_city ON public.properties (city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:9:CREATE INDEX IF NOT EXISTS idx_properties_created_at ON public.properties (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:12:CREATE INDEX IF NOT EXISTS idx_tenants_org_id ON public.tenants (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:13:CREATE INDEX IF NOT EXISTS idx_tenants_property_id ON public.tenants (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:16:CREATE INDEX IF NOT EXISTS idx_leases_org_id ON public.leases (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:17:CREATE INDEX IF NOT EXISTS idx_leases_property_id ON public.leases (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:18:CREATE INDEX IF NOT EXISTS idx_leases_tenant_id ON public.leases (tenant_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:19:CREATE INDEX IF NOT EXISTS idx_leases_created_at ON public.leases (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:22:CREATE INDEX IF NOT EXISTS idx_rent_calls_org_id ON public.rent_calls (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:23:CREATE INDEX IF NOT EXISTS idx_rent_calls_tenant_id ON public.rent_calls (tenant_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:24:CREATE INDEX IF NOT EXISTS idx_rent_calls_property_id ON public.rent_calls (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:27:CREATE INDEX IF NOT EXISTS idx_documents_org_id ON public.documents (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:28:CREATE INDEX IF NOT EXISTS idx_documents_user_id ON public.documents (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:29:CREATE INDEX IF NOT EXISTS idx_documents_created_at ON public.documents (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:32:CREATE INDEX IF NOT EXISTS idx_expenses_org_id ON public.expenses (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:33:CREATE INDEX IF NOT EXISTS idx_expenses_property_id ON public.expenses (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:34:CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON public.expenses (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:37:CREATE INDEX IF NOT EXISTS idx_interventions_org_id ON public.interventions (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:38:CREATE INDEX IF NOT EXISTS idx_interventions_property_id ON public.interventions (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:39:CREATE INDEX IF NOT EXISTS idx_interventions_tenant_id ON public.interventions (tenant_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:42:CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:43:CREATE INDEX IF NOT EXISTS idx_notifications_org_id ON public.notifications (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:44:CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON public.notifications (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:45:CREATE INDEX IF NOT EXISTS idx_notifications_read ON public.notifications (read);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:48:CREATE INDEX IF NOT EXISTS idx_messages_org_id ON public.messages (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:49:CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:52:CREATE INDEX IF NOT EXISTS idx_concierge_services_org_id ON public.concierge_services (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:53:CREATE INDEX IF NOT EXISTS idx_concierge_services_category ON public.concierge_services (category);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:54:CREATE INDEX IF NOT EXISTS idx_concierge_services_city ON public.concierge_services (city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:55:CREATE INDEX IF NOT EXISTS idx_concierge_services_country ON public.concierge_services (country);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:56:CREATE INDEX IF NOT EXISTS idx_concierge_services_active ON public.concierge_services (active);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:59:CREATE INDEX IF NOT EXISTS idx_concierge_orders_org_id ON public.concierge_orders (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:60:CREATE INDEX IF NOT EXISTS idx_concierge_orders_service_id ON public.concierge_orders (service_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:61:CREATE INDEX IF NOT EXISTS idx_concierge_orders_created_at ON public.concierge_orders (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:62:CREATE INDEX IF NOT EXISTS idx_concierge_orders_status ON public.concierge_orders (status);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:65:CREATE INDEX IF NOT EXISTS idx_marketplace_services_org_id ON public.marketplace_services (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:66:CREATE INDEX IF NOT EXISTS idx_marketplace_services_category ON public.marketplace_services (category);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:67:CREATE INDEX IF NOT EXISTS idx_marketplace_services_city ON public.marketplace_services (city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:68:CREATE INDEX IF NOT EXISTS idx_marketplace_services_country ON public.marketplace_services (country);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:69:CREATE INDEX IF NOT EXISTS idx_marketplace_services_active ON public.marketplace_services (active);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:72:CREATE INDEX IF NOT EXISTS idx_marketplace_bookings_org_id ON public.marketplace_bookings (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:73:CREATE INDEX IF NOT EXISTS idx_marketplace_bookings_service_id ON public.marketplace_bookings (service_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:74:CREATE INDEX IF NOT EXISTS idx_marketplace_bookings_created_at ON public.marketplace_bookings (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:75:CREATE INDEX IF NOT EXISTS idx_marketplace_bookings_status ON public.marketplace_bookings (status);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:78:CREATE INDEX IF NOT EXISTS idx_activities_org_id ON public.activities (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:79:CREATE INDEX IF NOT EXISTS idx_activities_category ON public.activities (category);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:80:CREATE INDEX IF NOT EXISTS idx_activities_city ON public.activities (city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:81:CREATE INDEX IF NOT EXISTS idx_activities_country ON public.activities (country);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:82:CREATE INDEX IF NOT EXISTS idx_activities_user_id ON public.activities (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:85:CREATE INDEX IF NOT EXISTS idx_booking_requests_org_id ON public.booking_requests (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:86:CREATE INDEX IF NOT EXISTS idx_booking_requests_property_id ON public.booking_requests (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:87:CREATE INDEX IF NOT EXISTS idx_booking_requests_listing_id ON public.booking_requests (listing_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:88:CREATE INDEX IF NOT EXISTS idx_booking_requests_created_at ON public.booking_requests (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:91:CREATE INDEX IF NOT EXISTS idx_public_listings_org_id ON public.public_listings (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:92:CREATE INDEX IF NOT EXISTS idx_public_listings_property_id ON public.public_listings (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:93:CREATE INDEX IF NOT EXISTS idx_public_listings_active ON public.public_listings (active);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:96:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_org_id ON public.real_estate_listings (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:97:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_country ON public.real_estate_listings (country);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:98:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_city ON public.real_estate_listings (city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:99:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_listing_type ON public.real_estate_listings (listing_type);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:100:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_status ON public.real_estate_listings (status);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:101:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_slug ON public.real_estate_listings (slug);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:102:CREATE INDEX IF NOT EXISTS idx_real_estate_listings_created_at ON public.real_estate_listings (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:105:CREATE INDEX IF NOT EXISTS idx_audit_logs_org_id ON public.audit_logs (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:106:CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON public.audit_logs (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:107:CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON public.audit_logs (created_at DESC);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:110:CREATE INDEX IF NOT EXISTS idx_org_members_user_id ON public.org_members (user_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:111:CREATE INDEX IF NOT EXISTS idx_org_members_org_id ON public.org_members (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:114:CREATE INDEX IF NOT EXISTS idx_candidates_org_id ON public.candidates (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:115:CREATE INDEX IF NOT EXISTS idx_candidates_property_id ON public.candidates (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:118:CREATE INDEX IF NOT EXISTS idx_buildings_org_id ON public.buildings (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:121:CREATE INDEX IF NOT EXISTS idx_booking_tasks_org_id ON public.booking_tasks (org_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:122:CREATE INDEX IF NOT EXISTS idx_booking_tasks_property_id ON public.booking_tasks (property_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:123:CREATE INDEX IF NOT EXISTS idx_booking_tasks_booking_id ON public.booking_tasks (booking_id);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:126:CREATE INDEX IF NOT EXISTS idx_concierge_services_active_country_city ON public.concierge_services (active, country, city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:127:CREATE INDEX IF NOT EXISTS idx_marketplace_services_active_country_city ON public.marketplace_services (active, country, city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:128:CREATE INDEX IF NOT EXISTS idx_real_estate_active_country_city ON public.real_estate_listings (status, country, city);
+supabase/migrations/20260311060312_114751bc-2896-42c4-9566-fb4f248344e6.sql:129:CREATE INDEX IF NOT EXISTS idx_activities_country_city_cat ON public.activities (country, city, category);
+supabase/migrations/20260312085030_1434b9af-6551-42aa-b255-afdbf8c2e880.sql:19:CREATE INDEX idx_guest_sessions_token ON public.guest_sessions(token);
+supabase/migrations/20260312085030_1434b9af-6551-42aa-b255-afdbf8c2e880.sql:20:CREATE INDEX idx_guest_sessions_expires ON public.guest_sessions(expires_at);
+supabase/migrations/20260312085030_1434b9af-6551-42aa-b255-afdbf8c2e880.sql:21:CREATE INDEX idx_guest_sessions_fingerprint ON public.guest_sessions(fingerprint);
+supabase/migrations/20260312090536_a85b552c-de4e-4e64-b6cc-a73f34998e96.sql:24:CREATE INDEX idx_guest_call_signals_call_id ON public.guest_call_signals(call_id);
+supabase/migrations/20260312090536_a85b552c-de4e-4e64-b6cc-a73f34998e96.sql:25:CREATE INDEX idx_guest_call_signals_org ON public.guest_call_signals(org_id, status);
+supabase/migrations/20260312145412_24d34c41-e9b3-4428-b858-4518675433f0.sql:80:CREATE INDEX IF NOT EXISTS idx_messages_thread_id ON public.messages(thread_id);
+supabase/migrations/20260312145412_24d34c41-e9b3-4428-b858-4518675433f0.sql:81:CREATE INDEX IF NOT EXISTS idx_conversation_threads_initiator ON public.conversation_threads(initiator_id);
+supabase/migrations/20260312145412_24d34c41-e9b3-4428-b858-4518675433f0.sql:82:CREATE INDEX IF NOT EXISTS idx_conversation_threads_org ON public.conversation_threads(org_id);
+supabase/migrations/20260312145412_24d34c41-e9b3-4428-b858-4518675433f0.sql:83:CREATE INDEX IF NOT EXISTS idx_contact_reveals_user ON public.contact_reveals(user_id);
+supabase/migrations/20260312145412_24d34c41-e9b3-4428-b858-4518675433f0.sql:84:CREATE INDEX IF NOT EXISTS idx_contact_reveals_created ON public.contact_reveals(created_at);
+supabase/migrations/20260312160957_1c2e177f-fd8b-4dde-a76c-1bfe63f5220c.sql:41:CREATE INDEX idx_call_logs_callee_org ON public.call_logs(callee_org_id, status);
+supabase/migrations/20260312160957_1c2e177f-fd8b-4dde-a76c-1bfe63f5220c.sql:42:CREATE INDEX idx_call_logs_caller ON public.call_logs(caller_id, created_at DESC);
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:94:CREATE INDEX IF NOT EXISTS idx_deal_rooms_thread ON public.deal_rooms(thread_id);
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:95:CREATE INDEX IF NOT EXISTS idx_deal_rooms_context ON public.deal_rooms(context_type, context_id);
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:96:CREATE INDEX IF NOT EXISTS idx_deal_rooms_buyer ON public.deal_rooms(buyer_id);
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:97:CREATE INDEX IF NOT EXISTS idx_deal_rooms_org ON public.deal_rooms(org_id);
+supabase/migrations/20260312211700_fbe614d5-4719-485b-9a04-e79059dad8e2.sql:98:CREATE INDEX IF NOT EXISTS idx_deal_events_deal ON public.deal_events(deal_id);
+supabase/migrations/20260313060615_40aa8352-2333-4fd8-ba00-bb344f5138bd.sql:43:CREATE INDEX idx_user_sessions_user ON public.user_sessions(user_id);
+supabase/migrations/20260313060615_40aa8352-2333-4fd8-ba00-bb344f5138bd.sql:44:CREATE INDEX idx_user_sessions_fingerprint ON public.user_sessions(user_id, device_fingerprint);
+supabase/migrations/20260313060615_40aa8352-2333-4fd8-ba00-bb344f5138bd.sql:65:CREATE INDEX idx_login_events_user ON public.login_events(user_id, created_at DESC);
+supabase/migrations/20260313061758_3fa8effd-d3d6-4fb5-aa2f-317ba536d7ed.sql:38:CREATE INDEX IF NOT EXISTS idx_messages_encrypted ON public.messages (encrypted) WHERE encrypted = true;
+supabase/migrations/20260313222810_4692ff2d-8b06-42bc-9bfb-3e712cbf73db.sql:10:CREATE INDEX IF NOT EXISTS idx_messages_deleted_at ON public.messages (deleted_at) WHERE deleted_at IS NOT NULL;
+supabase/migrations/20260313222810_4692ff2d-8b06-42bc-9bfb-3e712cbf73db.sql:11:CREATE INDEX IF NOT EXISTS idx_messages_deleted_for_user_ids ON public.messages USING GIN (deleted_for_user_ids) WHERE deleted_for_user_ids IS NOT NULL;
+supabase/migrations/20260314005137_bb527094-fc32-4700-bef5-d9516bbd5ff7.sql:11:CREATE INDEX IF NOT EXISTS idx_messages_disappear_at 
+supabase/migrations/20260314010931_c3fee6dd-703e-4d39-ae66-74721ae42bdb.sql:4:CREATE UNIQUE INDEX IF NOT EXISTS profiles_username_unique ON public.profiles (lower(username)) WHERE username IS NOT NULL;
+supabase/migrations/20260314013739_a895c8a3-0e97-4ede-850b-eed7186bc6c9.sql:28:CREATE INDEX IF NOT EXISTS idx_messages_security_level ON public.messages (security_level) WHERE security_level != 'normal';
+supabase/migrations/20260314013739_a895c8a3-0e97-4ede-850b-eed7186bc6c9.sql:29:CREATE INDEX IF NOT EXISTS idx_messages_transcript_status ON public.messages (transcript_status) WHERE transcript_status = 'pending';
+supabase/migrations/20260314075311_eb91f8b6-5091-4074-ac41-195a34cc957a.sql:12:-- Create index for fast nonce lookups
+supabase/migrations/20260314075311_eb91f8b6-5091-4074-ac41-195a34cc957a.sql:13:CREATE INDEX IF NOT EXISTS idx_payment_nonces_created ON public.payment_nonces (used_at);
+supabase/migrations/20260314084151_5d479bc4-5986-4db1-b750-26c5aaed6115.sql:40:-- Create index for quick lookup by reference_code
+supabase/migrations/20260314084151_5d479bc4-5986-4db1-b750-26c5aaed6115.sql:41:CREATE INDEX IF NOT EXISTS idx_wallet_transactions_reference_code ON public.wallet_transactions(reference_code);
+supabase/migrations/20260316021248_4101650f-3913-4ac1-b0aa-30f6795c68e1.sql:29:CREATE INDEX idx_tracking_sessions_org ON public.tracking_sessions(org_id);
+supabase/migrations/20260316021248_4101650f-3913-4ac1-b0aa-30f6795c68e1.sql:30:CREATE INDEX idx_tracking_sessions_tracker ON public.tracking_sessions(tracker_user_id);
+supabase/migrations/20260316021248_4101650f-3913-4ac1-b0aa-30f6795c68e1.sql:31:CREATE INDEX idx_tracking_sessions_status ON public.tracking_sessions(status) WHERE status IN ('active', 'en_route', 'nearby');
+supabase/migrations/20260316021248_4101650f-3913-4ac1-b0aa-30f6795c68e1.sql:32:CREATE INDEX idx_tracking_sessions_context ON public.tracking_sessions(context_type, context_id);
+supabase/migrations/20260316021248_4101650f-3913-4ac1-b0aa-30f6795c68e1.sql:46:CREATE INDEX idx_tracking_positions_session ON public.tracking_positions(session_id, recorded_at DESC);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:110:CREATE INDEX IF NOT EXISTS idx_driver_sessions_status ON public.driver_sessions(status);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:111:CREATE INDEX IF NOT EXISTS idx_driver_sessions_user ON public.driver_sessions(user_id);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:112:CREATE INDEX IF NOT EXISTS idx_delivery_jobs_org ON public.delivery_jobs(org_id);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:113:CREATE INDEX IF NOT EXISTS idx_delivery_jobs_driver ON public.delivery_jobs(driver_id);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:114:CREATE INDEX IF NOT EXISTS idx_delivery_jobs_status ON public.delivery_jobs(status);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:115:CREATE INDEX IF NOT EXISTS idx_delivery_offers_job ON public.delivery_offers(job_id);
+supabase/migrations/20260316062442_bd02b20c-ffa2-48da-a8a8-0b468bd78d84.sql:116:CREATE INDEX IF NOT EXISTS idx_delivery_offers_driver ON public.delivery_offers(driver_id);
+supabase/migrations/20260316070733_88ef73d5-3da6-4446-9c0a-019714db8e29.sql:23:CREATE INDEX idx_escrow_job_id ON public.escrow_payments(job_id);
+supabase/migrations/20260316070733_88ef73d5-3da6-4446-9c0a-019714db8e29.sql:24:CREATE INDEX idx_escrow_payer ON public.escrow_payments(payer_id);
+supabase/migrations/20260316070733_88ef73d5-3da6-4446-9c0a-019714db8e29.sql:25:CREATE INDEX idx_escrow_status ON public.escrow_payments(status);
+supabase/migrations/20260316205905_c8c2915b-f671-4457-a341-10dde229e69f.sql:98:CREATE INDEX IF NOT EXISTS idx_analytics_shop_type_date ON public.storefront_analytics_events(shop_id, event_type, created_at DESC);
+supabase/migrations/20260316205905_c8c2915b-f671-4457-a341-10dde229e69f.sql:99:CREATE INDEX IF NOT EXISTS idx_shipments_order ON public.storefront_shipments(order_id);
+supabase/migrations/20260317060115_a81aea74-8d63-4605-9c69-ab1031fc088c.sql:20:CREATE INDEX idx_ad_events_target ON public.ad_events(target_id, event_type, created_at DESC);
+supabase/migrations/20260317060115_a81aea74-8d63-4605-9c69-ab1031fc088c.sql:21:CREATE INDEX idx_ad_events_shop ON public.ad_events(shop_id, event_type, created_at DESC);
+supabase/migrations/20260317060115_a81aea74-8d63-4605-9c69-ab1031fc088c.sql:59:CREATE INDEX idx_boost_active ON public.boost_purchases(target_id, status, ends_at);
+supabase/migrations/20260317192218_17d1d5f8-c35c-46b5-b7b4-5ee0ab316dc2.sql:19:create index if not exists idx_unified_wallet_tx_sender on public.unified_wallet_transactions(sender_id);
+supabase/migrations/20260317192218_17d1d5f8-c35c-46b5-b7b4-5ee0ab316dc2.sql:20:create index if not exists idx_unified_wallet_tx_recipient on public.unified_wallet_transactions(recipient_id);
+supabase/migrations/20260317192218_17d1d5f8-c35c-46b5-b7b4-5ee0ab316dc2.sql:21:create index if not exists idx_unified_wallet_tx_context on public.unified_wallet_transactions(context_type, context_id);
+supabase/migrations/20260317192218_17d1d5f8-c35c-46b5-b7b4-5ee0ab316dc2.sql:22:create index if not exists idx_unified_wallet_tx_created on public.unified_wallet_transactions(created_at desc);
+supabase/migrations/20260317193545_5c325667-4c3d-463e-9a29-215b4426f83e.sql:48:CREATE INDEX IF NOT EXISTS idx_payment_requests_requester_id ON public.payment_requests(requester_id);
+supabase/migrations/20260317193545_5c325667-4c3d-463e-9a29-215b4426f83e.sql:49:CREATE INDEX IF NOT EXISTS idx_payment_requests_recipient_id ON public.payment_requests(recipient_id);
+supabase/migrations/20260318053825_e4ff328b-11d3-4aee-a8fb-0eb649e28b39.sql:9:-- Create index for filtering
+supabase/migrations/20260318053825_e4ff328b-11d3-4aee-a8fb-0eb649e28b39.sql:10:CREATE INDEX idx_public_listings_listing_type ON public.public_listings (listing_type);
+supabase/migrations/20260318083736_fb624c4b-7fa1-4eb0-b370-99045dd6b1b7.sql:52:CREATE INDEX IF NOT EXISTS idx_customer_relationships_merchant ON public.customer_relationships(merchant_id);
+supabase/migrations/20260318083736_fb624c4b-7fa1-4eb0-b370-99045dd6b1b7.sql:53:CREATE INDEX IF NOT EXISTS idx_customer_relationships_customer ON public.customer_relationships(customer_id);
+supabase/migrations/20260318083736_fb624c4b-7fa1-4eb0-b370-99045dd6b1b7.sql:54:CREATE INDEX IF NOT EXISTS idx_customer_relationships_reactivation ON public.customer_relationships(merchant_id) WHERE reactivation_eligible = true;
+supabase/migrations/20260318084507_583a6e5f-c7c6-47a9-be4e-4065052fe068.sql:14:CREATE INDEX IF NOT EXISTS idx_customer_relationships_vip ON public.customer_relationships(merchant_id) WHERE is_vip = true;
+supabase/migrations/20260318084507_583a6e5f-c7c6-47a9-be4e-4065052fe068.sql:15:CREATE INDEX IF NOT EXISTS idx_customer_relationships_churn ON public.customer_relationships(merchant_id, churn_risk DESC);
+supabase/migrations/20260318162512_994995de-73d6-4010-b4d7-0e293a1e5fc5.sql:32:CREATE INDEX IF NOT EXISTS idx_ride_requests_status ON public.ride_requests(status);
+supabase/migrations/20260318162512_994995de-73d6-4010-b4d7-0e293a1e5fc5.sql:33:CREATE INDEX IF NOT EXISTS idx_ride_requests_rider ON public.ride_requests(rider_id);
+supabase/migrations/20260318162512_994995de-73d6-4010-b4d7-0e293a1e5fc5.sql:34:CREATE INDEX IF NOT EXISTS idx_ride_offers_request ON public.ride_offers(ride_request_id);
+supabase/migrations/20260318162512_994995de-73d6-4010-b4d7-0e293a1e5fc5.sql:35:CREATE INDEX IF NOT EXISTS idx_ride_offers_driver ON public.ride_offers(driver_id);
+supabase/migrations/20260318181907_cc85e6ef-1e6c-46de-b56c-a2a749b5b0af.sql:14:CREATE INDEX IF NOT EXISTS idx_user_push_tokens_user_id ON public.user_push_tokens(user_id);
+supabase/migrations/20260318182309_e970b66f-6ca9-4dee-a2f7-41b72ef8cd79.sql:28:CREATE INDEX IF NOT EXISTS idx_driver_earnings_driver_id ON public.driver_earnings(driver_id);
+supabase/migrations/20260318182309_e970b66f-6ca9-4dee-a2f7-41b72ef8cd79.sql:29:CREATE INDEX IF NOT EXISTS idx_driver_earnings_ride_request_id ON public.driver_earnings(ride_request_id);
+supabase/migrations/20260318182309_e970b66f-6ca9-4dee-a2f7-41b72ef8cd79.sql:47:CREATE INDEX IF NOT EXISTS idx_ride_disputes_ride_request_id ON public.ride_disputes(ride_request_id);
+supabase/migrations/20260318182309_e970b66f-6ca9-4dee-a2f7-41b72ef8cd79.sql:62:CREATE INDEX IF NOT EXISTS idx_driver_payouts_driver ON public.driver_payouts(driver_id);
+supabase/migrations/20260318182853_7d39f066-bcc5-4733-8341-77eb78593406.sql:18:CREATE UNIQUE INDEX IF NOT EXISTS uq_demand_zones_zone_key ON public.demand_zones(zone_key);
+supabase/migrations/20260318182853_7d39f066-bcc5-4733-8341-77eb78593406.sql:32:CREATE INDEX IF NOT EXISTS idx_ride_dispatch_logs_request ON public.ride_dispatch_logs(ride_request_id);
+supabase/migrations/20260318183949_3352d4d6-bf10-4ae8-93f6-744b4b7f4240.sql:52:create index if not exists idx_ride_eta_snapshots_request
+supabase/migrations/20260318183949_3352d4d6-bf10-4ae8-93f6-744b4b7f4240.sql:68:create unique index if not exists uq_driver_clusters_zone_key
+supabase/migrations/20260318183949_3352d4d6-bf10-4ae8-93f6-744b4b7f4240.sql:80:create index if not exists idx_ops_live_metrics_key
+supabase/migrations/20260318184508_62a9294b-b8e2-4ee9-abb3-d6e71bb7fe33.sql:16:create index if not exists idx_admin_alerts_status on public.admin_alerts(status);
+supabase/migrations/20260318184508_62a9294b-b8e2-4ee9-abb3-d6e71bb7fe33.sql:36:create index if not exists idx_wallet_credit_transactions_user on public.wallet_credit_transactions(user_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:17:create index if not exists idx_call_sessions_thread_id on public.call_sessions(thread_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:30:create index if not exists idx_message_translations_message_id on public.message_translations(message_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:47:create index if not exists idx_refund_requests_status on public.refund_requests(refund_status);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:62:create index if not exists idx_ops_sla_events_type on public.ops_sla_events(sla_type);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:91:create index if not exists idx_moderation_events_user_id on public.moderation_events(user_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:113:create index if not exists idx_team_workspace_members_workspace_id on public.team_workspace_members(workspace_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:132:create index if not exists idx_team_tasks_workspace_id on public.team_tasks(workspace_id);
+supabase/migrations/20260318185410_0b2e50ab-1c20-47db-bb8b-998d958ada05.sql:146:create index if not exists idx_orbit_call_presence_session on public.orbit_call_presence(call_session_id);
+supabase/migrations/20260318185936_760cba44-184e-4215-a416-99e6a0e44e81.sql:30:create index if not exists idx_call_transcripts_call_session
+supabase/migrations/20260318185936_760cba44-184e-4215-a416-99e6a0e44e81.sql:88:create unique index if not exists uq_executive_kpi_snapshots_date
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:15:create index if not exists idx_rtc_signaling_call
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:32:create index if not exists idx_live_translation_stream_call
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:56:create index if not exists idx_ai_chat_messages_thread
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:76:create index if not exists idx_financial_recon_status
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:89:create index if not exists idx_call_participants_call
+supabase/migrations/20260318192425_858b3ffe-072d-4581-a3b8-42bb61c0fba6.sql:103:create index if not exists idx_recon_alerts_recon
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:27:create index if not exists idx_orbit_device_keys_identity on public.orbit_device_keys(identity_id);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:37:create index if not exists idx_orbit_session_tokens_identity on public.orbit_session_tokens(identity_id);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:55:create index if not exists idx_wallet_accounts_owner on public.wallet_accounts(owner_user_id, owner_type);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:72:create index if not exists idx_wallet_ledger_account on public.wallet_ledger_entries(wallet_account_id, created_at desc);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:89:create index if not exists idx_wallet_transfers_status on public.wallet_transfers(status, created_at desc);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:108:create index if not exists idx_dispatch_prediction_context on public.dispatch_prediction_jobs(context_type, context_id);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:120:create index if not exists idx_dispatch_candidate_job on public.dispatch_candidate_drivers(prediction_job_id);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:154:create index if not exists idx_merchant_onboarding_profiles_status on public.merchant_onboarding_profiles(onboarding_status, created_at desc);
+supabase/migrations/20260318195544_18f108e0-4bd1-4b30-91cd-9f37bc41e1b5.sql:169:create index if not exists idx_merchant_menu_import_profile on public.merchant_menu_import_items(profile_id);
+supabase/migrations/20260318201659_79795c38-1dd4-4bbe-a474-67fe6174806f.sql:14:create index if not exists idx_fraud_entities_type_id on public.fraud_entities(entity_type, entity_id);
+supabase/migrations/20260318201659_79795c38-1dd4-4bbe-a474-67fe6174806f.sql:26:create index if not exists idx_fraud_edges_from on public.fraud_edges(from_entity_id);
+supabase/migrations/20260318201659_79795c38-1dd4-4bbe-a474-67fe6174806f.sql:39:create index if not exists idx_device_fingerprint_hash on public.device_fingerprints(fingerprint_hash);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:26:create index if not exists idx_workspace_members_workspace on public.workspace_members(workspace_id);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:27:create index if not exists idx_workspace_members_user on public.workspace_members(user_id);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:81:create index if not exists idx_support_ticket_messages_ticket on public.support_ticket_messages(ticket_id, created_at asc);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:97:create index if not exists idx_storage_assets_workspace on public.storage_assets(workspace_id, created_at desc);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:128:create index if not exists idx_dispatch_bids_job on public.dispatch_bids(job_id, created_at desc);
+supabase/migrations/20260318202630_223eb110-5214-4d3c-a41c-c3ed84cd9e8f.sql:156:create index if not exists idx_menu_items_profile on public.menu_items(merchant_profile_id, created_at desc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:17:create index if not exists idx_service_profiles_user on public.service_profiles(user_id);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:37:create index if not exists idx_driver_profiles_user on public.driver_profiles(user_id);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:38:create index if not exists idx_driver_profiles_service_mode on public.driver_profiles(service_mode, is_online, is_available);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:52:create index if not exists idx_driver_locations_driver on public.driver_locations(driver_id, recorded_at desc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:72:create index if not exists idx_saved_addresses_user on public.saved_addresses(user_id, created_at desc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:96:create index if not exists idx_orders_customer on public.orders(customer_user_id, created_at desc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:97:create index if not exists idx_orders_workspace on public.orders(workspace_id, created_at desc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:111:create index if not exists idx_order_items_order on public.order_items(order_id, created_at asc);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:144:create index if not exists idx_live_tracking_context on public.live_tracking_sessions(context_type, context_id);
+supabase/migrations/20260318204120_216e62d6-6960-4c6c-9c3c-3bca6e7bb252.sql:158:create index if not exists idx_live_tracking_points_session on public.live_tracking_points(session_id, recorded_at desc);
+supabase/migrations/20260318210654_df5231c7-d53a-4e27-8ded-521c3532b0fe.sql:37:CREATE INDEX IF NOT EXISTS idx_delivery_proofs_order ON public.delivery_proofs(order_id);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:28:create index if not exists idx_guest_checkout_sessions_guest on public.guest_checkout_sessions(guest_id, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:43:create index if not exists idx_phone_otp_phone on public.phone_otp_sessions(phone, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:64:create index if not exists idx_payment_intents_order on public.payment_intents(order_id, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:82:create index if not exists idx_merchant_coverage_areas_merchant on public.merchant_coverage_areas(merchant_profile_id, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:100:create index if not exists idx_delivery_eta_predictions_order on public.delivery_eta_predictions(order_id, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:115:create index if not exists idx_abandoned_cart_events_cart on public.abandoned_cart_events(cart_id, created_at desc);
+supabase/migrations/20260318211226_1cf88bff-4235-49ab-a15f-c09374fa74bd.sql:145:create index if not exists idx_loyalty_ledger_account on public.loyalty_ledger(loyalty_account_id, created_at desc);
+supabase/migrations/20260318212025_8acd20b1-17a1-44e1-b5ec-a8bb60f9ea15.sql:14:create index if not exists idx_push_device_tokens_user
+supabase/migrations/20260318212025_8acd20b1-17a1-44e1-b5ec-a8bb60f9ea15.sql:29:create index if not exists idx_customer_recommendations_user
+supabase/migrations/20260318212025_8acd20b1-17a1-44e1-b5ec-a8bb60f9ea15.sql:45:create index if not exists idx_competitor_price_snapshots_merchant
+supabase/migrations/20260318212611_76409cc9-ece4-48d3-a5a3-2492c754dc48.sql:39:create index if not exists idx_incident_case_events_incident
+supabase/migrations/20260318213705_c746ca0b-f27c-457a-a552-c94d807c03e0.sql:9:CREATE INDEX IF NOT EXISTS idx_admin_alerts_workspace ON public.admin_alerts(workspace_id, created_at DESC);
+supabase/migrations/20260318213705_c746ca0b-f27c-457a-a552-c94d807c03e0.sql:27:CREATE INDEX IF NOT EXISTS idx_audit_findings_report ON public.audit_findings(report_id, created_at ASC);
+supabase/migrations/20260318213705_c746ca0b-f27c-457a-a552-c94d807c03e0.sql:40:CREATE INDEX IF NOT EXISTS idx_launch_gate_results_report ON public.launch_gate_results(report_id, created_at DESC);
+supabase/migrations/20260319001837_537ba448-6f98-4f84-aac6-ed94d5022c07.sql:21:CREATE UNIQUE INDEX IF NOT EXISTS idx_outreach_token ON public.merchant_outreach_campaigns(activation_token);
+supabase/migrations/20260319001837_537ba448-6f98-4f84-aac6-ed94d5022c07.sql:22:CREATE INDEX IF NOT EXISTS idx_outreach_merchant ON public.merchant_outreach_campaigns(merchant_profile_id);
+supabase/migrations/20260319005058_580a6d07-50ab-48b2-8f5d-0243989150fa.sql:54:CREATE INDEX IF NOT EXISTS idx_storefront_pages_merchant_profile_id
+supabase/migrations/20260319005058_580a6d07-50ab-48b2-8f5d-0243989150fa.sql:57:CREATE INDEX IF NOT EXISTS idx_claim_attempts_merchant_profile_id
+supabase/migrations/20260319005058_580a6d07-50ab-48b2-8f5d-0243989150fa.sql:60:CREATE INDEX IF NOT EXISTS idx_claim_attempts_user_id_created
+supabase/migrations/20260319010317_dad379be-7166-47ae-b847-492300babc0b.sql:54:CREATE INDEX IF NOT EXISTS idx_phone_otp_sessions_expires
+supabase/migrations/20260319021543_64a25939-c1e3-4a2b-b9e2-c0733dc50c59.sql:5:CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_accounts_unique_owner
+supabase/migrations/20260319021543_64a25939-c1e3-4a2b-b9e2-c0733dc50c59.sql:9:CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_accounts_unique_profile
+supabase/migrations/20260319021543_64a25939-c1e3-4a2b-b9e2-c0733dc50c59.sql:13:CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_accounts_platform_singleton
+supabase/migrations/20260319024112_36be7ba5-3867-474d-9dcf-58dd9221b113.sql:38:CREATE INDEX IF NOT EXISTS idx_dispatch_offers_job ON dispatch_offers(job_id);
+supabase/migrations/20260319024112_36be7ba5-3867-474d-9dcf-58dd9221b113.sql:39:CREATE INDEX IF NOT EXISTS idx_dispatch_offers_driver ON dispatch_offers(driver_user_id);
+supabase/migrations/20260319024112_36be7ba5-3867-474d-9dcf-58dd9221b113.sql:66:CREATE INDEX IF NOT EXISTS idx_automation_wf_entity ON automation_workflows(entity_type, entity_id);
+supabase/migrations/20260319024112_36be7ba5-3867-474d-9dcf-58dd9221b113.sql:67:CREATE INDEX IF NOT EXISTS idx_automation_wf_status ON automation_workflows(status);
+supabase/migrations/20260319024112_36be7ba5-3867-474d-9dcf-58dd9221b113.sql:68:CREATE INDEX IF NOT EXISTS idx_automation_wf_type ON automation_workflows(workflow_type);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:38:CREATE UNIQUE INDEX IF NOT EXISTS idx_dispatch_jobs_v2_order ON public.dispatch_jobs_v2(order_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:39:CREATE INDEX IF NOT EXISTS idx_dispatch_jobs_v2_status ON public.dispatch_jobs_v2(dispatch_status);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:40:CREATE INDEX IF NOT EXISTS idx_dispatch_jobs_v2_driver ON public.dispatch_jobs_v2(assigned_driver_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:41:CREATE INDEX IF NOT EXISTS idx_dispatch_jobs_v2_city ON public.dispatch_jobs_v2(city);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:42:CREATE INDEX IF NOT EXISTS idx_dispatch_jobs_v2_country ON public.dispatch_jobs_v2(country_code);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:68:CREATE INDEX IF NOT EXISTS idx_dmo_job ON public.driver_mission_offers(dispatch_job_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:69:CREATE INDEX IF NOT EXISTS idx_dmo_driver ON public.driver_mission_offers(driver_profile_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:70:CREATE INDEX IF NOT EXISTS idx_dmo_status ON public.driver_mission_offers(offer_status);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:98:CREATE INDEX IF NOT EXISTS idx_dll_driver ON public.driver_live_locations(driver_profile_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:99:CREATE INDEX IF NOT EXISTS idx_dll_job ON public.driver_live_locations(dispatch_job_id);
+supabase/migrations/20260319024333_d24c4768-a898-4700-a18b-d00ac57371ec.sql:100:CREATE INDEX IF NOT EXISTS idx_dll_recorded ON public.driver_live_locations(recorded_at);
+supabase/migrations/20260319031601_b1965c4c-d306-467a-8dd6-b9df9c8a5781.sql:51:create index if not exists idx_growth_city_pages_city_vertical
+supabase/migrations/20260319031601_b1965c4c-d306-467a-8dd6-b9df9c8a5781.sql:54:create index if not exists idx_growth_demand_events_merchant
+supabase/migrations/20260319031601_b1965c4c-d306-467a-8dd6-b9df9c8a5781.sql:57:create index if not exists idx_merchant_onboarding_profiles_dedupe
+supabase/migrations/20260319041459_0909cb67-ee9d-4993-8512-eb4ed2469d29.sql:38:CREATE INDEX IF NOT EXISTS idx_orbit_call_sessions_callee_status
+supabase/migrations/20260319041459_0909cb67-ee9d-4993-8512-eb4ed2469d29.sql:41:CREATE INDEX IF NOT EXISTS idx_orbit_call_signals_receiver_consumed
+supabase/migrations/20260319090234_c583785e-3803-4ce0-8cfc-f9c212768349.sql:10:CREATE INDEX IF NOT EXISTS idx_saved_addresses_user_default 
+supabase/migrations/20260319094136_ad05ea6d-c05f-4d8d-a40f-0953f219da10.sql:21:CREATE INDEX IF NOT EXISTS idx_wpi_user_id ON public.wallet_payment_intents(user_id);
+supabase/migrations/20260319094136_ad05ea6d-c05f-4d8d-a40f-0953f219da10.sql:22:CREATE INDEX IF NOT EXISTS idx_wpi_status ON public.wallet_payment_intents(status);
+supabase/migrations/20260319094136_ad05ea6d-c05f-4d8d-a40f-0953f219da10.sql:23:CREATE INDEX IF NOT EXISTS idx_wpi_nonce ON public.wallet_payment_intents(nonce);
+supabase/migrations/20260319094136_ad05ea6d-c05f-4d8d-a40f-0953f219da10.sql:24:CREATE UNIQUE INDEX IF NOT EXISTS idx_wpi_nonce_unique ON public.wallet_payment_intents(nonce);
+supabase/migrations/20260319195710_083a10ae-8ead-49bc-b927-cb160620c95f.sql:57:create unique index if not exists idx_dino_entity_state_unique
+supabase/migrations/20260319195710_083a10ae-8ead-49bc-b927-cb160620c95f.sql:60:create index if not exists idx_dino_sync_jobs_status
+supabase/migrations/20260319195710_083a10ae-8ead-49bc-b927-cb160620c95f.sql:63:create index if not exists idx_dino_quality_scores_route
+supabase/migrations/20260319195710_083a10ae-8ead-49bc-b927-cb160620c95f.sql:66:create index if not exists idx_dino_notifications_status
+supabase/migrations/20260319200342_517fc9b0-8c37-4efb-9865-467d2733fa8c.sql:35:create index if not exists idx_dino_page_audits_route on public.dino_page_audits(route);
+supabase/migrations/20260319200342_517fc9b0-8c37-4efb-9865-467d2733fa8c.sql:36:create index if not exists idx_dino_route_registry_active on public.dino_route_registry(active);
+supabase/migrations/20260319201844_e38a7289-e15c-42b7-bbc1-49340a92395f.sql:75:CREATE INDEX IF NOT EXISTS idx_dino_learning_events_type ON public.dino_learning_events(event_type, created_at);
+supabase/migrations/20260319201844_e38a7289-e15c-42b7-bbc1-49340a92395f.sql:76:CREATE INDEX IF NOT EXISTS idx_dino_pro_performance_tier ON public.dino_pro_performance(tier, overall_score);
+supabase/migrations/20260319201844_e38a7289-e15c-42b7-bbc1-49340a92395f.sql:77:CREATE INDEX IF NOT EXISTS idx_dino_market_balance_cat ON public.dino_market_balance(category_id);
+supabase/migrations/20260319201844_e38a7289-e15c-42b7-bbc1-49340a92395f.sql:78:CREATE INDEX IF NOT EXISTS idx_dino_ux_adaptations_status ON public.dino_ux_adaptations(status, route);
+supabase/migrations/20260319202547_de8106db-ee19-49e2-88fb-0f0cacdf36ab.sql:82:CREATE INDEX IF NOT EXISTS idx_dino_predictions_route ON public.dino_predictions(route, risk_level);
+supabase/migrations/20260319202547_de8106db-ee19-49e2-88fb-0f0cacdf36ab.sql:83:CREATE INDEX IF NOT EXISTS idx_dino_expansion_status ON public.dino_expansion_opportunities(status, priority);
+supabase/migrations/20260319202547_de8106db-ee19-49e2-88fb-0f0cacdf36ab.sql:84:CREATE INDEX IF NOT EXISTS idx_dino_drafts_status ON public.dino_draft_profiles(status, country);
+supabase/migrations/20260319202547_de8106db-ee19-49e2-88fb-0f0cacdf36ab.sql:85:CREATE INDEX IF NOT EXISTS idx_dino_campaigns_status ON public.dino_campaigns(status);
+supabase/migrations/20260319202547_de8106db-ee19-49e2-88fb-0f0cacdf36ab.sql:86:CREATE INDEX IF NOT EXISTS idx_dino_promos_active ON public.dino_promotion_slots(active, priority);
+supabase/migrations/20260319233514_f08b23cc-5297-4c10-98bd-6b62e50cc4e4.sql:40:create index if not exists idx_seed_merchants_category on public.seed_merchants(category);
+supabase/migrations/20260319233514_f08b23cc-5297-4c10-98bd-6b62e50cc4e4.sql:41:create index if not exists idx_seed_merchants_city on public.seed_merchants(city);
+supabase/migrations/20260319233514_f08b23cc-5297-4c10-98bd-6b62e50cc4e4.sql:42:create index if not exists idx_seed_merchants_area on public.seed_merchants(area);
+supabase/migrations/20260319233514_f08b23cc-5297-4c10-98bd-6b62e50cc4e4.sql:43:create index if not exists idx_seed_products_merchant_id on public.seed_products(merchant_id);
+supabase/migrations/20260320001716_00a77a8e-fa68-4bde-a1e7-877dd03bce57.sql:12:create index if not exists idx_support_ticket_messages_ticket_id
+supabase/migrations/20260320001716_00a77a8e-fa68-4bde-a1e7-877dd03bce57.sql:39:create index if not exists idx_seed_merchant_promos_merchant_id
+supabase/migrations/20260320004432_e521cb45-4ac6-4b02-bce2-c62cdc3ab44b.sql:11:create index if not exists idx_user_favorites_user_id on public.user_favorites(user_id);
+supabase/migrations/20260320091345_4c999ba4-61eb-48c0-b1bb-82031935cef6.sql:14:create index if not exists idx_app_notifications_orbit_id
+supabase/migrations/20260320091345_4c999ba4-61eb-48c0-b1bb-82031935cef6.sql:17:create index if not exists idx_app_notifications_created_at
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:20:CREATE INDEX IF NOT EXISTS idx_orbit_profiles_v2_orbit_id ON public.orbit_profiles_v2(orbit_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:72:CREATE INDEX IF NOT EXISTS idx_wallets_v2_user_id ON public.wallets_v2(user_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:73:CREATE UNIQUE INDEX IF NOT EXISTS idx_wallets_v2_orbit_id ON public.wallets_v2(orbit_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:111:CREATE INDEX IF NOT EXISTS idx_property_listings_v2_user_id ON public.property_listings_v2(user_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:112:CREATE INDEX IF NOT EXISTS idx_property_listings_v2_status ON public.property_listings_v2(status);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:149:CREATE INDEX IF NOT EXISTS idx_bookings_v2_buyer ON public.bookings_v2(buyer_user_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:150:CREATE INDEX IF NOT EXISTS idx_bookings_v2_owner ON public.bookings_v2(owner_user_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:151:CREATE INDEX IF NOT EXISTS idx_bookings_v2_listing ON public.bookings_v2(listing_id);
+supabase/migrations/20260320092209_f94dfee5-fb28-4323-af0a-84d0c5ea42a8.sql:224:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_conv ON public.chat_messages_v2(conversation_id);
+supabase/migrations/20260320092641_cbfdb097-5192-4a62-b908-7a25629b5a7a.sql:35:CREATE INDEX IF NOT EXISTS idx_orbit_call_sessions_v2_caller ON public.orbit_call_sessions_v2(caller_user_id);
+supabase/migrations/20260320092641_cbfdb097-5192-4a62-b908-7a25629b5a7a.sql:36:CREATE INDEX IF NOT EXISTS idx_orbit_call_sessions_v2_callee ON public.orbit_call_sessions_v2(callee_orbit_id);
+supabase/migrations/20260320092641_cbfdb097-5192-4a62-b908-7a25629b5a7a.sql:83:CREATE INDEX IF NOT EXISTS idx_orbit_call_signals_v2_session ON public.orbit_call_signals_v2(session_id);
+supabase/migrations/20260320093358_d81bd24d-5ea4-49e1-b149-6322996d87a0.sql:13:create unique index if not exists idx_payment_events_external_id
+supabase/migrations/20260320094158_b966c3c9-2fa4-4395-ae20-e24560487b00.sql:1:create index if not exists idx_payment_events_processed on public.payment_events(processed);
+supabase/migrations/20260320094446_043629be-5aaa-4a1c-bdd3-a9362590dbc6.sql:12:create index if not exists idx_refund_requests_booking_id on public.refund_requests(booking_id);
+supabase/migrations/20260320094446_043629be-5aaa-4a1c-bdd3-a9362590dbc6.sql:29:create index if not exists idx_payout_requests_owner_orbit_id on public.payout_requests(owner_orbit_id);
+supabase/migrations/20260320094828_961767ec-9e73-4b62-9f5b-a975c31eae42.sql:14:create index if not exists idx_chat_attachments_conversation_id
+supabase/migrations/20260320095151_dd80f973-be15-44b5-9fab-983d85eb8f46.sql:10:create unique index if not exists idx_favorite_unique
+supabase/migrations/20260320095151_dd80f973-be15-44b5-9fab-983d85eb8f46.sql:33:create index if not exists idx_activity_logs_user_id on public.activity_logs(user_id);
+supabase/migrations/20260320095151_dd80f973-be15-44b5-9fab-983d85eb8f46.sql:34:create index if not exists idx_activity_logs_created_at on public.activity_logs(created_at desc);
+supabase/migrations/20260320095349_c3ca6211-cd99-438d-844f-b84b41b771de.sql:11:create index if not exists idx_listing_views_listing_id
+supabase/migrations/20260320095349_c3ca6211-cd99-438d-844f-b84b41b771de.sql:14:create index if not exists idx_listing_views_created_at
+supabase/migrations/20260320095349_c3ca6211-cd99-438d-844f-b84b41b771de.sql:31:create index if not exists idx_seller_kpi_snapshots_owner_orbit_id
+supabase/migrations/20260320095650_d86d76ba-c7ff-457f-8da4-ad7c19a02810.sql:13:create index if not exists idx_listing_reviews_listing_id
+supabase/migrations/20260320095650_d86d76ba-c7ff-457f-8da4-ad7c19a02810.sql:31:create unique index if not exists idx_listing_coupons_code_unique
+supabase/migrations/20260320101559_957b7842-2e1a-466e-ae1e-4751ec761c79.sql:14:create unique index if not exists idx_push_tokens_unique on public.push_tokens(token);
+supabase/migrations/20260320101559_957b7842-2e1a-466e-ae1e-4751ec761c79.sql:28:create index if not exists idx_notification_deliveries_notification_id on public.notification_deliveries(notification_id);
+supabase/migrations/20260320110406_729ead90-c699-4740-921f-b3dee6317941.sql:21:CREATE INDEX IF NOT EXISTS idx_call_logs_conversation_id ON public.call_logs(conversation_id);
+supabase/migrations/20260320112959_df0a2c2c-f584-4bba-8a86-b4fe4f2a7c86.sql:20:CREATE INDEX IF NOT EXISTS idx_call_signals_session_id ON public.call_signals(session_id);
+supabase/migrations/20260320175932_1a88a3a8-59f6-4d5f-b5d2-2e37a0337c77.sql:6:CREATE UNIQUE INDEX IF NOT EXISTS idx_orbit_profiles_v2_email
+supabase/migrations/20260320181525_2ec1c5fe-7dd5-499d-9bdb-d8b583313b54.sql:6:CREATE UNIQUE INDEX IF NOT EXISTS idx_orbit_profiles_v2_email_lower
+supabase/migrations/20260320201225_a16f2509-45d0-4566-89a9-a48dfe3d059c.sql:36:CREATE INDEX IF NOT EXISTS idx_wallet_ledger_reference ON public.wallet_ledger (reference_id) WHERE reference_id IS NOT NULL;
+supabase/migrations/20260320201225_a16f2509-45d0-4566-89a9-a48dfe3d059c.sql:37:CREATE INDEX IF NOT EXISTS idx_payments_provider ON public.payments (provider_payment_id) WHERE provider_payment_id IS NOT NULL;
+supabase/migrations/20260320201225_a16f2509-45d0-4566-89a9-a48dfe3d059c.sql:38:CREATE INDEX IF NOT EXISTS idx_payments_reference ON public.payments (reference_type, reference_id);
+supabase/migrations/20260320232736_2ad63022-898f-4681-9387-8ba627529fda.sql:29:CREATE INDEX IF NOT EXISTS idx_ms_boost ON public.marketplace_services (boost_enabled, boost_expires_at) WHERE boost_enabled = true;
+supabase/migrations/20260320232736_2ad63022-898f-4681-9387-8ba627529fda.sql:30:CREATE INDEX IF NOT EXISTS idx_ms_auto_renew ON public.marketplace_services (auto_renew_enabled, listing_expires_at) WHERE auto_renew_enabled = true;
+supabase/migrations/20260320232736_2ad63022-898f-4681-9387-8ba627529fda.sql:31:CREATE INDEX IF NOT EXISTS idx_ms_freshness ON public.marketplace_services (freshness_score DESC) WHERE active = true;
+supabase/migrations/20260320235657_78db5350-ca2d-4506-aa80-ffd1de608f99.sql:34:    CREATE UNIQUE INDEX zones_slug_unique ON public.zones (slug) WHERE slug IS NOT NULL;
+supabase/migrations/20260321000218_e223f6ae-d35c-4966-8fe0-bf74677eeef2.sql:10:CREATE INDEX IF NOT EXISTS idx_zones_parent_id ON public.zones(parent_id);
+supabase/migrations/20260321000218_e223f6ae-d35c-4966-8fe0-bf74677eeef2.sql:11:CREATE INDEX IF NOT EXISTS idx_zones_level ON public.zones(level);
+supabase/migrations/20260321000218_e223f6ae-d35c-4966-8fe0-bf74677eeef2.sql:12:CREATE INDEX IF NOT EXISTS idx_zones_country_city ON public.zones(country_code, city);
+supabase/migrations/20260321000218_e223f6ae-d35c-4966-8fe0-bf74677eeef2.sql:16:CREATE INDEX IF NOT EXISTS idx_marketplace_services_zone_id ON public.marketplace_services(zone_id);
+supabase/migrations/20260321013410_977bb0ac-5b3f-4a41-b461-a1b858d9ceaa.sql:7:    CREATE UNIQUE INDEX IF NOT EXISTS idx_storefront_orders_idempotency ON public.storefront_orders(idempotency_key) WHERE idempotency_key IS NOT NULL;
+supabase/migrations/20260321024650_2ae02e75-bebc-4ad0-8c84-4afca646221f.sql:86:CREATE UNIQUE INDEX IF NOT EXISTS idx_order_status_history_idempotent
+supabase/migrations/20260321033954_5fb971ab-1888-4662-a083-4bd5943f9b9b.sql:106:CREATE INDEX IF NOT EXISTS idx_dm_status ON public.delivery_missions (status);
+supabase/migrations/20260321033954_5fb971ab-1888-4662-a083-4bd5943f9b9b.sql:107:CREATE INDEX IF NOT EXISTS idx_dm_seller ON public.delivery_missions (seller_id);
+supabase/migrations/20260321042014_9295ff9b-433e-4bb2-9db5-c9b63d15c6d4.sql:13:CREATE UNIQUE INDEX IF NOT EXISTS idx_wallet_transfers_idempotency_key 
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:183:CREATE INDEX IF NOT EXISTS idx_transaction_intents_user ON public.transaction_intents(user_id);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:184:CREATE INDEX IF NOT EXISTS idx_transaction_intents_status ON public.transaction_intents(status);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:185:CREATE INDEX IF NOT EXISTS idx_topup_requests_user ON public.topup_requests(user_id);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:186:CREATE INDEX IF NOT EXISTS idx_commission_splits_order ON public.commission_splits(order_id);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:187:CREATE INDEX IF NOT EXISTS idx_payment_provider_events_type ON public.payment_provider_events(event_type);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:188:CREATE INDEX IF NOT EXISTS idx_qr_sessions_token ON public.qr_payment_sessions(session_token);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:189:CREATE INDEX IF NOT EXISTS idx_qr_sessions_status ON public.qr_payment_sessions(status);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:190:CREATE INDEX IF NOT EXISTS idx_settlement_records_user ON public.settlement_records(recipient_user_id);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:191:CREATE INDEX IF NOT EXISTS idx_payout_requests_user_new ON public.payout_requests(user_id);
+supabase/migrations/20260322104502_1ff7deff-52ca-4e4c-a781-34c6fcffe9b3.sql:192:CREATE INDEX IF NOT EXISTS idx_payment_method_links_user ON public.payment_method_links(user_id);
+supabase/migrations/20260322130101_815bc2d8-1b8d-455d-864b-05b6e954da00.sql:4:CREATE INDEX IF NOT EXISTS idx_storefront_pages_launch_status ON public.storefront_pages(launch_status);
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:74:CREATE INDEX idx_entities_slug ON public.entities (slug) WHERE slug IS NOT NULL;
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:75:CREATE INDEX idx_entities_vertical ON public.entities (vertical);
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:76:CREATE INDEX idx_entities_city ON public.entities (city);
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:77:CREATE INDEX idx_entities_status ON public.entities (status);
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:78:CREATE INDEX idx_entities_geo ON public.entities (latitude, longitude) WHERE latitude IS NOT NULL;
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:79:CREATE INDEX idx_entities_storefront ON public.entities (storefront_page_id) WHERE storefront_page_id IS NOT NULL;
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:80:CREATE INDEX idx_entities_seed ON public.entities (seed_merchant_id) WHERE seed_merchant_id IS NOT NULL;
+supabase/migrations/20260323100416_f38f3dde-7542-42fc-a499-8f3eb3bb46c7.sql:81:CREATE INDEX idx_entities_owner ON public.entities (owner_user_id) WHERE owner_user_id IS NOT NULL;
+supabase/migrations/20260323100931_e4b285f1-fa41-4fb4-a1f5-39ed1aff9257.sql:17:CREATE INDEX IF NOT EXISTS idx_entities_city_code ON public.entities (city_code);
+supabase/migrations/20260323100931_e4b285f1-fa41-4fb4-a1f5-39ed1aff9257.sql:18:CREATE INDEX IF NOT EXISTS idx_entities_coverage_type ON public.entities (coverage_type);
+supabase/migrations/20260323100931_e4b285f1-fa41-4fb4-a1f5-39ed1aff9257.sql:19:CREATE INDEX IF NOT EXISTS idx_entities_vertical_cluster ON public.entities (vertical, cluster);
+supabase/migrations/20260323101459_790fa5f1-dc23-4e11-bf38-f59758e2c340.sql:7:CREATE INDEX IF NOT EXISTS idx_entities_parent ON public.entities (parent_entity_id) WHERE parent_entity_id IS NOT NULL;
+supabase/migrations/20260323103155_dbb5a834-7988-4d5e-840a-635b5e6255b8.sql:16:CREATE INDEX IF NOT EXISTS idx_entities_district ON public.entities (district_code, city_code) WHERE district_code IS NOT NULL;
+supabase/migrations/20260323103155_dbb5a834-7988-4d5e-840a-635b5e6255b8.sql:17:CREATE INDEX IF NOT EXISTS idx_entities_country_city ON public.entities (country_code, city_code);
+supabase/migrations/20260323125119_5179d688-9dc8-42ad-9da4-e936a9c6ad5d.sql:15:CREATE INDEX IF NOT EXISTS idx_storefront_pages_country_city ON public.storefront_pages (country, city);
+supabase/migrations/20260323125119_5179d688-9dc8-42ad-9da4-e936a9c6ad5d.sql:16:CREATE INDEX IF NOT EXISTS idx_storefront_pages_cover_source ON public.storefront_pages (cover_source);
+supabase/migrations/20260323143903_4ef6321a-d28e-44a8-bce5-e5fa104c848c.sql:25:CREATE INDEX IF NOT EXISTS idx_seed_merchants_visibility_mode ON public.seed_merchants (visibility_mode);
+supabase/migrations/20260323143903_4ef6321a-d28e-44a8-bce5-e5fa104c848c.sql:26:CREATE INDEX IF NOT EXISTS idx_seed_merchants_route_status ON public.seed_merchants (route_status);
+supabase/migrations/20260323143903_4ef6321a-d28e-44a8-bce5-e5fa104c848c.sql:27:CREATE INDEX IF NOT EXISTS idx_seed_merchants_display_priority ON public.seed_merchants (display_priority DESC);
+supabase/migrations/20260323182528_b5edcb62-5bed-49c1-9d72-4240f71b9e71.sql:11:CREATE INDEX IF NOT EXISTS idx_sf_brand_name ON public.storefront_pages (brand_name);
+supabase/migrations/20260323182528_b5edcb62-5bed-49c1-9d72-4240f71b9e71.sql:12:CREATE INDEX IF NOT EXISTS idx_sf_duplicate_of ON public.storefront_pages (duplicate_of) WHERE duplicate_of IS NOT NULL;
+supabase/migrations/20260323182528_b5edcb62-5bed-49c1-9d72-4240f71b9e71.sql:13:CREATE INDEX IF NOT EXISTS idx_sf_review_required ON public.storefront_pages (review_required) WHERE review_required = true;
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:194:CREATE INDEX idx_boost_campaigns_owner ON public.boost_campaigns(owner_user_id);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:195:CREATE INDEX idx_boost_campaigns_status ON public.boost_campaigns(status);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:196:CREATE INDEX idx_boost_impressions_campaign ON public.boost_impressions(campaign_id);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:197:CREATE INDEX idx_boost_impressions_rendered ON public.boost_impressions(rendered_at);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:198:CREATE INDEX idx_boost_clicks_campaign ON public.boost_clicks(campaign_id);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:199:CREATE INDEX idx_boost_leads_campaign ON public.boost_leads(campaign_id);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:200:CREATE INDEX idx_boost_leads_status ON public.boost_leads(status);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:201:CREATE INDEX idx_boost_analytics_campaign_day ON public.boost_analytics_daily(campaign_id, day);
+supabase/migrations/20260324052221_737f0fd5-18ca-4191-a855-482866ad6efe.sql:202:CREATE INDEX idx_boost_slots_surface ON public.boost_slots(surface, active);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:62:CREATE INDEX idx_imported_shop_raw_batch ON public.imported_shop_raw(batch_id);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:63:CREATE INDEX idx_imported_shop_raw_status ON public.imported_shop_raw(parsed_status);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:101:CREATE INDEX idx_candidates_batch ON public.onboarding_shop_candidates(batch_id);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:102:CREATE INDEX idx_candidates_status ON public.onboarding_shop_candidates(candidate_status);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:103:CREATE INDEX idx_candidates_city ON public.onboarding_shop_candidates(city);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:104:CREATE INDEX idx_candidates_vertical ON public.onboarding_shop_candidates(canonical_vertical);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:148:CREATE INDEX idx_onboarding_state_entity ON public.merchant_onboarding_state(entity_id);
+supabase/migrations/20260324071754_9e6b04ba-44c9-4652-ba14-2e116ec6d7b8.sql:149:CREATE INDEX idx_onboarding_state_mode ON public.merchant_onboarding_state(onboarding_mode);
+supabase/migrations/20260324080627_eb1ae6e5-5b97-40ff-984f-8ce781086775.sql:50:CREATE INDEX IF NOT EXISTS idx_ranking_snapshots_entity ON public.ranking_snapshots(entity_id, entity_type);
+supabase/migrations/20260324080627_eb1ae6e5-5b97-40ff-984f-8ce781086775.sql:51:CREATE INDEX IF NOT EXISTS idx_ranking_snapshots_score ON public.ranking_snapshots(global_rank_score DESC);
+supabase/migrations/20260324080627_eb1ae6e5-5b97-40ff-984f-8ce781086775.sql:52:CREATE INDEX IF NOT EXISTS idx_current_ranking_visibility ON public.current_ranking_state(visibility_class);
+supabase/migrations/20260324080627_eb1ae6e5-5b97-40ff-984f-8ce781086775.sql:53:CREATE INDEX IF NOT EXISTS idx_current_ranking_score ON public.current_ranking_state(global_rank_score DESC);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:74:CREATE INDEX idx_synonyms_source ON public.canonical_synonyms(lower(source_term));
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:75:CREATE INDEX idx_synonyms_lang ON public.canonical_synonyms(language);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:99:CREATE INDEX IF NOT EXISTS idx_catalog_items_vertical ON public.catalog_items(canonical_vertical);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:100:CREATE INDEX IF NOT EXISTS idx_catalog_items_category ON public.catalog_items(canonical_category);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:101:CREATE INDEX IF NOT EXISTS idx_catalog_items_search ON public.catalog_items USING gin(searchable_text);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:102:CREATE INDEX IF NOT EXISTS idx_catalog_items_slug ON public.catalog_items(slug);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:103:CREATE INDEX IF NOT EXISTS idx_catalog_items_quality ON public.catalog_items(quality_score DESC);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:174:CREATE INDEX idx_catalog_media_product ON public.catalog_media(product_id);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:175:CREATE INDEX idx_catalog_media_entity ON public.catalog_media(entity_id);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:176:CREATE INDEX idx_catalog_media_type ON public.catalog_media(media_type);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:195:CREATE INDEX idx_translations_product ON public.catalog_translations(product_id, language);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:196:CREATE INDEX idx_translations_entity ON public.catalog_translations(entity_id, language);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:227:CREATE INDEX idx_psi_search ON public.product_search_index USING gin(searchable_text);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:228:CREATE INDEX idx_psi_vertical ON public.product_search_index(vertical);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:229:CREATE INDEX idx_psi_category ON public.product_search_index(category);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:230:CREATE INDEX idx_psi_rank ON public.product_search_index(final_rank_score DESC);
+supabase/migrations/20260324091334_da61d18c-ed31-40d8-bc61-3ee759d89383.sql:231:CREATE INDEX idx_psi_city ON public.product_search_index(city);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:31:CREATE INDEX idx_canonical_families_vertical ON public.canonical_families(vertical_id);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:48:CREATE INDEX idx_canonical_categories_family ON public.canonical_categories(family_id);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:63:CREATE INDEX idx_canonical_subcategories_category ON public.canonical_subcategories(category_id);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:84:CREATE INDEX IF NOT EXISTS idx_catalog_items_vertical_id ON public.catalog_items(vertical_id);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:85:CREATE INDEX IF NOT EXISTS idx_catalog_items_family_id ON public.catalog_items(family_id);
+supabase/migrations/20260324093425_0509bd49-6908-4620-aba1-e835f0e550c5.sql:86:CREATE INDEX IF NOT EXISTS idx_catalog_items_readiness ON public.catalog_items(readiness_score DESC);
+supabase/migrations/20260324094813_2e22c32d-37de-4703-8cee-6bd1a0f1b3ef.sql:32:CREATE INDEX IF NOT EXISTS idx_live_status_entity 
+supabase/migrations/20260324095034_5efd01b0-99f5-437b-831e-e291247ef03f.sql:106:CREATE INDEX IF NOT EXISTS idx_notifications_user_unread 
+supabase/migrations/20260324095034_5efd01b0-99f5-437b-831e-e291247ef03f.sql:108:CREATE INDEX IF NOT EXISTS idx_notifications_dedup 
+supabase/migrations/20260324113535_76e0f7d0-05ea-4c2d-80a3-f33db0a1f3ef.sql:30:CREATE INDEX IF NOT EXISTS idx_seed_merchants_pipeline ON public.seed_merchants(pipeline_status, pipeline_last_run_at);
+supabase/migrations/20260324113535_76e0f7d0-05ea-4c2d-80a3-f33db0a1f3ef.sql:31:CREATE INDEX IF NOT EXISTS idx_seed_merchants_source ON public.seed_merchants(source_key);
+supabase/migrations/20260324113535_76e0f7d0-05ea-4c2d-80a3-f33db0a1f3ef.sql:32:CREATE INDEX IF NOT EXISTS idx_seed_merchants_freshness ON public.seed_merchants(freshness_score);
+supabase/migrations/20260324153043_306b0cf8-1c1f-408c-88af-aa983e57aeec.sql:15:CREATE INDEX IF NOT EXISTS idx_feedback_signals_entity
+supabase/migrations/20260324153043_306b0cf8-1c1f-408c-88af-aa983e57aeec.sql:18:CREATE INDEX IF NOT EXISTS idx_feedback_signals_created
+supabase/migrations/20260324194553_b998a683-c713-4d0a-81d6-a428683401d8.sql:26:CREATE UNIQUE INDEX IF NOT EXISTS wallet_accounts_one_active_per_owner_currency_idx
+supabase/migrations/20260325104429_d56267f0-b5ca-4ec1-af5d-aea48128a3f7.sql:17:CREATE INDEX idx_engine_run_logs_name ON public.engine_run_logs (engine_name);
+supabase/migrations/20260325104429_d56267f0-b5ca-4ec1-af5d-aea48128a3f7.sql:18:CREATE INDEX idx_engine_run_logs_started ON public.engine_run_logs (started_at DESC);
+supabase/migrations/20260325140338_9486c959-34ae-454b-8707-a2c944a1ec9c.sql:86:CREATE INDEX IF NOT EXISTS idx_radar_events_user ON public.user_radar_events(user_id, created_at DESC);
+supabase/migrations/20260325140338_9486c959-34ae-454b-8707-a2c944a1ec9c.sql:87:CREATE INDEX IF NOT EXISTS idx_radar_sessions_user ON public.user_radar_sessions(user_id, started_at DESC);
+supabase/migrations/20260325140338_9486c959-34ae-454b-8707-a2c944a1ec9c.sql:88:CREATE INDEX IF NOT EXISTS idx_radar_recs_user ON public.user_radar_recommendations(user_id, shown_at DESC);
+supabase/migrations/20260325140338_9486c959-34ae-454b-8707-a2c944a1ec9c.sql:89:CREATE INDEX IF NOT EXISTS idx_zone_profiles_zone ON public.zone_live_profiles(zone_id);
+supabase/migrations/20260325144232_6c8f65e2-69e5-4e01-8e64-1259c9bfa9c0.sql:28:CREATE INDEX IF NOT EXISTS idx_engine_supervisor_status ON public.engine_supervisor(status);
+supabase/migrations/20260325144232_6c8f65e2-69e5-4e01-8e64-1259c9bfa9c0.sql:29:CREATE INDEX IF NOT EXISTS idx_engine_supervisor_name ON public.engine_supervisor(engine_name);
+supabase/migrations/20260325153239_61b182de-28fd-4f1c-aae8-7919827c304b.sql:2:CREATE UNIQUE INDEX IF NOT EXISTS idx_seed_dedup_unique 
+supabase/migrations/20260325173108_fd2d0030-d609-44fe-8ec1-e622dd64b5f3.sql:24:CREATE INDEX IF NOT EXISTS idx_pipeline_queue_status ON public.entity_pipeline_queue(status, priority DESC, created_at ASC);
+supabase/migrations/20260325173108_fd2d0030-d609-44fe-8ec1-e622dd64b5f3.sql:25:CREATE INDEX IF NOT EXISTS idx_pipeline_queue_entity ON public.entity_pipeline_queue(entity_id, entity_type);
+supabase/migrations/20260325173108_fd2d0030-d609-44fe-8ec1-e622dd64b5f3.sql:26:CREATE INDEX IF NOT EXISTS idx_pipeline_queue_stage ON public.entity_pipeline_queue(current_stage, status);
+supabase/migrations/20260325183030_c1c5df01-d76e-4307-81d3-758c1c7cf009.sql:18:CREATE INDEX IF NOT EXISTS idx_seed_merchants_publish_status ON public.seed_merchants(publish_status);
+supabase/migrations/20260325183030_c1c5df01-d76e-4307-81d3-758c1c7cf009.sql:19:CREATE INDEX IF NOT EXISTS idx_seed_merchants_truth_status ON public.seed_merchants(truth_status);
+supabase/migrations/20260325233133_f292dfe8-6c7f-4a59-ac7e-c0a6b334bf61.sql:39:create index if not exists rides_rider_user_id_idx on public.rides(rider_user_id);
+supabase/migrations/20260325233133_f292dfe8-6c7f-4a59-ac7e-c0a6b334bf61.sql:40:create index if not exists rides_driver_user_id_idx on public.rides(driver_user_id);
+supabase/migrations/20260325233133_f292dfe8-6c7f-4a59-ac7e-c0a6b334bf61.sql:41:create index if not exists rides_status_idx on public.rides(status);
+supabase/migrations/20260325233133_f292dfe8-6c7f-4a59-ac7e-c0a6b334bf61.sql:42:create index if not exists ride_events_ride_id_idx on public.ride_events(ride_id);
+supabase/migrations/20260326075750_8441fe50-e79a-475e-b42a-c2e01666d3f4.sql:32:CREATE INDEX IF NOT EXISTS idx_nv2_user_created ON public.notifications_v2 (user_id, created_at DESC);
+supabase/migrations/20260326075750_8441fe50-e79a-475e-b42a-c2e01666d3f4.sql:33:CREATE INDEX IF NOT EXISTS idx_nv2_user_unread ON public.notifications_v2 (user_id, read_at) WHERE read_at IS NULL;
+supabase/migrations/20260326075750_8441fe50-e79a-475e-b42a-c2e01666d3f4.sql:34:CREATE INDEX IF NOT EXISTS idx_nv2_actor_domain ON public.notifications_v2 (actor, domain, created_at DESC);
+supabase/migrations/20260326075750_8441fe50-e79a-475e-b42a-c2e01666d3f4.sql:35:CREATE INDEX IF NOT EXISTS idx_nv2_job ON public.notifications_v2 (related_job_id) WHERE related_job_id IS NOT NULL;
+supabase/migrations/20260326075750_8441fe50-e79a-475e-b42a-c2e01666d3f4.sql:36:CREATE UNIQUE INDEX IF NOT EXISTS idx_nv2_dedupe ON public.notifications_v2 (dedupe_key) WHERE dedupe_key IS NOT NULL;
+supabase/migrations/20260326081708_9001b85d-389c-4119-9bf4-463aac78710d.sql:27:CREATE UNIQUE INDEX IF NOT EXISTS idx_cfr_vertical_cat ON public.category_fulfillment_rules (vertical, COALESCE(category,''), COALESCE(subcategory,''));
+supabase/migrations/20260326082752_8aba3975-2d07-4ff8-8d1c-24cba9af31e5.sql:22:CREATE UNIQUE INDEX IF NOT EXISTS idx_jurisdiction_unique ON public.jurisdiction_rules(country_code, COALESCE(city_code, '__ALL__'), service_mode, vehicle_type);
+supabase/migrations/20260326082752_8aba3975-2d07-4ff8-8d1c-24cba9af31e5.sql:23:CREATE INDEX IF NOT EXISTS idx_jurisdiction_rules_lookup ON public.jurisdiction_rules(country_code, service_mode);
+supabase/migrations/20260326090534_9f83b409-1ee3-41b0-9482-9bdbe5e60ec7.sql:57:CREATE INDEX idx_parcel_job_details_job_id ON public.parcel_job_details(job_id);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:22:CREATE UNIQUE INDEX idx_geo_live_context_zone ON public.geo_live_context (zone_key);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:23:CREATE INDEX idx_geo_live_context_country ON public.geo_live_context (country_code);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:24:CREATE INDEX idx_geo_live_context_city ON public.geo_live_context (city);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:60:CREATE INDEX idx_merchant_delivery_zones_merchant ON public.merchant_delivery_zones (merchant_id);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:61:CREATE INDEX idx_merchant_delivery_zones_active ON public.merchant_delivery_zones (is_active);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:62:CREATE INDEX idx_merchant_delivery_zones_city ON public.merchant_delivery_zones (city);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:81:CREATE INDEX idx_rider_runtime_online ON public.rider_runtime_state (is_online, is_available);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:101:CREATE INDEX idx_delivery_eta_merchant ON public.delivery_eta_context (merchant_id);
+supabase/migrations/20260326095030_72a3ca9b-b9a0-490c-88be-dbf78a45a9b7.sql:102:CREATE INDEX idx_delivery_eta_zone ON public.delivery_eta_context (zone_key);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:34:CREATE INDEX IF NOT EXISTS idx_cp_country ON public.canonical_places(country_code);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:35:CREATE INDEX IF NOT EXISTS idx_cp_city ON public.canonical_places(city);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:36:CREATE INDEX IF NOT EXISTS idx_cp_district ON public.canonical_places(district);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:37:CREATE INDEX IF NOT EXISTS idx_cp_type ON public.canonical_places(place_type);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:38:CREATE INDEX IF NOT EXISTS idx_cp_provider ON public.canonical_places(provider, provider_place_id);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:39:CREATE INDEX IF NOT EXISTS idx_cp_search ON public.canonical_places USING gin(search_text);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:40:CREATE UNIQUE INDEX IF NOT EXISTS idx_cp_provider_dedup ON public.canonical_places(provider, provider_place_id) WHERE provider_place_id IS NOT NULL;
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:65:CREATE INDEX IF NOT EXISTS idx_usa_user ON public.user_saved_addresses(user_id);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:66:CREATE INDEX IF NOT EXISTS idx_usa_default ON public.user_saved_addresses(user_id, is_default) WHERE is_default = true;
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:102:CREATE INDEX IF NOT EXISTS idx_aue_user ON public.address_usage_events(user_id);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:103:CREATE INDEX IF NOT EXISTS idx_aue_place ON public.address_usage_events(canonical_place_id);
+supabase/migrations/20260326101258_229058ee-6191-422d-8410-9715d9612750.sql:104:CREATE INDEX IF NOT EXISTS idx_aue_context ON public.address_usage_events(context_type);
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:11:CREATE INDEX IF NOT EXISTS idx_cp_zone_key ON public.canonical_places(zone_key);
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:12:CREATE INDEX IF NOT EXISTS idx_cp_geohash ON public.canonical_places(geohash);
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:13:CREATE INDEX IF NOT EXISTS idx_cp_latlng ON public.canonical_places(lat, lng);
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:48:CREATE INDEX IF NOT EXISTS idx_mgc_zone ON public.merchant_geo_context(zone_key);
+supabase/migrations/20260326102140_8b72aba8-aafc-4a21-988f-c4965697e0c0.sql:49:CREATE INDEX IF NOT EXISTS idx_mgc_place ON public.merchant_geo_context(canonical_place_id);
+supabase/migrations/20260326105212_30f4942d-5573-409e-b217-b94480393940.sql:27:CREATE INDEX IF NOT EXISTS idx_eta_projection_zone_cat ON public.eta_projection_cache(zone_key, category);
+supabase/migrations/20260326105212_30f4942d-5573-409e-b217-b94480393940.sql:28:CREATE INDEX IF NOT EXISTS idx_eta_projection_place ON public.eta_projection_cache(canonical_place_id);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:20:CREATE INDEX idx_radar_signals_type ON public.radar_signals (signal_type);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:21:CREATE INDEX idx_radar_signals_zone ON public.radar_signals (zone_key);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:22:CREATE INDEX idx_radar_signals_created ON public.radar_signals (created_at DESC);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:23:CREATE INDEX idx_radar_signals_source ON public.radar_signals (source_module);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:70:CREATE INDEX idx_radar_opps_status ON public.radar_opportunities (status);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:71:CREATE INDEX idx_radar_opps_zone ON public.radar_opportunities (zone_key);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:72:CREATE INDEX idx_radar_opps_score ON public.radar_opportunities (score DESC);
+supabase/migrations/20260326152202_64fee04d-db46-42ce-b13c-f31b09791717.sql:73:CREATE INDEX idx_radar_opps_type ON public.radar_opportunities (opportunity_type);
+supabase/migrations/20260326153826_05266996-b459-4f21-91ab-d123d06aee28.sql:14:CREATE INDEX IF NOT EXISTS idx_radar_signals_dedupe ON public.radar_signals (dedupe_key) WHERE dedupe_key IS NOT NULL;
+supabase/migrations/20260326153826_05266996-b459-4f21-91ab-d123d06aee28.sql:15:CREATE INDEX IF NOT EXISTS idx_radar_signals_expires ON public.radar_signals (expires_at);
+supabase/migrations/20260326153826_05266996-b459-4f21-91ab-d123d06aee28.sql:31:CREATE UNIQUE INDEX IF NOT EXISTS idx_radar_opps_dedupe ON public.radar_opportunities (dedupe_key) WHERE status = 'active' AND dedupe_key IS NOT NULL;
+supabase/migrations/20260326153826_05266996-b459-4f21-91ab-d123d06aee28.sql:32:CREATE INDEX IF NOT EXISTS idx_radar_opps_audience ON public.radar_opportunities (target_audience, status);
+supabase/migrations/20260327061038_6e4fd593-f0cf-40f1-aa83-2ca9540ef6e7.sql:3:CREATE UNIQUE INDEX IF NOT EXISTS notifications_user_dedup_key_unique
+supabase/migrations/20260327071533_02e6958d-6bff-4c58-87df-3dec44e1a752.sql:11:CREATE INDEX IF NOT EXISTS idx_engine_run_logs_engine_name ON public.engine_run_logs(engine_name, started_at DESC);
+supabase/migrations/20260327075534_b83b1c01-a1e0-4935-b822-0046e619740b.sql:16:CREATE INDEX idx_orbit_telemetry_created ON public.orbit_telemetry_events(created_at DESC);
+supabase/migrations/20260327075534_b83b1c01-a1e0-4935-b822-0046e619740b.sql:17:CREATE INDEX idx_orbit_telemetry_event ON public.orbit_telemetry_events(event_name);
+supabase/migrations/20260327084118_da9cd7c2-be0f-4b8b-ae88-889011541137.sql:21:CREATE UNIQUE INDEX IF NOT EXISTS idx_seed_merchants_source_entity
+supabase/migrations/20260327084118_da9cd7c2-be0f-4b8b-ae88-889011541137.sql:26:CREATE INDEX IF NOT EXISTS idx_seed_merchants_city_vertical_source
+supabase/migrations/20260327084118_da9cd7c2-be0f-4b8b-ae88-889011541137.sql:29:CREATE INDEX IF NOT EXISTS idx_seed_merchants_visibility_gate
+supabase/migrations/20260327084118_da9cd7c2-be0f-4b8b-ae88-889011541137.sql:32:CREATE INDEX IF NOT EXISTS idx_seed_merchants_pipeline_stage
+supabase/migrations/20260327084118_da9cd7c2-be0f-4b8b-ae88-889011541137.sql:75:CREATE INDEX IF NOT EXISTS idx_source_ingestion_queue_status ON public.source_ingestion_queue (status, priority);
+supabase/migrations/20260327085525_81d4a0f9-5b07-442b-8928-dfbf1aeabf75.sql:13:CREATE INDEX IF NOT EXISTS idx_seed_merchants_food_pipeline
+supabase/migrations/20260327085525_81d4a0f9-5b07-442b-8928-dfbf1aeabf75.sql:16:CREATE INDEX IF NOT EXISTS idx_seed_merchants_visibility
+supabase/migrations/20260327085525_81d4a0f9-5b07-442b-8928-dfbf1aeabf75.sql:19:CREATE INDEX IF NOT EXISTS idx_seed_merchants_pipeline_stage
+supabase/migrations/20260327094235_9b3e62c7-4d63-4b3d-8660-aa1d7afb1dc2.sql:66:CREATE INDEX IF NOT EXISTS idx_hotels_city ON public.hotels(city);
+supabase/migrations/20260327094235_9b3e62c7-4d63-4b3d-8660-aa1d7afb1dc2.sql:67:CREATE INDEX IF NOT EXISTS idx_hotels_visibility ON public.hotels(visibility_mode);
+supabase/migrations/20260327094235_9b3e62c7-4d63-4b3d-8660-aa1d7afb1dc2.sql:68:CREATE INDEX IF NOT EXISTS idx_hotel_rooms_hotel ON public.hotel_rooms(hotel_id);
+supabase/migrations/20260327094235_9b3e62c7-4d63-4b3d-8660-aa1d7afb1dc2.sql:69:CREATE INDEX IF NOT EXISTS idx_hotel_availability_room_date ON public.hotel_availability(room_id, date);
+supabase/migrations/20260327094235_9b3e62c7-4d63-4b3d-8660-aa1d7afb1dc2.sql:70:CREATE INDEX IF NOT EXISTS idx_hotel_rate_plans_room ON public.hotel_rate_plans(room_id);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:59:CREATE INDEX IF NOT EXISTS idx_hotels_slug ON public.hotels(slug);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:60:CREATE INDEX IF NOT EXISTS idx_hotels_hotel_type ON public.hotels(hotel_type);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:61:CREATE INDEX IF NOT EXISTS idx_hotels_source_type ON public.hotels(source_type);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:62:CREATE INDEX IF NOT EXISTS idx_hotels_pipeline_stage ON public.hotels(pipeline_stage);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:63:CREATE INDEX IF NOT EXISTS idx_hotels_publish_gate ON public.hotels(publish_gate_status);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:64:CREATE INDEX IF NOT EXISTS idx_hotel_availability_hotel ON public.hotel_availability(hotel_id);
+supabase/migrations/20260327094853_48e5a52c-5997-4f5c-8e2a-795fd87826eb.sql:65:CREATE INDEX IF NOT EXISTS idx_hotel_rate_plans_hotel ON public.hotel_rate_plans(hotel_id);
+supabase/migrations/20260327095552_7e26fb2d-3530-4832-98f1-9e67f3f15836.sql:28:CREATE INDEX IF NOT EXISTS idx_hic_hotel_date ON public.hotel_inventory_calendar (hotel_id, night_date);
+supabase/migrations/20260327095552_7e26fb2d-3530-4832-98f1-9e67f3f15836.sql:29:CREATE INDEX IF NOT EXISTS idx_hic_room_date ON public.hotel_inventory_calendar (room_type_id, night_date);
+supabase/migrations/20260327095552_7e26fb2d-3530-4832-98f1-9e67f3f15836.sql:30:CREATE INDEX IF NOT EXISTS idx_hic_plan_date ON public.hotel_inventory_calendar (rate_plan_id, night_date);
+supabase/migrations/20260327095552_7e26fb2d-3530-4832-98f1-9e67f3f15836.sql:31:CREATE INDEX IF NOT EXISTS idx_hic_avail ON public.hotel_inventory_calendar (hotel_id, night_date) WHERE available = true;
+supabase/migrations/20260327100533_14e0f591-89d9-41d0-a161-5482659b344d.sql:46:CREATE INDEX idx_hotel_bookings_user ON public.hotel_bookings(user_id);
+supabase/migrations/20260327100533_14e0f591-89d9-41d0-a161-5482659b344d.sql:47:CREATE INDEX idx_hotel_bookings_hotel ON public.hotel_bookings(hotel_id);
+supabase/migrations/20260327100533_14e0f591-89d9-41d0-a161-5482659b344d.sql:48:CREATE INDEX idx_hotel_bookings_status ON public.hotel_bookings(status);
+supabase/migrations/20260327100533_14e0f591-89d9-41d0-a161-5482659b344d.sql:49:CREATE INDEX idx_hotel_bookings_dates ON public.hotel_bookings(hotel_id, checkin_date, checkout_date);
+supabase/migrations/20260327100533_14e0f591-89d9-41d0-a161-5482659b344d.sql:50:CREATE INDEX idx_booking_commissions_booking ON public.booking_commissions(booking_id);
+supabase/migrations/20260327101712_d969c388-d56e-481a-9d0c-996266ad79e9.sql:39:CREATE INDEX IF NOT EXISTS ix_browser_repair_issues_run ON public.browser_repair_issues(run_id);
+supabase/migrations/20260327101712_d969c388-d56e-481a-9d0c-996266ad79e9.sql:40:CREATE INDEX IF NOT EXISTS ix_browser_repair_runs_status ON public.browser_repair_runs(status);
+supabase/migrations/20260327101915_8b1a51a7-82cb-46f0-ac69-5bf1b0e1d4b2.sql:3:CREATE UNIQUE INDEX IF NOT EXISTS ux_hotel_rooms_hotel_source ON hotel_rooms(hotel_id, source_room_id) WHERE source_room_id IS NOT NULL;
+supabase/migrations/20260327101915_8b1a51a7-82cb-46f0-ac69-5bf1b0e1d4b2.sql:4:CREATE UNIQUE INDEX IF NOT EXISTS ux_hotel_rate_plans_room_source ON hotel_rate_plans(room_id, source_rate_id) WHERE source_rate_id IS NOT NULL;
+supabase/migrations/20260327101915_8b1a51a7-82cb-46f0-ac69-5bf1b0e1d4b2.sql:5:CREATE UNIQUE INDEX IF NOT EXISTS ux_hotel_inventory_calendar_composite ON hotel_inventory_calendar(hotel_id, room_type_id, rate_plan_id, night_date);
+supabase/migrations/20260327101915_8b1a51a7-82cb-46f0-ac69-5bf1b0e1d4b2.sql:6:CREATE UNIQUE INDEX IF NOT EXISTS ux_hotels_seed_merchant ON hotels(seed_merchant_id) WHERE seed_merchant_id IS NOT NULL;
+supabase/migrations/20260327102420_2bf1007f-2551-4d51-99df-8caabfda11f3.sql:26:CREATE INDEX IF NOT EXISTS ix_browser_repair_runs_started ON public.browser_repair_runs(started_at DESC);
+supabase/migrations/20260327102420_2bf1007f-2551-4d51-99df-8caabfda11f3.sql:27:CREATE INDEX IF NOT EXISTS ix_browser_repair_runs_status ON public.browser_repair_runs(status);
+supabase/migrations/20260327102420_2bf1007f-2551-4d51-99df-8caabfda11f3.sql:28:CREATE INDEX IF NOT EXISTS ix_browser_repair_issues_severity ON public.browser_repair_issues(severity, verification_status);
+supabase/migrations/20260327102420_2bf1007f-2551-4d51-99df-8caabfda11f3.sql:29:CREATE INDEX IF NOT EXISTS ix_browser_repair_issues_page ON public.browser_repair_issues(page_key, flow_key);
+supabase/migrations/20260327102420_2bf1007f-2551-4d51-99df-8caabfda11f3.sql:30:CREATE INDEX IF NOT EXISTS ix_browser_repair_actions_run ON public.browser_repair_actions(run_id, scenario_key);
+supabase/migrations/20260327103832_310faf2d-3496-43d1-aba5-4264985bad7b.sql:41:CREATE INDEX IF NOT EXISTS idx_browser_repair_events_run ON public.browser_repair_events(run_id);
+supabase/migrations/20260327103832_310faf2d-3496-43d1-aba5-4264985bad7b.sql:42:CREATE INDEX IF NOT EXISTS idx_browser_repair_events_area ON public.browser_repair_events(area);
+supabase/migrations/20260327103832_310faf2d-3496-43d1-aba5-4264985bad7b.sql:43:CREATE INDEX IF NOT EXISTS idx_browser_repair_events_severity ON public.browser_repair_events(severity);
+supabase/migrations/20260327103832_310faf2d-3496-43d1-aba5-4264985bad7b.sql:44:CREATE INDEX IF NOT EXISTS idx_browser_repair_watchdog_page ON public.browser_repair_watchdog(page_key);
+supabase/migrations/20260327103832_310faf2d-3496-43d1-aba5-4264985bad7b.sql:45:CREATE INDEX IF NOT EXISTS idx_browser_repair_watchdog_status ON public.browser_repair_watchdog(current_status);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:23:CREATE INDEX IF NOT EXISTS idx_browser_telemetry_created_at ON public.browser_telemetry_events(created_at DESC);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:24:CREATE INDEX IF NOT EXISTS idx_browser_telemetry_event_type ON public.browser_telemetry_events(event_type);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:25:CREATE INDEX IF NOT EXISTS idx_browser_telemetry_route_key ON public.browser_telemetry_events(route_key);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:26:CREATE INDEX IF NOT EXISTS idx_browser_telemetry_flow_key ON public.browser_telemetry_events(flow_key);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:27:CREATE INDEX IF NOT EXISTS idx_browser_telemetry_user_id ON public.browser_telemetry_events(user_id);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:53:CREATE INDEX IF NOT EXISTS idx_browser_front_incidents_status ON public.browser_front_incidents(status);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:54:CREATE INDEX IF NOT EXISTS idx_browser_front_incidents_issue_type ON public.browser_front_incidents(issue_type);
+supabase/migrations/20260327104630_e81534c1-9513-4fe6-83ec-23a80c60a35f.sql:55:CREATE INDEX IF NOT EXISTS idx_browser_front_incidents_route_key ON public.browser_front_incidents(route_key);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:26:CREATE INDEX IF NOT EXISTS idx_conversations_v2_type ON conversations_v2(type);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:27:CREATE INDEX IF NOT EXISTS idx_conversations_v2_updated_at ON conversations_v2(updated_at DESC);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:28:CREATE INDEX IF NOT EXISTS idx_conversations_v2_last_message_at ON conversations_v2(last_message_at DESC);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:29:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_conversation_id ON chat_messages_v2(conversation_id);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:30:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_created_at ON chat_messages_v2(created_at DESC);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:31:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_sender_user_id ON chat_messages_v2(sender_user_id);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:32:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_read_at ON chat_messages_v2(read_at);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:112:CREATE INDEX IF NOT EXISTS idx_browser_repair_runs_started_at ON browser_repair_runs(started_at DESC);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:113:CREATE INDEX IF NOT EXISTS idx_browser_repair_issues_run_id ON browser_repair_issues(run_id);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:114:CREATE INDEX IF NOT EXISTS idx_browser_repair_issues_severity ON browser_repair_issues(severity);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:115:CREATE INDEX IF NOT EXISTS idx_browser_repair_actions_run_id ON browser_repair_actions(run_id);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:116:CREATE INDEX IF NOT EXISTS idx_browser_repair_events_run_id ON browser_repair_events(run_id);
+supabase/migrations/20260327110420_e8b49c43-69e3-44a4-a227-b129b1fc2668.sql:117:CREATE INDEX IF NOT EXISTS idx_browser_repair_watchdog_page_key ON browser_repair_watchdog(page_key);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:69:create index if not exists idx_runtime_qa_runs_started_at on public.runtime_qa_runs(started_at desc);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:70:create index if not exists idx_runtime_qa_runs_status on public.runtime_qa_runs(status);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:71:create index if not exists idx_runtime_qa_scenarios_run_id on public.runtime_qa_scenarios(run_id);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:72:create index if not exists idx_runtime_qa_scenarios_module_key on public.runtime_qa_scenarios(module_key);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:73:create index if not exists idx_runtime_qa_scenarios_status on public.runtime_qa_scenarios(status);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:74:create index if not exists idx_runtime_qa_steps_run_id on public.runtime_qa_steps(run_id);
+supabase/migrations/20260327125830_0b66e9b6-d39e-40aa-afa4-157e22ce9861.sql:75:create index if not exists idx_runtime_qa_watchdog_module_route on public.runtime_qa_watchdog(module_key, route_key);
+supabase/migrations/20260327131509_e43c6e2b-2d1f-479e-bef5-2bfc0f389329.sql:42:create index if not exists idx_call_logs_conversation_id on public.call_logs(conversation_id);
+supabase/migrations/20260327131509_e43c6e2b-2d1f-479e-bef5-2bfc0f389329.sql:43:create index if not exists idx_call_logs_created_at_desc on public.call_logs(created_at desc);
+supabase/migrations/20260327131509_e43c6e2b-2d1f-479e-bef5-2bfc0f389329.sql:44:create index if not exists idx_call_sessions_conversation_id on public.call_sessions(conversation_id);
+supabase/migrations/20260327131509_e43c6e2b-2d1f-479e-bef5-2bfc0f389329.sql:45:create index if not exists idx_call_sessions_status on public.call_sessions(status);
+supabase/migrations/20260327131839_d04117c8-cb10-4653-9c32-14341aa01c8e.sql:9:create index if not exists idx_chat_messages_v2_view_once
+supabase/migrations/20260327131839_d04117c8-cb10-4653-9c32-14341aa01c8e.sql:12:create index if not exists idx_chat_messages_v2_media_kind
+supabase/migrations/20260327131839_d04117c8-cb10-4653-9c32-14341aa01c8e.sql:24:create index if not exists idx_orbit_media_open_logs_message_id
+supabase/migrations/20260327131839_d04117c8-cb10-4653-9c32-14341aa01c8e.sql:27:create index if not exists idx_orbit_media_open_logs_conversation_id
+supabase/migrations/20260327132744_269515cc-461c-444c-b2a7-59168d39b99d.sql:22:create index if not exists idx_app_notifications_user_created on public.app_notifications(user_id, created_at desc);
+supabase/migrations/20260327132744_269515cc-461c-444c-b2a7-59168d39b99d.sql:23:create index if not exists idx_app_notifications_user_read on public.app_notifications(user_id, read_at);
+supabase/migrations/20260327132744_269515cc-461c-444c-b2a7-59168d39b99d.sql:24:create index if not exists idx_app_notifications_scope on public.app_notifications(scope);
+supabase/migrations/20260327132744_269515cc-461c-444c-b2a7-59168d39b99d.sql:64:create index if not exists idx_orbit_contacts_v2_owner on public.orbit_contacts_v2(owner_user_id, created_at desc);
+supabase/migrations/20260327132744_269515cc-461c-444c-b2a7-59168d39b99d.sql:65:create unique index if not exists uq_orbit_contacts_v2_owner_peer on public.orbit_contacts_v2(owner_user_id, coalesce(peer_user_id::text, ''), coalesce(email, ''));
+supabase/migrations/20260327133529_b8f78465-e25d-41c1-a878-812eb5264fa6.sql:3:CREATE INDEX IF NOT EXISTS idx_orbit_contacts_v2_owner_favorite
+supabase/migrations/20260327133529_b8f78465-e25d-41c1-a878-812eb5264fa6.sql:6:CREATE INDEX IF NOT EXISTS idx_orbit_contacts_v2_owner_blocked
+supabase/migrations/20260327134444_7aee0f28-c943-4063-a395-361681ba75c7.sql:18:CREATE INDEX IF NOT EXISTS idx_orbit_user_settings_v2_updated_at
+supabase/migrations/20260327134723_c05ecd36-1e59-42b5-bcd1-c4b08bf03889.sql:20:CREATE INDEX IF NOT EXISTS idx_browser_repair_watchdog_status
+supabase/migrations/20260327134723_c05ecd36-1e59-42b5-bcd1-c4b08bf03889.sql:23:CREATE INDEX IF NOT EXISTS idx_browser_repair_watchdog_group
+supabase/migrations/20260327134723_c05ecd36-1e59-42b5-bcd1-c4b08bf03889.sql:26:CREATE INDEX IF NOT EXISTS idx_browser_repair_runs_started
+supabase/migrations/20260327134723_c05ecd36-1e59-42b5-bcd1-c4b08bf03889.sql:29:CREATE INDEX IF NOT EXISTS idx_browser_repair_issues_area
+supabase/migrations/20260329095124_c5f1f57f-88fd-4b4d-86a0-c3721accc497.sql:13:CREATE INDEX IF NOT EXISTS idx_user_roles_workspace ON public.user_roles(user_id, workspace_id);
+supabase/migrations/20260329095124_c5f1f57f-88fd-4b4d-86a0-c3721accc497.sql:14:CREATE INDEX IF NOT EXISTS idx_user_roles_role ON public.user_roles(role);
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:108:CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON public.audit_logs(user_id, created_at DESC);
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:109:CREATE INDEX IF NOT EXISTS idx_audit_logs_domain ON public.audit_logs(domain, created_at DESC);
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:110:CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON public.audit_logs(action, created_at DESC);
+supabase/migrations/20260329095220_893003e3-00a5-4540-9d90-3e994bf77359.sql:111:CREATE INDEX IF NOT EXISTS idx_audit_logs_record ON public.audit_logs(table_name, record_id);
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:38:create index if not exists idx_user_private_data_user_id on public.user_private_data(user_id);
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:39:create index if not exists idx_owner_private_financials_user_id on public.owner_private_financials(user_id);
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:40:create index if not exists idx_tenant_private_contacts_tenant_id on public.tenant_private_contacts(tenant_id);
+supabase/migrations/20260329100508_618ae161-ffe1-4bef-9056-df1535ea84ce.sql:41:create index if not exists idx_merchant_private_contacts_merchant_id on public.merchant_private_contacts(merchant_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:55:CREATE INDEX IF NOT EXISTS idx_conv_part_v2_user ON public.conversation_participants_v2(user_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:56:CREATE INDEX IF NOT EXISTS idx_conv_part_v2_conv ON public.conversation_participants_v2(conversation_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:119:CREATE INDEX IF NOT EXISTS idx_ogm_user ON public.orbit_group_members(user_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:120:CREATE INDEX IF NOT EXISTS idx_ogm_group ON public.orbit_group_members(group_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:137:CREATE INDEX IF NOT EXISTS idx_ogmsg_group ON public.orbit_group_messages(group_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:156:CREATE INDEX IF NOT EXISTS idx_referral_referrer ON public.referral_rewards(referrer_user_id);
+supabase/migrations/20260407120000_create_missing_tables.sql:174:CREATE INDEX IF NOT EXISTS idx_zone_events_active ON public.zone_events(is_active) WHERE is_active = true;
+supabase/migrations/20260408120000_orbit_modules_and_missing_tables.sql:26:CREATE INDEX IF NOT EXISTS idx_orbit_contacts_v2_user ON public.orbit_contacts_v2(user_id);
+supabase/migrations/20260408120000_orbit_modules_and_missing_tables.sql:252:CREATE INDEX IF NOT EXISTS idx_wallet_tx_sender ON public.wallet_transactions(sender_id);
+supabase/migrations/20260408120000_orbit_modules_and_missing_tables.sql:253:CREATE INDEX IF NOT EXISTS idx_wallet_tx_recipient ON public.wallet_transactions(recipient_id);
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:101:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_deleted_at
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:104:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_read_at
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:107:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_starred
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:110:CREATE INDEX IF NOT EXISTS idx_chat_messages_v2_disappear
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:113:CREATE INDEX IF NOT EXISTS idx_conversations_v2_last_message
+supabase/migrations/20260411120000_orbit_realtime_and_columns.sql:116:CREATE INDEX IF NOT EXISTS idx_conversations_v2_metadata_direct
+supabase/migrations/20260411140000_scheduled_calls.sql:14:CREATE INDEX IF NOT EXISTS idx_scheduled_calls_user_id ON public.scheduled_calls(user_id);
+supabase/migrations/20260411140000_scheduled_calls.sql:15:CREATE INDEX IF NOT EXISTS idx_scheduled_calls_status ON public.scheduled_calls(status, scheduled_at);
+supabase/migrations/20260412000000_permanent_core_infrastructure.sql:36:CREATE INDEX IF NOT EXISTS idx_whs_snapshot_at ON public.worker_health_snapshots(snapshot_at DESC);
+supabase/migrations/20260412000000_permanent_core_infrastructure.sql:71:CREATE INDEX IF NOT EXISTS idx_sm_trust_score ON public.seed_merchants(trust_score);
+supabase/migrations/20260412000000_permanent_core_infrastructure.sql:72:CREATE INDEX IF NOT EXISTS idx_sm_fraud_flag ON public.seed_merchants(fraud_flag) WHERE fraud_flag IS NOT NULL;
+supabase/migrations/20260412200000_governance_violations.sql:17:CREATE INDEX idx_gv_severity ON governance_violations (severity);
+supabase/migrations/20260412200000_governance_violations.sql:18:CREATE INDEX idx_gv_type ON governance_violations (type);
+supabase/migrations/20260412200000_governance_violations.sql:19:CREATE INDEX idx_gv_vertical ON governance_violations (vertical);
+supabase/migrations/20260412200000_governance_violations.sql:20:CREATE INDEX idx_gv_detected_at ON governance_violations (detected_at DESC);
+supabase/migrations/20260412200000_governance_violations.sql:21:CREATE INDEX idx_gv_owner_domain ON governance_violations (owner_domain);
+supabase/migrations/20260412200000_governance_violations.sql:22:CREATE INDEX idx_gv_resolved ON governance_violations (resolved_at) WHERE resolved_at IS NULL;
+supabase/migrations/20260413000000_governance_violations_hardening.sql:11:CREATE INDEX IF NOT EXISTS idx_gv_engine ON governance_violations (engine);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:12:CREATE INDEX IF NOT EXISTS idx_gv_route ON governance_violations (route);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:13:CREATE INDEX IF NOT EXISTS idx_gv_correlation_id ON governance_violations (correlation_id);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:14:CREATE INDEX IF NOT EXISTS idx_gv_dedup_key ON governance_violations (dedup_key);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:15:CREATE INDEX IF NOT EXISTS idx_gv_code ON governance_violations (code);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:16:CREATE INDEX IF NOT EXISTS idx_gv_status ON governance_violations (status);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:17:CREATE INDEX IF NOT EXISTS idx_gv_created_at ON governance_violations (created_at DESC);
+supabase/migrations/20260413000000_governance_violations_hardening.sql:19:CREATE UNIQUE INDEX IF NOT EXISTS idx_gv_dedup_unique
+supabase/migrations/20260413200000_direct_conversation_uniqueness.sql:1:CREATE UNIQUE INDEX IF NOT EXISTS uq_conversations_v2_direct_pair
+supabase/migrations/20260413300000_engine_memory.sql:26:create unique index if not exists idx_engine_memory_signature on public.engine_memory (issue_signature);
+supabase/migrations/20260413300000_engine_memory.sql:27:create index if not exists idx_engine_memory_type on public.engine_memory (type);
+supabase/migrations/20260413300000_engine_memory.sql:28:create index if not exists idx_engine_memory_auto_apply on public.engine_memory (auto_apply) where auto_apply = true;
+supabase/migrations/20260413300000_engine_memory.sql:29:create index if not exists idx_engine_memory_score on public.engine_memory (score desc);
+supabase/migrations/20260414100000_prayer_times_cache.sql:16:CREATE INDEX IF NOT EXISTS idx_prayer_times_cache_key ON prayer_times_cache (cache_key);
+supabase/migrations/20260414100000_prayer_times_cache.sql:17:CREATE INDEX IF NOT EXISTS idx_prayer_times_expires ON prayer_times_cache (expires_at);
+supabase/migrations/20260414100000_prayer_times_cache.sql:20:CREATE INDEX IF NOT EXISTS idx_prayer_times_date ON prayer_times_cache (date);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:18:CREATE INDEX IF NOT EXISTS idx_push_tokens_user ON push_tokens(user_id) WHERE is_active = true;
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:19:CREATE INDEX IF NOT EXISTS idx_push_tokens_platform ON push_tokens(platform);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:36:CREATE INDEX IF NOT EXISTS idx_dlq_status ON dead_letter_queue(status) WHERE status IN ('pending', 'retrying');
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:37:CREATE INDEX IF NOT EXISTS idx_dlq_next_retry ON dead_letter_queue(next_retry_at) WHERE status IN ('pending', 'retrying');
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:38:CREATE INDEX IF NOT EXISTS idx_dlq_source ON dead_letter_queue(source_system);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:51:CREATE INDEX IF NOT EXISTS idx_alert_channels_admin ON admin_alert_channels(admin_user_id) WHERE is_active = true;
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:65:CREATE INDEX IF NOT EXISTS idx_alert_log_type ON admin_alert_log(alert_type, created_at DESC);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:77:CREATE INDEX IF NOT EXISTS idx_uptime_log_status ON system_uptime_log(status, created_at DESC);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:78:CREATE INDEX IF NOT EXISTS idx_uptime_log_created ON system_uptime_log(created_at DESC);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:89:CREATE INDEX IF NOT EXISTS idx_rate_limits_lookup ON rate_limits(endpoint, client_ip, window_start DESC);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:90:CREATE INDEX IF NOT EXISTS idx_rate_limits_cleanup ON rate_limits(window_start);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:125:CREATE INDEX IF NOT EXISTS idx_job_queue_pending ON job_queue(queue_name, priority DESC, scheduled_at ASC) WHERE status = 'pending';
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:126:CREATE INDEX IF NOT EXISTS idx_job_queue_status ON job_queue(status);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:127:CREATE INDEX IF NOT EXISTS idx_job_queue_scheduled ON job_queue(scheduled_at) WHERE status = 'pending';
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:138:CREATE INDEX IF NOT EXISTS idx_server_cache_domain ON server_cache(domain);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:139:CREATE INDEX IF NOT EXISTS idx_server_cache_expires ON server_cache(expires_at) WHERE expires_at IS NOT NULL;
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:151:CREATE INDEX IF NOT EXISTS idx_backup_manifests_bucket ON storage_backup_manifests(bucket_name, created_at DESC);
+supabase/migrations/20260414300000_autonomous_engine_systems.sql:162:CREATE INDEX IF NOT EXISTS idx_config_snapshots_type ON config_snapshots(snapshot_type, created_at DESC);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:21:CREATE INDEX IF NOT EXISTS idx_server_events_type ON server_events (event_type);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:22:CREATE INDEX IF NOT EXISTS idx_server_events_source ON server_events (source_engine);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:23:CREATE INDEX IF NOT EXISTS idx_server_events_status ON server_events (status);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:24:CREATE INDEX IF NOT EXISTS idx_server_events_created ON server_events (created_at DESC);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:25:CREATE INDEX IF NOT EXISTS idx_server_events_level ON server_events (level) WHERE level IN ('error','critical');
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:45:CREATE INDEX IF NOT EXISTS idx_omega_decisions_type ON omega_decisions (decision_type);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:46:CREATE INDEX IF NOT EXISTS idx_omega_decisions_created ON omega_decisions (created_at DESC);
+supabase/migrations/20260414500000_server_brain_infrastructure.sql:47:CREATE INDEX IF NOT EXISTS idx_omega_decisions_verdict ON omega_decisions (verdict);
+supabase/migrations/20260414700000_media_pipeline.sql:44:CREATE INDEX IF NOT EXISTS idx_media_assets_entity
+supabase/migrations/20260414700000_media_pipeline.sql:47:CREATE INDEX IF NOT EXISTS idx_media_assets_bucket_path
+supabase/migrations/20260414700000_media_pipeline.sql:50:CREATE INDEX IF NOT EXISTS idx_media_assets_uploaded_by
+supabase/migrations/20260414700000_media_pipeline.sql:53:CREATE INDEX IF NOT EXISTS idx_media_assets_created
+supabase/migrations/20260414700000_media_pipeline.sql:155:CREATE INDEX IF NOT EXISTS idx_transcode_jobs_status
+supabase/migrations/20260414900000_legal_compliance.sql:54:CREATE INDEX idx_fat_user_id ON public.financial_audit_trail (user_id);
+supabase/migrations/20260414900000_legal_compliance.sql:55:CREATE INDEX idx_fat_created_at ON public.financial_audit_trail (created_at);
+supabase/migrations/20260414900000_legal_compliance.sql:56:CREATE INDEX idx_fat_transaction_type ON public.financial_audit_trail (transaction_type);
+supabase/migrations/20260414900000_legal_compliance.sql:57:CREATE INDEX idx_fat_reference ON public.financial_audit_trail (reference_type, reference_id);
+supabase/migrations/20260414900000_legal_compliance.sql:124:CREATE INDEX idx_ccl_user_id ON public.cookie_consent_log (user_id);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:19:CREATE INDEX IF NOT EXISTS idx_ks_server_domain ON kill_switches_server (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:20:CREATE INDEX IF NOT EXISTS idx_ks_server_feature ON kill_switches_server (feature);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:33:CREATE INDEX IF NOT EXISTS idx_ks_audit_feature ON kill_switch_audit_log (feature);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:34:CREATE INDEX IF NOT EXISTS idx_ks_audit_created ON kill_switch_audit_log (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:49:CREATE INDEX IF NOT EXISTS idx_ff_server_domain ON feature_flags_server (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:50:CREATE INDEX IF NOT EXISTS idx_ff_server_name ON feature_flags_server (name);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:76:CREATE INDEX IF NOT EXISTS idx_degrad_audit_domain ON degradation_audit_log (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:77:CREATE INDEX IF NOT EXISTS idx_degrad_audit_created ON degradation_audit_log (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:94:CREATE INDEX IF NOT EXISTS idx_sm_checkpoint_flow ON state_machine_checkpoints (flow_id);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:95:CREATE INDEX IF NOT EXISTS idx_sm_checkpoint_type ON state_machine_checkpoints (flow_type);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:96:CREATE INDEX IF NOT EXISTS idx_sm_checkpoint_created ON state_machine_checkpoints (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:97:CREATE INDEX IF NOT EXISTS idx_sm_checkpoint_transition ON state_machine_checkpoints (transition_id);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:110:CREATE INDEX IF NOT EXISTS idx_sm_incident_flow ON state_machine_incidents (flow_id);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:111:CREATE INDEX IF NOT EXISTS idx_sm_incident_created ON state_machine_incidents (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:135:CREATE INDEX IF NOT EXISTS idx_anomaly_domain ON anomaly_detection_windows (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:136:CREATE INDEX IF NOT EXISTS idx_anomaly_window ON anomaly_detection_windows (window_start DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:137:CREATE INDEX IF NOT EXISTS idx_anomaly_detected ON anomaly_detection_windows (anomaly_detected) WHERE anomaly_detected = true;
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:152:CREATE INDEX IF NOT EXISTS idx_preemptive_domain ON preemptive_actions_log (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:153:CREATE INDEX IF NOT EXISTS idx_preemptive_created ON preemptive_actions_log (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:171:CREATE INDEX IF NOT EXISTS idx_rm_cards_domain ON read_model_dashboard_cards (domain);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:172:CREATE INDEX IF NOT EXISTS idx_rm_cards_type ON read_model_dashboard_cards (card_type);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:187:CREATE INDEX IF NOT EXISTS idx_db_obs_name ON db_observability_metrics (metric_name);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:188:CREATE INDEX IF NOT EXISTS idx_db_obs_recorded ON db_observability_metrics (recorded_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:189:CREATE INDEX IF NOT EXISTS idx_db_obs_alert ON db_observability_metrics (is_alert) WHERE is_alert = true;
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:204:CREATE INDEX IF NOT EXISTS idx_bvq_boundary ON boundary_validation_quarantine (boundary_name);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:205:CREATE INDEX IF NOT EXISTS idx_bvq_created ON boundary_validation_quarantine (created_at DESC);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:217:CREATE INDEX IF NOT EXISTS idx_dedup_expires ON queue_dedup_window (expires_at);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:243:CREATE UNIQUE INDEX IF NOT EXISTS uq_poison_queue_hash ON queue_poison_messages (queue_name, payload_hash);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:244:CREATE INDEX IF NOT EXISTS idx_poison_queue ON queue_poison_messages (queue_name);
+supabase/migrations/20260414600000_runtime_stability_hardening.sql:245:CREATE INDEX IF NOT EXISTS idx_poison_status ON queue_poison_messages (status);
+supabase/migrations/20260415000000_performance_indexes.sql:11:CREATE INDEX IF NOT EXISTS idx_listings_user_id
+supabase/migrations/20260415000000_performance_indexes.sql:14:CREATE INDEX IF NOT EXISTS idx_listings_status_created
+supabase/migrations/20260415000000_performance_indexes.sql:17:CREATE INDEX IF NOT EXISTS idx_listings_category_city
+supabase/migrations/20260415000000_performance_indexes.sql:20:CREATE INDEX IF NOT EXISTS idx_listings_city_status
+supabase/migrations/20260415000000_performance_indexes.sql:24:CREATE INDEX IF NOT EXISTS idx_listings_search_gin
+supabase/migrations/20260415000000_performance_indexes.sql:27:CREATE INDEX IF NOT EXISTS idx_listings_updated_at
+supabase/migrations/20260415000000_performance_indexes.sql:34:CREATE INDEX IF NOT EXISTS idx_properties_owner_id
+supabase/migrations/20260415000000_performance_indexes.sql:37:CREATE INDEX IF NOT EXISTS idx_properties_status
+supabase/migrations/20260415000000_performance_indexes.sql:41:CREATE INDEX IF NOT EXISTS idx_properties_city_type
+supabase/migrations/20260415000000_performance_indexes.sql:44:CREATE INDEX IF NOT EXISTS idx_properties_search_gin
+supabase/migrations/20260415000000_performance_indexes.sql:51:CREATE INDEX IF NOT EXISTS idx_transactions_user_date
+supabase/migrations/20260415000000_performance_indexes.sql:54:CREATE INDEX IF NOT EXISTS idx_transactions_status
+supabase/migrations/20260415000000_performance_indexes.sql:57:CREATE INDEX IF NOT EXISTS idx_transactions_type_user
+supabase/migrations/20260415000000_performance_indexes.sql:60:CREATE INDEX IF NOT EXISTS idx_payments_order_id
+supabase/migrations/20260415000000_performance_indexes.sql:63:CREATE INDEX IF NOT EXISTS idx_payments_user_status
+supabase/migrations/20260415000000_performance_indexes.sql:70:CREATE INDEX IF NOT EXISTS idx_conversations_participant
+supabase/migrations/20260415000000_performance_indexes.sql:73:CREATE INDEX IF NOT EXISTS idx_conversations_updated
+supabase/migrations/20260415000000_performance_indexes.sql:76:CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation
+supabase/migrations/20260415000000_performance_indexes.sql:79:CREATE INDEX IF NOT EXISTS idx_chat_messages_sender
+supabase/migrations/20260415000000_performance_indexes.sql:82:CREATE INDEX IF NOT EXISTS idx_chat_messages_search_gin
+supabase/migrations/20260415000000_performance_indexes.sql:89:CREATE INDEX IF NOT EXISTS idx_orders_user_date
+supabase/migrations/20260415000000_performance_indexes.sql:92:CREATE INDEX IF NOT EXISTS idx_orders_status
+supabase/migrations/20260415000000_performance_indexes.sql:95:CREATE INDEX IF NOT EXISTS idx_orders_merchant_status
+supabase/migrations/20260415000000_performance_indexes.sql:98:CREATE INDEX IF NOT EXISTS idx_orders_driver
+supabase/migrations/20260415000000_performance_indexes.sql:106:CREATE INDEX IF NOT EXISTS idx_profiles_email
+supabase/migrations/20260415000000_performance_indexes.sql:109:CREATE INDEX IF NOT EXISTS idx_profiles_search_gin
+supabase/migrations/20260415000000_performance_indexes.sql:112:CREATE INDEX IF NOT EXISTS idx_profiles_role
+supabase/migrations/20260415000000_performance_indexes.sql:120:CREATE INDEX IF NOT EXISTS idx_leases_property_id
+supabase/migrations/20260415000000_performance_indexes.sql:123:CREATE INDEX IF NOT EXISTS idx_leases_tenant_id
+supabase/migrations/20260415000000_performance_indexes.sql:126:CREATE INDEX IF NOT EXISTS idx_leases_status_dates
+supabase/migrations/20260415000000_performance_indexes.sql:133:CREATE INDEX IF NOT EXISTS idx_bookings_user_date
+supabase/migrations/20260415000000_performance_indexes.sql:136:CREATE INDEX IF NOT EXISTS idx_bookings_provider_status
+supabase/migrations/20260415000000_performance_indexes.sql:139:CREATE INDEX IF NOT EXISTS idx_bookings_date_range
+supabase/migrations/20260415000000_performance_indexes.sql:142:CREATE INDEX IF NOT EXISTS idx_service_providers_category
+supabase/migrations/20260415000000_performance_indexes.sql:145:CREATE INDEX IF NOT EXISTS idx_service_providers_search_gin
+supabase/migrations/20260415000000_performance_indexes.sql:152:CREATE INDEX IF NOT EXISTS idx_reviews_target
+supabase/migrations/20260415000000_performance_indexes.sql:155:CREATE INDEX IF NOT EXISTS idx_reviews_author
+supabase/migrations/20260415000000_performance_indexes.sql:158:CREATE INDEX IF NOT EXISTS idx_reviews_rating
+supabase/migrations/20260415000000_performance_indexes.sql:166:CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+supabase/migrations/20260415000000_performance_indexes.sql:169:CREATE INDEX IF NOT EXISTS idx_notifications_type
+supabase/migrations/20260415100000_slow_query_monitoring.sql:21:CREATE INDEX IF NOT EXISTS idx_slow_query_log_snapshot
+supabase/migrations/20260415100000_slow_query_monitoring.sql:24:CREATE INDEX IF NOT EXISTS idx_slow_query_log_mean_time
+supabase/migrations/20260414800000_call_infrastructure.sql:72:CREATE INDEX IF NOT EXISTS idx_group_call_rooms_created_by ON group_call_rooms(created_by);
+supabase/migrations/20260414800000_call_infrastructure.sql:73:CREATE INDEX IF NOT EXISTS idx_group_call_rooms_status ON group_call_rooms(status);
+supabase/migrations/20260414800000_call_infrastructure.sql:74:CREATE INDEX IF NOT EXISTS idx_group_call_participants_room ON group_call_participants(room_id);
+supabase/migrations/20260414800000_call_infrastructure.sql:75:CREATE INDEX IF NOT EXISTS idx_group_call_participants_user ON group_call_participants(user_id);
+supabase/migrations/20260414800000_call_infrastructure.sql:76:CREATE INDEX IF NOT EXISTS idx_call_logs_group_room ON call_logs(group_room_id);
+supabase/migrations/20260414800000_call_infrastructure.sql:77:CREATE INDEX IF NOT EXISTS idx_call_logs_recording ON call_logs(recording_path) WHERE recording_path IS NOT NULL;
+supabase/migrations/20260415400000_eta_predictions.sql:22:CREATE INDEX idx_eta_predictions_job_id ON eta_predictions(job_id);
+supabase/migrations/20260415400000_eta_predictions.sql:23:CREATE INDEX idx_eta_predictions_created_at ON eta_predictions(created_at);
+supabase/migrations/20260415400000_eta_predictions.sql:24:CREATE INDEX idx_eta_predictions_type ON eta_predictions(prediction_type);
+supabase/migrations/20260415400000_eta_predictions.sql:25:CREATE INDEX idx_eta_predictions_created_by ON eta_predictions(created_by);
+supabase/migrations/20260415500000_dispatch_lock.sql:9:CREATE INDEX IF NOT EXISTS idx_dispatch_locks_expires ON dispatch_locks (expires_at);
+supabase/migrations/20260415600000_client_ratings.sql:12:create index if not exists idx_client_ratings_client on public.client_ratings (client_user_id);
+supabase/migrations/20260415600000_client_ratings.sql:13:create index if not exists idx_client_ratings_rider on public.client_ratings (rider_user_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:457:CREATE INDEX idx_raw_entities_source ON raw_entities(source_type, source_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:458:CREATE INDEX idx_raw_entities_status ON raw_entities(status);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:459:CREATE INDEX idx_normalized_entities_raw ON normalized_entities(raw_entity_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:460:CREATE INDEX idx_canonical_entities_vertical ON canonical_entities(vertical);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:461:CREATE INDEX idx_canonical_entities_path ON canonical_entities(canonical_path);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:462:CREATE INDEX idx_canonical_entities_status ON canonical_entities(validation_status, publish_status);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:463:CREATE INDEX idx_canonical_entities_confidence ON canonical_entities(confidence_band);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:464:CREATE INDEX idx_canonical_entities_geo ON canonical_entities(lat, lng) WHERE lat IS NOT NULL AND lng IS NOT NULL;
+supabase/migrations/20260411150000_canonical_content_architecture.sql:465:CREATE INDEX idx_entity_validation_entity ON entity_validation_results(canonical_entity_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:466:CREATE INDEX idx_entity_publish_status ON entity_publish_states(status);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:467:CREATE INDEX idx_media_assets_entity ON media_assets(entity_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:468:CREATE INDEX idx_media_assets_status ON media_assets(verification_status);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:469:CREATE INDEX idx_media_assets_primary ON media_assets(entity_id, is_primary) WHERE is_primary = true;
+supabase/migrations/20260411150000_canonical_content_architecture.sql:470:CREATE INDEX idx_media_fingerprints_hash ON media_fingerprints(url_hash);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:471:CREATE INDEX idx_quarantine_entity ON quarantine_queue(entity_id) WHERE resolved_at IS NULL;
+supabase/migrations/20260411150000_canonical_content_architecture.sql:472:CREATE INDEX idx_quarantine_media ON quarantine_queue(media_asset_id) WHERE resolved_at IS NULL;
+supabase/migrations/20260411150000_canonical_content_architecture.sql:473:CREATE INDEX idx_review_queue_status ON review_queue(status, priority);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:474:CREATE INDEX idx_reclassification_entity ON reclassification_requests(entity_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:475:CREATE INDEX idx_pipeline_jobs_status ON pipeline_jobs(status, type);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:476:CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:477:CREATE INDEX idx_audit_logs_media ON audit_logs(media_asset_id);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:478:CREATE INDEX idx_audit_logs_action ON audit_logs(action, created_at);
+supabase/migrations/20260411150000_canonical_content_architecture.sql:479:CREATE INDEX idx_canonical_aliases_alias ON canonical_aliases(alias);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:227:CREATE INDEX IF NOT EXISTS idx_knowledge_nodes_type ON omega.knowledge_nodes(node_type);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:228:CREATE INDEX IF NOT EXISTS idx_knowledge_nodes_domain ON omega.knowledge_nodes(domain);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:229:CREATE INDEX IF NOT EXISTS idx_knowledge_edges_source ON omega.knowledge_edges(source_id);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:230:CREATE INDEX IF NOT EXISTS idx_knowledge_edges_target ON omega.knowledge_edges(target_id);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:231:CREATE INDEX IF NOT EXISTS idx_knowledge_edges_type ON omega.knowledge_edges(edge_type);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:232:CREATE INDEX IF NOT EXISTS idx_memory_category ON omega.memory_entries(category);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:233:CREATE INDEX IF NOT EXISTS idx_memory_domain ON omega.memory_entries(domain);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:234:CREATE INDEX IF NOT EXISTS idx_decision_target ON omega.decision_log(target_type, target_id);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:235:CREATE INDEX IF NOT EXISTS idx_prediction_type ON omega.prediction_log(prediction_type);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:236:CREATE INDEX IF NOT EXISTS idx_priority_band ON omega.priority_queue(priority_band);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:237:CREATE INDEX IF NOT EXISTS idx_opportunity_type ON omega.opportunity_signals(signal_type);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:238:CREATE INDEX IF NOT EXISTS idx_regression_status ON omega.regression_log(status);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:239:CREATE INDEX IF NOT EXISTS idx_drift_type ON omega.drift_log(drift_type);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:240:CREATE INDEX IF NOT EXISTS idx_release_status ON omega.release_registry(status);
+supabase/migrations/20260411160000_omega_intelligence_tables.sql:241:CREATE INDEX IF NOT EXISTS idx_optimization_status ON omega.optimization_runs(status);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:208:CREATE INDEX IF NOT EXISTS idx_sentinel_conflict_status ON sentinel.conflict_log(status);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:209:CREATE INDEX IF NOT EXISTS idx_sentinel_conflict_severity ON sentinel.conflict_log(severity);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:210:CREATE INDEX IF NOT EXISTS idx_sentinel_audit_type ON sentinel.audit_runs(audit_type);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:211:CREATE INDEX IF NOT EXISTS idx_sentinel_health_engine ON sentinel.engine_health_snapshots(engine_id, recorded_at DESC);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:212:CREATE INDEX IF NOT EXISTS idx_sentinel_job_cron ON sentinel.job_runs(cron_id, started_at DESC);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:213:CREATE INDEX IF NOT EXISTS idx_sentinel_incident_status ON sentinel.incident_log(status);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:214:CREATE INDEX IF NOT EXISTS idx_sentinel_incident_severity ON sentinel.incident_log(severity);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:215:CREATE INDEX IF NOT EXISTS idx_sentinel_healing_status ON sentinel.healing_actions(status);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:216:CREATE INDEX IF NOT EXISTS idx_sentinel_workflow_run_status ON sentinel.workflow_runs(status);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:217:CREATE INDEX IF NOT EXISTS idx_sentinel_taxonomy_family ON sentinel.taxonomy_registry(family);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:218:CREATE INDEX IF NOT EXISTS idx_sentinel_taxonomy_alias ON sentinel.taxonomy_aliases(alias_text);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:219:CREATE INDEX IF NOT EXISTS idx_sentinel_page_route ON sentinel.page_registry(route);
+supabase/migrations/20260411170000_sentinel_core_tables.sql:220:CREATE INDEX IF NOT EXISTS idx_sentinel_card_domain ON sentinel.card_registry(owner_domain);
+supabase/migrations/20260414310000_command_control_schema.sql:124:CREATE INDEX IF NOT EXISTS idx_command_emails_status ON command_emails(status);
+supabase/migrations/20260414310000_command_control_schema.sql:125:CREATE INDEX IF NOT EXISTS idx_command_emails_created ON command_emails(created_at DESC);
+supabase/migrations/20260414310000_command_control_schema.sql:126:CREATE INDEX IF NOT EXISTS idx_approval_requests_status ON approval_requests(status);
+supabase/migrations/20260414310000_command_control_schema.sql:127:CREATE INDEX IF NOT EXISTS idx_approval_requests_token ON approval_requests(approval_token);
+supabase/migrations/20260414310000_command_control_schema.sql:128:CREATE INDEX IF NOT EXISTS idx_agent_actions_agent ON agent_actions(agent_name);
+supabase/migrations/20260414310000_command_control_schema.sql:129:CREATE INDEX IF NOT EXISTS idx_agent_actions_status ON agent_actions(status);
+supabase/migrations/20260414310000_command_control_schema.sql:130:CREATE INDEX IF NOT EXISTS idx_monitoring_findings_level ON monitoring_findings(level, status);
+supabase/migrations/20260414310000_command_control_schema.sql:131:CREATE INDEX IF NOT EXISTS idx_monitoring_findings_severity ON monitoring_findings(severity);
+supabase/migrations/20260414310000_command_control_schema.sql:132:CREATE INDEX IF NOT EXISTS idx_command_audit_log_type ON command_audit_log(event_type);
+supabase/migrations/20260414310000_command_control_schema.sql:133:CREATE INDEX IF NOT EXISTS idx_command_audit_log_created ON command_audit_log(created_at DESC);
+supabase/migrations/20260414310000_command_control_schema.sql:134:CREATE INDEX IF NOT EXISTS idx_command_audit_log_actor ON command_audit_log(actor_type, actor_name);
+supabase/migrations/20260414310000_command_control_schema.sql:135:CREATE INDEX IF NOT EXISTS idx_system_health_component ON system_health_snapshots(component, checked_at DESC);
+supabase/migrations/20260414310000_command_control_schema.sql:136:CREATE INDEX IF NOT EXISTS idx_cost_tracking_agent_date ON cost_tracking(agent_name, date DESC);
+supabase/migrations/20260414310000_command_control_schema.sql:137:CREATE INDEX IF NOT EXISTS idx_rollback_points_change ON rollback_points(change_type, change_id);
+supabase/migrations/20260414410000_webauthn_credentials.sql:6:CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_user_id ON public.webauthn_credentials(user_id);
+supabase/migrations/20260414410000_webauthn_credentials.sql:7:CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_credential_id ON public.webauthn_credentials(credential_id);
+supabase/migrations/20260414410000_webauthn_credentials.sql:11:CREATE INDEX IF NOT EXISTS idx_webauthn_challenges_user_id ON public.webauthn_challenges(user_id);
+supabase/migrations/20260414610000_search_infrastructure.sql:74:CREATE INDEX IF NOT EXISTS idx_storefront_pages_fts ON public.storefront_pages USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:101:CREATE INDEX IF NOT EXISTS idx_listings_fts ON marketplace.listings USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:128:CREATE INDEX IF NOT EXISTS idx_properties_fts ON property.properties USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:151:CREATE INDEX IF NOT EXISTS idx_profiles_fts ON identity.profiles USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:176:CREATE INDEX IF NOT EXISTS idx_seed_products_fts ON public.seed_products USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:201:CREATE INDEX IF NOT EXISTS idx_categories_fts ON public.categories USING gin (search_vector);
+supabase/migrations/20260414610000_search_infrastructure.sql:202:CREATE INDEX IF NOT EXISTS idx_categories_name_trgm ON public.categories USING gin (name gin_trgm_ops);
+supabase/migrations/20260414610000_search_infrastructure.sql:421:CREATE INDEX IF NOT EXISTS idx_storefront_pages_name_trgm ON public.storefront_pages USING gin (name gin_trgm_ops);
+supabase/migrations/20260414610000_search_infrastructure.sql:422:CREATE INDEX IF NOT EXISTS idx_seed_products_name_trgm ON public.seed_products USING gin (name gin_trgm_ops);
+supabase/migrations/20260414610000_search_infrastructure.sql:423:CREATE INDEX IF NOT EXISTS idx_properties_name_trgm ON property.properties USING gin (name gin_trgm_ops);
+supabase/migrations/20260414610000_search_infrastructure.sql:424:CREATE INDEX IF NOT EXISTS idx_listings_title_trgm ON marketplace.listings USING gin (title gin_trgm_ops);
+supabase/migrations/20260414610000_search_infrastructure.sql:425:CREATE INDEX IF NOT EXISTS idx_profiles_fullname_trgm ON identity.profiles USING gin (full_name gin_trgm_ops);
+supabase/migrations/20260414810000_cron_monitoring.sql:18:CREATE INDEX IF NOT EXISTS idx_cron_log_job_name ON public.cron_execution_log (job_name);
+supabase/migrations/20260414810000_cron_monitoring.sql:19:CREATE INDEX IF NOT EXISTS idx_cron_log_started ON public.cron_execution_log (started_at DESC);
+supabase/migrations/20260414810000_cron_monitoring.sql:20:CREATE INDEX IF NOT EXISTS idx_cron_log_status ON public.cron_execution_log (status);
+supabase/migrations/20260415410000_unified_providers.sql:57:CREATE INDEX IF NOT EXISTS idx_providers_type_active_city
+supabase/migrations/20260415410000_unified_providers.sql:60:CREATE INDEX IF NOT EXISTS idx_providers_kyc_status
+supabase/migrations/20260415410000_unified_providers.sql:63:CREATE INDEX IF NOT EXISTS idx_providers_onboarding
+supabase/migrations/20260415410000_unified_providers.sql:94:CREATE INDEX IF NOT EXISTS idx_kyc_documents_user
+supabase/migrations/20260415410000_unified_providers.sql:97:CREATE INDEX IF NOT EXISTS idx_kyc_documents_pending
+supabase/migrations/20260415510000_short_links.sql:13:create index if not exists idx_short_links_code on public.short_links (code);
+supabase/migrations/20260415510000_short_links.sql:14:create index if not exists idx_short_links_created_by on public.short_links (created_by);
+supabase/migrations/20260415510000_short_links.sql:15:create index if not exists idx_short_links_action on public.short_links (action);
+supabase/migrations/20260415620000_hotel_domain_tables.sql:8:CREATE INDEX IF NOT EXISTS idx_hotels_owner_user ON public.hotels(owner_user_id)
+supabase/migrations/20260415620000_hotel_domain_tables.sql:46:CREATE INDEX IF NOT EXISTS idx_hotel_room_availability_room_date ON hotel_room_availability(room_id, date);
+supabase/migrations/20260415620000_hotel_domain_tables.sql:47:CREATE INDEX IF NOT EXISTS idx_hotel_room_availability_status ON hotel_room_availability(room_id, status);
+supabase/migrations/20260415620000_hotel_domain_tables.sql:48:CREATE INDEX IF NOT EXISTS idx_hotel_room_availability_booking ON hotel_room_availability(booking_id);
+supabase/migrations/20260415620000_hotel_domain_tables.sql:62:CREATE INDEX IF NOT EXISTS idx_hotel_seasonal_pricing_room ON hotel_seasonal_pricing(room_id);
+supabase/migrations/20260415620000_hotel_domain_tables.sql:63:CREATE INDEX IF NOT EXISTS idx_hotel_seasonal_pricing_dates ON hotel_seasonal_pricing(start_date, end_date);
+supabase/migrations/20260415630000_restaurant_modifiers_allergens.sql:51:CREATE INDEX IF NOT EXISTS idx_modifier_groups_menu_item ON menu_modifier_groups(menu_item_id);
+supabase/migrations/20260415630000_restaurant_modifiers_allergens.sql:52:CREATE INDEX IF NOT EXISTS idx_modifier_options_group ON menu_modifier_options(group_id);
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:32:CREATE INDEX IF NOT EXISTS idx_bookings_v2_user_date
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:35:CREATE INDEX IF NOT EXISTS idx_bookings_v2_listing_status
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:38:CREATE INDEX IF NOT EXISTS idx_bookings_v2_seller
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:41:CREATE INDEX IF NOT EXISTS idx_activity_logs_user_created
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:44:CREATE INDEX IF NOT EXISTS idx_activity_logs_entity
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:47:CREATE INDEX IF NOT EXISTS idx_activity_logs_action
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:50:CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_date
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:53:CREATE INDEX IF NOT EXISTS idx_wallet_transactions_status
+supabase/migrations/20260416100000_audit_hardening_and_perf.sql:56:CREATE INDEX IF NOT EXISTS idx_wallet_transactions_type
+supabase/migrations/20260415_c2c_tables.sql:28:CREATE INDEX IF NOT EXISTS idx_c2c_listings_geo ON marketplace_services (lat, lng) WHERE lat IS NOT NULL AND lng IS NOT NULL;
+supabase/migrations/20260415_c2c_tables.sql:29:CREATE INDEX IF NOT EXISTS idx_c2c_listings_slug ON marketplace_services (slug) WHERE slug IS NOT NULL;
+supabase/migrations/20260415_c2c_tables.sql:30:CREATE INDEX IF NOT EXISTS idx_c2c_listings_subcategory ON marketplace_services (subcategory) WHERE subcategory IS NOT NULL;
+supabase/migrations/20260415_c2c_tables.sql:34:CREATE INDEX IF NOT EXISTS idx_c2c_search_vector ON marketplace_services USING GIN(search_vector);
+supabase/migrations/20260415_c2c_tables.sql:78:CREATE INDEX IF NOT EXISTS idx_c2c_offers_listing ON c2c_offers (listing_id);
+supabase/migrations/20260415_c2c_tables.sql:79:CREATE INDEX IF NOT EXISTS idx_c2c_offers_buyer ON c2c_offers (buyer_id);
+supabase/migrations/20260415_c2c_tables.sql:80:CREATE INDEX IF NOT EXISTS idx_c2c_offers_seller ON c2c_offers (seller_id);
+supabase/migrations/20260415_c2c_tables.sql:93:CREATE INDEX IF NOT EXISTS idx_c2c_reports_listing ON c2c_reports (listing_id);
+supabase/migrations/20260415_c2c_tables.sql:107:CREATE INDEX IF NOT EXISTS idx_c2c_moderation_listing ON c2c_moderation_queue (listing_id);
+supabase/migrations/20260415_c2c_tables.sql:108:CREATE INDEX IF NOT EXISTS idx_c2c_moderation_status ON c2c_moderation_queue (status) WHERE status = 'pending';
+supabase/migrations/20260415_c2c_tables.sql:122:CREATE INDEX IF NOT EXISTS idx_c2c_reviews_seller ON c2c_reviews (seller_id);
+supabase/migrations/20260415_c2c_tables.sql:123:CREATE INDEX IF NOT EXISTS idx_c2c_reviews_listing ON c2c_reviews (listing_id);
+supabase/migrations/20260416400000_unified_identity_triggers.sql:52:CREATE INDEX IF NOT EXISTS idx_orbit_profiles_v2_user_id
+supabase/migrations/20260416400000_unified_identity_triggers.sql:56:CREATE INDEX IF NOT EXISTS idx_identity_profiles_avatar
+supabase/migrations/20260416500000_schema_cleanup_compat_views.sql:42:CREATE INDEX IF NOT EXISTS idx_orbit_messages_conversation_created
+supabase/migrations/20260416500000_schema_cleanup_compat_views.sql:45:CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_created
+supabase/migrations/20260416600000_article_content_cache.sql:9:create index idx_article_content_cache_expires_at on public.article_content_cache (expires_at);
+supabase/migrations/20260416700000_firecrawl_usage_log.sql:10:CREATE INDEX IF NOT EXISTS idx_firecrawl_usage_log_user_id ON public.firecrawl_usage_log(user_id);
+supabase/migrations/20260416700000_firecrawl_usage_log.sql:11:CREATE INDEX IF NOT EXISTS idx_firecrawl_usage_log_created_at ON public.firecrawl_usage_log(created_at);
+supabase/migrations/20260416600000_prayer_push_schedules.sql:16:CREATE INDEX IF NOT EXISTS idx_prayer_push_schedules_date
+supabase/migrations/20260416600000_prayer_push_schedules.sql:19:CREATE INDEX IF NOT EXISTS idx_prayer_push_schedules_user
+supabase/migrations/20260417000000_cache_metrics_history.sql:16:CREATE INDEX IF NOT EXISTS idx_cache_metrics_history_recorded_at
+supabase/migrations/20260417000000_cache_metrics_history.sql:19:CREATE INDEX IF NOT EXISTS idx_cache_metrics_history_endpoint
+supabase/migrations/20260417000001_subscription_tier_column.sql:11:CREATE INDEX IF NOT EXISTS idx_profiles_subscription_tier
+supabase/migrations/20260416200000_dld_transactions_stub.sql:28:CREATE INDEX IF NOT EXISTS idx_dld_tx_district ON analytics.dld_transactions (district);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:29:CREATE INDEX IF NOT EXISTS idx_dld_tx_date ON analytics.dld_transactions (transaction_date);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:30:CREATE INDEX IF NOT EXISTS idx_dld_tx_type ON analytics.dld_transactions (property_type);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:31:CREATE INDEX IF NOT EXISTS idx_dld_tx_district_date ON analytics.dld_transactions (district, transaction_date);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:32:CREATE INDEX IF NOT EXISTS idx_dld_tx_amount ON analytics.dld_transactions (amount);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:33:CREATE INDEX IF NOT EXISTS idx_dld_tx_building ON analytics.dld_transactions (building_name);
+supabase/migrations/20260416200000_dld_transactions_stub.sql:34:CREATE INDEX IF NOT EXISTS idx_dld_tx_building_date ON analytics.dld_transactions (building_name, transaction_date);
+supabase/migrations/20260416003511_cache_metrics_log.sql:18:create index if not exists idx_cache_metrics_log_recorded_at
+supabase/migrations/20260416003511_cache_metrics_log.sql:21:create index if not exists idx_cache_metrics_log_function_name
+supabase/migrations/20260416100000_cron_failure_notifications.sql:16:CREATE INDEX IF NOT EXISTS idx_admin_cron_alert_user ON public.admin_cron_alert_prefs (user_id);
+supabase/migrations/20260417100000_unified_cron_response_reconciliation.sql:503:CREATE INDEX IF NOT EXISTS idx_cron_log_reconcile_candidates
+supabase/migrations/20260417100000_prayer_push_retry_states.sql:160:CREATE INDEX IF NOT EXISTS idx_prayer_push_send_states
+supabase/migrations/20260417200000_pgvector_embeddings.sql:47:-- Create indexes for fast cosine similarity search (IVFFlat)
+supabase/migrations/20260417200000_pgvector_embeddings.sql:50:CREATE INDEX IF NOT EXISTS idx_listings_embedding
+supabase/migrations/20260417200000_pgvector_embeddings.sql:54:CREATE INDEX IF NOT EXISTS idx_seed_products_embedding
+supabase/migrations/20260417200000_pgvector_embeddings.sql:58:CREATE INDEX IF NOT EXISTS idx_marketplace_services_embedding
+supabase/migrations/20260417200000_pgvector_embeddings.sql:62:CREATE INDEX IF NOT EXISTS idx_profiles_embedding
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:65:CREATE INDEX IF NOT EXISTS idx_edge_metrics_fn_time
+supabase/migrations/20260416000000_connection_pooling_and_sync.sql:68:CREATE INDEX IF NOT EXISTS idx_edge_metrics_duration
+supabase/migrations/20260417500000_dld_backfill_log.sql:15:CREATE INDEX IF NOT EXISTS idx_dld_backfill_log_created
+supabase/migrations/20260416120000_bnpl_plans_and_signature_envelopes.sql:17:CREATE INDEX IF NOT EXISTS idx_bnpl_plans_user_id ON public.bnpl_plans(user_id);
+supabase/migrations/20260416120000_bnpl_plans_and_signature_envelopes.sql:18:CREATE INDEX IF NOT EXISTS idx_bnpl_plans_status ON public.bnpl_plans(status);
+supabase/migrations/20260416120000_bnpl_plans_and_signature_envelopes.sql:34:CREATE INDEX IF NOT EXISTS idx_signature_envelopes_lease_id ON public.signature_envelopes(lease_id);
+supabase/migrations/20260416120000_bnpl_plans_and_signature_envelopes.sql:35:CREATE INDEX IF NOT EXISTS idx_signature_envelopes_user_id ON public.signature_envelopes(user_id);
+supabase/migrations/20260416120000_bnpl_plans_and_signature_envelopes.sql:36:CREATE INDEX IF NOT EXISTS idx_signature_envelopes_status ON public.signature_envelopes(status);
+supabase/migrations/20260417600000_search_sync_schedule.sql:16:CREATE INDEX IF NOT EXISTS idx_search_sync_log_created_at
+supabase/migrations/20260417600000_search_sync_schedule.sql:19:CREATE INDEX IF NOT EXISTS idx_search_sync_log_status
+supabase/migrations/20260417600000_search_sync_schedule.sql:40:CREATE UNIQUE INDEX IF NOT EXISTS idx_search_sync_queue_dedup
+supabase/migrations/20260417600000_search_sync_schedule.sql:44:CREATE INDEX IF NOT EXISTS idx_search_sync_queue_unprocessed
+supabase/migrations/20260417600000_plaid_webhook_support.sql:11:CREATE INDEX IF NOT EXISTS idx_plaid_items_status ON plaid_items (status);
+supabase/migrations/20260417600000_plaid_webhook_support.sql:25:CREATE INDEX IF NOT EXISTS idx_plaid_webhook_events_item ON plaid_webhook_events (item_id);
+supabase/migrations/20260417600000_plaid_webhook_support.sql:26:CREATE INDEX IF NOT EXISTS idx_plaid_webhook_events_created ON plaid_webhook_events (created_at DESC);
+supabase/migrations/20260417600000_plaid_webhook_support.sql:27:CREATE INDEX IF NOT EXISTS idx_plaid_webhook_events_idempotency ON plaid_webhook_events (idempotency_key);
+supabase/migrations/20260417600000_integration_health_log.sql:14:CREATE INDEX IF NOT EXISTS idx_integration_health_log_checked_at
+supabase/migrations/20260418000000_database_fortress_layer1.sql:443:CREATE INDEX IF NOT EXISTS idx_bnpl_plans_user ON commerce.bnpl_plans(user_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:444:CREATE INDEX IF NOT EXISTS idx_bnpl_plans_status ON commerce.bnpl_plans(status) WHERE status = 'active';
+supabase/migrations/20260418000000_database_fortress_layer1.sql:445:CREATE INDEX IF NOT EXISTS idx_bnpl_installments_plan ON commerce.bnpl_installments(plan_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:446:CREATE INDEX IF NOT EXISTS idx_bnpl_installments_due ON commerce.bnpl_installments(due_date) WHERE status = 'pending';
+supabase/migrations/20260418000000_database_fortress_layer1.sql:475:CREATE INDEX IF NOT EXISTS idx_signing_envelopes_lease ON commerce.signing_envelopes(lease_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:476:CREATE INDEX IF NOT EXISTS idx_signing_envelopes_status ON commerce.signing_envelopes(status);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:477:CREATE INDEX IF NOT EXISTS idx_signing_parties_envelope ON commerce.signing_parties(envelope_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1083:CREATE INDEX IF NOT EXISTS idx_insurance_policies_user ON wallet.insurance_policies(user_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1084:CREATE INDEX IF NOT EXISTS idx_insurance_policies_status ON wallet.insurance_policies(status) WHERE status = 'active';
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1085:CREATE INDEX IF NOT EXISTS idx_insurance_claims_policy ON wallet.insurance_claims(policy_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1086:CREATE INDEX IF NOT EXISTS idx_insurance_claims_status ON wallet.insurance_claims(status);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1232:CREATE INDEX IF NOT EXISTS idx_referral_codes_owner ON public.referral_codes(owner_user_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1233:CREATE INDEX IF NOT EXISTS idx_referral_codes_active ON public.referral_codes(is_active) WHERE is_active = true;
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1234:CREATE INDEX IF NOT EXISTS idx_referral_redemptions_referred ON public.referral_redemptions(referred_user_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1235:CREATE INDEX IF NOT EXISTS idx_referral_redemptions_referrer ON public.referral_redemptions(referrer_user_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1236:CREATE INDEX IF NOT EXISTS idx_referral_redemptions_status ON public.referral_redemptions(status);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1262:    CREATE UNIQUE INDEX uq_referral_redemptions_user_code_id
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1266:    CREATE UNIQUE INDEX uq_referral_redemptions_user_code_id
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1376:CREATE INDEX IF NOT EXISTS idx_fleet_metrics_date ON analytics.fleet_metrics(snapshot_date DESC);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1377:CREATE INDEX IF NOT EXISTS idx_fleet_metrics_city ON analytics.fleet_metrics(city, snapshot_date DESC);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1378:CREATE INDEX IF NOT EXISTS idx_delivery_stats_driver ON analytics.delivery_stats(driver_id, created_at DESC);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1379:CREATE INDEX IF NOT EXISTS idx_delivery_stats_city ON analytics.delivery_stats(city, created_at DESC);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1380:CREATE INDEX IF NOT EXISTS idx_delivery_stats_order ON analytics.delivery_stats(order_id);
+supabase/migrations/20260418000000_database_fortress_layer1.sql:1381:CREATE INDEX IF NOT EXISTS idx_delivery_stats_status ON analytics.delivery_stats(status, created_at DESC);
+supabase/migrations/20260417600000_map_error_analytics.sql:15:create index if not exists idx_map_error_analytics_created_at on public.map_error_analytics (created_at desc);
+supabase/migrations/20260417600000_map_error_analytics.sql:16:create index if not exists idx_map_error_analytics_error_type on public.map_error_analytics (error_type);
+supabase/migrations/20260417600000_map_error_analytics.sql:17:create index if not exists idx_map_error_analytics_component on public.map_error_analytics (component);
+supabase/migrations/20260417600000_map_error_analytics.sql:41:create index if not exists idx_map_error_alert_log_created_at on public.map_error_alert_log (created_at desc);
+supabase/migrations/20260416800001_referral_channel_tracking.sql:26:      CREATE INDEX idx_referral_clicks_channel ON public.referral_clicks (channel);
+supabase/migrations/20260416800001_referral_channel_tracking.sql:48:    CREATE INDEX idx_cron_health_log_job_name ON public.cron_health_log (job_name, checked_at DESC);
+supabase/migrations/20260417500000_dld_sync_log_and_cron.sql:15:CREATE INDEX IF NOT EXISTS idx_dld_sync_log_created_at
+supabase/migrations/20260417500000_dld_sync_log_and_cron.sql:18:CREATE INDEX IF NOT EXISTS idx_dld_sync_log_status
+supabase/migrations/20260418100001_bnpl_lifecycle_statuses.sql:27:CREATE INDEX idx_bnpl_plans_status ON commerce.bnpl_plans(status) WHERE status IN ('created', 'approved', 'active');
+supabase/migrations/20260418100000_gateway_tables_and_cron.sql:28:CREATE INDEX IF NOT EXISTS idx_gateway_sync_events_connector ON gateway_sync_events (connector_id, synced_at DESC);
+supabase/migrations/20260418100000_gateway_tables_and_cron.sql:29:CREATE INDEX IF NOT EXISTS idx_gateway_sync_events_synced_at ON gateway_sync_events (synced_at DESC);
+supabase/migrations/20260418100000_gateway_tables_and_cron.sql:40:CREATE INDEX IF NOT EXISTS idx_gateway_normalized_data_connector ON gateway_normalized_data (connector_id, ingested_at DESC);
+supabase/migrations/20260418100000_gateway_tables_and_cron.sql:52:CREATE INDEX IF NOT EXISTS idx_gateway_webhook_log_source ON gateway_webhook_log (source, received_at DESC);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:38:CREATE INDEX IF NOT EXISTS idx_support_sessions_user ON public.support_sessions(user_id);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:39:CREATE INDEX IF NOT EXISTS idx_support_sessions_status ON public.support_sessions(status);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:40:CREATE INDEX IF NOT EXISTS idx_support_sessions_shop ON public.support_sessions(shop_id) WHERE shop_id IS NOT NULL;
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:41:CREATE INDEX IF NOT EXISTS idx_support_sessions_created ON public.support_sessions(created_at DESC);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:54:CREATE INDEX IF NOT EXISTS idx_support_messages_session ON public.support_messages(session_id, created_at);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:66:CREATE INDEX IF NOT EXISTS idx_support_traces_session ON public.support_traces(session_id, created_at);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:67:CREATE INDEX IF NOT EXISTS idx_support_traces_event ON public.support_traces(event_type);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:92:CREATE INDEX IF NOT EXISTS idx_shop_quality_events_shop ON public.shop_quality_events(shop_id);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:93:CREATE INDEX IF NOT EXISTS idx_shop_quality_events_type ON public.shop_quality_events(event_type);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:108:CREATE INDEX IF NOT EXISTS idx_learning_insights_status ON public.support_learning_insights(status);
+supabase/migrations/20260418200000_orbit_ai_support_tables.sql:122:CREATE INDEX IF NOT EXISTS idx_orbit_notifications_user ON public.orbit_notifications(user_id, read);
+supabase/migrations/20260416800000_agent_command_history.sql:13:CREATE INDEX IF NOT EXISTS idx_agent_command_history_user
+supabase/migrations/20260416800000_agent_command_history.sql:16:CREATE INDEX IF NOT EXISTS idx_agent_command_history_correlation
+supabase/migrations/20260418300000_execution_tasks.sql:40:CREATE INDEX IF NOT EXISTS idx_execution_tasks_status      ON system.execution_tasks (status);
+supabase/migrations/20260418300000_execution_tasks.sql:41:CREATE INDEX IF NOT EXISTS idx_execution_tasks_domain      ON system.execution_tasks (domain);
+supabase/migrations/20260418300000_execution_tasks.sql:42:CREATE INDEX IF NOT EXISTS idx_execution_tasks_risk_level  ON system.execution_tasks (risk_level);
+supabase/migrations/20260418300000_execution_tasks.sql:43:CREATE INDEX IF NOT EXISTS idx_execution_tasks_parent      ON system.execution_tasks (parent_task_id);
+supabase/migrations/20260418300000_execution_tasks.sql:44:CREATE INDEX IF NOT EXISTS idx_execution_tasks_created_at  ON system.execution_tasks (created_at DESC);
+supabase/migrations/20260418300100_execution_tasks_hardening.sql:18:CREATE UNIQUE INDEX IF NOT EXISTS execution_tasks_idempotency_key_uniq
+supabase/migrations/20260418400000_execution_tasks_next_retry_at.sql:9:CREATE INDEX IF NOT EXISTS idx_execution_tasks_next_retry_at
+supabase/migrations/20260418500000_execution_tasks_v2.sql:169:CREATE UNIQUE INDEX IF NOT EXISTS execution_tasks_idempotency_key_active_uniq
+supabase/migrations/20260418500000_execution_tasks_v2.sql:176:CREATE INDEX IF NOT EXISTS idx_execution_tasks_correlation_id
+supabase/migrations/20260418500000_execution_tasks_v2.sql:180:CREATE INDEX IF NOT EXISTS idx_execution_tasks_root_task_id
+supabase/migrations/20260418500000_execution_tasks_v2.sql:183:CREATE INDEX IF NOT EXISTS idx_execution_tasks_entity
+supabase/migrations/20260418500000_execution_tasks_v2.sql:187:CREATE INDEX IF NOT EXISTS idx_execution_tasks_lock_key
+supabase/migrations/20260418500000_execution_tasks_v2.sql:192:CREATE INDEX IF NOT EXISTS idx_execution_tasks_status_active
+supabase/migrations/20260418500000_execution_locks_idempotency.sql:41:CREATE INDEX IF NOT EXISTS idx_execution_locks_expires_at
+supabase/migrations/20260418500000_execution_locks_idempotency.sql:44:CREATE INDEX IF NOT EXISTS idx_execution_locks_owner_id
+supabase/migrations/20260418600000_execution_orchestrator_v2.sql:29:CREATE INDEX IF NOT EXISTS idx_execution_locks_expires_at
+supabase/migrations/20260419000000_next_gen_ia.sql:27:CREATE INDEX IF NOT EXISTS idx_ai_interactions_user_created
+supabase/migrations/20260419000000_next_gen_ia.sql:29:CREATE INDEX IF NOT EXISTS idx_ai_interactions_feature_created
+supabase/migrations/20260419000000_next_gen_ia.sql:31:CREATE INDEX IF NOT EXISTS idx_ai_interactions_status_created
+supabase/migrations/20260419000000_next_gen_ia.sql:114:CREATE INDEX IF NOT EXISTS idx_ai_mem_conv_created
+supabase/migrations/20260419000000_next_gen_ia.sql:116:CREATE INDEX IF NOT EXISTS idx_ai_mem_user_created
+supabase/migrations/20260419000000_next_gen_ia.sql:147:CREATE INDEX IF NOT EXISTS idx_golden_active_feature
+supabase/migrations/20260419000000_next_gen_ia.sql:171:CREATE INDEX IF NOT EXISTS idx_eval_runs_label
+supabase/migrations/20260419000000_next_gen_ia.sql:173:CREATE INDEX IF NOT EXISTS idx_eval_runs_feature_passed
+supabase/migrations/20260419000000_next_gen_ia.sql:195:CREATE UNIQUE INDEX IF NOT EXISTS uq_reco_user_domain_hash
+supabase/migrations/20260419000000_next_gen_ia.sql:197:CREATE INDEX IF NOT EXISTS idx_reco_expires
+supabase/migrations/20260419000000_next_gen_ia.sql:235:CREATE INDEX IF NOT EXISTS idx_content_enrichments_type_updated
+supabase/migrations/20260419000000_next_gen_ia.sql:237:CREATE INDEX IF NOT EXISTS idx_content_enrichments_approved
+supabase/migrations/20260419000000_next_gen_ia.sql:285:CREATE INDEX IF NOT EXISTS idx_listings_search_tsv
+supabase/migrations/20260419000100_csp_reports.sql:18:create index if not exists security_csp_reports_received_at_idx
+supabase/migrations/20260419000000_agent_registry.sql:55:CREATE INDEX IF NOT EXISTS idx_policy_profiles_slug ON system.policy_profiles(slug);
+supabase/migrations/20260419000000_agent_registry.sql:88:CREATE INDEX IF NOT EXISTS idx_agents_kind   ON system.agents(agent_kind);
+supabase/migrations/20260419000000_agent_registry.sql:89:CREATE INDEX IF NOT EXISTS idx_agents_status ON system.agents(status);
+supabase/migrations/20260419000000_agent_registry.sql:90:CREATE INDEX IF NOT EXISTS idx_agents_owner  ON system.agents(owner_team);
+supabase/migrations/20260419000000_agent_registry.sql:104:CREATE INDEX IF NOT EXISTS idx_agent_versions_agent ON system.agent_versions(agent_id, released_at DESC);
+supabase/migrations/20260419000000_agent_registry.sql:125:CREATE INDEX IF NOT EXISTS idx_agent_capabilities_agent ON system.agent_capabilities(agent_id);
+supabase/migrations/20260419000000_agent_registry.sql:486:CREATE INDEX IF NOT EXISTS idx_execution_tasks_agent
+supabase/migrations/20260420100000_agent_heartbeats.sql:48:CREATE INDEX IF NOT EXISTS idx_agent_heartbeats_agent_seen
+supabase/migrations/20260420100000_agent_heartbeats.sql:50:CREATE INDEX IF NOT EXISTS idx_agent_heartbeats_worker_seen
+supabase/migrations/20260420100000_agent_heartbeats.sql:52:CREATE INDEX IF NOT EXISTS idx_agent_heartbeats_created
+supabase/migrations/20260421000000_execution_tasks_github_runner.sql:37:CREATE INDEX IF NOT EXISTS idx_execution_tasks_runner
+supabase/migrations/20260421100000_execution_tasks_rollback_l3.sql:96:CREATE INDEX IF NOT EXISTS idx_execution_tasks_status_active
+supabase/migrations/20260421100000_execution_tasks_rollback_l3.sql:107:CREATE UNIQUE INDEX IF NOT EXISTS execution_tasks_idempotency_key_active_uniq
+supabase/migrations/20260422000000_goal_engine.sql:21:CREATE INDEX IF NOT EXISTS idx_goals_created_by ON system.goals (created_by);
+supabase/migrations/20260422000000_goal_engine.sql:22:CREATE INDEX IF NOT EXISTS idx_goals_status_created
+supabase/migrations/20260422000000_goal_engine.sql:70:CREATE INDEX IF NOT EXISTS idx_execution_tasks_goal_id
+supabase/migrations/20260423000000_goal_engine_phase3.sql:230:CREATE INDEX IF NOT EXISTS idx_goal_iterations_goal_created
+supabase/migrations/20260423000000_goal_engine_phase3.sql:388:CREATE INDEX IF NOT EXISTS idx_learning_memory_last_used
+supabase/migrations/20260424000000_admin_approvals_inbox.sql:65:CREATE INDEX IF NOT EXISTS idx_task_approvals_task_id_decided_at
+supabase/migrations/20260424000000_admin_approvals_inbox.sql:68:CREATE INDEX IF NOT EXISTS idx_task_approvals_reviewer
+supabase/migrations/20260424000000_admin_approvals_inbox.sql:71:CREATE UNIQUE INDEX IF NOT EXISTS uniq_task_approvals_client_request
+supabase/migrations/20260422000000_agent_tasks_command_center.sql:33:CREATE INDEX IF NOT EXISTS idx_agent_tasks_user_created
+supabase/migrations/20260423000000_goals_planner_memory.sql:37:CREATE INDEX IF NOT EXISTS goals_owner_id_idx     ON system.goals (owner_id, created_at DESC);
+supabase/migrations/20260423000000_goals_planner_memory.sql:38:CREATE INDEX IF NOT EXISTS goals_status_idx       ON system.goals (status);
+supabase/migrations/20260423000000_goals_planner_memory.sql:76:CREATE INDEX IF NOT EXISTS goal_iterations_goal_idx ON system.goal_iterations (goal_id, iteration_number DESC);
+supabase/migrations/20260423000000_goals_planner_memory.sql:107:CREATE INDEX IF NOT EXISTS learning_memory_owner_idx ON system.learning_memory (owner_id, last_used_at DESC NULLS LAST);
+supabase/migrations/20260423000000_goals_planner_memory.sql:122:CREATE INDEX IF NOT EXISTS execution_tasks_goal_idx
+supabase/migrations/20260419100000_ai_router_agents.sql:36:CREATE INDEX IF NOT EXISTS idx_ai_interactions_task
+supabase/migrations/20260419100000_ai_router_agents.sql:57:CREATE INDEX IF NOT EXISTS idx_execution_tasks_held_for_review
+supabase/migrations/20260419100000_ai_router_agents.sql:131:CREATE INDEX IF NOT EXISTS idx_agent_quota_counters_agent
+supabase/migrations/20260430000000_execution_tasks_drift_report.sql:36:CREATE INDEX IF NOT EXISTS idx_execution_tasks_drift_report

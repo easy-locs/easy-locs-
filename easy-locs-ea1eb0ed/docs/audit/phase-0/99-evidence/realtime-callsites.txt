@@ -1,0 +1,74 @@
+# supabase channel/realtime subscriptions
+src/components/communication-hub/useConversationThreads.ts:194:        .on("postgres_changes", { event: "UPDATE", schema: "commerce", table: "bookings", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+src/components/communication-hub/useConversationThreads.ts:195:        .on("postgres_changes", { event: "UPDATE", schema: "commerce", table: "transactions", filter: `org_id=eq.${orgId}` }, () => debouncedReload())
+src/components/communication-hub/useConversationThreads.ts:196:        .on("postgres_changes", { event: "*", schema: "public", table: "deal_rooms", filter: `org_id=eq.${orgId}` }, () => debouncedReload());
+src/components/communication-hub/useConversationThreads.ts:200:      .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "conversations_v2" }, () => debouncedReload())
+src/components/communication-hub/useConversationThreads.ts:201:      .on("postgres_changes", { event: "DELETE", schema: "orbit", table: "conversations_v2" }, () => debouncedReload())
+src/components/communication-hub/useConversationThreads.ts:202:      .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "conversations_v2" }, (payload: any) => {
+src/components/communication-hub/useConversationThreads.ts:218:      .on("postgres_changes", { event: "*", schema: "orbit", table: "call_logs" }, () => debouncedReload())
+src/components/communication-hub/useConversationThreads.ts:219:      .on("postgres_changes", { event: "*", schema: "public", table: "conversation_preferences", filter: `user_id=eq.${userId}` }, () => debouncedReload())
+src/components/concierge/ServiceBookingCalendar.tsx:125:      .on("postgres_changes", { event: "*", schema: "commerce", table: "transactions", filter: `service_id=eq.${serviceId}` }, () => load())
+src/components/concierge/ServiceBookingCalendar.tsx:126:      .on("postgres_changes", { event: "*", schema: "commerce", table: "bookings", filter: `service_id=eq.${serviceId}` }, () => load())
+src/components/delivery/BuyerDeliveryDashboard.tsx:124:      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs" }, () => {
+src/components/delivery/CustomerTrackingPage.tsx:120:      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${tracking.id}` },
+src/components/delivery/FleetManagementDashboard.tsx:99:      .on("postgres_changes", { event: "*", schema: "public", table: "rider_presence" }, () => fetchFleet())
+src/components/delivery/LiveDeliveryChat.tsx:88:      .on("postgres_changes", {
+src/components/merchant/MerchantKitchenQueue.tsx:58:      .on("postgres_changes", {
+src/components/merchant/MerchantPaymentHistory.tsx:65:      .on("postgres_changes", {
+src/components/pos/KitchenQueue.tsx:57:      .on("postgres_changes", {
+src/components/storefront/AuctionManager.tsx:75:      .on("postgres_changes", { event: "*", schema: "public", table: "storefront_auctions", filter: `shop_id=eq.${shopId}` },
+src/components/storefront/BuyerOrderTracker.tsx:78:      .on("postgres_changes", {
+src/components/storefront/OrdersManager.tsx:55:      .on("postgres_changes", {
+src/hooks/call/useIncomingCallListener.ts:54:        .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleInsert)
+src/hooks/call/useIncomingCallListener.ts:55:        .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "call_logs", filter: `receiver_orbit_id=eq.${rid}` }, handleUpdate);
+src/hooks/order/useOrderFetcher.ts:61:      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "storefront_orders", filter: `id=eq.${orderId}` }, () => fetchOrder())
+src/hooks/order/useOrderFetcher.ts:71:      .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs", filter: `id=eq.${order.delivery_job_id}` }, () => fetchOrder())
+src/hooks/useRealtimeSubscription.ts:50:      .on("postgres_changes", channelConfig, (payload) => {
+src/hooks/useReconAlerts.ts:29:      .on("postgres_changes", { event: "*", schema: "public", table: "recon_alerts" }, () => load())
+src/hooks/useCanonicalAddress.ts:59:      .on("postgres_changes", { event: "*", schema: "public", table: "user_active_address_context", filter: `user_id=eq.${userId}` }, () => {
+src/hooks/useDeliveryNotifications.ts:80:        .on("postgres_changes", {
+src/hooks/useFinancialRecon.ts:28:      .on("postgres_changes", { event: "*", schema: "public", table: "financial_reconciliation" }, () => load())
+src/hooks/useRadarLiveContext.ts:57:      .on("postgres_changes", { event: "*", schema: "public", table: "geo_live_context" }, () => {
+src/hooks/useRadarLiveContext.ts:64:      .on("postgres_changes", { event: "*", schema: "public", table: "zone_events" }, () => {
+src/hooks/useRadarLiveContext.ts:74:        .on("postgres_changes", { event: "*", schema: "public", table: "rider_runtime_state" }, () => {
+src/hooks/useWalletAccounts.ts:43:      .on("postgres_changes", { event: "*", schema: "wallet", table: "wallet_accounts" }, load)
+src/hooks/useUnreadMessages.ts:41:        .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, fetchCount)
+src/hooks/useUnreadMessages.ts:42:        .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, fetchCount)
+src/lib/map/engine/realtime-bridge.ts:21:    .on("postgres_changes", {
+src/lib/map/engine/realtime-bridge.ts:31:    .on("postgres_changes", {
+src/lib/rental/rental-repository.ts:162:    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (payload) => {
+src/lib/rental/rental-repository.ts:166:    .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, (payload) => {
+src/lib/runtime/realtime-intelligence.ts:64:    .on("postgres_changes" as any, subscriptionConfig, (payload: any) => {
+src/lib/control-plane/server-persistence.ts:269:    .on("postgres_changes", { event: "*", schema: "public", table: "kill_switches_server" }, (payload: any) => {
+src/lib/control-plane/server-persistence.ts:285:    .on("postgres_changes", { event: "*", schema: "public", table: "domain_degradation_modes" }, (payload: any) => {
+src/lib/schema/domain-schemas.ts:24: *   .on("postgres_changes", { schema: "orbit", table: "chat_messages_v2" })
+src/lib/realtime.ts:40:  let channel = supabase.channel(channelName, pending.opts);
+src/lib/realtime-manager.ts:226:      .on("postgres_changes", {
+src/lib/realtime-manager.ts:230:      .on("postgres_changes", {
+src/lib/realtime-manager.ts:234:      .on("postgres_changes", {
+src/lib/realtime-manager.ts:301:      ch = ch.on("postgres_changes", config, (payload) => {
+src/pages/admin/control/sections/ApprovalsSection.tsx:154:    const channel = supabase.channel("admin-control:approvals", {
+src/pages/AdminRealtimeControlPage.tsx:35:      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, load)
+src/pages/AdminRealtimeControlPage.tsx:36:      .on("postgres_changes", { event: "*", schema: "public", table: "mobility_jobs" }, load)
+src/pages/AdminRealtimeControlPage.tsx:37:      .on("postgres_changes", { event: "*", schema: "public", table: "driver_profiles" }, load)
+src/pages/MerchantPosPage.tsx:65:      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, async (payload: any) => {
+src/payments/payment-request-hooks.ts:123:      .on("postgres_changes", { event: "*", schema: "public", table: "payment_requests" } as any, () => load())
+src/payments/wallet-hooks.ts:68:        .on("postgres_changes", {
+src/payments/wallet-hooks.ts:128:        .on("postgres_changes", {
+src/payments/wallet-hooks.ts:134:        .on("postgres_changes", {
+src/repositories/delivery.repository.ts:121:    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "live_trackings", filter: `id=eq.${trackingId}` }, (payload) => onUpdate(payload.new))
+src/repositories/mobility.repository.ts:308:    .on("postgres_changes", { event: "*", schema: "public", table, filter }, callback)
+src/repositories/ride-tracking.repository.ts:15:    .on("postgres_changes", {
+src/repositories/concierge.repository.ts:107:    .on('postgres_changes', { event: '*', schema: 'commerce', table: 'transactions', filter: `org_id=eq.${orgId}` }, (payload) => {
+src/repositories/concierge.repository.ts:161:    .on("postgres_changes", { event: "INSERT", schema: "commerce", table: "transactions", filter: "transaction_type=eq.service_request" }, (payload) => onInsert(payload.new))
+src/repositories/seasonal.repository.ts:149:    .on("postgres_changes", { event: "*", schema: "commerce", table: "bookings", filter: `org_id=eq.${orgId}` }, (payload) => {
+src/repositories/dashboard.repository.ts:118:    .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
+src/repositories/dashboard.repository.ts:318:    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` }, (payload) => onUpdate(payload.new))
+src/repositories/interventions.repository.ts:46:    .on("postgres_changes", { event: "*", schema: "public", table: "interventions", filter: `org_id=eq.${orgId}` }, onUpdate)
+src/repositories/public.repository.ts:134:    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "mobility_jobs", filter: `id=eq.${jobId}` }, onUpdate)
+src/repositories/rental-data.repository.ts:165:    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (p) => {
+src/repositories/rental-data.repository.ts:169:    .on("postgres_changes", { event: "UPDATE", schema: "orbit", table: "chat_messages_v2" }, (p) => onUpdate(p.new as any))
+src/repositories/rental.repository.ts:60:    .on("postgres_changes", { event: "INSERT", schema: "orbit", table: "chat_messages_v2" }, (payload: any) => {
+src/repositories/rental.repository.ts:86:    .on("postgres_changes", { event: "*", schema: "public", table: "rent_calls", filter: `org_id=eq.${orgId}` }, onUpdate)
+src/repositories/rental.repository.ts:94:    .on("postgres_changes", { event: "*", schema: "property", table: "leases", filter: `org_id=eq.${orgId}` }, onUpdate)
+src/services/db.ts:150://   .on("postgres_changes", { schema: "orbit", table: "chat_messages_v2" })
