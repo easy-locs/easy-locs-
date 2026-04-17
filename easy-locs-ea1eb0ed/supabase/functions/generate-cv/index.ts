@@ -54,42 +54,41 @@ IMPORTANT: Generate clean, professional HTML with modern styling. Use a clean fo
 
     if (outcome.status === "succeeded" && outcome.output) {
       let cv = outcome.output.text ?? "";
+      // Clean up any markdown code fences
       cv = cv.replace(/```html\n?/g, "").replace(/```\n?/g, "").trim();
-      return new Response(JSON.stringify({ cv, task_id: outcome.taskId }), {
+      return new Response(JSON.stringify({ cv }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    if (outcome.status === "pending_review") {
-      return new Response(
-        JSON.stringify({
-          status: "pending_review",
-          task_id: outcome.taskId,
-          reason: outcome.blockedReason,
-        }),
-        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    const httpStatus =
-      outcome.status === "timeout" ? 504 :
-      outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 :
-      (outcome.status === "blocked" || outcome.status === "rejected") ? 403 :
-      500;
-
+    // Map dispatch outcome back onto the legacy generate-cv contract:
+    //   429 = rate limit, 402 = AI usage cap, else 500.
+    // The provider-side 402 ("Payment Required" / insufficient quota) gets
+    // wrapped by the AI adapter into either AI_QUOTA_EXCEEDED or a generic
+    // failure with "402"/"payment" in errorMessage; we preserve both signals
+    // so downstream UI keeps the original UX.
+    const msg = outcome.errorMessage ?? outcome.blockedReason ?? "";
     console.error(
       "[generate-cv] dispatch outcome:",
       outcome.status,
       outcome.errorCode,
-      outcome.errorMessage ?? outcome.blockedReason,
+      msg,
     );
+    if (outcome.errorCode === "AI_QUOTA_EXCEEDED") {
+      return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
+        status: 429,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (/\b402\b|payment\s*required|insufficient.*quota/i.test(msg)) {
+      return new Response(JSON.stringify({ error: "AI usage limit reached. Please try again later." }), {
+        status: 402,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     return new Response(
-      JSON.stringify({
-        error: outcome.errorMessage ?? outcome.blockedReason ?? "AI dispatch failed",
-        error_code: outcome.errorCode,
-        task_id: outcome.taskId,
-      }),
-      { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: msg || "AI gateway error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (e) {
     console.error("generate-cv error:", e);

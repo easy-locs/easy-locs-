@@ -1,7 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // LB1 Track 1 (#841) — AI parsing of inbound command emails goes through the
-// platform agent registry; direct `openaiChat` is no longer permitted.
-import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
+// platform agent registry via `parseEmailWithAI` (extracted to ./parser.ts).
+// Direct `openaiChat` is no longer permitted on this surface.
+import { parseEmailWithAI, type ParsedEmail } from "./parser.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { verifyHmacSha256, constantTimeEqual } from "../_shared/webhook-signature.ts";
@@ -17,120 +18,6 @@ const COMMAND_EMAIL_SECRET = Deno.env.get("COMMAND_EMAIL_SECRET") || "";
 const COMMAND_EMAIL_HMAC_SECRET = Deno.env.get("COMMAND_EMAIL_HMAC_SECRET") || "";
 const GITHUB_TOKEN = Deno.env.get("GITHUB_TOKEN") || "";
 const GITHUB_REPO = Deno.env.get("GITHUB_REPO") || "";
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") || "";
-
-interface ParsedEmail {
-  title: string;
-  description: string;
-  pillar: string;
-  priority: string;
-  type: string;
-  labels: string[];
-}
-
-const PILLAR_KEYWORDS: Record<string, string[]> = {
-  dashboard: ["dashboard", "home", "overview", "stats"],
-  radar: ["radar", "discovery", "search", "browse"],
-  orbit: ["orbit", "chat", "message", "communication"],
-  wallet: ["wallet", "payment", "transaction", "stripe"],
-  marketplace: ["marketplace", "listing", "booking", "service"],
-  property: ["property", "lease", "tenant", "rent", "maintenance"],
-  infrastructure: ["infra", "database", "supabase", "deploy", "api"],
-};
-
-const PRIORITY_KEYWORDS: Record<string, string[]> = {
-  critical: ["urgent", "critical", "emergency", "broken", "down", "crash"],
-  high: ["important", "high priority", "asap", "blocker"],
-  medium: ["medium", "normal", "standard"],
-  low: ["low priority", "nice to have", "minor"],
-};
-
-const TYPE_KEYWORDS: Record<string, string[]> = {
-  bug: ["bug", "error", "broken", "fix", "crash", "fail", "regression"],
-  feature: ["feature", "add", "new", "implement", "create", "build"],
-  refactor: ["refactor", "clean", "restructure", "optimize"],
-  docs: ["docs", "documentation", "readme"],
-  test: ["test", "testing", "coverage"],
-  task: ["task", "update", "change", "modify"],
-};
-
-function detectKeyword(text: string, map: Record<string, string[]>): string {
-  const lower = text.toLowerCase();
-  let best = "";
-  let bestScore = 0;
-  for (const [key, keywords] of Object.entries(map)) {
-    const score = keywords.reduce((acc, kw) => acc + (lower.includes(kw) ? 1 : 0), 0);
-    if (score > bestScore) { bestScore = score; best = key; }
-  }
-  return best;
-}
-
-function parseEmailLocally(subject: string, body: string): ParsedEmail {
-  const combined = `${subject} ${body}`;
-  const pillar = detectKeyword(combined, PILLAR_KEYWORDS) || "general";
-  const priority = detectKeyword(combined, PRIORITY_KEYWORDS) || "medium";
-  const type = detectKeyword(combined, TYPE_KEYWORDS) || "task";
-  const title = subject.trim() || body.split("\n")[0]?.trim().slice(0, 120) || "Untitled task";
-  const labels = [`priority:${priority}`, `type:${type}`, "source:email"];
-  if (pillar !== "general") labels.push(`pillar:${pillar}`);
-  return { title, description: body.trim(), pillar, priority, type, labels };
-}
-
-async function parseEmailWithAI(subject: string, body: string): Promise<ParsedEmail> {
-  const local = parseEmailLocally(subject, body);
-  if (!OPENAI_API_KEY) return local;
-
-  try {
-    const outcome = await dispatchAiCompletion(
-      {
-        feature: "command-email-intake",
-        messages: [
-          {
-            role: "system",
-            content: `Parse this email into a task for a property management super-app (Easy-Locs).
-Pillars: dashboard, radar, orbit, wallet, me, marketplace, property, admin, infrastructure.
-Return ONLY JSON: {"title":"...", "description":"...", "pillar":"...", "priority":"critical|high|medium|low", "type":"feature|bug|refactor|docs|test|task"}`,
-          },
-          { role: "user", content: `Subject: ${subject}\n\nBody:\n${body}` },
-        ],
-        maxTokens: 500,
-        temperature: 0.1,
-        purpose: "general",
-      },
-      { feature: "command-email-intake" },
-    );
-    if (outcome.status !== "succeeded" || !outcome.output) {
-      console.warn(
-        "[command-email-intake] AI parse not succeeded — falling back to local parser:",
-        outcome.status,
-        outcome.errorCode,
-        outcome.errorMessage ?? outcome.blockedReason,
-      );
-      return local;
-    }
-    const content = outcome.output.text?.trim();
-    if (!content) return local;
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return local;
-    const parsed = JSON.parse(jsonMatch[0]);
-    const labels = [`priority:${parsed.priority || local.priority}`, `type:${parsed.type || local.type}`, "source:email"];
-    if ((parsed.pillar || local.pillar) !== "general") labels.push(`pillar:${parsed.pillar || local.pillar}`);
-    return {
-      title: parsed.title || local.title,
-      description: parsed.description || local.description,
-      pillar: parsed.pillar || local.pillar,
-      priority: parsed.priority || local.priority,
-      type: parsed.type || local.type,
-      labels,
-    };
-  } catch (err) {
-    console.warn(
-      "[command-email-intake] AI parse threw — falling back to local parser:",
-      err instanceof Error ? err.message : String(err),
-    );
-    return local;
-  }
-}
 
 async function createGithubIssue(parsed: ParsedEmail): Promise<{ number: number; url: string } | null> {
   if (!GITHUB_TOKEN || !GITHUB_REPO) return null;
