@@ -277,6 +277,12 @@ async function callProvider(entry: AiProviderEntry, options: AIRouterOptions): P
 
 export interface ProviderFallbackLog {
   feature: string;
+  /** Agent slug from the registry config — null when the legacy `aiRoute()`
+   *  entry point is used (env-default config has no slug). */
+  agentSlug?: string | null;
+  /** Caller-provided task id from the dispatch context — null when the
+   *  router is invoked outside an execution task (e.g. one-shot scripts). */
+  taskId?: string | null;
   provider: string;
   model: string;
   keyEnv: string;
@@ -295,6 +301,8 @@ export function buildProviderFallbackLog(
     event: "ai_router.provider_fallback",
     level: "error",
     feature: details.feature,
+    agent_slug: details.agentSlug ?? null,
+    task_id: details.taskId ?? null,
     provider: details.provider,
     model: details.model,
     key_env: details.keyEnv,
@@ -308,7 +316,7 @@ export function buildProviderFallbackLog(
   };
 }
 
-function logProviderFallback(details: ProviderFallbackLog): void {
+export function logProviderFallback(details: ProviderFallbackLog): void {
   console.error(JSON.stringify(buildProviderFallbackLog(details)));
 }
 
@@ -323,6 +331,12 @@ export interface AiRouteForAgentInput {
   /** Free-text caller tag (e.g. "support.triage") propagated into the
    *  canonical interaction record. */
   feature: string;
+  /** Optional agent slug from the registry, propagated into structured
+   *  fallback logs so the audit pipeline can correlate failures. */
+  agentSlug?: string | null;
+  /** Optional execution-task id from the dispatch context, propagated
+   *  into structured fallback logs for the same correlation purpose. */
+  taskId?: string | null;
   /** Optional clock injection for tests. */
   now?: () => number;
 }
@@ -383,6 +397,8 @@ export async function aiRouteForAgent(
       }
       logProviderFallback({
         feature: input.feature,
+        agentSlug: input.agentSlug ?? null,
+        taskId: input.taskId ?? null,
         provider: entry.provider,
         model: input.options.model ?? entry.model,
         keyEnv: entry.keyEnv,
@@ -401,6 +417,8 @@ export async function aiRouteForAgent(
       // behaviour preserved).
       logProviderFallback({
         feature: input.feature,
+        agentSlug: input.agentSlug ?? null,
+        taskId: input.taskId ?? null,
         provider: entry.provider,
         model: input.options.model ?? entry.model,
         keyEnv: entry.keyEnv,

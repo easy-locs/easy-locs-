@@ -24,6 +24,10 @@ import { Separator } from "@/components/ui/separator";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  COMMAND_CENTER_TASK_COLUMNS,
+  dispatchCommandCenterPrompt,
+} from "@/lib/execution/dispatchCommandCenter";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 
 // ── Execution-task row (system.execution_tasks) — only the columns this
@@ -272,9 +276,7 @@ export default function DashboardCommandCenter() {
     const { data, error } = await supabase
       .schema("system" as never)
       .from("execution_tasks" as never)
-      .select(
-        "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
-      )
+      .select(COMMAND_CENTER_TASK_COLUMNS)
       .eq("requested_by", uid)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -294,9 +296,7 @@ export default function DashboardCommandCenter() {
     const { data } = await supabase
       .schema("system" as never)
       .from("execution_tasks" as never)
-      .select(
-        "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
-      )
+      .select(COMMAND_CENTER_TASK_COLUMNS)
       .eq("id", selectedId)
       .maybeSingle();
     if (data) applyTaskUpdate(data as unknown as ExecutionTaskRow);
@@ -346,40 +346,24 @@ export default function DashboardCommandCenter() {
     setSubmitting(true);
 
     try {
-      // Track 3 (#843): the only sanctioned path is the dispatch RPC.
-      // The trigger-github Edge Function admin-gates the call, embeds the
-      // prompt in the payload, and inserts a row into system.execution_tasks
-      // via system.dispatch_execution_task.
-      const { data, error } = await supabase.functions.invoke<{
-        task_id?: string;
-        status?: string;
-        error?: string;
-      }>("trigger-github", { body: { prompt: prompt.trim() } });
+      // Track 3 (#843): the only sanctioned path is the dispatch RPC,
+      // routed through the `trigger-github` Edge Function. The shared
+      // helper encapsulates the invoke + read-back so it stays exercised
+      // by the integration test in `lb1-track3-hardening.test.ts`.
+      const result = await dispatchCommandCenterPrompt(supabase, prompt);
 
-      if (error || data?.error || !data?.task_id) {
-        const msg = data?.error ?? error?.message ?? "unknown dispatch error";
-        toast.error(`Dispatch failed: ${msg}`);
+      if (!result.ok) {
+        toast.error(`Dispatch failed: ${result.error}`);
         setSubmitting(false);
         return;
       }
 
-      // Fetch the freshly dispatched row so it appears immediately even
-      // before the realtime channel delivers the INSERT event.
-      const { data: row } = await supabase
-        .schema("system" as never)
-        .from("execution_tasks" as never)
-        .select(
-          "id,type,status,payload,execution_result,result,external_run_url,blocked_reason,error_code,error,requested_by,created_at,updated_at",
-        )
-        .eq("id", data.task_id)
-        .maybeSingle();
-      if (row) {
-        applyTaskUpdate(row as unknown as ExecutionTaskRow);
-        setSelectedId(data.task_id);
+      if (result.row) {
+        applyTaskUpdate(result.row as unknown as ExecutionTaskRow);
       }
-
+      setSelectedId(result.taskId);
       setPrompt("");
-      toast.success(`Task dispatched · ${data.status ?? "queued"}`);
+      toast.success(`Task dispatched · ${result.status}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Unexpected error");
     } finally {

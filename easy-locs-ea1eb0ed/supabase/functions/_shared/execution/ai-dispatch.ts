@@ -134,8 +134,11 @@ interface TaskRow {
  * importable from unit tests without dragging in the Deno-only Supabase
  * client this module loads from `https://esm.sh/...`.
  */
-import { classifyPollReadError } from "./poll-read-classifier.ts";
-export { classifyPollReadError };
+import {
+  classifyPollReadError,
+  handlePollReadError,
+} from "./poll-read-classifier.ts";
+export { classifyPollReadError, handlePollReadError };
 
 async function pollForResult(
   taskId: string,
@@ -154,23 +157,15 @@ async function pollForResult(
       .maybeSingle();
 
     if (error) {
-      const code = (error as { code?: string | null }).code ?? null;
-      const severity = classifyPollReadError(code);
-      // Structured, error-level log so the platform's log scraper picks it
-      // up. Replaces the previous swallow-via-console.warn behaviour.
-      console.error(JSON.stringify({
-        event: "ai_dispatch.poll_read_error",
-        level: "error",
+      // Delegate to the shared classifier+logger. Throws on fatal codes,
+      // emits a structured `ai_dispatch.poll_read_error` log otherwise
+      // (with task_id + agent_slug context for the audit pipeline).
+      handlePollReadError({
         taskId,
-        code,
+        agentSlug: null,
+        code: (error as { code?: string | null }).code ?? null,
         message: error.message,
-        severity,
-      }));
-      if (severity === "fatal") {
-        throw new Error(
-          `[ai-dispatch] fatal poll read error (code=${code ?? "null"}): ${error.message}`,
-        );
-      }
+      });
     } else if (data) {
       const row = data as TaskRow;
       if (TERMINAL.includes(row.status) || HOLD.includes(row.status)) {
