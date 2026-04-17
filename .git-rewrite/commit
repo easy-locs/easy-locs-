@@ -1,0 +1,50 @@
+tree 36fae9e75cc64d8b073a4f3dbd3a7533fbada631
+parent 69e71e61b52a0a85b470631e0bd110dcf3020273
+author jstarbuzz <jstarbuzz@gmail.com> 1776461678 +0000
+committer jstarbuzz <jstarbuzz@gmail.com> 1776462194 +0000
+
+Replace vector-similarity-search stub with real pgvector implementation (#903)
+
+Original task: replace the empty `vector-similarity-search` Edge Function
+stub with a real handler that runs a pgvector similarity query and returns
+ranked, enriched matches the recommendation engine can render.
+
+Changes
+- supabase/functions/vector-similarity-search/index.ts: rewritten from a
+  stub returning `{ matches: [], stub: true }` into a real handler. It now:
+    * Accepts EITHER `query_embedding` (must be 1536-dim, the canonical
+      EMBEDDING_DIMENSIONS used by `vector-embed`) OR `query_text`, which
+      it embeds server-side via the shared `generateEmbedding` adapter.
+      This fixes the dimension mismatch between the in-browser
+      recommendation engine (which builds 128-dim simulated vectors) and
+      the pgvector columns (1536-dim).
+    * Validates inputs (finite numeric array, length, threshold range,
+      capped match_count).
+    * Calls the existing `match_embeddings(p_table_name, p_query_embedding,
+      p_match_threshold, p_match_count)` RPC for `listings`,
+      `marketplace_services`, and `seed_products` in parallel.
+    * Enriches matches with title/image/subtitle from each table using a
+      single `IN (...)` query per table; merges, sorts by similarity desc,
+      and truncates to match_count.
+    * Degrades gracefully (per-table errors don't fail the whole call)
+      and removes the `stub: true` marker.
+- src/engines/recommendations/recommendation-engine.ts: `fetchPgvectorSimilar`
+  now sends `query_text` derived from the user's recent verticals and
+  favorited catalog titles instead of the local 128-dim simulated vector,
+  so the request actually returns ranked matches.
+- supabase/functions/_contracts.ts: updated request/response/error schema
+  to reflect optional `query_embedding | query_text` and the new 502 path.
+- supabase/functions/_manifest.ts: rate-limit `reason` no longer says
+  "Stub function".
+
+Notes / deviations
+- Did not consolidate into `vector-embed` / `ai-router` (that is the larger
+  #226 effort). The function uses the same shared embedding-client.ts so
+  consolidation later is straightforward.
+- Existing rows likely have NULL embeddings until the embedding backfill
+  runs (see follow-up #919), so user-visible results depend on backfill.
+  The query path itself is fully real.
+
+Follow-ups proposed: #919 (backfill embeddings), #920 (tests).
+
+Replit-Task-Id: ff768956-3eba-40d6-a829-2ae1db02e749
