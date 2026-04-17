@@ -112,7 +112,7 @@ export const dashboardRepo = {
     let query = domainDb.system
       .from("execution_tasks")
       .select(
-        "id, type, domain, risk_level, status, payload, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, created_at, updated_at",
+        "id, type, domain, risk_level, status, payload, result, error, requested_by, parent_task_id, blocked_reason, approved_by, approved_at, idempotency_key, attempt_count, max_attempts, runner, external_run_url, pr_url, created_at, updated_at",
       )
       .order("created_at", { ascending: false })
       .limit(limit);

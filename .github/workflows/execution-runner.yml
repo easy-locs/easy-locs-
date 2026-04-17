@@ -1,0 +1,189 @@
+name: Execution Runner
+
+on:
+  workflow_dispatch:
+    inputs:
+      task_id:
+        description: "execution_tasks row UUID"
+        required: true
+        type: string
+      task_type:
+        description: "Task type (e.g. SMOKE_NOOP)"
+        required: true
+        type: string
+      supabase_url:
+        description: "Supabase project URL for the callback"
+        required: true
+        type: string
+      label:
+        description: "Human-readable label embedded in the PR"
+        required: false
+        type: string
+      # NOTE: callback_token is intentionally absent from inputs.
+      # The runner computes HMAC-SHA256(RUNNER_HMAC_KEY, task_id) locally
+      # using the GitHub repo secret. This keeps the credential out of
+      # workflow_dispatch input metadata (visible in the GitHub UI).
+
+jobs:
+  run:
+    name: "Execute task ${{ inputs.task_id }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      # ── Compute HMAC credential ───────────────────────────────────────
+      # RUNNER_HMAC_KEY is a GitHub repo secret (never in workflow inputs/logs).
+      # The same HMAC-SHA256(key, task_id) is pre-computed by execution-loop
+      # and stored as runner_token_hash. Callback verifies constant-time.
+      - name: Compute callback credential
+        id: cred
+        env:
+          RUNNER_HMAC_KEY: ${{ secrets.RUNNER_HMAC_KEY }}
+          TASK_ID: ${{ inputs.task_id }}
+        run: |
+          TOKEN=$(printf '%s' "$TASK_ID" | openssl dgst -sha256 -hmac "$RUNNER_HMAC_KEY" | awk '{print $2}')
+          echo "::add-mask::$TOKEN"
+          echo "value=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      # ── Report RUNNING ────────────────────────────────────────────────
+      - name: Callback — RUNNING
+        env:
+          RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+        run: |
+          curl -sf -X POST \
+            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            -H "Content-Type: application/json" \
+            -H "X-Runner-Token: $RUNNER_TOKEN" \
+            -d "{
+              \"task_id\": \"${{ inputs.task_id }}\",
+              \"status\": \"RUNNING\",
+              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }" || echo "RUNNING callback failed (non-fatal)"
+
+      # ── Checkout ──────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Configure Git identity ────────────────────────────────────────
+      - name: Configure Git
+        run: |
+          git config user.name  "execution-runner[bot]"
+          git config user.email "execution-runner[bot]@users.noreply.github.com"
+
+      # ── Create task-scoped branch ─────────────────────────────────────
+      - name: Create branch exec/${{ inputs.task_id }}
+        id: branch
+        run: |
+          BRANCH="exec/${{ inputs.task_id }}"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      # ── Smoke / noop change ───────────────────────────────────────────
+      # For SMOKE_NOOP: writes a timestamped marker file as proof of execution.
+      # Real task types will replace this step with their actual work.
+      - name: Apply noop change
+        if: inputs.task_type == 'SMOKE_NOOP'
+        run: |
+          LABEL="${{ inputs.label }}"
+          TASK_ID="${{ inputs.task_id }}"
+          TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          mkdir -p .execution-runs
+          cat > ".execution-runs/${TASK_ID}.json" << EOF
+          {
+            "task_id": "$TASK_ID",
+            "task_type": "${{ inputs.task_type }}",
+            "label": "$LABEL",
+            "executed_at": "$TS",
+            "run_id": "${{ github.run_id }}",
+            "runner": "github-actions"
+          }
+          EOF
+          git add ".execution-runs/${TASK_ID}.json"
+          git commit -m "feat(exec): smoke noop — task ${TASK_ID}
+
+          execution-runner task ${TASK_ID} (${{ inputs.task_type }})
+          Label: $LABEL
+          Run: ${{ github.run_id }}
+          Timestamp: $TS"
+
+      # ── Run tests ─────────────────────────────────────────────────────
+      - name: Validate artefact
+        run: |
+          TASK_ID="${{ inputs.task_id }}"
+          FILE=".execution-runs/${TASK_ID}.json"
+          if [ -f "$FILE" ]; then
+            python3 -c "import json,sys; json.load(open('$FILE')); print('JSON valid')"
+          else
+            echo "No artefact to validate (non-noop task type)"
+          fi
+
+      # ── Push branch ───────────────────────────────────────────────────
+      - name: Push branch
+        run: |
+          git push origin "${{ steps.branch.outputs.branch }}"
+
+      # ── Open PR ───────────────────────────────────────────────────────
+      - name: Open pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LABEL="${{ inputs.label }}"
+          TASK_ID="${{ inputs.task_id }}"
+          PR_URL="$(gh pr create \
+            --base main \
+            --head "${{ steps.branch.outputs.branch }}" \
+            --title "feat(exec): ${LABEL:-smoke noop} — task ${TASK_ID:0:8}" \
+            --body "## Execution Runner — Phase 1 Smoke
+
+          | Field | Value |
+          |-------|-------|
+          | Task ID | \`${TASK_ID}\` |
+          | Task type | \`${{ inputs.task_type }}\` |
+          | Label | ${LABEL:-(none)} |
+          | Run | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+
+          > Auto-generated by [execution-runner.yml](.github/workflows/execution-runner.yml). Do not merge automatically.
+          ")"
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+          echo "PR opened: $PR_URL"
+
+      # ── Report SUCCESS ────────────────────────────────────────────────
+      - name: Callback — SUCCESS
+        if: success()
+        env:
+          RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+        run: |
+          PR_URL="${{ steps.pr.outputs.pr_url }}"
+          curl -sf -X POST \
+            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            -H "Content-Type: application/json" \
+            -H "X-Runner-Token: $RUNNER_TOKEN" \
+            -d "{
+              \"task_id\": \"${{ inputs.task_id }}\",
+              \"status\": \"SUCCESS\",
+              \"pr_url\": \"$PR_URL\",
+              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }"
+
+      # ── Report FAILED ─────────────────────────────────────────────────
+      - name: Callback — FAILED
+        if: failure()
+        env:
+          RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+        run: |
+          curl -sf -X POST \
+            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            -H "Content-Type: application/json" \
+            -H "X-Runner-Token: $RUNNER_TOKEN" \
+            -d "{
+              \"task_id\": \"${{ inputs.task_id }}\",
+              \"status\": \"FAILED\",
+              \"error\": \"GitHub Actions job failed — check run ${{ github.run_id }} for details\",
+              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }" || echo "FAILED callback itself failed — operator must check manually"
