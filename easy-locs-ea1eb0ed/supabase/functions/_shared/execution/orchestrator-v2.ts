@@ -893,6 +893,7 @@ export class ExecutionOrchestratorV2 {
       });
     }
 
+
     const lockKey = adapter.getLockKey ? adapter.getLockKey(task) : defaultLockKey(task);
     const acquired = await this.deps.locks.acquire(
       lockKey,

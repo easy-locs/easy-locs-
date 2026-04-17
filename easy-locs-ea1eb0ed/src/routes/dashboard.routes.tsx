@@ -11,7 +11,8 @@ const {
   AIAssistant, AISearch, Accounting, AccountingEntries, AddProperty, AuditTrail, Billing,
   BoostDashboardPage, Buildings, CVGenerator, Candidates, CategorySubscriptions, ChannelManager,
   ChargesRegularization, Collaboration, CommandCenter, Company, ConciergeOperations, CountryWorkspace, CreateListing,
-  CustomerProfilePage, Dashboard, DataImport, DeveloperPortal, Documents, DunningLetters, DynamicPricing,
+  CustomerProfilePage, Dashboard, DashboardCommandCenter, DataImport, DeveloperPortal, Documents,
+  DunningLetters, DynamicPricing,
   Expenses, Finances, FiscalReport, FurnitureInventory, Index, Interventions, IslamicSectionPage,
   LandlordProfile, LandlordRentDashboard, Leases, MyShopsPage, NewsPage, OpsCenter, PaymentNotices,
   PropertyCalendar, PropertyDetailHub, REDocumentsPage, RELeaseDetailPage, RELeasesPage, REPaymentsPage,
@@ -28,6 +29,7 @@ export function DashboardRoutes() {
       <Route path="/home" element={<FeatureErrorBoundary featureName="Dashboard"><MarketplaceHomeRouter /></FeatureErrorBoundary>} />
       <Route path="/pricing" element={<PricingScrollRedirect />} />
       <Route path="/dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><Dashboard /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/dashboard/command-center" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><DashboardCommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/property/add" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><AddProperty /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/property/:id" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><PropertyDetailHub /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/create-listing" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CreateListing /></FeatureErrorBoundary></ProtectedRoute>} />
