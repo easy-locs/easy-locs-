@@ -13,7 +13,7 @@
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { globalAdapterRegistry } from "../../adapter-registry.ts";
 import { globalVerifierRegistry } from "../../verifier-registry.ts";
-import { reconcileAgents } from "../../agent-reconciler.ts";
+import { reconcileAgents, type ReconcileResult } from "../../agent-reconciler.ts";
 import {
   createMarketplacePublishAdapter,
   createMarketplaceUnpublishAdapter,
@@ -73,6 +73,8 @@ export interface MarketplaceBootstrapOverrides {
    * with the running code. Tests pass `false` to skip the network call.
    */
   reconcileAgents?: boolean;
+  /** Test seam: replace the real reconcile call with a fake. */
+  reconcile?: (sb: SupabaseClient) => Promise<ReconcileResult>;
 }
 
 /**
@@ -96,10 +98,10 @@ function bootEnv(): string {
   }
 }
 
-export function bootstrapMarketplaceAdapters(
+export async function bootstrapMarketplaceAdapters(
   sb: SupabaseClient,
   overrides: MarketplaceBootstrapOverrides = {},
-): void {
+): Promise<void> {
   const repo = overrides.repo ?? createSupabaseListingRepository(sb as never);
   const kyc = overrides.kyc ?? createSupabaseKycCheck(sb as never);
   const events = overrides.events ?? defaultEventEmitter(sb);
@@ -124,34 +126,35 @@ export function bootstrapMarketplaceAdapters(
     { overwrite: true },
   );
 
-  // Sovereign Agent Control (L1, #808) — synchronously upsert the in-process
-  // adapters into `system.agents`. In production a failed reconcile is a
+  // Sovereign Agent Control (L1, #808) — AWAIT the registry reconcile
+  // before bootstrap returns. In production a failed reconcile is a
   // hard boot failure (the orchestrator MUST NOT serve traffic with an
   // out-of-sync registry); in dev/preview we log and continue so a fresh
-  // DB without the migration can still boot.
-  if (overrides.reconcileAgents !== false) {
-    reconcileAgents(sb)
-      .then((result) => {
-        if (!result.ok) {
-          const detail = result.failed
-            .map((f) => `${f.slug}: ${f.error}`)
-            .join("; ");
-          const msg = `[marketplace.bootstrap] reconcileAgents reported failures: ${detail}`;
-          if (bootEnv() === "production") {
-            throw new Error(msg);
-          }
-          console.warn(msg);
-        }
-      })
-      .catch((e) => {
-        const msg = `[marketplace.bootstrap] reconcileAgents threw: ${
-          e instanceof Error ? e.message : String(e)
-        }`;
-        if (bootEnv() === "production") {
-          throw e instanceof Error ? e : new Error(msg);
-        }
-        console.warn(msg);
-      });
+  // DB without the agent_registry migration can still boot.
+  if (overrides.reconcileAgents === false) return;
+
+  const env = bootEnv();
+  const reconcile = overrides.reconcile ?? reconcileAgents;
+  let result: ReconcileResult;
+  try {
+    result = await reconcile(sb);
+  } catch (e) {
+    const msg = `[marketplace.bootstrap] reconcileAgents threw: ${
+      e instanceof Error ? e.message : String(e)
+    }`;
+    if (env === "production") {
+      throw e instanceof Error ? e : new Error(msg);
+    }
+    console.warn(msg);
+    return;
+  }
+  if (!result.ok) {
+    const detail = result.failed.map((f) => `${f.slug}: ${f.error}`).join("; ");
+    const msg = `[marketplace.bootstrap] reconcileAgents reported failures: ${detail}`;
+    if (env === "production") {
+      throw new Error(msg);
+    }
+    console.warn(msg);
   }
 }
 

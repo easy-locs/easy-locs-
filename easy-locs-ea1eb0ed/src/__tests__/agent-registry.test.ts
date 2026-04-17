@@ -23,6 +23,7 @@ import {
   reconcileAgents,
   type ReconcileResult,
 } from "../../supabase/functions/_shared/execution/agent-reconciler.ts";
+import { bootstrapMarketplaceAdapters } from "../../supabase/functions/_shared/execution/adapters/marketplace/bootstrap.ts";
 import { allowAllKyc } from "../../supabase/functions/_shared/execution/adapters/marketplace/kyc-gate.ts";
 import {
   MemoryListingRepository,
@@ -357,6 +358,7 @@ describe("L1 dispatch contract (TS mirror of system.dispatch_execution_task)", (
   });
 
   it("disabled agent is dispatched as blocked with AGENT_DISABLED", () => {
+    // (positioned right above the boot-policy block to keep dispatch tests grouped)
     const reg = new AdapterRegistry();
     const repo = new MemoryListingRepository();
     reg.register(createMarketplacePublishAdapter({ repo, kyc: allowAllKyc, events: noopEvents }));
@@ -364,5 +366,102 @@ describe("L1 dispatch contract (TS mirror of system.dispatch_execution_task)", (
     const dispatched = dispatchSimulated(table, "marketplace", "MARKETPLACE.LISTING.PUBLISH");
     expect(dispatched.status).toBe("blocked");
     expect(dispatched.blocked_reason).toMatch(/AGENT_DISABLED/);
+  });
+});
+
+/**
+ * Boot-policy contract for bootstrapMarketplaceAdapters:
+ *   - production: reconcile failure throws → orchestrator boot fails hard
+ *   - dev / preview: reconcile failure is logged, boot proceeds
+ *   - happy path: reconcile succeeds, function resolves cleanly
+ */
+describe("bootstrapMarketplaceAdapters — fail-closed boot policy", () => {
+  // Repo / kyc / events stubs — bootstrap doesn't actually use the
+  // SupabaseClient for adapter construction once the overrides are passed.
+  const repoOverride = new MemoryListingRepository();
+  const overridesBase = {
+    repo: repoOverride as never,
+    kyc: allowAllKyc,
+    events: noopEvents,
+  };
+  const stubSupabase = {} as unknown as Parameters<typeof bootstrapMarketplaceAdapters>[0];
+
+  function withEnv(value: string | undefined, fn: () => Promise<void>) {
+    // deno-lint-ignore no-explicit-any
+    const proc = (globalThis as any).process;
+    const prev = proc?.env?.NODE_ENV;
+    if (proc?.env) {
+      if (value === undefined) delete proc.env.NODE_ENV;
+      else proc.env.NODE_ENV = value;
+    }
+    return fn().finally(() => {
+      if (proc?.env) {
+        if (prev === undefined) delete proc.env.NODE_ENV;
+        else proc.env.NODE_ENV = prev;
+      }
+    });
+  }
+
+  beforeEach(() => setStrictAgentRegistration(true));
+
+  it("returns cleanly when reconcile succeeds", async () => {
+    let registerCalls = 0;
+    const fakeReconcile = async (_sb: unknown, _reg?: unknown): Promise<ReconcileResult> => {
+      registerCalls += 1;
+      return { ok: true, registered: ["marketplace.publish"], failed: [] };
+    };
+    await expect(
+      bootstrapMarketplaceAdapters(stubSupabase, {
+        ...overridesBase,
+        reconcile: fakeReconcile,
+      }),
+    ).resolves.toBeUndefined();
+    expect(registerCalls).toBe(1);
+  });
+
+  it("PRODUCTION: throws when reconcile reports per-agent failures", async () => {
+    const fakeReconcile = async (): Promise<ReconcileResult> => ({
+      ok: false,
+      registered: [],
+      failed: [{ slug: "marketplace.publish", error: "RPC down" }],
+    });
+    await withEnv("production", async () => {
+      await expect(
+        bootstrapMarketplaceAdapters(stubSupabase, {
+          ...overridesBase,
+          reconcile: fakeReconcile,
+        }),
+      ).rejects.toThrow(/marketplace\.publish.*RPC down/);
+    });
+  });
+
+  it("PRODUCTION: throws when reconcile itself raises", async () => {
+    const fakeReconcile = async (): Promise<ReconcileResult> => {
+      throw new Error("network unreachable");
+    };
+    await withEnv("production", async () => {
+      await expect(
+        bootstrapMarketplaceAdapters(stubSupabase, {
+          ...overridesBase,
+          reconcile: fakeReconcile,
+        }),
+      ).rejects.toThrow(/network unreachable/);
+    });
+  });
+
+  it("DEV: logs and continues when reconcile reports failures", async () => {
+    const fakeReconcile = async (): Promise<ReconcileResult> => ({
+      ok: false,
+      registered: [],
+      failed: [{ slug: "x", error: "y" }],
+    });
+    await withEnv("development", async () => {
+      await expect(
+        bootstrapMarketplaceAdapters(stubSupabase, {
+          ...overridesBase,
+          reconcile: fakeReconcile,
+        }),
+      ).resolves.toBeUndefined();
+    });
   });
 });
