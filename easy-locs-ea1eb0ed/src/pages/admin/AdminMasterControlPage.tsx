@@ -63,6 +63,8 @@ const PANELS = [
 
 const SUPER_ADMIN_PANELS = [
   { label: "🤖 Command Center", path: "/admin/command-center" },
+  { label: "🛰️ Agents Cockpit", path: "/admin/agents" },
+  { label: "📥 Approvals Inbox", path: "/admin/approvals" },
 ];
 
 export default function AdminMasterControlPage() {

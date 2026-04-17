@@ -39,6 +39,7 @@ import {
 import { useUiEngine } from "@/hooks/useUiEngine";
 import {
   agentsRepo,
+  type AgentHealthStatus,
   type AgentLifecycleStatus,
   type AgentRow,
 } from "@/lib/admin/agents-repo";
@@ -93,6 +94,10 @@ export default function AdminAgentsPage() {
   const [q, setQ] = useState("");
   const [kind, setKind] = useState<string>("");
   const [status, setStatus] = useState<AgentLifecycleStatus | "">("");
+  const [health, setHealth] = useState<AgentHealthStatus | "">("");
+  const [team, setTeam] = useState<string>("");
+  const [sortBy, setSortBy] = useState<"name" | "lastRun">("name");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<AgentRow | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -102,11 +107,22 @@ export default function AdminAgentsPage() {
     refetchInterval: 30_000,
   });
 
+  const teamOptions = useMemo<string[]>(() => {
+    const set = new Set<string>();
+    for (const r of listQuery.data ?? []) {
+      if (r.owner_team) set.add(r.owner_team);
+    }
+    return Array.from(set).sort();
+  }, [listQuery.data]);
+
   const rows = useMemo<AgentRow[]>(() => {
     const all = listQuery.data ?? [];
-    return all.filter((r) => {
+    const filtered = all.filter((r) => {
       if (kind && r.agent_kind !== kind) return false;
       if (status && r.status !== status) return false;
+      if (health && (r.health?.health_status ?? "unknown") !== health)
+        return false;
+      if (team && r.owner_team !== team) return false;
       if (q) {
         const needle = q.trim().toLowerCase();
         if (!needle) return true;
@@ -117,7 +133,32 @@ export default function AdminAgentsPage() {
       }
       return true;
     });
-  }, [listQuery.data, q, kind, status]);
+    const sorted = [...filtered].sort((a, b) => {
+      let cmp = 0;
+      if (sortBy === "name") {
+        cmp = a.display_name.localeCompare(b.display_name);
+      } else {
+        // lastRun — nulls last, regardless of direction.
+        const av = a.last_run_at ? new Date(a.last_run_at).getTime() : null;
+        const bv = b.last_run_at ? new Date(b.last_run_at).getTime() : null;
+        if (av === null && bv === null) cmp = 0;
+        else if (av === null) return 1;
+        else if (bv === null) return -1;
+        else cmp = av - bv;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [listQuery.data, q, kind, status, health, team, sortBy, sortDir]);
+
+  const toggleSort = (col: "name" | "lastRun") => {
+    if (sortBy === col) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(col);
+      setSortDir(col === "name" ? "asc" : "desc");
+    }
+  };
 
   const openRow = (row: AgentRow) => {
     setSelected(row);
@@ -165,6 +206,36 @@ export default function AdminAgentsPage() {
             <option value="disabled">disabled</option>
             <option value="deprecated">deprecated</option>
           </select>
+          <select
+            value={health}
+            onChange={(e) =>
+              setHealth(e.target.value as AgentHealthStatus | "")
+            }
+            className="h-9 px-3 rounded-xl bg-muted border border-border/40 text-xs text-foreground"
+            data-testid="agents-filter-health"
+          >
+            <option value="">All health</option>
+            <option value="healthy">healthy</option>
+            <option value="degraded">degraded</option>
+            <option value="stale">stale</option>
+            <option value="down">down</option>
+            <option value="unknown">unknown</option>
+          </select>
+          {teamOptions.length > 0 && (
+            <select
+              value={team}
+              onChange={(e) => setTeam(e.target.value)}
+              className="h-9 px-3 rounded-xl bg-muted border border-border/40 text-xs text-foreground"
+              data-testid="agents-filter-team"
+            >
+              <option value="">All teams</option>
+              {teamOptions.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="ml-auto flex items-center gap-2">
             <span className="text-[0.625rem] uppercase tracking-wide text-muted-foreground tabular-nums">
               {rows.length} / {listQuery.data?.length ?? 0}
@@ -209,7 +280,22 @@ export default function AdminAgentsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-[0.625rem] uppercase tracking-wide">
-                    Agent
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 hover:text-foreground"
+                      onClick={() => toggleSort("name")}
+                      data-testid="agents-sort-name"
+                      aria-label={`Sort by name (${
+                        sortBy === "name" ? sortDir : "asc"
+                      })`}
+                    >
+                      Agent
+                      {sortBy === "name" && (
+                        <span aria-hidden>
+                          {sortDir === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </button>
                   </TableHead>
                   <TableHead className="text-[0.625rem] uppercase tracking-wide">
                     Type
@@ -224,7 +310,22 @@ export default function AdminAgentsPage() {
                     Domains
                   </TableHead>
                   <TableHead className="text-[0.625rem] uppercase tracking-wide">
-                    Last run
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 hover:text-foreground"
+                      onClick={() => toggleSort("lastRun")}
+                      data-testid="agents-sort-last-run"
+                      aria-label={`Sort by last run (${
+                        sortBy === "lastRun" ? sortDir : "desc"
+                      })`}
+                    >
+                      Last run
+                      {sortBy === "lastRun" && (
+                        <span aria-hidden>
+                          {sortDir === "asc" ? "↑" : "↓"}
+                        </span>
+                      )}
+                    </button>
                   </TableHead>
                   <TableHead className="w-12" />
                 </TableRow>

@@ -12,6 +12,22 @@
 import { domainDb } from "@/services/db";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Typed bridge to `supabase.schema('system').rpc(...)`. The generated
+ * Supabase types do not yet include the `system` schema RPCs, so we
+ * narrow the call surface here once instead of double-casting at every
+ * call site.
+ */
+type SystemRpc = <T = unknown>(
+  fn: string,
+  args: Record<string, unknown>,
+) => Promise<{ data: T | null; error: { message: string } | null }>;
+
+function systemRpc(): { rpc: SystemRpc } {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return supabase.schema("system" as never) as unknown as { rpc: SystemRpc };
+}
+
 export type AgentLifecycleStatus = "active" | "disabled" | "canary" | "deprecated";
 export type AgentHealthStatus =
   | "healthy"
@@ -220,14 +236,7 @@ export const agentsRepo = {
     status: AgentLifecycleStatus;
     canaryPct?: number | null;
   }) {
-    const { data, error } = await (
-      supabase.schema("system") as unknown as {
-        rpc: (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }
-    ).rpc("set_agent_status", {
+    const { data, error } = await systemRpc().rpc("set_agent_status", {
       p_slug: input.slug,
       p_status: input.status,
       p_canary_pct: input.canaryPct ?? null,
