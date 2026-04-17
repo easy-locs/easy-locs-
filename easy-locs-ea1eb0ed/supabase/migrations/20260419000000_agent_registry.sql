@@ -621,13 +621,14 @@ BEGIN
     INTO v_agent_id, v_agent_ver, v_agent_slug, v_agent_status
     FROM system.resolve_capability(p_domain, v_normalized_t) r;
 
-  -- Strict routing: per-call, opt-in via GUC `system.agent_strict_routing`,
-  -- defaults OFF until L7 has migrated every domain. The setting can be
-  -- toggled per session via `SELECT set_config('system.agent_strict_routing','on',false);`
-  -- or globally via ALTER DATABASE.
+  -- Strict routing (fail-closed): default ON. A (domain, task_type) pair
+  -- with no registered capability is dispatched as `blocked` with
+  -- `AGENT_NOT_REGISTERED`. The behaviour can be temporarily disabled per
+  -- session via `SELECT set_config('system.agent_strict_routing','off',false);`
+  -- — kept as an escape hatch only for the L7 migration sweep window.
   BEGIN
-    v_strict := COALESCE(current_setting('system.agent_strict_routing', TRUE), 'off') = 'on';
-  EXCEPTION WHEN OTHERS THEN v_strict := FALSE; END;
+    v_strict := COALESCE(current_setting('system.agent_strict_routing', TRUE), 'on') <> 'off';
+  EXCEPTION WHEN OTHERS THEN v_strict := TRUE; END;
 
   IF v_agent_id IS NULL AND v_strict THEN
     v_status := 'blocked';

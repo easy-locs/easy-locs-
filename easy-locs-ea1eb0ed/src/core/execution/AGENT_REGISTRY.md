@@ -92,10 +92,11 @@ Two safety overlays:
 1. **`AGENT_DISABLED`** — if a capability resolves to an agent whose
    `status = 'disabled'`, the task is dispatched as `blocked` with a
    `blocked_reason` carrying the agent slug. This is unconditional.
-2. **`AGENT_NOT_REGISTERED`** — if no capability is registered, the task
-   is dispatched as `blocked` only when the GUC
-   `system.agent_strict_routing = on`. Default is `off` for backwards
-   compatibility; L7 will turn it on globally.
+2. **`AGENT_NOT_REGISTERED`** — fail-closed by default. If no capability
+   is registered for a `(domain, task_type)` pair, the task is dispatched
+   as `blocked`. The GUC `system.agent_strict_routing` defaults to `on`;
+   L7's migration sweep can flip it to `off` per session as a temporary
+   escape hatch while individual domains are being registered.
 
 ## 5. In-process bridge (TypeScript)
 
@@ -106,11 +107,25 @@ Two safety overlays:
 | `supabase/functions/_shared/execution/agent-reconciler.ts`               | `reconcileAgents(sb, registry?)` upserts the in-process registry into `system.agents` |
 | `supabase/functions/_shared/execution/adapters/marketplace/bootstrap.ts` | Calls `reconcileAgents` automatically on boot (best-effort)   |
 
-### Strict mode
+### Strict mode (boot-time enforcement)
 
-`setStrictAgentRegistration(true)` makes `AdapterRegistry.register()`
-throw when an adapter omits `agent`. Tests opt in locally. L7 will set it
-process-wide once every adapter is migrated.
+`AdapterRegistry.register()` throws when an adapter omits `agent` —
+**strict mode is the default**. The orchestrator therefore refuses to
+boot with adapters that have no platform identity.
+
+`setStrictAgentRegistration(false)` exists as a per-process escape hatch
+for legacy test suites that pre-date L1; production code never calls it.
+
+### Reconcile-or-fail boot policy
+
+`bootstrapMarketplaceAdapters(sb)` (and any future adapter bootstrap)
+calls `reconcileAgents(sb)` and:
+
+- **Production** (`SUPABASE_FUNCTION_ENV`/`DENO_ENV`/`NODE_ENV === 'production'`):
+  any reconcile failure throws — the function refuses to serve traffic
+  with an out-of-sync registry.
+- **Dev / preview**: failures are logged and boot continues, so a fresh
+  database without the agent_registry migration can still come up.
 
 ## 6. Seeded agents (the first real platform-native agents)
 
@@ -133,10 +148,17 @@ These are seeded in the migration AND re-confirmed at boot via
 
 ## 8. Tests
 
-- `src/__tests__/agent-registry.test.ts` (10 tests):
-  - AdapterRegistry agent validation (lenient + strict)
-  - `toAgentManifest` aggregation across multiple adapters
-  - Marketplace adapters declare canonical refs
-  - `reconcileAgents` happy path + per-agent failure isolation
+`src/__tests__/agent-registry.test.ts` — 13 tests covering:
+- AdapterRegistry agent validation (strict-default + opt-out)
+- Agent ref shape rejection (slug / version / kind)
+- `toAgentManifest` aggregation across multiple adapters
+- Marketplace adapters declare canonical refs
+- `reconcileAgents` happy path + per-agent failure isolation
+- **Integration: register → reconcile → simulated dispatch stamps
+  `agent_id` / `agent_version_id`**
+- **Unregistered route blocked with `AGENT_NOT_REGISTERED`** (strict on)
+- **Disabled agent blocked with `AGENT_DISABLED`**
+- Strict-routing escape hatch behaviour
 
 Run: `pnpm test src/__tests__/agent-registry.test.ts`
+Full execution suite: 108/108 green.

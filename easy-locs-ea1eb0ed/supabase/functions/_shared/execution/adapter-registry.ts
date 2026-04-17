@@ -37,7 +37,9 @@ export interface AgentManifest {
   capabilities: Array<{ domain: string; task_type: string }>;
 }
 
-let STRICT_AGENT_REGISTRATION = false;
+// Default ON (fail-closed): every adapter MUST declare an agent ref.
+// L7's migration sweep flips this OFF only in the brief migration window.
+let STRICT_AGENT_REGISTRATION = true;
 
 export function setStrictAgentRegistration(strict: boolean): void {
   STRICT_AGENT_REGISTRATION = strict;
