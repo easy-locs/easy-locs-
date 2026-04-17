@@ -36,7 +36,6 @@ export const EDGE_FUNCTION_MANIFEST: Record<string, ManifestEntry> = {
   "autonomous-cron-dispatcher": { auth: "service_role", rateLimit: false, reason: "Invoked server-side via service-role header" },
   "prayer-push-cron": { auth: "service_role", rateLimit: false, reason: "pg_cron service-role invocation" },
   "command-monitoring-cron": { auth: "service_role", rateLimit: false, reason: "Internal secret header, constant-time compared" },
-  "merge-conflict-recovery-alerts-cron": { auth: "service_role", rateLimit: false, reason: "Internal secret header, constant-time compared (task #973)" },
 
   // ── Public SEO / read APIs ───────────────────────────────────────────
   "public-api": { auth: "public", rateLimit: true, reason: "Read-only SEO / taxonomy endpoints; per-route RLS + rate limit" },
