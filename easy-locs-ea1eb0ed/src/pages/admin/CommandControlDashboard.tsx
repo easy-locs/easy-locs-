@@ -1,6 +1,6 @@
 import SubPageShell from "@/components/layout/SubPageShell";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import { db } from "@/services/db";
@@ -25,7 +25,9 @@ type TabId =
 export default function CommandControlDashboard() {
   useUiEngine("admin-commandcontroldashboard");
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabId>("overview");
+  const [searchParams] = useSearchParams();
+  const initialTab = (searchParams.get("tab") as TabId | null) ?? "overview";
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
   return (
     <SubPageShell noContentPad className="bg-background">

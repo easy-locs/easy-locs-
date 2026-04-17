@@ -13,7 +13,8 @@
  * Provides a Retry control on FAILED tasks — dispatching a new task with
  * the same payload, parent_task_id linkage, and a fresh attempt_count.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppCard, CardContent, CardHeader, CardTitle } from "@/components/ui/AppCard";
 import { Badge } from "@/components/ui/badge";
@@ -509,9 +510,23 @@ function TaskRow({ row, onRetry, retrying }: {
 export function ExecutionTaskPanel() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const focusTaskId = searchParams.get("taskId");
+  const focusedRowRef = useRef<HTMLDivElement | null>(null);
+
+  // When a deep link targets a specific task id, fetch that one row
+  // by id directly so it always appears regardless of the active
+  // status filter or pagination cap.
+  const focusedTaskQuery = useQuery({
+    queryKey: ["exec-task-panel-focused", focusTaskId],
+    queryFn: () =>
+      focusTaskId ? dashboardRepo.fetchExecutionTaskById(focusTaskId) : null,
+    enabled: !!focusTaskId,
+    staleTime: 2000,
+  });
 
   const {
-    data: tasks,
+    data: listTasks,
     isLoading,
     error,
     dataUpdatedAt,
@@ -526,6 +541,20 @@ export function ExecutionTaskPanel() {
     refetchInterval: 5000,
     staleTime: 2000,
   });
+
+  const tasks = useMemo<ExecRow[] | undefined>(() => {
+    if (!listTasks) return listTasks;
+    if (!focusTaskId) return listTasks;
+    const focused = focusedTaskQuery.data as ExecRow | null | undefined;
+    const list = listTasks.filter((r) => r.id !== focusTaskId);
+    return focused ? [focused, ...list] : listTasks;
+  }, [listTasks, focusTaskId, focusedTaskQuery.data]);
+
+  useEffect(() => {
+    if (focusTaskId && focusedRowRef.current) {
+      focusedRowRef.current.scrollIntoView({ block: "start", behavior: "smooth" });
+    }
+  }, [focusTaskId, tasks]);
 
   const retryMut = useMutation({
     mutationFn: async ({ row, authorize }: { row: ExecRow; authorize: boolean }) => {
@@ -620,14 +649,22 @@ export function ExecutionTaskPanel() {
         </AppCard>
       )}
 
-      {tasks?.map((row) => (
-        <TaskRow
-          key={row.id}
-          row={row}
-          onRetry={(r, opts) => retryMut.mutate({ row: r, authorize: opts.authorize })}
-          retrying={retryMut.isPending && retryMut.variables?.row.id === row.id}
-        />
-      ))}
+      {tasks?.map((row) => {
+        const isFocused = !!focusTaskId && row.id === focusTaskId;
+        return (
+          <div
+            key={row.id}
+            ref={isFocused ? focusedRowRef : undefined}
+            className={isFocused ? "ring-2 ring-primary rounded-2xl" : undefined}
+          >
+            <TaskRow
+              row={row}
+              onRetry={(r, opts) => retryMut.mutate({ row: r, authorize: opts.authorize })}
+              retrying={retryMut.isPending && retryMut.variables?.row.id === row.id}
+            />
+          </div>
+        );
+      })}
 
       <p className="text-[0.625rem] text-muted-foreground text-center pt-2">
         CRITICAL tasks require explicit authorization before they can leave the queued state.
