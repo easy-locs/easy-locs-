@@ -16,8 +16,80 @@ export type ExecutionTaskStatus =
   | "succeeded"
   | "failed"
   | "blocked"
+  | "rolling_back"
   | "rolled_back"
+  | "rollback_failed"
   | "cancelled";
+
+/**
+ * Sovereign Agent Control · L3 (task #811) — declared rollback posture.
+ *
+ *   - "auto":   the orchestrator MUST attempt rollback whenever the
+ *               adapter fails after the execute step has begun. The
+ *               adapter is REQUIRED to provide a `rollback` method.
+ *   - "manual": rollback is supported but only on operator request via
+ *               `system.request_rollback`. The adapter MUST provide a
+ *               `rollback` method.
+ *   - "none":   the operation has no defined inverse (read-only,
+ *               idempotent-by-design, or outside the system of record).
+ *               Adapters with this strategy MUST NOT define a rollback
+ *               method; the registry rejects them at registration.
+ */
+export type RollbackStrategy = "auto" | "manual" | "none";
+
+/**
+ * RollbackContext — the runtime envelope passed to a RollbackAdapter.
+ * Mirrors ExecutionContext but is dedicated to the rollback path so
+ * adapters can branch cleanly.
+ */
+export interface RollbackContext {
+  task: ExecutionTask;
+  lockKey: string;
+  ownerId: string;
+  /** Rollback attempt counter (1-based). */
+  attempt: number;
+  startedAt: string;
+}
+
+/**
+ * RollbackInvocation — payload handed to `adapter.rollback`. Carries the
+ * snapshot captured pre-execute (`previousState`), the partial output the
+ * forward path produced (`output`), and the failure reason. Auto-rollback
+ * passes `failureReason` from the executor; manual rollback passes the
+ * operator-supplied reason.
+ */
+export interface RollbackInvocation<TSnapshot = unknown, TOutput = unknown> {
+  previousState: TSnapshot | null;
+  output: TOutput | null;
+  failureReason: string;
+  /**
+   * `"auto"` when the orchestrator triggers rollback as part of its own
+   * failure path; `"manual"` when triggered via `system.request_rollback`.
+   */
+  trigger: "auto" | "manual";
+}
+
+/**
+ * RollbackResult — what `adapter.rollback` returns. The orchestrator owns
+ * the persistence + state-machine writes; rollback handlers MUST be
+ * idempotent (the orchestrator may retry).
+ */
+export interface RollbackResult {
+  success: boolean;
+  errorCode?: string;
+  errorMessage?: string;
+  output?: Record<string, unknown>;
+  logs?: string[];
+}
+
+export type SnapshotProvider<TSnapshot = unknown> = (
+  ctx: ExecutionContext,
+) => Promise<TSnapshot | null>;
+
+export type RollbackHandler<TSnapshot = unknown, TOutput = unknown> = (
+  ctx: RollbackContext,
+  invocation: RollbackInvocation<TSnapshot, TOutput>,
+) => Promise<RollbackResult>;
 
 export type ExecutionTaskRiskLevel = "SAFE" | "MEDIUM" | "CRITICAL";
 
@@ -41,6 +113,15 @@ export interface ExecutionTask {
   root_task_id: string | null;
   requires_approval: boolean;
   approval_policy: string;
+  // ── L3 (#811) — rollback observability fields read by orchestrator ────
+  /** Snapshot captured by `snapshotProvider` before execute. */
+  previous_state: Record<string, unknown> | null;
+  /** Latest rollback diagnostics — written by performRollback. */
+  rollback_result: Record<string, unknown> | null;
+  /** Operator-supplied note when triggered via `system.request_rollback`. */
+  rollback_reason: string | null;
+  /** Adapter-declared posture, mirrored from `system.execution_tasks`. */
+  rollback_strategy: "auto" | "manual" | "none";
 }
 
 /**
@@ -123,7 +204,7 @@ export interface AgentRef {
   metadata?: Record<string, unknown>;
 }
 
-export interface DomainAdapter {
+export interface DomainAdapter<TSnapshot = unknown, TOutput = unknown> {
   domain: string;
   taskType: string;
   /** Sovereign-agent-control binding (L1, #808). Required in strict mode. */
@@ -140,6 +221,39 @@ export interface DomainAdapter {
    */
   getIdempotencyKey?: (task: ExecutionTask) => string | null;
   execute: (ctx: ExecutionContext) => Promise<AdapterResult>;
+
+  // ── Sovereign Agent Control · L3 (task #811): rollback contract ───────
+  /**
+   * Declared rollback posture. Defaults to `"none"` when omitted.
+   * AdapterRegistry validates: `auto`/`manual` require `rollback`;
+   * `none` forbids `rollback`. The same shape is what a future
+   * `dev.builder` agent will implement (where `rollback` = `git revert
+   * <commit>` and `previousState` is the prior commit SHA).
+   */
+  rollback_strategy?: RollbackStrategy;
+  /**
+   * When true, the orchestrator AND `system.request_rollback` accept
+   * rollback requests against `succeeded` tasks (in addition to the
+   * default `failed`-only path). Default: false. Must be combined with
+   * `rollback_strategy ∈ {auto, manual}` and a `rollback` method.
+   */
+  allow_rollback_after_success?: boolean;
+  /**
+   * Captures the affected entity's pre-execute state. The orchestrator
+   * invokes this BEFORE `execute`, persists the result on
+   * `execution_tasks.previous_state`, and passes it back to `rollback`
+   * on the failure path. When omitted and a rollback fires, the handler
+   * receives `previousState=null` and is responsible for any fallback
+   * (typically: rely on `output` only).
+   */
+  snapshotProvider?: SnapshotProvider<TSnapshot>;
+  /**
+   * Inverse-operation handler. MUST be idempotent: the orchestrator may
+   * retry. MUST fail loudly via `RollbackResult.success=false` rather
+   * than silently masking failure — a `rollback_failed` row stays in
+   * that state until a human resolves it.
+   */
+  rollback?: RollbackHandler<TSnapshot, TOutput>;
 }
 
 export const ORCHESTRATOR_ERROR_CODES = {
@@ -155,6 +269,23 @@ export const ORCHESTRATOR_ERROR_CODES = {
   IDEMPOTENCY_LOOKUP_FAILED: "IDEMPOTENCY_LOOKUP_FAILED",
   EVENT_SINK_FAILED: "EVENT_SINK_FAILED",
 } as const;
+
+/**
+ * Rollback-path error codes (L3 / task #811). Surfaced on
+ * `execution_tasks.error_code` when a rollback cannot complete; the
+ * orchestrator additionally writes the diagnostics payload to
+ * `rollback_result`.
+ */
+export const ROLLBACK_ERROR_CODES = {
+  NO_ROLLBACK_HANDLER: "NO_ROLLBACK_HANDLER",
+  ROLLBACK_NOT_ALLOWED: "ROLLBACK_NOT_ALLOWED",
+  ROLLBACK_THREW: "ROLLBACK_THREW",
+  ROLLBACK_FAILED: "ROLLBACK_FAILED",
+  SNAPSHOT_THREW: "SNAPSHOT_THREW",
+} as const;
+
+export type RollbackErrorCode =
+  (typeof ROLLBACK_ERROR_CODES)[keyof typeof ROLLBACK_ERROR_CODES];
 
 export type OrchestratorErrorCode =
   (typeof ORCHESTRATOR_ERROR_CODES)[keyof typeof ORCHESTRATOR_ERROR_CODES];

@@ -47,6 +47,23 @@ export const CANONICAL_EXECUTION_EVENTS = {
    * transition (any non-healthy status → `healthy`).
    */
   AGENT_HEALTH_RECOVERED: "agent.health_recovered",
+  /**
+   * Sovereign Agent Control · L3 (task #811). Emitted by the orchestrator
+   * when a task transitions from `failed` (or `succeeded` opt-in) into
+   * `rolling_back`. Carries `trigger: 'auto' | 'manual'`, the failure
+   * reason, and the snapshot key. Kind-agnostic: business adapters,
+   * AI routers and dev.builder agents share this event.
+   */
+  TASK_ROLLBACK_STARTED: "task.rollback_started",
+  /** Emitted on successful rollback completion (rolling_back → rolled_back). */
+  TASK_ROLLED_BACK: "task.rolled_back",
+  /**
+   * Emitted when the rollback handler itself fails (rolling_back →
+   * rollback_failed). Carries `errorCode` + `errorMessage` so operators
+   * can alert. The row STAYS in `rollback_failed` until a human resolves
+   * it (fail-loud, never fail-silent).
+   */
+  TASK_ROLLBACK_FAILED: "task.rollback_failed",
 } as const;
 
 export type CanonicalExecutionEventName =

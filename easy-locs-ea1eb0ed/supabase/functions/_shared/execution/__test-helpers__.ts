@@ -19,9 +19,11 @@ const TRANSITIONS: Record<ExecutionTaskStatus, ExecutionTaskStatus[]> = {
   rejected: ["draft", "cancelled"],
   queued: ["running", "blocked", "cancelled"],
   running: ["succeeded", "failed", "blocked"],
-  succeeded: ["rolled_back"],
-  failed: ["queued", "blocked", "rolled_back", "cancelled"],
+  succeeded: ["rolling_back", "rolled_back"],
+  failed: ["queued", "blocked", "rolling_back", "rolled_back", "cancelled"],
   blocked: ["queued", "cancelled"],
+  rolling_back: ["rolled_back", "rollback_failed"],
+  rollback_failed: ["rolling_back", "blocked", "cancelled"],
   rolled_back: [],
   cancelled: [],
 };
@@ -95,6 +97,20 @@ export class MemoryListingRepository implements ListingRepository {
     return { ...updated };
   }
 
+  async restoreSnapshot(snapshot: ListingRecord): Promise<ListingRecord | null> {
+    const r = this.rows.get(snapshot.id);
+    if (!r) return null;
+    const restored: ListingRecord = {
+      id: snapshot.id,
+      status: snapshot.status,
+      is_published: snapshot.is_published,
+      visibility_mode: snapshot.visibility_mode,
+    };
+    this.rows.set(snapshot.id, restored);
+    this.mutations++;
+    return { ...restored };
+  }
+
   raw(id: string): ListingRecord | null {
     const r = this.rows.get(id);
     return r ? { ...r } : null;
@@ -122,5 +138,9 @@ export function makeTask(overrides: Partial<ExecutionTask> = {}): ExecutionTask 
     root_task_id: overrides.root_task_id ?? null,
     requires_approval: overrides.requires_approval ?? false,
     approval_policy: overrides.approval_policy ?? "none",
+    previous_state: overrides.previous_state ?? null,
+    rollback_result: overrides.rollback_result ?? null,
+    rollback_reason: overrides.rollback_reason ?? null,
+    rollback_strategy: overrides.rollback_strategy ?? "manual",
   };
 }

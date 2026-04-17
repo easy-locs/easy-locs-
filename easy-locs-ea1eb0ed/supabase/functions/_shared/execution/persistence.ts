@@ -14,7 +14,8 @@ import type { ExecutionTask, ExecutionTaskStatus } from "./types.ts";
 const TASK_COLUMNS =
   "id,type,domain,risk_level,status,payload,approved_by,attempt_count,max_attempts," +
   "parent_task_id,requested_by,idempotency_key,lock_key,entity_type,entity_id," +
-  "correlation_id,root_task_id,requires_approval,approval_policy";
+  "correlation_id,root_task_id,requires_approval,approval_policy," +
+  "previous_state,rollback_result,rollback_reason,rollback_strategy";
 
 /**
  * Repository contract used by ExecutionOrchestratorV2.
@@ -55,6 +56,11 @@ function toExecutionTask(row: Record<string, unknown>): ExecutionTask {
     root_task_id: (row.root_task_id as string | null) ?? null,
     requires_approval: Boolean(row.requires_approval ?? false),
     approval_policy: String(row.approval_policy ?? "none"),
+    previous_state: (row.previous_state as Record<string, unknown> | null) ?? null,
+    rollback_result: (row.rollback_result as Record<string, unknown> | null) ?? null,
+    rollback_reason: (row.rollback_reason as string | null) ?? null,
+    rollback_strategy:
+      (row.rollback_strategy as ExecutionTask["rollback_strategy"]) ?? "manual",
   };
 }
 

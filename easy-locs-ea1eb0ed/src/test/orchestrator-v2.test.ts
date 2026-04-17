@@ -71,6 +71,10 @@ function buildTask(overrides: Partial<ExecutionTask> = {}): ExecutionTask {
     root_task_id: null,
     requires_approval: false,
     approval_policy: "none",
+    previous_state: null,
+    rollback_result: null,
+    rollback_reason: null,
+    rollback_strategy: "none",
     ...overrides,
   };
 }
@@ -90,11 +94,13 @@ class MemoryRepository implements TaskRepository {
     approved: ["queued", "cancelled"],
     rejected: ["draft", "cancelled"],
     queued: ["running", "blocked", "cancelled"],
-    running: ["succeeded", "failed", "blocked"],
-    failed: ["queued", "blocked", "rolled_back", "cancelled"],
-    succeeded: ["rolled_back"],
+    running: ["succeeded", "failed", "blocked", "running"],
+    failed: ["queued", "blocked", "rolled_back", "rolling_back", "cancelled"],
+    succeeded: ["rolled_back", "rolling_back"],
     blocked: ["queued", "cancelled"],
+    rolling_back: ["rolled_back", "rollback_failed"],
     rolled_back: [],
+    rollback_failed: ["rolling_back", "blocked", "cancelled"],
     cancelled: [],
   };
 
@@ -414,6 +420,236 @@ describe("ExecutionOrchestratorV2", () => {
     expect(outcome.finalStatus).toBe("succeeded");
     expect((outcome.sinkErrors ?? []).length).toBeGreaterThan(0);
     expect(outcome.sinkErrors?.[0]).toContain("sink down");
+  });
+});
+
+// ─── Sovereign Agent Control · L3 (#811) — Typed rollback path ──────────
+describe("ExecutionOrchestratorV2 · rollback contract", () => {
+  it("auto-rolls-back when the adapter throws (snapshot captured pre-execute)", async () => {
+    const task = buildTask();
+    const snapshots: Array<unknown> = [];
+    const rollbacks: Array<{ prev: unknown; trigger: string }> = [];
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => {
+        const snap = { foo: "before" };
+        snapshots.push(snap);
+        return snap;
+      },
+      execute: async () => {
+        throw new Error("kaboom");
+      },
+      rollback: async (_ctx, inv) => {
+        rollbacks.push({ prev: inv.previousState, trigger: inv.trigger });
+        return { success: true, output: { restored: true } };
+      },
+    };
+    const { orch, registry, repo, sink } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.run(task.id);
+
+    expect(outcome.finalStatus).toBe("failed");
+    expect(snapshots).toHaveLength(1);
+    expect(rollbacks).toHaveLength(1);
+    expect(rollbacks[0].prev).toEqual({ foo: "before" });
+    expect(rollbacks[0].trigger).toBe("auto");
+    const final = repo.tasks.get(task.id);
+    expect(final?.status).toBe("rolled_back");
+    expect(final?.previous_state).toEqual({ foo: "before" });
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_STARTED);
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
+  });
+
+  it("auto-rolls-back when the adapter returns success:false", async () => {
+    const task = buildTask();
+    let rollbackCalled = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => ({ snap: 1 }),
+      execute: async () => ({ success: false, errorMessage: "soft fail", errorCode: "X" }),
+      rollback: async () => {
+        rollbackCalled = true;
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    await orch.run(task.id);
+
+    expect(rollbackCalled).toBe(true);
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+  });
+
+  it("manual runRollback drives a rolling_back row to rolled_back", async () => {
+    const task = buildTask({
+      status: "rolling_back",
+      previous_state: { snap: "manual" },
+      rollback_reason: "operator-requested",
+    });
+    let seen: unknown = null;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "manual",
+      // Operator-triggered rollback of a previously-succeeded task
+      // requires this opt-in flag (defense-in-depth check).
+      allow_rollback_after_success: true,
+      execute: async () => ({ success: true }),
+      rollback: async (_ctx, inv) => {
+        seen = inv.previousState;
+        expect(inv.trigger).toBe("manual");
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo, sink } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.runRollback(task.id);
+
+    expect(outcome.finalStatus).toBe("succeeded");
+    expect(seen).toEqual({ snap: "manual" });
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLED_BACK);
+  });
+
+  it("marks rollback_failed (and stays there) when the rollback handler reports failure", async () => {
+    const task = buildTask();
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "auto",
+      snapshotProvider: async () => ({ snap: "x" }),
+      execute: async () => {
+        throw new Error("boom");
+      },
+      rollback: async () => ({
+        success: false,
+        errorCode: "RESTORE_FAILED",
+        errorMessage: "downstream gone",
+      }),
+    };
+    const { orch, registry, repo, sink } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    await orch.run(task.id);
+
+    expect(repo.tasks.get(task.id)?.status).toBe("rollback_failed");
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED);
+  });
+
+  it("recovers a rollback_failed row via runRollback (re-enters rolling_back, then succeeds)", async () => {
+    const task = buildTask({
+      status: "rollback_failed",
+      previous_state: { snap: "retry" },
+      rollback_reason: "retrying-after-failure",
+    });
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "manual",
+      allow_rollback_after_success: true,
+      execute: async () => ({ success: true }),
+      rollback: async () => ({ success: true }),
+    };
+    const { orch, registry, repo } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.runRollback(task.id);
+
+    expect(outcome.finalStatus).toBe("succeeded");
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+  });
+
+  it("refuses succeeded-origin rollback when adapter does not opt in via allow_rollback_after_success", async () => {
+    // Operator forced a succeeded task into rolling_back via direct UPDATE
+    // (bypassing the SQL RPC's policy check). The orchestrator must catch
+    // this on the way in and refuse to invoke the handler. We mark
+    // succeeded-origin by previous_state set + rollback_reason set + no
+    // error_code on the row.
+    const task = buildTask({
+      status: "rolling_back",
+      previous_state: { snap: "ok" },
+      rollback_reason: "operator changed their mind",
+    });
+    let handlerCalled = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "manual",
+      // NOTE: allow_rollback_after_success is intentionally NOT set
+      execute: async () => ({ success: true }),
+      rollback: async () => {
+        handlerCalled = true;
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo, sink } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.runRollback(task.id);
+
+    expect(handlerCalled).toBe(false);
+    expect(outcome.finalStatus).toBe("failed");
+    expect(repo.tasks.get(task.id)?.status).toBe("rollback_failed");
+    expect(sink.names()).toContain(CANONICAL_EXECUTION_EVENTS.TASK_ROLLBACK_FAILED);
+  });
+
+  it("permits succeeded-origin rollback when adapter opts in via allow_rollback_after_success", async () => {
+    const task = buildTask({
+      status: "rolling_back",
+      previous_state: { snap: "ok" },
+      rollback_reason: "operator opt-in",
+    });
+    let handlerCalled = false;
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "manual",
+      allow_rollback_after_success: true,
+      execute: async () => ({ success: true }),
+      rollback: async () => {
+        handlerCalled = true;
+        return { success: true };
+      },
+    };
+    const { orch, registry, repo } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.runRollback(task.id);
+    expect(handlerCalled).toBe(true);
+    expect(outcome.finalStatus).toBe("succeeded");
+    expect(repo.tasks.get(task.id)?.status).toBe("rolled_back");
+  });
+
+  it("blocks runRollback when the row is not in a rollback state", async () => {
+    const task = buildTask({ status: "succeeded" });
+    const adapter: DomainAdapter = {
+      domain: task.domain,
+      taskType: task.type,
+      rollback_strategy: "manual",
+      execute: async () => ({ success: true }),
+      rollback: async () => ({ success: true }),
+    };
+    const { orch, registry, repo } = makeOrchestrator({});
+    registry.register(adapter);
+    repo.seed(task);
+
+    const outcome = await orch.runRollback(task.id);
+    expect(outcome.finalStatus).toBe("blocked");
+    expect(outcome.errorCode).toBeDefined();
   });
 });
 

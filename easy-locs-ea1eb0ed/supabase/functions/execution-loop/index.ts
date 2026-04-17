@@ -782,6 +782,64 @@ async function pickEligibleTasks(batchSize: number): Promise<ExecutionTaskRow[]>
   return (data ?? []) as ExecutionTaskRow[];
 }
 
+/**
+ * Sovereign Agent Control · L3 (#811) — pick rows that have been
+ * transitioned into `rolling_back` (typically by `system.request_rollback`
+ * RPC, the admin /admin/agents cockpit, or operator action). These rows
+ * bypass the normal queued/approval gate — approval to ROLL BACK is
+ * granted by the act of moving the row into `rolling_back`.
+ *
+ * Returned rows are routed to `getOrchestratorV2().runRollback(taskId)`
+ * which owns the rolling_back → {rolled_back | rollback_failed} terminal
+ * transition and emits the canonical rollback events.
+ */
+async function pickRollbackTasks(batchSize: number): Promise<ExecutionTaskRow[]> {
+  const { data, error } = await tasks()
+    .select(TASK_COLUMNS)
+    .eq("status", "rolling_back")
+    .order("rollback_started_at", { ascending: true, nullsFirst: true })
+    .limit(batchSize);
+
+  if (error) {
+    // Schema may pre-date the L3 migration during gradual rollout — degrade
+    // gracefully rather than blocking the main queue tick.
+    if (/column .* does not exist/i.test(error.message)) {
+      const { data: legacy } = await tasks()
+        .select(TASK_COLUMNS)
+        .eq("status", "rolling_back")
+        .order("created_at", { ascending: true })
+        .limit(batchSize);
+      return (legacy ?? []) as ExecutionTaskRow[];
+    }
+    console.warn("[execution-loop] rollback pick query failed:", error.message);
+    return [];
+  }
+  return (data ?? []) as ExecutionTaskRow[];
+}
+
+async function processRollback(
+  task: ExecutionTaskRow,
+): Promise<{ outcome: "SUCCESS" | "FAILED" | "BLOCKED"; error?: string }> {
+  ensureAdaptersBootstrapped(getSupabase());
+  if (!globalAdapterRegistry.has(task.domain, task.type)) {
+    // No V2 adapter for this (domain, type). Leave the row in rolling_back
+    // for human triage rather than silently swallowing.
+    return {
+      outcome: "BLOCKED",
+      error: `No V2 adapter registered for (${task.domain}, ${task.type}); rollback requires a registered handler`,
+    };
+  }
+  _inFlight++;
+  try {
+    const out = await (await getOrchestratorV2()).runRollback(task.id);
+    if (out.finalStatus === "succeeded") return { outcome: "SUCCESS" };
+    if (out.finalStatus === "failed") return { outcome: "FAILED", error: out.errorMessage };
+    return { outcome: "BLOCKED", error: out.errorMessage };
+  } finally {
+    _inFlight = Math.max(0, _inFlight - 1);
+  }
+}
+
 // L2 — Eager heartbeat start at worker bootstrap.
 // The worker is "alive" the moment the edge runtime imports this module,
 // not only when it first runs an adapter task. Starting the emitter here
@@ -845,6 +903,33 @@ Deno.serve(async (req) => {
       results.push({ id: task.id, type: task.type, outcome: "FAILED", error: msg });
     }
   }
+
+  // ── Sovereign Agent Control · L3 (#811): drain pending rollbacks ────
+  // Run AFTER the queued batch so rollback work uses any spare lock/quota
+  // budget but never starves new tasks. Failures are leave-as-is —
+  // `rollback_failed` rows persist for human resolution.
+  let rollbackPending: ExecutionTaskRow[] = [];
+  try {
+    rollbackPending = await pickRollbackTasks(batchSize);
+  } catch (e) {
+    console.warn("[execution-loop] rollback pick threw:", e);
+  }
+  const rollbackResults: Array<{ id: string; type: string; outcome: string; error?: string }> = [];
+  for (const task of rollbackPending) {
+    try {
+      const r = await processRollback(task);
+      if (r.outcome === "SUCCESS") summary.success++;
+      else if (r.outcome === "FAILED") summary.failed++;
+      else summary.blocked++;
+      rollbackResults.push({ id: task.id, type: task.type, outcome: `ROLLBACK_${r.outcome}`, error: r.error });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      summary.failed++;
+      rollbackResults.push({ id: task.id, type: task.type, outcome: "ROLLBACK_FAILED", error: msg });
+    }
+  }
+  summary.picked += rollbackPending.length;
+  results.push(...rollbackResults);
 
   await logRun({
     engineName: "execution-loop",

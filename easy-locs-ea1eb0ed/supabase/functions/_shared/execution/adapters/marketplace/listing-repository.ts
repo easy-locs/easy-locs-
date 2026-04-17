@@ -23,6 +23,14 @@ export interface ListingRepository {
     nextStatus: "active" | "paused",
     extra?: Record<string, unknown>,
   ): Promise<ListingRecord | null>;
+  /**
+   * L3 (#811) — restore a row to a previously captured snapshot. Used by
+   * the marketplace adapter's rollback handler so we can recover any
+   * `status` value (including `draft` or NULL) and the boolean +
+   * visibility flags atomically. `setStatus` is too narrow because it
+   * accepts only `active|paused`.
+   */
+  restoreSnapshot(snapshot: ListingSnapshot): Promise<ListingRecord | null>;
 }
 
 interface MinimalSupabaseClient {
@@ -68,6 +76,21 @@ export function createSupabaseListingRepository(sb: MinimalSupabaseClient): List
         .select(COLUMNS)
         .maybeSingle();
       if (error) throw new Error(`listing update failed: ${error.message}`);
+      return data ? mapRow(data) : null;
+    },
+    async restoreSnapshot(snapshot) {
+      const patch: Record<string, unknown> = {
+        status: snapshot.status,
+        is_published: snapshot.is_published,
+        visibility_mode: snapshot.visibility_mode,
+      };
+      const { data, error } = await sb
+        .from("property_listings_v2")
+        .update(patch)
+        .eq("id", snapshot.id)
+        .select(COLUMNS)
+        .maybeSingle();
+      if (error) throw new Error(`listing restore failed: ${error.message}`);
       return data ? mapRow(data) : null;
     },
   };

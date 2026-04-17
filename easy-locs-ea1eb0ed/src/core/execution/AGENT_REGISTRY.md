@@ -162,3 +162,141 @@ These are seeded in the migration AND re-confirmed at boot via
 
 Run: `pnpm test src/__tests__/agent-registry.test.ts`
 Full execution suite: 108/108 green.
+
+---
+
+# Sovereign Agent Control · L3 — Typed Rollback Contract
+
+**Status:** shipped · task #811
+**Migration:** `supabase/migrations/20260421100000_execution_tasks_rollback_l3.sql`
+
+L3 promotes rollback from an ad-hoc, per-adapter convention to a
+**first-class platform contract**. Any registered agent — business
+adapter, AI router agent, or dev/build agent — can declare *how* it
+undoes its own work, and the orchestrator owns the lifecycle.
+
+## 1. Why typed rollback?
+
+Pre-L3, rollback was implicit: a few adapters embedded a `previous_state`
+inside their forward output and operators ran SQL by hand. That was
+unsafe (no audit, no canonical events, no lock), unobservable (no
+`rolling_back` state in the SQL FSM), and unenforceable (no per-agent
+declaration in the registry).
+
+L3 makes the intent **explicit, persisted, and audited**.
+
+## 2. New SQL surface
+
+States added to `execution_task_status`:
+
+  - `rolling_back`     — rollback handler is in flight
+  - `rollback_failed`  — handler reported failure; row stays for human
+    resolution (fail-loud — never silently auto-resolved)
+
+Columns added to `system.execution_tasks`:
+
+| column                | role                                                   |
+|-----------------------|--------------------------------------------------------|
+| `previous_state`      | snapshot captured by the agent pre-execute (JSONB)     |
+| `rollback_strategy`   | declared strategy at dispatch time                     |
+| `rollback_reason`     | free-text trigger reason (operator note OR failure)    |
+| `rollback_started_at` | timestamp the loop entered `rolling_back`              |
+| `rollback_result`     | `{ success, output, logs, error?, trigger }` (JSONB)   |
+
+RPC `system.request_rollback(task_id, reason)` is the **only** sanctioned
+operator entry point — it transitions `succeeded|failed → rolling_back`
+inside an audited row update so the execution-loop poller picks the row
+up on its next tick.
+
+## 3. The DomainAdapter contract
+
+```ts
+interface DomainAdapter {
+  // ...
+  rollback_strategy?: "auto" | "manual" | "none";   // default: "none"
+  snapshotProvider?: (ctx: ExecutionContext) => Promise<unknown>;
+  rollback?: (ctx: RollbackContext, inv: RollbackInvocation) => Promise<RollbackResult>;
+  /** When true the orchestrator will attempt rollback even if the
+   *  forward execution was succeeded (operator-initiated only). */
+  allow_rollback_after_success?: boolean;
+}
+```
+
+Strategies:
+
+| strategy | Required handler? | Behaviour                                                                 |
+|----------|-------------------|---------------------------------------------------------------------------|
+| `none`   | MUST be omitted   | Registration rejected if `rollback` is present. No rollback ever runs.    |
+| `manual` | REQUIRED          | No auto-rollback. Operator triggers via `system.request_rollback` RPC.    |
+| `auto`   | REQUIRED          | Orchestrator runs rollback whenever `execute` throws OR returns `success:false`. |
+
+Validation lives in `AdapterRegistry.register` so the contract is enforced
+at boot — a misconfigured agent never reaches production traffic.
+
+## 4. Orchestrator lifecycle
+
+Forward path (auto strategies):
+
+```
+queued → running                          (snapshot captured here)
+       → failed                           (execute threw / returned !success)
+       → rolling_back   (auto)            (TASK_ROLLBACK_STARTED emitted)
+       → rolled_back    | rollback_failed (TASK_ROLLED_BACK | TASK_ROLLBACK_FAILED)
+```
+
+Manual path:
+
+```
+succeeded|failed → rolling_back           (system.request_rollback)
+                 → rolled_back | rollback_failed
+```
+
+Recovery path (operator retries a stuck rollback):
+
+```
+rollback_failed → rolling_back → rolled_back | rollback_failed
+```
+
+The execution-loop poller (`pickRollbackTasks`) selects every row in
+`rolling_back` ordered by `rollback_started_at ASC` and routes it to
+`getOrchestratorV2().runRollback(taskId)`. This step bypasses the
+queued/approval gate — moving the row into `rolling_back` *is* the
+approval to roll back.
+
+## 5. Canonical events
+
+| event                       | when                                          |
+|-----------------------------|-----------------------------------------------|
+| `task.rollback_started`     | row entered `rolling_back`                    |
+| `task.rolled_back`          | handler returned `success:true`, row terminal |
+| `task.rollback_failed`      | handler returned `success:false` OR threw     |
+
+Sinks (Postgres, NDJSON, BigQuery) carry these alongside the existing
+`task.queued / locked / started / verified / succeeded / failed / unlocked`
+sequence — no new wiring required.
+
+## 6. Per-kind mapping
+
+| Agent kind                  | Typical `rollback_strategy` | Snapshot source                          | Inverse op                                        |
+|-----------------------------|-----------------------------|-------------------------------------------|---------------------------------------------------|
+| `business.adapter`          | `auto`                      | row read pre-mutation (e.g. listing row) | `repo.restoreSnapshot(snapshot)`                  |
+| `ai.router`                 | `manual`                    | request envelope + chosen route          | re-route to safe fallback OR mark refunded        |
+| `dev.builder`               | `auto`                      | git SHA before commit                    | `git revert <sha>` on the build branch            |
+| `system.execution_loop`     | `none`                      | n/a — read-only orchestrator             | (no rollback — pure dispatcher)                   |
+
+`marketplace.publish` / `marketplace.unpublish` are the L3 reference
+adapters: they declare `"auto"`, snapshot the row via
+`MarketplaceAdapterDeps.repo.findById`, and restore via
+`ListingRepository.restoreSnapshot` in their `rollback` handler.
+
+## 7. Tests
+
+- `src/test/orchestrator-v2.test.ts · ExecutionOrchestratorV2 · rollback contract`
+  — six unit cases: auto-throw, auto-soft-fail, manual happy path,
+  rollback_failed terminal, rollback_failed → recovery, illegal-status
+  refusal.
+- `src/test/marketplace-rollback.integration.test.ts` — end-to-end:
+  publish + forced verifier mismatch ⇒ listing restored to its snapshot
+  AND canonical rollback events emitted.
+
+Run: `pnpm test src/test/orchestrator-v2.test.ts src/test/marketplace-rollback.integration.test.ts`

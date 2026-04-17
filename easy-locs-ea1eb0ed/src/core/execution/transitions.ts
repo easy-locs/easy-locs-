@@ -14,17 +14,19 @@ import type { ExecutionTaskStatus } from "./types";
  * Allowed successor states for each Phase-2 status. Empty array = terminal.
  */
 export const TASK_TRANSITIONS: Record<ExecutionTaskStatus, ExecutionTaskStatus[]> = {
-  draft:          ["pending_review", "approved", "queued", "cancelled"],
-  pending_review: ["approved", "rejected", "cancelled"],
-  approved:       ["queued", "cancelled"],
-  rejected:       ["draft", "cancelled"],
-  queued:         ["running", "blocked", "cancelled"],
-  running:        ["succeeded", "failed", "blocked"],
-  failed:         ["queued", "blocked", "rolled_back", "cancelled"],
-  succeeded:      ["rolled_back"],
-  blocked:        ["queued", "cancelled"],
-  rolled_back:    [],
-  cancelled:      [],
+  draft:           ["pending_review", "approved", "queued", "cancelled"],
+  pending_review:  ["approved", "rejected", "cancelled"],
+  approved:        ["queued", "cancelled"],
+  rejected:        ["draft", "cancelled"],
+  queued:          ["running", "blocked", "cancelled"],
+  running:         ["succeeded", "failed", "blocked"],
+  failed:          ["queued", "blocked", "rolling_back", "rolled_back", "cancelled"],
+  succeeded:       ["rolling_back", "rolled_back"],
+  blocked:         ["queued", "cancelled"],
+  rolling_back:    ["rolled_back", "rollback_failed"],
+  rollback_failed: ["rolling_back", "blocked", "cancelled"],
+  rolled_back:     [],
+  cancelled:       [],
 };
 
 export interface TransitionAssertion {
