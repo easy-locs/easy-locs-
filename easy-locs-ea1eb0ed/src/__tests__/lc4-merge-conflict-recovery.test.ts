@@ -22,11 +22,14 @@ import {
   type OrchestrationOutcomeLike,
 } from "../../supabase/functions/_shared/execution/builders/dev-builder-runtime";
 import {
+  PRECISE_DIFF_MAX_CELLS,
+  computeFileHunkRanges,
   createMergeConflictAuditHandler,
   createMergeConflictPreMergeCheck,
   createMergeConflictRecoveryHandler,
   defaultComputeCurrentChanges,
   formatMergeConflictReason,
+  preciseComputeCurrentChanges,
   requestMergeConflictReplan,
 } from "../../supabase/functions/_shared/execution/builders/merge-conflict-recovery";
 import {
@@ -657,6 +660,300 @@ describe("LC4 · defaultComputeCurrentChanges", () => {
         ],
       }),
     ).toEqual([]);
+  });
+});
+
+// ── computeFileHunkRanges + preciseComputeCurrentChanges (#939) ─────────
+
+describe("LC4 · computeFileHunkRanges (pure)", () => {
+  it("returns [] for a no-op edit (before === after)", () => {
+    expect(computeFileHunkRanges("a\nb\nc", "a\nb\nc")).toEqual([]);
+    expect(computeFileHunkRanges("", "")).toEqual([]);
+  });
+
+  it("emits one hunk covering every appended line on a pure addition", () => {
+    // Append 3 lines at the end → new-side range covers them.
+    const before = "a\nb\nc";
+    const after = "a\nb\nc\nd\ne\nf";
+    expect(computeFileHunkRanges(before, after)).toEqual([[4, 6]]);
+  });
+
+  it("emits one hunk covering every prepended line on a pure addition", () => {
+    const before = "x\ny";
+    const after = "a\nb\nx\ny";
+    expect(computeFileHunkRanges(before, after)).toEqual([[1, 2]]);
+  });
+
+  it("collapses a contiguous deletion run to a single anchor point", () => {
+    // Lines 2..4 deleted; on the new side only line 1 (`a`) remains
+    // before the deletion gap, so the anchor lands at new-line 1.
+    const before = "a\nb\nc\nd\ne";
+    const after = "a\ne";
+    const hunks = computeFileHunkRanges(before, after);
+    expect(hunks).toHaveLength(1);
+    const [s, e] = hunks[0];
+    expect(s).toBe(1);
+    expect(e).toBe(1);
+  });
+
+  it("collapses a leading deletion to a [1,1] anchor", () => {
+    // Delete the first two lines: the anchor is the start of the file.
+    expect(computeFileHunkRanges("a\nb\nc", "c")).toEqual([[1, 1]]);
+  });
+
+  it("emits a precise range that covers a modified contiguous run", () => {
+    // Modify lines 2..3 (b→B, c→C); contexts on either side stay.
+    const before = "a\nb\nc\nd";
+    const after = "a\nB\nC\nd";
+    expect(computeFileHunkRanges(before, after)).toEqual([[2, 3]]);
+  });
+
+  it("emits independent hunks for multi-hunk edits separated by context", () => {
+    // Hunk 1: line 2 modified. Hunk 2: line 5 modified.
+    const before = "a\nb\nc\nd\ne\nf";
+    const after = "a\nB\nc\nd\nE\nf";
+    expect(computeFileHunkRanges(before, after)).toEqual([[2, 2], [5, 5]]);
+  });
+
+  it("treats a missing baseline (before === '') as a pure addition over the whole new file", () => {
+    expect(computeFileHunkRanges("", "x\ny\nz")).toEqual([[1, 3]]);
+  });
+
+  it("treats a full-file deletion (after === '') as a single [1,1] anchor", () => {
+    expect(computeFileHunkRanges("x\ny\nz", "")).toEqual([[1, 1]]);
+  });
+
+  it("falls back to a single whole-file hunk when the LCS table would exceed the cell cap", () => {
+    // Build a pair whose product exceeds PRECISE_DIFF_MAX_CELLS so the
+    // guardrail fires WITHOUT the test itself paying the DP cost.
+    const sideLen = Math.ceil(Math.sqrt(PRECISE_DIFF_MAX_CELLS)) + 50;
+    const before = Array.from({ length: sideLen }, (_, i) => `a${i}`).join("\n");
+    const after = Array.from({ length: sideLen }, (_, i) => `b${i}`).join("\n");
+    const t0 = Date.now();
+    const hunks = computeFileHunkRanges(before, after);
+    // Must short-circuit (well under one second) instead of running the
+    // full O(m·n) DP.
+    expect(Date.now() - t0).toBeLessThan(500);
+    expect(hunks).toHaveLength(1);
+    expect(hunks[0][0]).toBe(1);
+    expect(hunks[0][1]).toBe(sideLen);
+  });
+});
+
+describe("LC4 · preciseComputeCurrentChanges (#939)", () => {
+  function iter(
+    iteration: number,
+    planRevision: number,
+    files: Array<{ path: string; before?: string | null; after?: string | null }>,
+  ) {
+    return {
+      iteration,
+      planRevision,
+      children: [
+        {
+          iteration,
+          stepId: "s1",
+          stepKind: "code.edit" as const,
+          childTaskId: `c${iteration}`,
+          outcome: {
+            status: "succeeded" as const,
+            result: { files },
+          },
+        },
+      ],
+      verifier: { status: "green" as const },
+    };
+  }
+
+  it("derives a precise per-hunk range when before + after are present (modification)", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "src/foo.ts", before: "a\nb\nc\nd", after: "a\nB\nc\nd" }]),
+      ],
+    });
+    expect(changes).toEqual([{ file: "src/foo.ts", startLine: 2, endLine: 2 }]);
+  });
+
+  it("emits one entry per hunk for multi-hunk modifications", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{
+          path: "src/foo.ts",
+          before: "a\nb\nc\nd\ne\nf",
+          after: "a\nB\nc\nd\nE\nf",
+        }]),
+      ],
+    });
+    expect(changes).toEqual([
+      { file: "src/foo.ts", startLine: 2, endLine: 2 },
+      { file: "src/foo.ts", startLine: 5, endLine: 5 },
+    ]);
+  });
+
+  it("handles pure additions and pure deletions correctly", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [
+          { path: "added.ts", before: "", after: "a\nb\nc" },
+          { path: "deleted.ts", before: "x\ny\nz", after: "" },
+        ]),
+      ],
+    });
+    expect(changes).toContainEqual({ file: "added.ts", startLine: 1, endLine: 3 });
+    expect(changes).toContainEqual({ file: "deleted.ts", startLine: 1, endLine: 1 });
+  });
+
+  it("treats `before: null` as the file did not exist (full-file addition)", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "new.ts", before: null, after: "a\nb" }]),
+      ],
+    });
+    expect(changes).toEqual([{ file: "new.ts", startLine: 1, endLine: 2 }]);
+  });
+
+  it("treats `after: null` as a deletion (single anchor)", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "gone.ts", before: "a\nb\nc", after: null }]),
+      ],
+    });
+    expect(changes).toEqual([{ file: "gone.ts", startLine: 1, endLine: 1 }]);
+  });
+
+  it("falls back to a whole-file range only for files where `before` is genuinely absent", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [
+          { path: "precise.ts", before: "a\nb\nc", after: "a\nB\nc" },
+          { path: "fallback.ts", after: "x" }, // no `before` key at all
+        ]),
+      ],
+    });
+    expect(changes).toContainEqual({
+      file: "precise.ts",
+      startLine: 2,
+      endLine: 2,
+    });
+    const fallback = changes.find((c) => c.file === "fallback.ts");
+    expect(fallback).toBeDefined();
+    expect(fallback!.startLine).toBe(1);
+    expect(fallback!.endLine).toBeGreaterThan(1000);
+  });
+
+  it("adopts a later iteration's `before` when the first touch did not surface one", () => {
+    // Iter 1 sets only `after` (no `before` key) → buf has no baseline yet.
+    // Iter 2 then provides the genuine `before` → that becomes the
+    // baseline for diffing against the latest `after`.
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "f.ts", after: "a\nB\nc" }]),
+        iter(2, 1, [{ path: "f.ts", before: "a\nb\nc", after: "a\nB\nC" }]),
+      ],
+    });
+    // baseline (iter 2) = `a\nb\nc`, latest = `a\nB\nC` → lines 2 and 3.
+    expect(changes).toEqual([{ file: "f.ts", startLine: 2, endLine: 3 }]);
+  });
+
+  it("uses the FIRST iteration's `before` and the LATEST iteration's `after`", () => {
+    // Iter 1 introduces baseline `a\nb\nc` and writes `a\nB\nc`.
+    // Iter 2 then writes `a\nB\nC` (no `before` field — the baseline
+    // must come from iter 1, NOT from iter 2's `after` of iter 1).
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "f.ts", before: "a\nb\nc", after: "a\nB\nc" }]),
+        iter(2, 1, [{ path: "f.ts", after: "a\nB\nC" }]),
+      ],
+    });
+    // baseline = `a\nb\nc`, latest = `a\nB\nC` → lines 2 and 3 changed.
+    expect(changes).toEqual([{ file: "f.ts", startLine: 2, endLine: 3 }]);
+  });
+
+  it("skips no-op edits (before === after) entirely", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        iter(1, 1, [{ path: "noop.ts", before: "a\nb", after: "a\nb" }]),
+      ],
+    });
+    expect(changes).toEqual([]);
+  });
+
+  it("ignores failed code.edit steps", () => {
+    const changes = preciseComputeCurrentChanges({
+      iterations: [
+        {
+          iteration: 1,
+          planRevision: 1,
+          children: [
+            {
+              iteration: 1,
+              stepId: "s1",
+              stepKind: "code.edit",
+              childTaskId: "c1",
+              outcome: { status: "failed", error: "boom" },
+            },
+          ],
+          verifier: { status: "red", reason: "x" },
+        },
+      ],
+    });
+    expect(changes).toEqual([]);
+  });
+
+  it("makes the drift gate accept disjoint edits to the same file (regression: #939)", async () => {
+    // Two branches edit the same file but on disjoint hunks. The
+    // conservative default would report a hard overlap; the precise
+    // variant must NOT — letting the merge proceed without a re-plan.
+    const builderTaskId = "00000000-0000-0000-0000-000000000939";
+    const fake = makeFakeSb(builderTaskId, "00000000-0000-0000-0000-000000000bbb");
+    const fetchOthers = vi.fn(async (): Promise<BranchChanges[]> => [
+      // Other branch touches lines 50..55 of the same file.
+      { ref: "main@other", changes: [{ file: "src/foo.ts", startLine: 50, endLine: 55 }] },
+    ]);
+    const onBlocked = vi.fn();
+    const check = createMergeConflictPreMergeCheck({
+      sb: fake.sb,
+      builderTaskId,
+      currentBranch: "agent-task-939",
+      fetchOthers,
+      onBlocked,
+      computeCurrentChanges: preciseComputeCurrentChanges,
+    });
+    // Current branch modifies line 2 only — disjoint from [50,55].
+    const verdict = await check({
+      builderTaskId,
+      planId: "plan-1",
+      iteration: 1,
+      iterations: [
+        iter(1, 1, [{ path: "src/foo.ts", before: "a\nb\nc\nd", after: "a\nB\nc\nd" }]),
+      ],
+    });
+    expect(verdict).toEqual({ status: "ok" });
+    expect(onBlocked).not.toHaveBeenCalled();
+  });
+
+  it("still blocks when precise hunks DO intersect another branch's hunks", async () => {
+    const builderTaskId = "00000000-0000-0000-0000-000000000940";
+    const fake = makeFakeSb(builderTaskId, "00000000-0000-0000-0000-000000000bbb");
+    const fetchOthers = vi.fn(async (): Promise<BranchChanges[]> => [
+      { ref: "main@other", changes: [{ file: "src/foo.ts", startLine: 1, endLine: 3 }] },
+    ]);
+    const check = createMergeConflictPreMergeCheck({
+      sb: fake.sb,
+      builderTaskId,
+      currentBranch: "agent-task-940",
+      fetchOthers,
+      computeCurrentChanges: preciseComputeCurrentChanges,
+    });
+    const verdict = await check({
+      builderTaskId,
+      planId: "plan-1",
+      iteration: 1,
+      iterations: [
+        iter(1, 1, [{ path: "src/foo.ts", before: "a\nb\nc\nd", after: "a\nB\nc\nd" }]),
+      ],
+    });
+    expect(verdict.status).toBe("drift_conflict");
   });
 });
 

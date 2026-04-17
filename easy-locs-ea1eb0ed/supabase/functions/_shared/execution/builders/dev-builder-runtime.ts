@@ -70,9 +70,13 @@ export interface SupabaseLike {
 
 /** Result shape produced by the LC1 code.edit adapter (subset). The
  *  builder relies on `files[].path` + `files[].after` to build the
- *  GitHub commit. */
+ *  GitHub commit. The optional `files[].before` field is consumed by
+ *  `preciseComputeCurrentChanges` (#939) to derive per-hunk line
+ *  ranges for the merge-conflict pre-merge gate. When `before` is
+ *  absent the precise variant falls back to a whole-file range for
+ *  that file, matching the conservative default. */
 interface CodeEditAdapterResult {
-  files?: Array<{ path: string; after?: string | null }>;
+  files?: Array<{ path: string; before?: string | null; after?: string | null }>;
 }
 
 export interface RunDevBuilderForPlanOptions {

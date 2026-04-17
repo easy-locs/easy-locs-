@@ -294,6 +294,237 @@ export const defaultComputeCurrentChanges: ComputeCurrentChangesFn = (
   return out;
 };
 
+// ── Precise variant (#939) ───────────────────────────────────────────────
+//
+// `defaultComputeCurrentChanges` is fail-safe but coarse: any other open
+// PR or recent main commit that touches the same file is treated as a
+// hard overlap, even when the actual hunks do not intersect. That burns
+// an LC4 iteration on a needless rev-2 plan whenever two branches edit
+// disjoint regions of the same file.
+//
+// `preciseComputeCurrentChanges` derives per-hunk new-side line ranges
+// by diffing the first-seen `before` against the last-seen `after` for
+// every touched file (the LC1 `code.edit` adapter is asked by the
+// runtime to surface both fields on its result; see the runtime's
+// extended `CodeEditAdapterResult`). The matching precision lines up
+// with the GitHub-side comparison set produced by
+// `createGithubFetchOthers` (which already emits per-hunk ranges).
+//
+// Falls back to the full-file range only for files where the baseline
+// content is genuinely unavailable — preserving the safety property of
+// the conservative default for that one path.
+
+interface PreciseFileBuf {
+  /** First-iteration baseline. `null` ↔ file did not exist before. */
+  before?: string | null;
+  /** Last-iteration final content. `null` ↔ file is being deleted. */
+  after?: string | null;
+  /** Sticky: did any iteration explicitly set `after`? */
+  sawAfter: boolean;
+}
+
+/** Internal: tiny LCS diff. Emits the per-line operations between
+ *  `a` and `b` in input order (no compaction). */
+function lcsDiffLines(
+  a: readonly string[],
+  b: readonly string[],
+): Array<{ kind: " " | "-" | "+" }> {
+  const m = a.length;
+  const n = b.length;
+  const t: number[][] = Array.from(
+    { length: m + 1 },
+    () => new Array<number>(n + 1).fill(0),
+  );
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) t[i][j] = t[i - 1][j - 1] + 1;
+      else t[i][j] = Math.max(t[i - 1][j], t[i][j - 1]);
+    }
+  }
+  const rev: Array<{ kind: " " | "-" | "+" }> = [];
+  let i = m;
+  let j = n;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      rev.push({ kind: " " });
+      i--;
+      j--;
+    } else if (t[i - 1][j] >= t[i][j - 1]) {
+      rev.push({ kind: "-" });
+      i--;
+    } else {
+      rev.push({ kind: "+" });
+      j--;
+    }
+  }
+  while (i > 0) {
+    rev.push({ kind: "-" });
+    i--;
+  }
+  while (j > 0) {
+    rev.push({ kind: "+" });
+    j--;
+  }
+  return rev.reverse();
+}
+
+function splitLinesForDiff(text: string): string[] {
+  if (text === "") return [];
+  return text.split("\n");
+}
+
+/** Maximum LCS table cells we are willing to allocate. The DP is
+ *  `O(m·n)` in time AND memory; on a pathological pair (e.g. two
+ *  10k-line files) that is 100M cells. Cap at 4M cells (~ a 2k×2k
+ *  pair) and fall back to a single whole-file hunk above the cap.
+ *  The fallback preserves the conservative-default safety property
+ *  for that one file without the precise variant gobbling memory. */
+export const PRECISE_DIFF_MAX_CELLS = 4_000_000;
+
+/**
+ * Compute precise per-hunk new-side line ranges for a single file.
+ *
+ *   - Pure addition  → `[firstNewLine, lastNewLine]` of the added run.
+ *   - Pure deletion  → `[anchor, anchor]` where `anchor` is the new-side
+ *                       line position the deletion occurred at (clamped
+ *                       to ≥ 1 so the range is reportable).
+ *   - Modification   → range covers the new-side lines spanned by the
+ *                       contiguous +/- run.
+ *   - Multi-hunk     → separate `[start, end]` pairs per contiguous run.
+ *   - No-op edit     → empty array.
+ *   - Pathologically  → one `[1, max(1, newLineCount)]` whole-file hunk,
+ *      large pair        emitted when the DP would exceed
+ *                        `PRECISE_DIFF_MAX_CELLS`. The drift gate then
+ *                        reverts to fail-safe behaviour for this file.
+ *
+ * Returns ranges in input order (top of file first).
+ */
+export function computeFileHunkRanges(
+  before: string,
+  after: string,
+): Array<[number, number]> {
+  if (before === after) return [];
+  const a = splitLinesForDiff(before);
+  const b = splitLinesForDiff(after);
+  // Guardrail: the LCS DP is O(m·n) in time AND memory. Above the cap
+  // we conservatively emit one whole-file hunk so the gate still
+  // detects overlap (without burning memory on a pathological pair).
+  if (a.length * b.length > PRECISE_DIFF_MAX_CELLS) {
+    const span = Math.max(1, b.length);
+    return [[1, span]];
+  }
+  const ops = lcsDiffLines(a, b);
+  const hunks: Array<[number, number]> = [];
+  let newLine = 0;
+  let inHunk = false;
+  let hStart = 0;
+  let hEnd = 0;
+  for (const op of ops) {
+    if (op.kind === " ") {
+      newLine++;
+      if (inHunk) {
+        hunks.push([hStart, hEnd]);
+        inHunk = false;
+      }
+    } else if (op.kind === "+") {
+      newLine++;
+      if (!inHunk) {
+        hStart = newLine;
+        inHunk = true;
+      }
+      hEnd = newLine;
+    } else {
+      // "-": deletion at the gap after `newLine` in the new file.
+      const anchor = newLine === 0 ? 1 : newLine;
+      if (!inHunk) {
+        hStart = anchor;
+        hEnd = anchor;
+        inHunk = true;
+      } else if (anchor > hEnd) {
+        hEnd = anchor;
+      }
+    }
+  }
+  if (inHunk) hunks.push([hStart, hEnd]);
+  return hunks;
+}
+
+/**
+ * Precision-first `computeCurrentChanges` variant. Walks every
+ * succeeded `code.edit` step in iteration order and tracks, per file:
+ *
+ *   - the FIRST observed `before` (the original baseline),
+ *   - the LATEST observed `after` (the final on-branch content).
+ *
+ * Diffs the two with `computeFileHunkRanges` to derive precise hunks.
+ * When the adapter result did not surface a baseline (`before === undefined`)
+ * the file falls back to a whole-file range — preserving the
+ * fail-safe behaviour of `defaultComputeCurrentChanges` for that one
+ * file rather than for the entire change set.
+ *
+ * `before === null` and `after === null` are first-class values:
+ *   - `before === null` ↔ the file did not exist on the baseline
+ *     (full-file pure-addition diff).
+ *   - `after === null` ↔ the file is being deleted on the branch
+ *     (full-file pure-deletion diff).
+ */
+export const preciseComputeCurrentChanges: ComputeCurrentChangesFn = (
+  { iterations },
+) => {
+  const byFile = new Map<string, PreciseFileBuf>();
+  for (const it of iterations) {
+    for (const child of it.children) {
+      if (child.stepKind !== "code.edit") continue;
+      if (child.outcome.status !== "succeeded") continue;
+      const result = child.outcome.result as
+        | {
+          files?: Array<{
+            path?: string;
+            before?: string | null;
+            after?: string | null;
+          }>;
+        }
+        | undefined;
+      const files = result?.files;
+      if (!Array.isArray(files)) continue;
+      for (const f of files) {
+        if (typeof f?.path !== "string" || f.path.length === 0) continue;
+        const buf: PreciseFileBuf = byFile.get(f.path) ?? { sawAfter: false };
+        // First-iteration `before` wins (the true baseline). Treat the
+        // key being present as authoritative — `null` is a real value.
+        if (!("before" in buf) && "before" in f) {
+          buf.before = f.before ?? null;
+        }
+        // Latest-iteration `after` wins.
+        if ("after" in f) {
+          buf.after = f.after ?? null;
+          buf.sawAfter = true;
+        }
+        byFile.set(f.path, buf);
+      }
+    }
+  }
+  const out: FileChange[] = [];
+  for (const [file, buf] of byFile) {
+    if (!buf.sawAfter) continue; // listed but never edited — skip.
+    const before = buf.before;
+    const after = buf.after;
+    if (before === undefined) {
+      // No baseline available → fail safe to whole-file range.
+      out.push({ file, startLine: 1, endLine: 1_000_000 });
+      continue;
+    }
+    const beforeStr = before ?? "";
+    const afterStr = after ?? "";
+    const hunks = computeFileHunkRanges(beforeStr, afterStr);
+    if (hunks.length === 0) continue; // no-op edit (before === after).
+    for (const [s, e] of hunks) {
+      out.push({ file, startLine: s, endLine: e });
+    }
+  }
+  return out;
+};
+
 export interface CreatePreMergeCheckOptions {
   readonly sb: SupabaseLike;
   readonly builderTaskId: string;
