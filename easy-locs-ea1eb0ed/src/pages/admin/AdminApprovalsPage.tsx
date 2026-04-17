@@ -167,8 +167,7 @@ export default function AdminApprovalsPage() {
                   <TableCell>
                     <Badge
                       variant={
-                        row.risk_level === "critical" ||
-                        row.risk_level === "high"
+                        row.risk_level === "CRITICAL"
                           ? "destructive"
                           : "secondary"
                       }

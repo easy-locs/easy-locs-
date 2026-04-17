@@ -194,6 +194,35 @@ describe("<AdminApprovalsPage />", () => {
     });
   });
 
+  it("sources diff from previous_state ↔ intent_payload (text diff via intent_payload.diff_kind)", async () => {
+    fetchPendingApprovals.mockResolvedValue([sampleRow]);
+    // Build-agent-style task: previous_state is the baseline, payload
+    // wraps an `intent_payload` carrying a unified text diff.
+    fetchExecutionTaskById.mockResolvedValue({
+      ...sampleRow,
+      previous_state: { file: "src/x.ts", content: "old" },
+      payload: {
+        intent_payload: {
+          diff_kind: "text",
+          unified_diff:
+            "--- a/src/x.ts\n+++ b/src/x.ts\n@@\n-old\n+new\n",
+        },
+      },
+      result: null,
+      error: null,
+    });
+    fetchTaskApprovals.mockResolvedValue([]);
+    renderPage();
+    fireEvent.click(await screen.findByTestId(`approval-row-${sampleRow.id}`));
+    await screen.findByTestId("approval-decision-drawer");
+    // TextDiffView renders the unified diff verbatim — assert at least
+    // one removed-line marker is present.
+    await waitFor(() => {
+      expect(screen.getByText(/-old/)).toBeInTheDocument();
+      expect(screen.getByText(/\+new/)).toBeInTheDocument();
+    });
+  });
+
   it("returns decisions in chronological order from the repo (no client re-sort)", async () => {
     // Chronological order is enforced server-side by `ORDER BY decided_at ASC`
     // inside `system.list_task_approvals`. This test asserts the page-layer
