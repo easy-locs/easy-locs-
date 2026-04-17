@@ -1,0 +1,194 @@
+# All supabase.* callsites under src/ (file:line:match)
+src/components/admin/SearchSyncStatusWidget.tsx:118:      const { error: invokeErr } = await supabase.functions.invoke("sync-meilisearch-cron", {
+src/components/admin/agents/AgentTriggerDialog.tsx:64:      const { data: { user } } = await supabase.auth.getUser();
+src/components/auth/SocialLoginButtons.tsx:50:      const { data, error } = await supabase.auth.signInWithOAuth({
+src/contexts/AuthContext.tsx:139:    supabase.auth.getSession()
+src/contexts/AuthContext.tsx:549:    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+src/contexts/AuthContext.tsx:590:      supabase.auth.getSession();
+src/contexts/AuthContext.tsx:604:    await supabase.auth.signOut().catch((err) => {
+src/domains/wallet/adapters/supabase.adapter.ts:29:    const { data } = await supabase.rpc("ensure_wallet_account", {
+src/families/identity/index.ts:67:  const { data } = await supabase.auth.getUser();
+src/families/identity/index.ts:73:  const { data } = await supabase.auth.getUser();
+src/families/orbit-dispatch/orbit-dispatch.ts:82:  const { data, error } = await supabase.auth.getSession();
+src/families/orbit-dispatch/orbit-dispatch.ts:92:supabase.auth.onAuthStateChange(() => {
+src/hooks/call/useOutgoingCall.ts:52:      const { data: authData, error: authError } = await supabase.auth.getUser();
+src/hooks/useAppHealthCheck.ts:37:        const { data, error } = await supabase.auth.getSession();
+src/hooks/useServerEvents.ts:158:        supabase.removeChannel(eventsChannelRef.current);
+src/hooks/useServerEvents.ts:162:        supabase.removeChannel(decisionsChannelRef.current);
+src/hooks/useCacheMetrics.ts:63:        const { data: sessionData } = await supabase.auth.getSession();
+src/hooks/useMapErrorDashboard.ts:395:      supabase.removeChannel(channel);
+src/hooks/useMasterAppBootstrap.ts:145:          const { data: { session } } = await supabase.auth.getSession();
+src/hooks/useMasterAppBootstrap.ts:149:            supabase.functions.invoke("presence-heartbeat", {
+src/hooks/useMasterAppBootstrap.ts:158:          const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+src/hooks/useMasterAppBootstrap.ts:162:              supabase.functions.invoke("presence-heartbeat", {
+src/hooks/useMasterAppBootstrap.ts:277:          const { data: { session: s3 } } = await supabase.auth.getSession();
+src/hooks/useMasterAppBootstrap.ts:413:      const { data: { session: s4 } } = await supabase.auth.getSession().catch(err => {
+src/lib/ai/content-enrichment-client.ts:39:  const { data, error } = await supabase.functions.invoke<EnrichOneResult | { ok: false; error: string }>(
+src/lib/ai/content-enrichment-client.ts:51:  const { data, error } = await supabase.functions.invoke<EnrichBulkResult | { error: string }>(
+src/lib/ai/rag-client.ts:37:  const { data, error } = await supabase.functions.invoke<RagAskResult | RagAskError>(
+src/lib/ai/recommendations-client.ts:29:  const { data, error } = await supabase.functions.invoke<RecommendationResult | { error: string }>(
+src/lib/analytics/map-error-analytics.ts:216:    await supabase.from("map_error_analytics").insert(
+src/lib/analytics/map-error-alerting.ts:99:    await supabase.from("map_error_alert_log").insert({
+src/lib/api/deep-scrape.ts:26:  const { data, error } = await supabase.functions.invoke("deep-scrape-build", {
+src/lib/auth/provider-health.ts:5: * No direct supabase.auth writes — all checks are read-only probes.
+src/lib/call/ice-config.ts:20:    const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+src/lib/db/typed-queries.ts:54:  return (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
+src/lib/engines/backend-connectivity-engine.ts:59:      supabase.from("seed_merchants").select("id").limit(1),
+src/lib/engines/backend-connectivity-engine.ts:80:      supabase.auth.getSession(),
+src/lib/engines/backend-connectivity-engine.ts:101:      supabase.storage.listBuckets(),
+src/lib/engines/backend-connectivity-engine.ts:122:      supabase.functions.invoke("health-check", { method: "GET" }),
+src/lib/geo/spatial-service.ts:25:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/geo/spatial-service.ts:43:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/geo/spatial-service.ts:58:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/notifications/email-dispatcher.ts:18:    const { data, error } = await supabase.functions.invoke("send-email", {
+src/lib/observability/alert-dispatcher.ts:121:    await supabase.from("observability_alert_log").insert({
+src/lib/onboarding/pipeline/enrichment/enrichment.ai-description.generate.ts:103:    const { data, error } = await supabase.functions.invoke("storefront-description", {
+src/lib/onboarding/scraping/firecrawl-client.ts:17:  const { data, error } = await supabase.functions.invoke("scrape-proxy", {
+src/lib/payments/storefrontCheckoutService.ts:36:  const { data, error } = await supabase.functions.invoke("create-storefront-checkout", {
+src/lib/payments/paymentLiveConnector.ts:31:  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+src/lib/payments/paymentLiveConnector.ts:56:  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
+src/lib/payments/paymentLiveConnector.ts:89:  const { data, error } = await supabase.functions.invoke("process-refund", {
+src/lib/payments/paymentService.ts:27:  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+src/lib/payments/paymentService.ts:81:  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
+src/lib/payments/paymentService.ts:111:  const { data, error } = await supabase.functions.invoke("process-refund", {
+src/lib/push/registerPush.ts:268:  const { data: { user } } = await supabase.auth.getUser();
+src/lib/push/registerPush.ts:272:      await supabase.from("push_tokens").upsert(
+src/lib/push/registerPush.ts:292:  const { data: { user } } = await supabase.auth.getUser();
+src/lib/push/registerPush.ts:333:  const { error } = await supabase.functions.invoke("send-push-notification", {
+src/lib/real-estate/listingCheckout.ts:27:  const { data, error } = await supabase.functions.invoke("create-listing-checkout", {
+src/lib/real-estate/listingCheckout.ts:40:  const { data, error } = await supabase.functions.invoke("create-listing-checkout", {
+src/lib/runtime/execution-proof.ts:79:    detail: "Calls supabase.functions.invoke('wallet-transfer') with PIN, amount, wallets",
+src/repositories/security-pin.repository.ts" },
+src/lib/server-actions/adminPayouts.ts:6:  const { data, error } = await supabase.functions.invoke("admin-payout-approve", {
+src/lib/server-actions/adminPayouts.ts:17:  const { data, error } = await supabase.functions.invoke("admin-payout-reject", {
+src/lib/server-actions/payouts.ts:10:  const { data, error } = await supabase.functions.invoke("payout-request-create", {
+src/lib/server-actions/refunds.ts:7:  const { data, error } = await supabase.functions.invoke("refund-request-booking", {
+src/lib/server-actions/refunds.ts:17:  const { data, error } = await supabase.functions.invoke("refund-process-booking", {
+src/lib/server-actions/rent.ts:8:  const { data, error } = await supabase.functions.invoke("rent-payment", {
+src/lib/server-actions/bookings.ts:16:    const { data, error } = await supabase.functions.invoke("booking-create", {
+src/lib/server-actions/bookings.ts:29:  const { data, error } = await supabase.functions.invoke("booking-approve", {
+src/lib/server-actions/bookings.ts:37:  const { data, error } = await supabase.functions.invoke("booking-reject", {
+src/lib/server-actions/bookings.ts:45:  const { data, error } = await supabase.functions.invoke("booking-complete", {
+src/lib/shared/cross-app-reactions.ts:19:  const { data } = await supabase.auth.getUser();
+src/lib/shared/v4-delivery-bridge.ts:67:          const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/lib/source/ingestion-runtime.ts:44:  const { data, error } = await supabase.functions.invoke("run-ingestion-pipeline", {
+src/lib/storage/assets.ts:23:      const { data, error } = await supabase.functions.invoke("s3-upload-proxy", {
+src/lib/storage/assets.ts:100:  const { error: uploadError } = await supabase.storage
+src/lib/storage/assets.ts:106:  const { data: publicUrlData } = supabase.storage.from(params.bucket).getPublicUrl(params.path);
+src/lib/storage/uploadFile.ts:35:      const { data, error } = await supabase.functions.invoke("s3-upload-proxy", {
+src/lib/storage/uploadFile.ts:65:  const { data, error } = await supabase.storage
+src/lib/storage/uploadFile.ts:122:  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+src/lib/wallet/wallet-identity-binding.ts:76:  const { error: regError } = await supabase.from("wallet_device_bindings").upsert(
+src/lib/watchdog/browserRepairClient.ts:6:  const { data, error } = await supabase.functions.invoke(
+src/lib/webrtc/getIceServers.ts:25:    const { data, error } = await supabase.functions.invoke("get-turn-credentials", {
+src/lib/smart/smart-bridge.ts:277:        const { data: auth } = await supabase.auth.getUser();
+src/lib/canonical-identity.ts:53:    supabase.auth.getSession(),
+src/lib/infrastructure/cache-layer.ts:253:      const { data: cacheResult } = await supabase.functions.invoke("cache-manager", {
+src/lib/dlq/dlq-client.ts:11:    const { data: { session } } = await supabase.auth.getSession();
+src/lib/dlq/dlq-client.ts:19:    const { error: fnErr } = await supabase.functions.invoke("dlq-ingest", {
+src/lib/command-control/email-parser.ts:98:    const { data, error } = await supabase.functions.invoke("command-email-parse", {
+src/lib/app-security.ts:236:    await supabase.auth.signOut({ scope: "others" });
+src/lib/app-security.ts:245:    await supabase.auth.signOut({ scope: "global" });
+src/lib/redis/presence-service.ts:22:    const { error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:35:    await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:47:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:61:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:75:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:91:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:105:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:156:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/presence-service.ts:177:    await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:21:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:39:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:52:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:66:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:83:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/kyc/kyc-gate-service.ts:28:  const { data: session } = await supabase.auth.getSession();
+src/lib/realtime.ts:28:const ownedChannels = new Map<string, ReturnType<typeof supabase.channel>>();
+src/lib/realtime.ts:31:  setupFn?: (channel: ReturnType<typeof supabase.channel>) => ReturnType<typeof supabase.channel>;
+src/lib/realtime.ts:40:  let channel = supabase.channel(channelName, pending.opts);
+src/lib/realtime.ts:77:          supabase.removeChannel(existing);
+src/lib/realtime.ts:149:  setupFn: (channel: ReturnType<typeof supabase.channel>) => ReturnType<typeof supabase.channel>,
+src/lib/realtime.ts:160:      supabase.removeChannel(existing);
+src/lib/api-gateway/connectors/careem-connector.ts:35:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/careem-connector.ts:68:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/deliveroo-connector.ts:36:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/deliveroo-connector.ts:65:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/talabat-connector.ts:35:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/talabat-connector.ts:68:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/orchestration-engine.ts:70:      const { data, error } = await supabase.functions.invoke("gateway-cron-sync", {
+src/lib/api-gateway/orchestration-engine.ts:216:      const { data: { user } } = await supabase.auth.getUser();
+src/lib/auth-redirect.ts:12:    const { data, error } = await supabase.rpc("has_role", {
+src/lib/auth-redirect.ts:31:      } = await supabase.auth.getUser();
+src/pages/admin/control/sections/ApprovalsSection.tsx:154:    const channel = supabase.channel("admin-control:approvals", {
+src/pages/admin/control/sections/ApprovalsSection.tsx:183:      void supabase.removeChannel(channel);
+src/pages/admin/AdminDldBackfillPage.tsx:56:  const { data, error } = await supabase.functions.invoke("dld-analytics", {
+src/pages/admin/AdminDldBackfillPage.tsx:65:  const { data, error } = await supabase.functions.invoke("dld-analytics", {
+src/pages/AuthCallbackPage.tsx:161:            // Wait for supabase.auth to fully persist the session before
+src/pages/CommandCenter.tsx:117:  const { data: { session } } = await supabase.auth.getSession();
+src/pages/DashboardCommandCenter.tsx:322:    return () => { supabase.removeChannel(channel); };
+src/repositories/ai.repository.ts:7:  const { data, error } = await supabase.functions.invoke("ai-assistant", { body });
+src/repositories/ai.repository.ts:13:  const { data, error } = await supabase.functions.invoke("run-scheduled-audit", { body: {} });
+src/repositories/ai.repository.ts:19:  const { data, error } = await supabase.functions.invoke("generate-cv", { body });
+src/repositories/ai.repository.ts:25:  const { data, error } = await supabase.functions.invoke("translate-message", { body });
+src/repositories/ai.repository.ts:31:  const { error } = await supabase.functions.invoke("send-email", { body });
+src/repositories/ai.repository.ts:36:  const { data, error } = await supabase.functions.invoke("lease-workflow", { body });
+src/repositories/ai.repository.ts:43:    const { data, error } = await supabase.functions.invoke("check-subscription");
+src/repositories/ai.repository.ts:52:  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+src/repositories/ai.repository.ts:58:  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+src/repositories/billing.repository.ts:7:  const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
+src/repositories/billing.repository.ts:13:  const { data, error } = await supabase.functions.invoke("customer-portal");
+src/repositories/billing.repository.ts:19:  await supabase.auth.signOut();
+src/repositories/escrow.repository.ts:7:  const { data } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:14:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:30:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:38:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/mfa.repository.ts:2: * mfa.repository — MFA operations via supabase.auth.mfa
+src/repositories/mfa.repository.ts:7:  const { data } = await supabase.auth.mfa.listFactors();
+src/repositories/mfa.repository.ts:12:  return supabase.auth.mfa.enroll({ factorType: "totp", friendlyName });
+src/repositories/mfa.repository.ts:16:  return supabase.auth.mfa.challenge({ factorId });
+src/repositories/mfa.repository.ts:20:  return supabase.auth.mfa.verify({ factorId, challengeId, code });
+src/repositories/mfa.repository.ts:24:  return supabase.auth.mfa.unenroll({ factorId });
+src/repositories/subscription.repository.ts:7:  const { data, error } = await supabase.functions.invoke("check-subscription");
+src/repositories/security-pin.repository.ts:61:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
+src/repositories/security-pin.repository.ts:100:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
+src/stores/auth.store.ts:5: *   - signUp/signIn/signOut: direct supabase.auth calls (used by non-React code)
+src/stores/auth.store.ts:62:    const { error } = await supabase.auth.signUp({
+src/stores/auth.store.ts:73:    const { error } = await supabase.auth.signInWithPassword({
+src/stores/auth.store.ts:81:    await supabase.auth.signOut();
+src/test/cross-domain.test.ts:128:    expect(content).not.toContain("supabase.from");
+src/test/e2e-flows.test.ts:122:    const query = supabase.from("properties").select("id, title").limit(1);
+src/test/smoke.test.ts:79:    expect(typeof mod.supabase.from).toBe("function");
+src/test/smoke.test.ts:80:    expect(typeof mod.supabase.auth).toBe("object");
+src/test/architecture-enforcement.test.ts:164:      expect(content).not.toContain("supabase.from");
+src/engines/self-healing/auto-fix-engine.ts:155:                supabase.removeChannel(ch);
+src/engines/consolidated/repair-engine.ts:135:              try { supabase.removeChannel(ch); } catch (err) { if (import.meta.env.DEV) console.warn('[repair] sub-module error', err instanceof Error ? err.message : err); }
+src/services/command-center-client.ts:10:  const { data: { session } } = await supabase.auth.getSession();
+src/services/db.ts:106:  (table: string): ReturnType<typeof supabase.from>;
+src/services/db.ts:107:  from: (table: string) => ReturnType<typeof supabase.from>;
+src/services/db.ts:108:  rpc: typeof supabase.rpc;
+src/services/db.ts:109:  storage: typeof supabase.storage;
+src/services/db.ts:110:  functions: typeof supabase.functions;
+src/services/db.ts:111:  auth: typeof supabase.auth;
+src/services/db.ts:112:  channel: typeof supabase.channel;
+src/services/db.ts:113:  removeChannel: typeof supabase.removeChannel;
+src/services/db.ts:119:  (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
+src/services/db.ts:123:  rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
+src/services/db.ts:124:  storage: supabase.storage,
+src/services/db.ts:125:  functions: supabase.functions,
+src/services/db.ts:126:  auth: supabase.auth,
+src/services/db.ts:127:  channel: supabase.channel.bind(supabase),
+src/services/db.ts:128:  removeChannel: supabase.removeChannel.bind(supabase),
+src/services/db.ts:135:export function v2db(table: string): ReturnType<typeof supabase.from> {
+src/services/db.ts:160:  from(table: string): ReturnType<typeof supabase.from>;
+src/services/db.ts:164:  return (supabase.schema(schema) as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
+src/services/micro-insurance.service.ts:79:  const { data } = await supabase.auth.getSession();
+src/services/virtual-cards.service.ts:44:  const { data } = await supabase.auth.getSession();
+src/services/bnpl.service.ts:42:  const { data } = await supabase.auth.getSession();
+src/services/e-signature.service.ts:64:  const { data } = await supabase.auth.getSession();
+src/services/plaid.service.ts:43:  const { data } = await supabase.auth.getSession();
+src/services/social-graph.service.ts:49:  const { data } = await supabase.auth.getSession();
+src/__tests__/eslint-plugin-easylocs.test.ts:38:            code: `supabase.from('orders').select('*');`,
+src/__tests__/eslint-plugin-easylocs.test.ts:64:            code: `supabase.from('orders').insert([{ id: 1 }]);`,
+src/__tests__/eslint-plugin-easylocs.test.ts:141:            code: `supabase.rpc('do_thing', {});`,
+src/__tests__/lc6-bootstrap-wiring.integration.test.ts:96:        from() { throw new Error("supabase.from() unexpected in LC6 wiring test"); },
