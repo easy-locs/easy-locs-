@@ -1,0 +1,55 @@
+# Frontend mutations under src/
+src/components/orbit/E2EERecoveryBanner.tsx:60:      await db.from("orbit_e2ee_sessions").upsert({
+src/components/storefront/VariantEditor.tsx:149:      await db.from("catalog_variants").delete().eq("item_id", itemId);
+src/components/storefront/VariantEditor.tsx:161:      const { error } = await db.from("catalog_variants").insert(rows);
+src/domains/ride/adapters/supabase.adapter.ts:221:      await db.from("client_ratings").insert({
+src/domains/services/service.ts:27:  await db.from("service_bookings_v2").update({
+src/domains/services/service.ts:36:    const { data, error } = await db.from("service_catalog").insert({
+src/domains/services/service.ts:69:    await db.from("service_catalog").update(payload).eq("id", serviceId);
+src/domains/services/service.ts:73:    await db.from("service_catalog").update({ is_active: false }).eq("id", serviceId);
+src/domains/services/service.ts:77:    await db.from("service_availability").delete().eq("provider_id", providerId);
+src/domains/services/service.ts:86:    await db.from("service_availability").insert(rows);
+src/domains/services/service.ts:136:    const { data, error } = await db.from("service_bookings_v2").insert({
+src/lib/analytics/map-error-analytics.ts:216:    await supabase.from("map_error_analytics").insert(
+src/lib/analytics/map-error-alerting.ts:99:    await supabase.from("map_error_alert_log").insert({
+src/lib/auth/identity-activation-pipeline.ts:248:    await db.from("identity_activations").insert({
+src/lib/mobility/smart-dispatch-controller.ts:190:  await db.from("mobility_pricing_snapshots").insert({
+src/lib/mobility/smart-dispatch-controller.ts:364:  await db.from("mobility_job_offers").insert(
+src/lib/observability/alert-dispatcher.ts:121:    await supabase.from("observability_alert_log").insert({
+src/lib/orders/booking-payment-saga.ts:18:  await db.from("saga_events").insert({
+src/lib/push/registerPush.ts:272:      await supabase.from("push_tokens").upsert(
+src/lib/wallet/wallet-identity-binding.ts:76:  const { error: regError } = await supabase.from("wallet_device_bindings").upsert(
+src/lib/c2c/c2c-moderation.ts:137:  await db.from("c2c_moderation_queue").insert({
+src/lib/c2c/c2c-moderation.ts:171:    await db.from("marketplace_services").update({ active: false, status: "rejected" }).eq("id", listingId);
+src/pages/merchant/MerchantMenuItemEditorPage.tsx:382:          await db.from("menu_modifier_groups").delete().eq("id", group.id);
+src/pages/merchant/MerchantMenuItemEditorPage.tsx:416:            await db.from("menu_modifier_options").delete().eq("id", opt.id);
+src/pages/merchant/MerchantReturnsPage.tsx:67:      await db.from("product_returns").update(updates).eq("id", returnId);
+src/pages/travel/HotelCheckout.tsx:212:        await db.from("hotel_bookings").update({
+src/repositories/domain/marketplace.repo.ts:189:    await db.from("saved_searches").insert({
+src/repositories/domain/c2c.repo.ts:328:    const { error } = await db.from("c2c_reports").insert(report);
+src/repositories/domain/c2c.repo.ts:340:    const { error } = await db.from("c2c_reviews").insert(review);
+src/repositories/domain/c2c.repo.ts:374:    await db.from("marketplace_services").update({ view_count: current + 1 }).eq("id", id);
+src/repositories/marketplace.repository.ts:74:  const { data, error } = await domainDb.marketplace.from("listings").insert(record as any).select("id, lat, lng").single();
+src/repositories/marketplace.repository.ts:80:  const { error } = await domainDb.marketplace.from("listings").update(record as any).eq("id", id);
+src/repositories/marketplace.repository.ts:85:  const { error } = await domainDb.marketplace.from("listings").delete().eq("id", id);
+src/repositories/marketplace.repository.ts:107:  const { data, error } = await domainDb.commerce.from("bookings").insert({ ...record, booking_type: "marketplace" }).select().single();
+src/repositories/concierge.repository.ts:44:  const { error } = await domainDb.commerce.from("transactions").update(updates).eq("id", orderId);
+src/repositories/concierge.repository.ts:49:  const { error } = await domainDb.commerce.from("transactions").update({ payment_status: "paid" } as any).eq("id", orderId);
+src/repositories/concierge.repository.ts:54:  const { error } = await domainDb.commerce.from("transactions").update(fields as any).eq("id", orderId);
+src/repositories/seasonal.repository.ts:50:  await domainDb.commerce.from("bookings").update({ status } as any).eq("id", id).eq("booking_type", "request");
+src/repositories/seasonal.repository.ts:54:  await domainDb.commerce.from("bookings").delete().eq("id", id).eq("booking_type", "request");
+src/repositories/seasonal.repository.ts:63:  const { error } = await domainDb.commerce.from("bookings").update({ check_in: checkIn, check_out: checkOut } as any).eq("id", id).eq("booking_type", "request");
+src/test/onboarding-providers.test.ts:217:  it("calls db.from('providers').upsert with onConflict user_id", async () => {
+src/services/domain/kyc.service.ts:219:  await db.from("kyc_documents").insert({
+src/__tests__/eslint-plugin-easylocs.test.ts:48:            code: `db.from('listings').insert({ id: 1 });`,
+src/__tests__/eslint-plugin-easylocs.test.ts:52:            code: `db.from('agents').upsert({});`,
+src/__tests__/eslint-plugin-easylocs.test.ts:59:            code: `db.from('users').update({ name: 'x' });`,
+src/__tests__/eslint-plugin-easylocs.test.ts:64:            code: `supabase.from('orders').insert([{ id: 1 }]);`,
+src/__tests__/eslint-plugin-easylocs.test.ts:69:            code: `getClient().from('x').delete().eq('id', 1);`,
+src/__tests__/eslint-plugin-easylocs.test.ts:74:            code: `sb.schema('public').from('agents').upsert({});`,
+src/__tests__/eslint-plugin-easylocs.test.ts:80:            code: `if (cond) { db.from('y').delete(); }`,
+src/__tests__/eslint-plugin-easylocs.test.ts:178:            code: `db.from('x').update({ a: 1 });`,
+src/__tests__/eslint-plugin-easylocs.test.ts:186:            code: `db.from('x').update({ a: 1 });`,
+src/__tests__/lb-closeout-853-hardening.test.ts:134://   createSupabaseInteractionSink → mock `.from("ai_interactions").insert(...)`
+src/__tests__/lc7-drift-detector.integration.test.ts:25://   sb.schema("system").from("execution_tasks").update(patch).eq("id", id)
+src/__tests__/lc4-merge-conflict-recovery.test.ts:144: *    - `.schema("system").from("execution_tasks").update({...}).eq("id", id)`
