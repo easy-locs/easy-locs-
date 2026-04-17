@@ -1,0 +1,5925 @@
+{
+  "entries": [
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/adminPayouts.ts",
+          "fn": "admin-payout-approve",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 6,
+          "method": "POST",
+          "snippet": "functions.invoke(\"admin-payout-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRe"
+        }
+      ],
+      "exists": true,
+      "fn": "admin-payout-approve",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "admin-payout-approve",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/adminPayouts.ts",
+          "fn": "admin-payout-reject",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 17,
+          "method": "POST",
+          "snippet": "functions.invoke(\"admin-payout-reject\", { body: input, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "admin-payout-reject",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "admin-payout-reject",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "target",
+            "payload"
+          ],
+          "column": 14,
+          "file": "src/repositories/domain/dashboard.repo.ts",
+          "fn": "admin-trigger",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 69,
+          "method": "POST",
+          "snippet": "functions.invoke(\"admin-trigger\", { body: { target, payload }, }); }, /** * Autonomous Execution Layer (task #710) — admin"
+        }
+      ],
+      "exists": true,
+      "fn": "admin-trigger",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "admin-trigger",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 25,
+          "file": "src/core/omega/omega-streaming.ts",
+          "fn": "ai-assistant",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 22,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/ai-assistant`, token, }; } export async function streamOmegaResponse(options: OmegaStreamOptions): Promise<string> {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 55,
+          "file": "src/pages/AIAssistant.tsx",
+          "fn": "ai-assistant",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 20,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/ai-assistant`; // ─── Property Health Score Calculator ─── interface PropertyHealth { id: string; label: string; countr"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "ai-assistant",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 7,
+          "method": "POST",
+          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function invokeRunScheduledAudit() {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/storefront.repository.ts",
+          "fn": "ai-assistant",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 157,
+          "method": "POST",
+          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function insertCategorySuggestion(recor"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 36,
+          "file": "src/repositories/storefront.repository.ts",
+          "fn": "ai-assistant",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 203,
+          "method": "POST",
+          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"proxy\" } }); if (error) throw error; return data; } // ── AI category sugges"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 36,
+          "file": "src/repositories/storefront.repository.ts",
+          "fn": "ai-assistant",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 210,
+          "method": "POST",
+          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"category_suggest\" } }); if (error) throw error; return data; } // ── AI shop"
+        }
+      ],
+      "contractFields": [
+        "messages"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "ai-assistant",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "ai-assistant",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/storefront.repository.ts",
+          "fn": "ai-shopping-chat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 217,
+          "method": "POST",
+          "snippet": "functions.invoke(\"ai-shopping-chat\", { body }); if (error) throw error; return data; } // ── Dispatch ride (storefront delivery) ── exp"
+        }
+      ],
+      "exists": true,
+      "fn": "ai-shopping-chat",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "ai-shopping-chat",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 61,
+          "file": "src/pages/AISearch.tsx",
+          "fn": "ai-web-search",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 19,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/ai-web-search`; const SUGGESTED_QUERIES = [ \"Quelles sont les obligations légales d'un propriétaire bailleur en France ?\","
+        }
+      ],
+      "exists": true,
+      "fn": "ai-web-search",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "ai-web-search",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 37,
+          "file": "src/pages/settings/SettingsPrivacy.tsx",
+          "fn": "audit-export",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 315,
+          "method": "GET",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=csv`, { headers: { Authorization: `Bearer ${session.access_token}"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 37,
+          "file": "src/pages/settings/SettingsPrivacy.tsx",
+          "fn": "audit-export",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 342,
+          "method": "GET",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=pdf`, { headers: { Authorization: `Bearer ${session.access_token}"
+        }
+      ],
+      "contractMethods": [
+        "GET"
+      ],
+      "exists": true,
+      "fn": "audit-export",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "audit-export",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 38,
+          "file": "src/lib/aws/aws-client.ts",
+          "fn": "aws-health-check",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 27,
+          "method": "POST",
+          "snippet": "functions.invoke(\"aws-health-check\", { body: {}, }); if (error || !data) { return { overall: \"unhealthy\","
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 38,
+          "file": "src/lib/aws/aws-health.ts",
+          "fn": "aws-health-check",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 12,
+          "method": "POST",
+          "snippet": "functions.invoke(\"aws-health-check\", {}); if (error) { return { timestamp: new Date().toISOString(), region: \"unk"
+        }
+      ],
+      "exists": true,
+      "fn": "aws-health-check",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "aws-health-check",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/bookings.ts",
+          "fn": "booking-approve",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 29,
+          "method": "POST",
+          "snippet": "functions.invoke(\"booking-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRejectB"
+        }
+      ],
+      "exists": true,
+      "fn": "booking-approve",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "booking-approve",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/bookings.ts",
+          "fn": "booking-complete",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 45,
+          "method": "POST",
+          "snippet": "functions.invoke(\"booking-complete\", { body: input, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "booking-complete",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "booking-complete",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 44,
+          "file": "src/lib/server-actions/bookings.ts",
+          "fn": "booking-create",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 16,
+          "method": "POST",
+          "snippet": "functions.invoke(\"booking-create\", { body: input, }); if (error) throw error; return data; }); if (!result.ok) { t"
+        }
+      ],
+      "contractFields": [
+        "listing_id",
+        "check_in",
+        "check_out"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "booking-create",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "booking-create",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/bookings.ts",
+          "fn": "booking-reject",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 37,
+          "method": "POST",
+          "snippet": "functions.invoke(\"booking-reject\", { body: input, }); if (error) throw error; return data; } export async function serverComplete"
+        }
+      ],
+      "exists": true,
+      "fn": "booking-reject",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "booking-reject",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "scope",
+            "dryRun"
+          ],
+          "column": 42,
+          "file": "src/lib/watchdog/browserRepairClient.ts",
+          "fn": "browser-user-repair-engine",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 6,
+          "method": "POST",
+          "snippet": "functions.invoke( \"browser-user-repair-engine\", { body: { scope, dryRun: false, }, } ); if (err"
+        }
+      ],
+      "exists": true,
+      "fn": "browser-user-repair-engine",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "browser-user-repair-engine",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key"
+          ],
+          "column": 52,
+          "file": "src/lib/infrastructure/cache-layer.ts",
+          "fn": "cache-manager",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 253,
+          "method": "POST",
+          "snippet": "functions.invoke(\"cache-manager\", { body: { action: \"get\", key: `l2:${domain}:${key}` }, }); if (cacheResult?.hit && cac"
+        }
+      ],
+      "exists": true,
+      "fn": "cache-manager",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "cache-manager",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "orderId",
+            "paymentIntentId"
+          ],
+          "column": 42,
+          "file": "src/lib/payments/paymentLiveConnector.ts",
+          "fn": "capture-payment-intent",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 56,
+          "method": "POST",
+          "snippet": "functions.invoke(\"capture-payment-intent\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId, }"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/payments/paymentService.ts",
+          "fn": "capture-payment-intent",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 81,
+          "method": "POST",
+          "snippet": "functions.invoke(\"capture-payment-intent\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId"
+        }
+      ],
+      "exists": true,
+      "fn": "capture-payment-intent",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "capture-payment-intent",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/finances.repository.ts",
+          "fn": "check-connect-status",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 4,
+          "method": "POST",
+          "snippet": "functions.invoke(\"check-connect-status\"); if (error) throw error; return data as { connected: boolean; onboarding_complete: boolean; cha"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 29,
+          "file": "src/repositories/payment-providers.repository.ts",
+          "fn": "check-connect-status",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 16,
+          "method": "POST",
+          "snippet": "functions.invoke(\"check-connect-status\"); return data; } export async function createConnectAccount() { const { data, error } = await d"
+        }
+      ],
+      "exists": true,
+      "fn": "check-connect-status",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "check-connect-status",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 34,
+          "file": "src/lib/monitoring.ts",
+          "fn": "check-subscription",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 366,
+          "method": "POST",
+          "snippet": "functions.invoke(\"check-subscription\", { body: {} }); return { name: \"Edge Functions\", status: error ? \"warning\" as const : \"ok\" as co"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 44,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "check-subscription",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 43,
+          "method": "POST",
+          "snippet": "functions.invoke(\"check-subscription\"); if (error) return null; return data; } catch { return null; } } export async functi"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/subscription.repository.ts",
+          "fn": "check-subscription",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 7,
+          "method": "POST",
+          "snippet": "functions.invoke(\"check-subscription\"); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "check-subscription",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "check-subscription",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "command",
+            "conversationHistory",
+            "actionType",
+            "actionPayload"
+          ],
+          "column": 25,
+          "file": "src/pages/admin/CommandCenterPage.tsx",
+          "fn": "chief-agent",
+          "hasBody": true,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 401,
+          "method": "POST",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/chief-agent`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+        }
+      ],
+      "exists": true,
+      "fn": "chief-agent",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "chief-agent",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 38,
+          "file": "src/lib/taxonomy/classification-engine.ts",
+          "fn": "classify-business",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 484,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/classify-business`; // Service role key only — the anon key is intentionally excluded because // the edge function rej"
+        }
+      ],
+      "exists": true,
+      "fn": "classify-business",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "classify-business",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 33,
+          "file": "src/lib/command-control/email-deliverability.ts",
+          "fn": "command-email-intake",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 47,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/command-email-intake\", authentication: \"x-webhook-secret header with COMMAND_EMAIL_SECRET\", }, verification_steps: ["
+        }
+      ],
+      "exists": true,
+      "fn": "command-email-intake",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "manifestAuth": "signature",
+        "manifestRateLimit": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "command-email-intake",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "subject",
+            "body"
+          ],
+          "column": 44,
+          "file": "src/lib/command-control/email-parser.ts",
+          "fn": "command-email-parse",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 98,
+          "method": "POST",
+          "snippet": "functions.invoke(\"command-email-parse\", { body: { subject, body }, }); if (error || !data) return localParsed; const par"
+        }
+      ],
+      "exists": true,
+      "fn": "command-email-parse",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "command-email-parse",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "payment_intent_id",
+            "total_amount",
+            "currency",
+            "merchant_id",
+            "driver_id",
+            "order_id",
+            "platform_rate",
+            "merchant_rate",
+            "driver_rate"
+          ],
+          "column": 14,
+          "file": "src/lib/merchant-qr/merchant-payment-executor.ts",
+          "fn": "commission-split",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 249,
+          "method": "POST",
+          "snippet": "functions.invoke(\"commission-split\", { body: { payment_intent_id: params.paymentIntentId, total_amount: params.totalAm"
+        }
+      ],
+      "exists": true,
+      "fn": "commission-split",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "commission-split",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "create-booking-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 58,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; }"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-booking-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 125,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Mobile Money ── export async functio"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "create-booking-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 576,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Accounting entries properties ── exp"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/seasonal.repository.ts",
+          "fn": "create-booking-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 124,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; if (data?.error) throw new Error(data.error); return dat"
+        }
+      ],
+      "contractFields": [
+        "listing_id",
+        "guest_email",
+        "amount",
+        "nights"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "create-booking-payment",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-booking-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "priceId"
+          ],
+          "column": 42,
+          "file": "src/repositories/billing.repository.ts",
+          "fn": "create-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 7,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-checkout\", { body: { priceId } }); if (error) throw error; return data?.url; } export async function openCusto"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 22,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-checkout\", { body }); if (error) throw error; return data; } // ── Guest payment ── export async function veri"
+        }
+      ],
+      "exists": true,
+      "fn": "create-checkout",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-checkout",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "orderId",
+            "amount",
+            "currency"
+          ],
+          "column": 42,
+          "file": "src/lib/payments/paymentLiveConnector.ts",
+          "fn": "create-checkout-session",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 31,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-checkout-session\", { body: { orderId: params.orderId, amount: params.amount, currency, },"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/payments/paymentService.ts",
+          "fn": "create-checkout-session",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 27,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-checkout-session\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderI"
+        }
+      ],
+      "exists": true,
+      "fn": "create-checkout-session",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-checkout-session",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "create-concierge-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 52,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } export async function invokeCreateBookin"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "order_id",
+            "service_id",
+            "amount",
+            "currency",
+            "guest_email",
+            "guest_name",
+            "service_title",
+            "origin",
+            "booking_slug"
+          ],
+          "column": 36,
+          "file": "src/repositories/booking.repository.ts",
+          "fn": "create-concierge-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 126,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body: { order_id: params.orderId, service_id: params.serviceId, amount:"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/communication.repository.ts",
+          "fn": "create-concierge-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 856,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ═══ BYPASS REMOVAL — NEW CANONICAL ME"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-concierge-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 118,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ── Booking payment ── export async fu"
+        }
+      ],
+      "contractFields": [
+        "order_id",
+        "service_id",
+        "amount",
+        "currency",
+        "guest_email"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "create-concierge-payment",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-concierge-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/finances.repository.ts",
+          "fn": "create-connect-account",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 10,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data as { url?: string }; } export async function disconnect"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payment-providers.repository.ts",
+          "fn": "create-connect-account",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 21,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data; } export async function disconnectStripe() { const {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "org_id"
+          ],
+          "column": 36,
+          "file": "src/repositories/settings.repository.ts",
+          "fn": "create-connect-account",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 97,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-connect-account\", { body: { org_id: orgId } }); if (error) throw error; return data; } export async function f"
+        }
+      ],
+      "exists": true,
+      "fn": "create-connect-account",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-connect-account",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-guest-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-guest-checkout\", { body }); if (error) throw error; return data; } // ── Wallet ── export async function creat"
+        }
+      ],
+      "exists": true,
+      "fn": "create-guest-checkout",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-guest-checkout",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "jalName"
+          ],
+          "column": 36,
+          "file": "src/repositories/company.repository.ts",
+          "fn": "create-legal-notice-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 14,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-legal-notice-payment\", { body: { jalName }, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "create-legal-notice-payment",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-legal-notice-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "listingId",
+            "paymentType"
+          ],
+          "column": 42,
+          "file": "src/lib/real-estate/listingCheckout.ts",
+          "fn": "create-listing-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 27,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_renewal\" }, }); if (error) return { success:"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "listingId",
+            "paymentType",
+            "boostTier"
+          ],
+          "column": 42,
+          "file": "src/lib/real-estate/listingCheckout.ts",
+          "fn": "create-listing-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 40,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_boost\", boostTier: tier }, }); if (error) ret"
+        }
+      ],
+      "exists": true,
+      "fn": "create-listing-checkout",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-listing-checkout",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/payments/storefrontCheckoutService.ts",
+          "fn": "create-storefront-checkout",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 36,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-storefront-checkout\", { body: input, }); if (error) throw new Error(error.message || \"Checkout failed\");"
+        }
+      ],
+      "exists": true,
+      "fn": "create-storefront-checkout",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-storefront-checkout",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-stripe-intent",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 8,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-stripe-intent\", { body }); if (error) throw error; return data; } // ── Rent payment ── export async function"
+        }
+      ],
+      "contractFields": [
+        "amount",
+        "currency"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "create-stripe-intent",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-stripe-intent",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-subscription",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 162,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-subscription\", { body }); if (error) throw error; return data; } export async function manageSubscription(body"
+        }
+      ],
+      "exists": true,
+      "fn": "create-subscription",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-subscription",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "wallet_id",
+            "amount",
+            "currency",
+            "payment_method"
+          ],
+          "column": 38,
+          "file": "src/lib/wallet/wallet-topup.ts",
+          "fn": "create-wallet-topup",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 34,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-wallet-topup\", { body: { wallet_id: input.walletId, amount: input.amount, currency: i"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "create-wallet-topup",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 42,
+          "method": "POST",
+          "snippet": "functions.invoke(\"create-wallet-topup\", { body }); if (error) throw error; return data; } export async function invokeWalletPin(body: R"
+        }
+      ],
+      "exists": true,
+      "fn": "create-wallet-topup",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "create-wallet-topup",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "crypto-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 147,
+          "method": "POST",
+          "snippet": "functions.invoke(\"crypto-payment\", { body }); if (error) throw error; return data; } export async function checkCryptoChargeStatus(char"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "charge_id"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "crypto-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 153,
+          "method": "POST",
+          "snippet": "functions.invoke(\"crypto-payment\", { body: { action: \"status\", charge_id: chargeId }, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "crypto-payment",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "crypto-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/billing.repository.ts",
+          "fn": "customer-portal",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 13,
+          "method": "POST",
+          "snippet": "functions.invoke(\"customer-portal\"); if (error) throw error; return data?.url; } export async function signOut() { await supabase.aut"
+        }
+      ],
+      "exists": true,
+      "fn": "customer-portal",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "customer-portal",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "urls",
+            "city",
+            "country"
+          ],
+          "column": 42,
+          "file": "src/lib/api/deep-scrape.ts",
+          "fn": "deep-scrape-build",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 26,
+          "method": "POST",
+          "snippet": "functions.invoke(\"deep-scrape-build\", { body: { urls, city, country }, }); if (error) throw new Error(error.message); return data"
+        }
+      ],
+      "exists": true,
+      "fn": "deep-scrape-build",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "deep-scrape-build",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/finances.repository.ts",
+          "fn": "disconnect-stripe",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 16,
+          "method": "POST",
+          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function fetchFinancialData(orgId: string, c"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payment-providers.repository.ts",
+          "fn": "disconnect-stripe",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 27,
+          "method": "POST",
+          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function savePaymentSettings(orgId: string,"
+        }
+      ],
+      "exists": true,
+      "fn": "disconnect-stripe",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "disconnect-stripe",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "order_id",
+            "job_type",
+            "pickup_lat",
+            "pickup_lng",
+            "pickup_address",
+            "dropoff_lat",
+            "dropoff_lng",
+            "dropoff_address",
+            "delivery_fee",
+            "currency",
+            "package_description",
+            "priority",
+            "booking_mode"
+          ],
+          "column": 65,
+          "file": "src/domains/restaurant/service.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 276,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", order_"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "org_id",
+            "order_id",
+            "pickup_address",
+            "dropoff_address",
+            "package_description",
+            "weight_kg",
+            "priority",
+            "delivery_fee",
+            "currency"
+          ],
+          "column": 50,
+          "file": "src/lib/shared/v4-delivery-bridge.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 67,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", org_id: event.orgId,"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/delivery.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 29,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Ratings ── export async function insertDe"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "job_id"
+          ],
+          "column": 29,
+          "file": "src/repositories/delivery.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 59,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } // ── Offers ── export"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/delivery.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 97,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Live Tracking ── export async function in"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "job_id"
+          ],
+          "column": 35,
+          "file": "src/repositories/escrow.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 7,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } export async function"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "job_id",
+            "confirmation_code",
+            "gps_lat",
+            "gps_lng",
+            "gps_accuracy"
+          ],
+          "column": 42,
+          "file": "src/repositories/escrow.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 14,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"confirm_delivery\", job_id: jobId, confirmation_code: confirma"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "job_id",
+            "reason"
+          ],
+          "column": 42,
+          "file": "src/repositories/escrow.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 30,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_release\", job_id: jobId, reason }, }); if (error) throw error; ret"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "job_id",
+            "reason"
+          ],
+          "column": 42,
+          "file": "src/repositories/escrow.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 38,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_refund\", job_id: jobId, reason }, }); if (error) throw error; if ("
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/mobility.repository.ts",
+          "fn": "dispatch-delivery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 137,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { ret"
+        }
+      ],
+      "contractFields": [
+        "action"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "dispatch-delivery",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "dispatch-delivery",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/mobility.repository.ts",
+          "fn": "dispatch-ride",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 75,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { return"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/order-actions.repository.ts",
+          "fn": "dispatch-ride",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 16,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } export async function updateOrderDeliveryJob(orderI"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "dispatch-ride",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 534,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Storefront orders ── export async function up"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/storefront.repository.ts",
+          "fn": "dispatch-ride",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 224,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Org member lookup ── export async function fe"
+        }
+      ],
+      "exists": true,
+      "fn": "dispatch-ride",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "dispatch-ride",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/pages/admin/AdminDldBackfillPage.tsx",
+          "fn": "dld-analytics",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "invoke",
+          "line": 56,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dld-analytics\", { headers: { \"x-endpoint\": \"backfill-status\" }, }); if (error) throw error; return data; } asyn"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/pages/admin/AdminDldBackfillPage.tsx",
+          "fn": "dld-analytics",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "invoke",
+          "line": 64,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dld-analytics\", { headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`, }, }); if ("
+        }
+      ],
+      "exists": true,
+      "fn": "dld-analytics",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "dld-analytics",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source_system",
+            "operation_type",
+            "payload",
+            "error"
+          ],
+          "column": 45,
+          "file": "src/lib/dlq/dlq-client.ts",
+          "fn": "dlq-ingest",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 19,
+          "method": "POST",
+          "snippet": "functions.invoke(\"dlq-ingest\", { body: { source_system: sourceSystem, operation_type: operationType, payload,"
+        }
+      ],
+      "exists": true,
+      "fn": "dlq-ingest",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "dlq-ingest",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/admin-ops.repository.ts",
+          "fn": "engine-cron-server",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 141,
+          "method": "POST",
+          "snippet": "functions.invoke(\"engine-cron-server\", { body: {} }); if (error) throw error; return data; } export async function toggleEngineStatus(n"
+        }
+      ],
+      "exists": true,
+      "fn": "engine-cron-server",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "engine-cron-server",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "leaseId",
+            "title",
+            "documentUrl",
+            "landlordEmail",
+            "landlordName",
+            "tenantEmail",
+            "tenantName"
+          ],
+          "column": 53,
+          "file": "src/services/e-signature.service.ts",
+          "fn": "esign-create-envelope",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 74,
+          "method": "POST",
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"create_lease_envelope\", leaseId: options.leaseId, title:"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "envelopeId",
+            "partyId",
+            "userId",
+            "signatureData"
+          ],
+          "column": 39,
+          "file": "src/services/e-signature.service.ts",
+          "fn": "esign-create-envelope",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 143,
+          "method": "POST",
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"sign_document\", envelopeId, partyId, userId,"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "userId"
+          ],
+          "column": 55,
+          "file": "src/services/e-signature.service.ts",
+          "fn": "esign-create-envelope",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 196,
+          "method": "POST",
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"get_envelope_status\", userId }, }); if (!fnError && fnData?.envel"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "envelopeId",
+            "partyId",
+            "userId"
+          ],
+          "column": 39,
+          "file": "src/services/e-signature.service.ts",
+          "fn": "esign-create-envelope",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 228,
+          "method": "POST",
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"decline_document\", envelopeId, partyId, userId }, }); if (fnError) {"
+        }
+      ],
+      "exists": true,
+      "fn": "esign-create-envelope",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "esign-create-envelope",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 35,
+          "file": "src/hooks/useCacheMetrics.ts",
+          "fn": "extract-article",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 54,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/extract-article/metrics`; const headers: Record<string, string> = { \"Content-Type\": \"application/json\", }"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 34,
+          "file": "src/lib/utils/article-extractor.ts",
+          "fn": "extract-article",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 219,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/extract-article`; try { extractLog(\"server_attempt\", { url: sourceUrl }); const response = await fetchWithTimeout(a"
+        }
+      ],
+      "exists": true,
+      "fn": "extract-article",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "GET",
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "extract-article",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 26,
+          "file": "src/hooks/useCurrencyConversion.ts",
+          "fn": "fx-rates",
+          "hasBody": true,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 27,
+          "method": "POST",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/fx-rates`, { method: \"POST\", headers: { apikey: anonKey, Authorizatio"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 25,
+          "file": "src/hooks/usePaymentFX.ts",
+          "fn": "fx-rates",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 20,
+          "method": "GET",
+          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `B"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/hooks/usePaymentFX.ts",
+          "fn": "fx-rates",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 21,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `Bearer ${await getAccessToken()}`,"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 29,
+          "file": "src/hooks/usePaymentFX.ts",
+          "fn": "fx-rates",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 51,
+          "method": "GET",
+          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 40,
+          "file": "src/hooks/usePaymentFX.ts",
+          "fn": "fx-rates",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 52,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, { headers: { Authorizati"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "fx-rates",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 70,
+          "method": "POST",
+          "snippet": "functions.invoke(\"fx-rates\", { body }); if (error) throw error; return data; } // ── Subscription ── export async function fetchSubscri"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 38,
+          "file": "src/services/data/forex-data-service.ts",
+          "fn": "fx-rates",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 45,
+          "method": "POST",
+          "snippet": "functions.invoke(\"fx-rates\", { body: null }); if (error || !data?.rates) return null; return data.rates as Record<string, number>;"
+        }
+      ],
+      "contractMethods": [
+        "GET",
+        "POST"
+      ],
+      "exists": true,
+      "fn": "fx-rates",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "fx-rates",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 46,
+          "file": "src/lib/api-gateway/orchestration-engine.ts",
+          "fn": "gateway-cron-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 70,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-cron-sync\", { body: connectorId ? { connectorId } : {}, }); if (error) { platformBus."
+        }
+      ],
+      "exists": true,
+      "fn": "gateway-cron-sync",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "gateway-cron-sync",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 44,
+          "file": "src/lib/api-gateway/connectors/careem-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"fetch\" }, }); if (error) { throw new"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 46,
+          "file": "src/lib/api-gateway/connectors/careem-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 68,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"health\" }, }); if (error) return false"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 44,
+          "file": "src/lib/api-gateway/connectors/deliveroo-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 36,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"fetch\" }, }); if (error) { throw n"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 46,
+          "file": "src/lib/api-gateway/connectors/deliveroo-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 65,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"health\" }, }); if (error) return fa"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 44,
+          "file": "src/lib/api-gateway/connectors/talabat-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"fetch\" }, }); if (error) { throw new"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "source",
+            "action"
+          ],
+          "column": 46,
+          "file": "src/lib/api-gateway/connectors/talabat-connector.ts",
+          "fn": "gateway-marketplace-sync",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 68,
+          "method": "POST",
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"health\" }, }); if (error) return fals"
+        }
+      ],
+      "contractFields": [
+        "source"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "gateway-marketplace-sync",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "gateway-marketplace-sync",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 27,
+          "file": "src/pages/settings/SettingsPrivacy.tsx",
+          "fn": "gdpr-delete-account",
+          "hasBody": true,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 127,
+          "method": "POST",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-delete-account`, { method: \"POST\", headers: { Authorization: `Bearer"
+        }
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "gdpr-delete-account",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "gdpr-delete-account",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 27,
+          "file": "src/pages/settings/SettingsPrivacy.tsx",
+          "fn": "gdpr-export",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 63,
+          "method": "GET",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-export`, { headers: { Authorization: `Bearer ${token}` }, }); if (res.ok)"
+        }
+      ],
+      "contractMethods": [
+        "GET",
+        "POST"
+      ],
+      "exists": true,
+      "fn": "gdpr-export",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "gdpr-export",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "generate-cv",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 19,
+          "method": "POST",
+          "snippet": "functions.invoke(\"generate-cv\", { body }); if (error) throw error; return data; } export async function invokeTranslateMessage(body: Re"
+        }
+      ],
+      "exists": true,
+      "fn": "generate-cv",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "generate-cv",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "generate-pdf",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 110,
+          "method": "POST",
+          "snippet": "functions.invoke(\"generate-pdf\", { body }); if (error) throw error; return data; } // ── Reminders ── export async function fetchRemind"
+        }
+      ],
+      "exists": true,
+      "fn": "generate-pdf",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "generate-pdf",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 44,
+          "file": "src/lib/call/ice-config.ts",
+          "fn": "get-turn-credentials",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 20,
+          "method": "POST",
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) { console.warn(\"[ICE] Failed to fetch TURN credentials,"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 38,
+          "file": "src/lib/orbit/get-rtc-config.ts",
+          "fn": "get-turn-credentials",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 13,
+          "method": "POST",
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK_CONFIG; return { iceServers: data.iceServe"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 40,
+          "file": "src/lib/security-chief/backend-clean-contract.ts",
+          "fn": "get-turn-credentials",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 109,
+          "method": "POST",
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK; return { iceServers: data.ice"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "purpose"
+          ],
+          "column": 44,
+          "file": "src/lib/webrtc/getIceServers.ts",
+          "fn": "get-turn-credentials",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 25,
+          "method": "POST",
+          "snippet": "functions.invoke(\"get-turn-credentials\", { body: { purpose: \"orbit_call\" }, }); if (error || !data?.iceServers?.length) {"
+        }
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "get-turn-credentials",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "get-turn-credentials",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 48,
+          "file": "src/lib/guest-call.ts",
+          "fn": "guest-session",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 46,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 48,
+          "file": "src/lib/guest-call/signaling.ts",
+          "fn": "guest-session",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 6,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 48,
+          "file": "src/lib/guest-session.ts",
+          "fn": "guest-session",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 84,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+        }
+      ],
+      "contractFields": [
+        "action"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "guest-session",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "guest-session",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "ping"
+          ],
+          "column": 16,
+          "file": "src/lib/engines/backend-connectivity-engine.ts",
+          "fn": "health-check",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 122,
+          "method": "POST",
+          "snippet": "functions.invoke(\"health-check\", { body: { ping: true } }), timeoutMs, \"supabase-edge-functions\", ); const latency = Ma"
+        }
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "health-check",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "health-check",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "documentId",
+            "action",
+            "reason"
+          ],
+          "column": 36,
+          "file": "src/services/domain/kyc.service.ts",
+          "fn": "kyc-review",
+          "hasBody": true,
+          "hasHeaders": true,
+          "kind": "invoke",
+          "line": 126,
+          "method": "POST",
+          "snippet": "functions.invoke(\"kyc-review\", { body: { documentId, action, reason }, headers: token ? { Authorization: `Bearer ${token}` } : undef"
+        }
+      ],
+      "exists": true,
+      "fn": "kyc-review",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "kyc-review",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "lease-workflow",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 36,
+          "method": "POST",
+          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } export async function invokeCheckSubscription() {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "lease-workflow",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 336,
+          "method": "POST",
+          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } // ── Accounting entries ── export async function"
+        }
+      ],
+      "exists": true,
+      "fn": "lease-workflow",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "lease-workflow",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "roomName",
+            "participantName"
+          ],
+          "column": 36,
+          "file": "src/hooks/useLiveKitRoom.ts",
+          "fn": "livekit-room-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 45,
+          "method": "POST",
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName, participantName: userName || userId }, }); if (error"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "roomName"
+          ],
+          "column": 34,
+          "file": "src/hooks/useLiveKitRoom.ts",
+          "fn": "livekit-room-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 290,
+          "method": "POST",
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"start_recording\", roomName }, }); if (error) throw error;"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "roomName"
+          ],
+          "column": 16,
+          "file": "src/hooks/useLiveKitRoom.ts",
+          "fn": "livekit-room-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 302,
+          "method": "POST",
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"stop_recording\", roomName }, }); } catch { // continue"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "roomName",
+            "participantName"
+          ],
+          "column": 38,
+          "file": "src/lib/webrtc/peer.ts",
+          "fn": "livekit-room-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 42,
+          "method": "POST",
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName: options.roomName, participantN"
+        }
+      ],
+      "exists": true,
+      "fn": "livekit-room-token",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "livekit-room-token",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "manage-subscription",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 168,
+          "method": "POST",
+          "snippet": "functions.invoke(\"manage-subscription\", { body }); if (error) throw error; return data; } export async function openSubscriptionPortal("
+        }
+      ],
+      "exists": true,
+      "fn": "manage-subscription",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "manage-subscription",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "query",
+            "types",
+            "filters",
+            "page",
+            "limit"
+          ],
+          "column": 38,
+          "file": "src/lib/search-engine/search-engine-client.ts",
+          "fn": "marketplace-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 56,
+          "method": "POST",
+          "snippet": "functions.invoke(\"marketplace-router\", { body: { action: \"search\", query, types, filters: {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "query",
+            "filter",
+            "facets",
+            "sort",
+            "limit",
+            "offset",
+            "types"
+          ],
+          "column": 38,
+          "file": "src/lib/search-engine/search-resolver.ts",
+          "fn": "marketplace-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 80,
+          "method": "POST",
+          "snippet": "functions.invoke(\"marketplace-router\", { body: { query: state.query, filter: filter.length > 0 ? filter : undefined,"
+        }
+      ],
+      "exists": true,
+      "fn": "marketplace-router",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
+        "methods": null,
+        "name": "marketplace-router",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "mobile-money-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 132,
+          "method": "POST",
+          "snippet": "functions.invoke(\"mobile-money-payment\", { body }); if (error) throw error; return data; } export async function checkMobileMoneyStatus"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "tx_ref"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "mobile-money-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 138,
+          "method": "POST",
+          "snippet": "functions.invoke(\"mobile-money-payment\", { body: { action: \"status\", tx_ref: txRef }, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "mobile-money-payment",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "mobile-money-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/lib/notifications/notification-dispatcher.ts",
+          "fn": "notification-dispatcher",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 151,
+          "method": "POST",
+          "snippet": "functions.invoke(\"notification-dispatcher\", { body: payload, }); if (error) return { success: false, error: error.message }; retu"
+        }
+      ],
+      "exists": true,
+      "fn": "notification-dispatcher",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "notification-dispatcher",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "booking_request_id"
+          ],
+          "column": 12,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "notify-booking",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 380,
+          "method": "POST",
+          "snippet": "functions.invoke(\"notify-booking\", { body: { booking_request_id: bookingRequestId } }); } // ── Local services ── export async function fet"
+        }
+      ],
+      "exists": true,
+      "fn": "notify-booking",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "notify-booking",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "session_id",
+            "message",
+            "language",
+            "context",
+            "conversation_history"
+          ],
+          "column": 37,
+          "file": "src/components/orbit/support/OrbitAISupportChat.tsx",
+          "fn": "orbit-ai-support",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 256,
+          "method": "POST",
+          "snippet": "functions.invoke(\"orbit-ai-support\", { body: { session_id: sessionId, message: userMsg.content, langua"
+        }
+      ],
+      "exists": true,
+      "fn": "orbit-ai-support",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "orbit-ai-support",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "deal_id"
+          ],
+          "column": 36,
+          "file": "src/repositories/deals.repository.ts",
+          "fn": "orbit-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 86,
+          "method": "POST",
+          "snippet": "functions.invoke(\"orbit-payment\", { body: { action, deal_id: dealId }, }); if (error) throw error; if (data?.error) throw new Erro"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "orbit-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 55,
+          "method": "POST",
+          "snippet": "functions.invoke(\"orbit-payment\", { body }); if (error) { const message = typeof error === \"object\" && error !== null && \"message\" in"
+        }
+      ],
+      "exists": true,
+      "fn": "orbit-payment",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "orbit-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/payouts.ts",
+          "fn": "payout-request-create",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 10,
+          "method": "POST",
+          "snippet": "functions.invoke(\"payout-request-create\", { body: input, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "payout-request-create",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "payout-request-create",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 51,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_link_token\" }, }); if (error) throw new Error(\"Failed to create Plaid"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "publicToken"
+          ],
+          "column": 65,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 68,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"exchange_public_token\", publicToken, }, }); if (exchangeErro"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "itemId"
+          ],
+          "column": 65,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 80,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId, }, }); if (accountsError || !account"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "itemId"
+          ],
+          "column": 69,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 132,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId: item.item_id }, }); if (accountsError ||"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "itemId",
+            "accountId",
+            "amount",
+            "description"
+          ],
+          "column": 36,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 203,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_ach_transfer\", itemId, accountId, amount, d"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/services/plaid.service.ts",
+          "fn": "plaid-link-token",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 227,
+          "method": "POST",
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"verify_income\" }, }); if (error) { throw new Error(\"Income verification"
+        }
+      ],
+      "contractFields": [],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "plaid-link-token",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "plaid-link-token",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "job"
+          ],
+          "column": 12,
+          "file": "src/repositories/admin-ops.repository.ts",
+          "fn": "platform-recovery",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 197,
+          "method": "POST",
+          "snippet": "functions.invoke(\"platform-recovery\", { body: { job } }); } // ─── Firecrawl Usage ─── export async function fetchFirecrawlUsageLogs() {"
+        }
+      ],
+      "exists": true,
+      "fn": "platform-recovery",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "platform-recovery",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 34,
+          "file": "src/hooks/usePrayerTimes.ts",
+          "fn": "prayer-times",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 105,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=${method}&school=${school}`; const resp = await fetch(fnUrl, { headers: {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 34,
+          "file": "src/lib/intelligence/global/prayer-times-provider.ts",
+          "fn": "prayer-times",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 121,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`; const resp = await fetch(url, { headers: { apikey: anonKey, Author"
+        }
+      ],
+      "exists": true,
+      "fn": "prayer-times",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "prayer-times",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "session_id",
+            "user_agent"
+          ],
+          "column": 22,
+          "file": "src/hooks/useMasterAppBootstrap.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 149,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: session."
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "session_id",
+            "user_agent"
+          ],
+          "column": 24,
+          "file": "src/hooks/useMasterAppBootstrap.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 162,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: ne"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "status",
+            "metadata",
+            "identity"
+          ],
+          "column": 39,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 22,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"heartbeat\", status, metadata, identity }, }); return !error; } cat"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 21,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }); } catch {} } export async function getPresence( use"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "user_id"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 47,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data || !data.online)"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "user_id"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 61,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return false;"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "user_id"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 75,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return null;"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "user_ids"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 91,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"bulk_status\", user_ids: userIds }, }); if (error || !data) return {}"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 105,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"active_count\" }, }); if (error || !data) return 0; return data.a"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "session_id"
+          ],
+          "column": 16,
+          "file": "src/repositories/auth.repository.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 34,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"remove_session\", session_id: session.access_token.slic"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 16,
+          "file": "src/repositories/auth.repository.ts",
+          "fn": "presence-heartbeat",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 40,
+          "method": "POST",
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }).catch(() => {}); } } catch {} return db.auth"
+        }
+      ],
+      "contractFields": [],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "presence-heartbeat",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "presence-heartbeat",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "urls",
+            "entityId"
+          ],
+          "column": 38,
+          "file": "src/lib/onboarding/pipeline/media/media.download.service.ts",
+          "fn": "process-onboarding-media",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 22,
+          "method": "POST",
+          "snippet": "functions.invoke(\"process-onboarding-media\", { body: { urls, entityId }, }); if (error) throw error; const results: Down"
+        }
+      ],
+      "exists": true,
+      "fn": "process-onboarding-media",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "process-onboarding-media",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "orderId",
+            "paymentIntentId",
+            "reason"
+          ],
+          "column": 42,
+          "file": "src/lib/payments/paymentLiveConnector.ts",
+          "fn": "process-refund",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 89,
+          "method": "POST",
+          "snippet": "functions.invoke(\"process-refund\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId ?? null,"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/payments/paymentService.ts",
+          "fn": "process-refund",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 111,
+          "method": "POST",
+          "snippet": "functions.invoke(\"process-refund\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId, \"refun"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "booking_id",
+            "booking_type",
+            "reason"
+          ],
+          "column": 36,
+          "file": "src/repositories/deals.repository.ts",
+          "fn": "process-refund",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 44,
+          "method": "POST",
+          "snippet": "functions.invoke(\"process-refund\", { body: { booking_id: bookingId, booking_type: bookingType, reason }, }); if (error) throw error;"
+        }
+      ],
+      "contractFields": [],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "process-refund",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "process-refund",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 185,
+          "file": "src/pages/DeveloperPortal.tsx",
+          "fn": "public-api",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 337,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/public-api/v1`}</code></p> </div> <div className=\"mt-6 p-4 bg-muted/50 rounded-lg\">"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 51,
+          "file": "src/pages/DeveloperPortal.tsx",
+          "fn": "public-api",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 364,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/public-api/v1/properties \\\\ -H \"Authorization: Bearer el_your_api_key\" \\\\ -H \"Content-Type: application/json\"`}"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 69,
+          "file": "src/pages/DeveloperPortal.tsx",
+          "fn": "public-api",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 372,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/public-api/v1/tenants', { method: 'POST', headers: { 'Authorization': 'Bearer el_your_api_key', 'Content-Type': 'a"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/pages/DeveloperPortal.tsx",
+          "fn": "public-api",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 394,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/public-api/v1/accounting/journal', headers={'Authorization': 'Bearer el_your_api_key'} ) transactions = response.json()`}"
+        }
+      ],
+      "exists": true,
+      "fn": "public-api",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "manifestAuth": "public",
+        "manifestRateLimit": true,
+        "methods": null,
+        "name": "public-api",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key",
+            "value",
+            "ttl_seconds"
+          ],
+          "column": 39,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 156,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key: `typing:${conversationId}:${userId}`, value: { u"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "keys"
+          ],
+          "column": 21,
+          "file": "src/lib/redis/presence-service.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 177,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys: [`typing:${conversationId}:${userId}`], }, })"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/redis-client.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 21,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"get\", key }, }); if (error || !data) return null; return (data.value as"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key",
+            "value",
+            "ttl_seconds"
+          ],
+          "column": 39,
+          "file": "src/lib/redis/redis-client.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 39,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key, value, ttl_seconds: ttlSeconds }, }); return !error; } catch {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "keys"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/redis-client.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 52,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys }, }); if (error || !data) return 0; return (data.deleted as"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key"
+          ],
+          "column": 45,
+          "file": "src/lib/redis/redis-client.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 66,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"incr\", key }, }); if (error || !data) return null; return (data.value a"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "key",
+            "seconds"
+          ],
+          "column": 39,
+          "file": "src/lib/redis/redis-client.ts",
+          "fn": "redis-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 83,
+          "method": "POST",
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"expire\", key, seconds }, }); return !error; } catch { return false;"
+        }
+      ],
+      "contractFields": [
+        "action"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "redis-proxy",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "redis-proxy",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "refund-admin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 193,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"request\", ...body }, }); if (error) throw error; return data; } export async"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "status"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "refund-admin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 201,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"list\", status: params?.status || \"pending\" }, }); if (error) throw error; retu"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "refund_id"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "refund-admin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 209,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"approve\", refund_id: body.refund_id }, }); if (error) throw error; return data"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "refund_id",
+            "reason"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "refund-admin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 217,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"reject\", refund_id: body.refund_id, reason: body.reason }, }); if (error) throw"
+        }
+      ],
+      "exists": true,
+      "fn": "refund-admin",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "refund-admin",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/refunds.ts",
+          "fn": "refund-process-booking",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 17,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-process-booking\", { body: input, }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "refund-process-booking",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "refund-process-booking",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/lib/server-actions/refunds.ts",
+          "fn": "refund-request-booking",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 7,
+          "method": "POST",
+          "snippet": "functions.invoke(\"refund-request-booking\", { body: input, }); if (error) throw error; return data; } export async function server"
+        }
+      ],
+      "exists": true,
+      "fn": "refund-request-booking",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "refund-request-booking",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 42,
+          "file": "src/lib/server-actions/rent.ts",
+          "fn": "rent-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 8,
+          "method": "POST",
+          "snippet": "functions.invoke(\"rent-payment\", { body: { ...input, mode: \"schedule\" }, }); if (error) throw error; return data; }"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "rent-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 15,
+          "method": "POST",
+          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; return data; } // ── Stripe checkout"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 36,
+          "file": "src/repositories/rental-data.repository.ts",
+          "fn": "rent-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 175,
+          "method": "POST",
+          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; if (data?.error) throw new Error(data"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "rent_call_id",
+            "payment_method",
+            "mode"
+          ],
+          "column": 36,
+          "file": "src/repositories/tenant.repository.ts",
+          "fn": "rent-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 38,
+          "method": "POST",
+          "snippet": "functions.invoke(\"rent-payment\", { body: { rent_call_id: rentCallId, payment_method: paymentMethod, mode: \"checkout\" }, }); if (erro"
+        }
+      ],
+      "contractFields": [
+        "mode"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "rent-payment",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "rent-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "reveal_type",
+            "org_id",
+            "listing_id",
+            "service_id",
+            "source"
+          ],
+          "column": 36,
+          "file": "src/repositories/listing-contact.repository.ts",
+          "fn": "reveal-contact",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 24,
+          "method": "POST",
+          "snippet": "functions.invoke(\"reveal-contact\", { body: { reveal_type: revealType, org_id: opts.orgId || null, listing_id: opts.lis"
+        }
+      ],
+      "exists": true,
+      "fn": "reveal-contact",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "reveal-contact",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 26,
+          "file": "src/lib/intelligence/global/news-provider.ts",
+          "fn": "rss-proxy",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "url-ref",
+          "line": 79,
+          "method": "OPTIONS",
+          "snippet": "/functions/v1/rss-proxy?${params.toString()}`; } function extractText(xml: string, tag: string): string { const regex = new RegExp(`<${ta"
+        }
+      ],
+      "exists": true,
+      "fn": "rss-proxy",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "GET",
+          "OPTIONS"
+        ],
+        "name": "rss-proxy",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "batch_size",
+            "entity_ids"
+          ],
+          "column": 42,
+          "file": "src/lib/source/ingestion-runtime.ts",
+          "fn": "run-ingestion-pipeline",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 44,
+          "method": "POST",
+          "snippet": "functions.invoke(\"run-ingestion-pipeline\", { body: { batch_size: options?.batchSize ?? 100, entity_ids: options?.entityIds ?"
+        }
+      ],
+      "exists": true,
+      "fn": "run-ingestion-pipeline",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "run-ingestion-pipeline",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "run-scheduled-audit",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 13,
+          "method": "POST",
+          "snippet": "functions.invoke(\"run-scheduled-audit\", { body: {} }); if (error) throw error; return data; } export async function invokeGenerateCV(bo"
+        }
+      ],
+      "exists": true,
+      "fn": "run-scheduled-audit",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "run-scheduled-audit",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/lib/runtime/runtime-rpc-client.ts",
+          "fn": "runtime-control-plane",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 33,
+          "method": "POST",
+          "snippet": "functions.invoke(\"runtime-control-plane\", { body: request, }); if (error) { platformBus.emit(\"runtime:rpc_error\", { actio"
+        }
+      ],
+      "exists": true,
+      "fn": "runtime-control-plane",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "runtime-control-plane",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "bucket",
+            "path",
+            "contentType",
+            "metadata",
+            "fileSize"
+          ],
+          "column": 36,
+          "file": "src/lib/aws/s3-storage.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 20,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: ct, metadat"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "bucket",
+            "path",
+            "expiresIn"
+          ],
+          "column": 36,
+          "file": "src/lib/aws/s3-storage.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 59,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"presign\", bucket: params.bucket, path: params.path, expir"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "bucket",
+            "path"
+          ],
+          "column": 36,
+          "file": "src/lib/aws/s3-storage.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 77,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"delete\", bucket: params.bucket, path: params.path, }, });"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "bucket",
+            "path"
+          ],
+          "column": 36,
+          "file": "src/lib/aws/s3-storage.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 93,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"head\", bucket: params.bucket, path: params.path, }, });"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "bucket",
+            "path",
+            "contentType",
+            "fileSize"
+          ],
+          "column": 40,
+          "file": "src/lib/media/media-upload.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 99,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket, path, contentType: ct, fileSize: uploa"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "bucket",
+            "path",
+            "contentType",
+            "fileSize"
+          ],
+          "column": 46,
+          "file": "src/lib/storage/assets.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 23,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: c"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "bucket",
+            "path",
+            "contentType",
+            "fileSize"
+          ],
+          "column": 46,
+          "file": "src/lib/storage/uploadFile.ts",
+          "fn": "s3-upload-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: c"
+        }
+      ],
+      "contractFields": [
+        "bucket",
+        "path"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "s3-upload-proxy",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "s3-upload-proxy",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 42,
+          "file": "src/lib/onboarding/scraping/firecrawl-client.ts",
+          "fn": "scrape-proxy",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 17,
+          "method": "POST",
+          "snippet": "functions.invoke(\"scrape-proxy\", { body: { action, ...body }, }); if (error) throw new Error(`Edge function error: ${error.message}`"
+        }
+      ],
+      "exists": true,
+      "fn": "scrape-proxy",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "scrape-proxy",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "query",
+            "types",
+            "page",
+            "limit",
+            "min_rating",
+            "price_min",
+            "price_max",
+            "city",
+            "vertical",
+            "category",
+            "open_now",
+            "sort"
+          ],
+          "column": 38,
+          "file": "src/lib/search-engine/search-engine-client.ts",
+          "fn": "search-global",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 81,
+          "method": "POST",
+          "snippet": "functions.invoke(\"search-global\", { body: { query, types, page, limit, min_rating: filters.min"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "query",
+            "types",
+            "page",
+            "limit",
+            "min_rating",
+            "price_min",
+            "price_max",
+            "city",
+            "vertical",
+            "category",
+            "open_now"
+          ],
+          "column": 38,
+          "file": "src/lib/search-engine/search-resolver.ts",
+          "fn": "search-global",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 151,
+          "method": "POST",
+          "snippet": "functions.invoke(\"search-global\", { body: { query: state.query, types: state.types, page: state.page,"
+        }
+      ],
+      "exists": true,
+      "fn": "search-global",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "search-global",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html",
+            "text",
+            "from_name",
+            "attachments"
+          ],
+          "column": 36,
+          "file": "src/lib/aws/ses-email.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 26,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, html: params.html, text: params"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "body",
+            "category",
+            "metadata"
+          ],
+          "column": 44,
+          "file": "src/lib/notifications/email-dispatcher.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 18,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, body: params.body, ca"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 14,
+          "file": "src/lib/orders/orderEngine.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 171,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject: `Order Confirmed #${orderId.slice(0, 8).toUpperCase()}`, html }, });"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 31,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } export async function invokeLeaseWorkflow(body: Record<string, any>)"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 32,
+          "file": "src/repositories/channel-manager.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 101,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `🚫 Réservation annulée — ${res.check_in} → ${r"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 32,
+          "file": "src/repositories/channel-manager.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 137,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `📅 Dates modifiées — ${newCheckIn} → ${newChec"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 6,
+          "file": "src/repositories/document-builder.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }).catch(() => {}); } export async function insertDocAuditLog(orgId: string, userId: string, metadata"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 12,
+          "file": "src/repositories/documents.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 34,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Signature ── export async function uploadSignature(path: string, blob: Blob) { const {"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 14,
+          "file": "src/repositories/dunning.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 53,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: data.email, subject, html } }).catch(() => {}); } }"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 30,
+          "file": "src/repositories/guest-portal.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 61,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: orgEmail, subject: `💬 Message from ${guestName}`, html: `<div style=\"fon"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 30,
+          "file": "src/repositories/inventory.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 72,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Inventory rooms/items for report ── export async function fetch"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "to",
+            "subject",
+            "html"
+          ],
+          "column": 12,
+          "file": "src/repositories/payment-notices.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 22,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject, html } }).catch(() => {}); } export async function fetchTenantEmail(tenantId:"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental-data.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 109,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── App Notifications ─── export async function ins"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 30,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 330,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Lease workflow edge function ── export async function invokeLea"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/seasonal.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 117,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── Booking Payment ─── export async function invok"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/tenant-docs.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 71,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; if (data && data.success === false) throw new Error(data?.error || \"Se"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 12,
+          "file": "src/repositories/tenant-portal.repository.ts",
+          "fn": "send-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 94,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Reviews ── export async function fetchTenantInfo(userId: string) { const { data } = awa"
+        }
+      ],
+      "contractFields": [
+        "to",
+        "subject"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "send-email",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "send-email",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "event_type",
+            "locale",
+            "to",
+            "test_mode"
+          ],
+          "column": 34,
+          "file": "src/pages/admin/AdminNotificationLabPage.tsx",
+          "fn": "send-notification-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 124,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: selectedTemplate.id, locale: selectedLang,"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "event_type",
+            "recipient_email",
+            "org_id",
+            "data",
+            "locale"
+          ],
+          "column": 14,
+          "file": "src/repositories/booking.repository.ts",
+          "fn": "send-notification-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 93,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"booking_request\", recipient_email: null, or"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "event_type",
+            "recipient_email",
+            "data",
+            "locale"
+          ],
+          "column": 12,
+          "file": "src/repositories/communication.repository.ts",
+          "fn": "send-notification-email",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 519,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"marketplace_notification\", recipient_email: recipientEmai"
+        }
+      ],
+      "contractFields": [
+        "event_type"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "send-notification-email",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "send-notification-email",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "phone",
+            "channel"
+          ],
+          "column": 47,
+          "file": "src/lib/auth/guest-otp.ts",
+          "fn": "send-otp",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 33,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: params.phone, channel: params.channel || \"sms\" }, }); if (invokeErr) { throw new"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "phone",
+            "channel"
+          ],
+          "column": 47,
+          "file": "src/lib/auth/phone-identity.ts",
+          "fn": "send-otp",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 39,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: normalized, channel }, }); if (invokeErr) { const errMsg = typeof invokeErr === \""
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "probe"
+          ],
+          "column": 10,
+          "file": "src/lib/auth/provider-health.ts",
+          "fn": "send-otp",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 68,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-otp\", { body: { probe: true }, }), new Promise<null>((resolve) => setTimeout(() => resolve(null),"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "phone",
+            "channel"
+          ],
+          "column": 49,
+          "file": "src/lib/security/otp-hardened.ts",
+          "fn": "send-otp",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 32,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: target, channel: deliveryChannel }, }); if (invokeErr) { const errMsg = t"
+        }
+      ],
+      "contractFields": [],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "send-otp",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "send-otp",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "user_id",
+            "title",
+            "body",
+            "event_type",
+            "data"
+          ],
+          "column": 38,
+          "file": "src/lib/push/call-push-handler.ts",
+          "fn": "send-push-notification",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 22,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Incoming ${callTypeLabel}"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "user_id",
+            "title",
+            "body",
+            "event_type",
+            "data"
+          ],
+          "column": 14,
+          "file": "src/lib/push/call-push-handler.ts",
+          "fn": "send-push-notification",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 63,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Missed ${callTypeLabel} c"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "user_id",
+            "title",
+            "body",
+            "data",
+            "event_type"
+          ],
+          "column": 36,
+          "file": "src/lib/push/registerPush.ts",
+          "fn": "send-push-notification",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 333,
+          "method": "POST",
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: userId, title, body, data: data ?? {}, event"
+        }
+      ],
+      "contractFields": [],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "send-push-notification",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "send-push-notification",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "lat",
+            "lng",
+            "entity_type",
+            "radius_meters",
+            "limit"
+          ],
+          "column": 42,
+          "file": "src/lib/geo/spatial-service.ts",
+          "fn": "spatial-query",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 25,
+          "method": "POST",
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"nearby\", lat: point.lat, lng: point.lng, entity_type: entit"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "lat",
+            "lng"
+          ],
+          "column": 42,
+          "file": "src/lib/geo/spatial-service.ts",
+          "fn": "spatial-query",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 43,
+          "method": "POST",
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"zone\", lat: point.lat, lng: point.lng, }, }); if (error)"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "lat",
+            "lng"
+          ],
+          "column": 42,
+          "file": "src/lib/geo/spatial-service.ts",
+          "fn": "spatial-query",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 58,
+          "method": "POST",
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"contains\", lat: point.lat, lng: point.lng, }, }); if (er"
+        }
+      ],
+      "exists": true,
+      "fn": "spatial-query",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "spatial-query",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "name",
+            "vertical",
+            "subcategory",
+            "city",
+            "country",
+            "district",
+            "menuItemCount",
+            "serviceCount",
+            "productCount"
+          ],
+          "column": 44,
+          "file": "src/lib/onboarding/pipeline/enrichment/enrichment.ai-description.generate.ts",
+          "fn": "storefront-description",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 103,
+          "method": "POST",
+          "snippet": "functions.invoke(\"storefront-description\", { body: { name: input.name, vertical: input.vertical, subcategory:"
+        }
+      ],
+      "exists": true,
+      "fn": "storefront-description",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "storefront-description",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "org_id"
+          ],
+          "column": 36,
+          "file": "src/repositories/settings.repository.ts",
+          "fn": "stripe-connect-login",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 103,
+          "method": "POST",
+          "snippet": "functions.invoke(\"stripe-connect-login\", { body: { org_id: orgId } }); if (error) throw error; return data; } // ── MFA ── export async"
+        }
+      ],
+      "exists": true,
+      "fn": "stripe-connect-login",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "stripe-connect-login",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "targetType",
+            "targetId",
+            "rating",
+            "comment",
+            "orderId"
+          ],
+          "column": 38,
+          "file": "src/lib/social/review-pipeline.ts",
+          "fn": "submit-review",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 35,
+          "method": "POST",
+          "snippet": "functions.invoke(\"submit-review\", { body: { targetType: params.targetType, targetId: params.targetId, rating:"
+        }
+      ],
+      "exists": true,
+      "fn": "submit-review",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "submit-review",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "subscription-portal",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 174,
+          "method": "POST",
+          "snippet": "functions.invoke(\"subscription-portal\", { body: {} }); if (error) throw error; return data; } export async function fetchCurrentSubscri"
+        }
+      ],
+      "exists": true,
+      "fn": "subscription-portal",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "subscription-portal",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "ical_url",
+            "property_id",
+            "provider",
+            "org_id"
+          ],
+          "column": 24,
+          "file": "src/repositories/channel-manager.repository.ts",
+          "fn": "sync-ical",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 64,
+          "method": "POST",
+          "snippet": "functions.invoke(\"sync-ical\", { body: { ical_url: conn.linked_properties?.[0]?.ical_url || \"\", property_id: conn.linked_prop"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/dashboard.repository.ts",
+          "fn": "sync-ical",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 364,
+          "method": "POST",
+          "snippet": "functions.invoke(\"sync-ical\", { body }); if (error) throw error; return data; }"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/onboarding.repository.ts",
+          "fn": "sync-ical",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 68,
+          "method": "POST",
+          "snippet": "functions.invoke(\"sync-ical\", { body }); if (error) throw error; return data; }"
+        }
+      ],
+      "exists": true,
+      "fn": "sync-ical",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "sync-ical",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "mode"
+          ],
+          "column": 51,
+          "file": "src/components/admin/SearchSyncStatusWidget.tsx",
+          "fn": "sync-meilisearch-cron",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 118,
+          "method": "POST",
+          "snippet": "functions.invoke(\"sync-meilisearch-cron\", { body: { mode }, }); if (invokeErr) throw invokeErr; await loadData();"
+        }
+      ],
+      "exists": true,
+      "fn": "sync-meilisearch-cron",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "sync-meilisearch-cron",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/lib/api/integration-health.ts",
+          "fn": "system-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 44,
+          "method": "POST",
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health\" }, }); if (error) throw error; return data as Integratio"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action",
+            "range"
+          ],
+          "column": 36,
+          "file": "src/lib/api/integration-health.ts",
+          "fn": "system-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 55,
+          "method": "POST",
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health-history\", range }, }); if (error) throw error; return dat"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/lib/search-engine/search-engine-client.ts",
+          "fn": "system-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 113,
+          "method": "POST",
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"sync-search-index\" }, }); if (error) throw error; return data?.synced ?? {};"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 36,
+          "file": "src/lib/search-engine/search-engine-client.ts",
+          "fn": "system-router",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 124,
+          "method": "POST",
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"search-analytics\" }, }); if (error) throw error; return data?.analytics ?? ["
+        }
+      ],
+      "exists": true,
+      "fn": "system-router",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
+        "methods": null,
+        "name": "system-router",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/auth-utils.repository.ts",
+          "fn": "tenant-signup",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 41,
+          "method": "POST",
+          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } export async function fetchOrgMembership(userId: st"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/rental.repository.ts",
+          "fn": "tenant-signup",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 323,
+          "method": "POST",
+          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } // ── Send email (for lease workflow / seasonal) ──"
+        }
+      ],
+      "exists": true,
+      "fn": "tenant-signup",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "tenant-signup",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "text",
+            "from_locale",
+            "to_locale"
+          ],
+          "column": 38,
+          "file": "src/lib/orbit/translate-message.ts",
+          "fn": "translate-message",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 31,
+          "method": "POST",
+          "snippet": "functions.invoke(\"translate-message\", { body: { text: params.text, from_locale: params.sourceLocale ?? \"en\", t"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 42,
+          "file": "src/repositories/ai.repository.ts",
+          "fn": "translate-message",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 25,
+          "method": "POST",
+          "snippet": "functions.invoke(\"translate-message\", { body }); if (error) throw error; return data; } export async function invokeSendEmail(body: Rec"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "text",
+            "from_locale",
+            "to_locale"
+          ],
+          "column": 36,
+          "file": "src/repositories/merchant-dashboard.repository.ts",
+          "fn": "translate-message",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 62,
+          "method": "POST",
+          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); if (error) { console.w"
+        },
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "text",
+            "from_locale",
+            "to_locale"
+          ],
+          "column": 29,
+          "file": "src/repositories/tenant-portal.repository.ts",
+          "fn": "translate-message",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 159,
+          "method": "POST",
+          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); return data?.translated ??"
+        }
+      ],
+      "contractFields": [
+        "text"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "translate-message",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "translate-message",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "city",
+            "vertical",
+            "limit"
+          ],
+          "column": 36,
+          "file": "src/repositories/admin-ops.repository.ts",
+          "fn": "uae-scrape-onboard",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 179,
+          "method": "POST",
+          "snippet": "functions.invoke(\"uae-scrape-onboard\", { body: { city, vertical, limit: 20 }, }); if (error) throw error; return data; } // ─── P"
+        }
+      ],
+      "exists": true,
+      "fn": "uae-scrape-onboard",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "uae-scrape-onboard",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "user_id",
+            "query_embedding",
+            "match_count",
+            "similarity_threshold"
+          ],
+          "column": 38,
+          "file": "src/engines/recommendations/recommendation-engine.ts",
+          "fn": "vector-similarity-search",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 168,
+          "method": "POST",
+          "snippet": "functions.invoke(\"vector-similarity-search\", { body: { user_id: userId, query_embedding: queryEmbedding, match"
+        }
+      ],
+      "contractFields": [
+        "query_embedding"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "vector-similarity-search",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "vector-similarity-search",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "verify-guest-payment",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 29,
+          "method": "POST",
+          "snippet": "functions.invoke(\"verify-guest-payment\", { body }); if (error) throw error; return data; } export async function createGuestCheckout(bo"
+        }
+      ],
+      "exists": true,
+      "fn": "verify-guest-payment",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "verify-guest-payment",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "phone",
+            "code"
+          ],
+          "column": 49,
+          "file": "src/lib/auth/phone-identity.ts",
+          "fn": "verify-otp",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 80,
+          "method": "POST",
+          "snippet": "functions.invoke(\"verify-otp\", { body: { phone: normalized, code }, }); if (invokeErr) { return { valid: false, reason:"
+        }
+      ],
+      "contractFields": [
+        "phone",
+        "code"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "verify-otp",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "verify-otp",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 26,
+          "file": "src/lib/voice/deepgram-client.ts",
+          "fn": "voice-stt-token",
+          "hasBody": false,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 29,
+          "method": "POST",
+          "snippet": "fetch(`${dbUrl}/functions/v1/voice-stt-token`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authoriz"
+        }
+      ],
+      "exists": true,
+      "fn": "voice-stt-token",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "voice-stt-token",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "text",
+            "voiceId",
+            "modelId"
+          ],
+          "column": 26,
+          "file": "src/lib/voice/elevenlabs-client.ts",
+          "fn": "voice-tts",
+          "hasBody": true,
+          "hasHeaders": true,
+          "kind": "fetch",
+          "line": 19,
+          "method": "POST",
+          "snippet": "fetch(`${dbUrl}/functions/v1/voice-tts`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authorization:"
+        }
+      ],
+      "exists": true,
+      "fn": "voice-tts",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": [
+          "OPTIONS",
+          "POST"
+        ],
+        "name": "voice-tts",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 38,
+          "file": "src/lib/wallet/wallet-engine.ts",
+          "fn": "wallet-ops",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 13,
+          "method": "POST",
+          "snippet": "functions.invoke(\"wallet-ops\", { body: { action, ...payload }, }); if (error) throw new Error(error.message || \"Wallet operati"
+        }
+      ],
+      "exists": true,
+      "fn": "wallet-ops",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "wallet-ops",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/payments.repository.ts",
+          "fn": "wallet-pin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 48,
+          "method": "POST",
+          "snippet": "functions.invoke(\"wallet-pin\", { body }); if (error) throw error; return data; } // ── Orbit payment (O5: graceful error handling) ── e"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 46,
+          "file": "src/repositories/security-pin.repository.ts",
+          "fn": "wallet-pin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 61,
+          "method": "POST",
+          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError"
+        },
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [
+            "action"
+          ],
+          "column": 46,
+          "file": "src/repositories/security-pin.repository.ts",
+          "fn": "wallet-pin",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 100,
+          "method": "POST",
+          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError"
+        }
+      ],
+      "contractFields": [
+        "action"
+      ],
+      "contractMethods": [
+        "POST"
+      ],
+      "exists": true,
+      "fn": "wallet-pin",
+      "info": {
+        "hasContract": true,
+        "hasIndex": true,
+        "methods": null,
+        "name": "wallet-pin",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "sender_user_id",
+            "receiver_user_id",
+            "amount",
+            "currency",
+            "receiver_currency",
+            "note",
+            "source",
+            "idempotency_key",
+            "pin",
+            "high_value_confirmed",
+            "trust_score",
+            "security_flag",
+            "device_binding_proof"
+          ],
+          "column": 38,
+          "file": "src/lib/wallet/wallet-transfer.ts",
+          "fn": "wallet-transfer",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 77,
+          "method": "POST",
+          "snippet": "functions.invoke(\"wallet-transfer\", { body: { sender_user_id: senderId, receiver_user_id: receiverId, amount:"
+        }
+      ],
+      "exists": true,
+      "fn": "wallet-transfer",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "wallet-transfer",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-authentication-challenge",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 31,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-authentication-challenge\"); if (error) throw error; return data; } export async function verifyAuthenticatio"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-authentication-challenge",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-authentication-challenge",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "credential"
+          ],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-authentication-verify",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 38,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-authentication-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferTo"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-authentication-verify",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-authentication-verify",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 57,
+          "file": "src/pages/settings/SettingsSecurity.tsx",
+          "fn": "webauthn-begin-registration",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 53,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-begin-registration\"); if (beginErr || !beginData?.options) throw new Error(beginErr?.message ?? \"Failed to get"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-begin-registration",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-begin-registration",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "registrationResponse",
+            "device_name"
+          ],
+          "column": 59,
+          "file": "src/pages/settings/SettingsSecurity.tsx",
+          "fn": "webauthn-finish-registration",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 78,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-finish-registration\", { body: { registrationResponse, device_name: navigator.userAgent.slice(0, 200) }, });"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-finish-registration",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-finish-registration",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": true,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-login-challenge",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 58,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-login-challenge\", { body: identifier, }); if (error) throw error; return data; } export async function"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-login-challenge",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-login-challenge",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "userId",
+            "credential"
+          ],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-login-verify",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 67,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-login-verify\", { body: { userId, credential: { id: credential.id, rawId: arrayBuf"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-login-verify",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-login-verify",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-registration-challenge",
+          "hasBody": false,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 4,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-registration-challenge\"); if (error) throw error; return data; } export async function verifyRegistration(cr"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-registration-challenge",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-registration-challenge",
+        "requiresJsonBody": false
+      },
+      "mismatches": []
+    },
+    {
+      "callers": [
+        {
+          "bodyHasSpread": false,
+          "bodyKeys": [
+            "credential",
+            "deviceName"
+          ],
+          "column": 36,
+          "file": "src/repositories/biometric.repository.ts",
+          "fn": "webauthn-registration-verify",
+          "hasBody": true,
+          "hasHeaders": false,
+          "kind": "invoke",
+          "line": 11,
+          "method": "POST",
+          "snippet": "functions.invoke(\"webauthn-registration-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferToBa"
+        }
+      ],
+      "exists": true,
+      "fn": "webauthn-registration-verify",
+      "info": {
+        "hasContract": false,
+        "hasIndex": true,
+        "methods": null,
+        "name": "webauthn-registration-verify",
+        "requiresJsonBody": true
+      },
+      "mismatches": []
+    }
+  ],
+  "orphanedFunctions": [
+    "admin-router",
+    "ai-content-enrichment",
+    "ai-entity-enrichment",
+    "ai-eval-runner",
+    "ai-proxy",
+    "ai-rag",
+    "ai-recommendations",
+    "ai-router",
+    "alert-dispatcher",
+    "auth-callback",
+    "auto-onboarding-cron",
+    "auto-source-scrape",
+    "autonomous-cron-dispatcher",
+    "award-loyalty-points",
+    "backup-storage",
+    "booking-lifecycle",
+    "booking-router",
+    "cleanup-expired-media",
+    "cleanup-expired-messages",
+    "cleanup-integration-health-logs",
+    "cleanup-orphan-media",
+    "collect-sepa-rents",
+    "command-approval-webhook",
+    "command-center-api",
+    "command-github-webhook",
+    "command-monitoring-cron",
+    "commerce-router",
+    "crypto-webhook",
+    "csp-report",
+    "deliveroo-dubai-food",
+    "dev-builder",
+    "dev-planner",
+    "dispatch-cron",
+    "dispatch-webhook",
+    "dld-sync-cron",
+    "dlq-processor",
+    "email-enqueue",
+    "email-queue-process",
+    "esign-webhook",
+    "execution-loop",
+    "execution-runner-callback",
+    "expire-listings",
+    "expire-pending-referrals",
+    "export-ical",
+    "food-audit",
+    "food-menu-builder",
+    "food-normalizer",
+    "food-publish",
+    "food-rescrape-monitor",
+    "food-router",
+    "food-visibility-gate",
+    "food-visual-clean",
+    "gateway-webhook-ingest",
+    "gdpr-deletion-processor",
+    "gdpr-router",
+    "generate-embeddings",
+    "generate-rent-receipt",
+    "generate-seo",
+    "goal-create",
+    "goal-planner",
+    "identity-router",
+    "infra-router",
+    "inngest-handler",
+    "integration-health-cron",
+    "integration-health-monitor",
+    "job-queue-worker",
+    "job-runner",
+    "lambda-invoke-proxy",
+    "lc3-replan-trigger",
+    "logistics-router",
+    "master-runtime-qa-engine",
+    "media-processor",
+    "media-router",
+    "mobile-money-webhook",
+    "mux-upload",
+    "notification-router",
+    "omega-server-loop",
+    "ops-ai-chat",
+    "orbit-router",
+    "order-manage",
+    "payment-notification",
+    "pipeline-worker",
+    "plaid-webhook",
+    "prayer-push-cron",
+    "process-referral-reward",
+    "public-health",
+    "purchase-locs",
+    "qr-payment-session",
+    "receive-email",
+    "redis-enqueue",
+    "rent-create-payment",
+    "rent-lifecycle-cron",
+    "rent-reminders",
+    "rent-router",
+    "repair-worker",
+    "run-engine-cron",
+    "search-meilisearch",
+    "search-router",
+    "seller-kpi-snapshot",
+    "send-call-push",
+    "send-push",
+    "send-sms",
+    "sentinel-server",
+    "sentinel-server-guards",
+    "ses-webhook",
+    "shop-import-processor",
+    "social-preview",
+    "sqs-enqueue-proxy",
+    "stripe-router",
+    "stripe-webhook",
+    "sync-meilisearch",
+    "trigger-github",
+    "tts-engine",
+    "uae-data-cleanup",
+    "vector-embed",
+    "video-processor",
+    "voice-processing",
+    "voice-router",
+    "wallet-router",
+    "watchdog-ping",
+    "webauthn-router"
+  ],
+  "totals": {
+    "callSites": 258,
+    "contractCoverage": "28/117 (23.9%)",
+    "declaredContracts": 28,
+    "functionsOnDisk": 238,
+    "methodMismatches": 0,
+    "missingAuthHeaderMismatches": 0,
+    "missingBodyMismatches": 0,
+    "missingFieldMismatches": 0,
+    "orphanedEdgeFunctions": 121,
+    "orphanedFrontendCalls": 0,
+    "undeclaredResponseFieldWarnings": 0,
+    "unhandledErrorsWarnings": 0,
+    "uniqueTargets": 117,
+    "verifiedCallSites": 239
+  }
+}
