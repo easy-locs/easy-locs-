@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Auto-push to GitHub after every commit. Tracked source — installed into
+# .git/hooks/post-commit by scripts/install-git-hooks.sh (called from
+# scripts/post-merge.sh after each task merge).
+if [ -n "${AUTO_PUSH_SKIP:-}" ]; then exit 0; fi
+SCRIPT="$(git rev-parse --show-toplevel)/scripts/auto-push-github.sh"
+if [ -f "${SCRIPT}" ]; then
+  bash "${SCRIPT}" >/tmp/auto-push-github.log 2>&1 &
+  disown 2>/dev/null || true
+fi
+exit 0
