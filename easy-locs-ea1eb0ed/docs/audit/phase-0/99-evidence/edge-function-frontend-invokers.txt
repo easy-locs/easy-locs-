@@ -1,0 +1,230 @@
+# Frontend functions.invoke() callsites (file:line:match)
+src/components/admin/SearchSyncStatusWidget.tsx:118:      const { error: invokeErr } = await supabase.functions.invoke("sync-meilisearch-cron", {
+src/components/orbit/support/OrbitAISupportChat.tsx:256:      const { data: fn } = await db.functions.invoke("orbit-ai-support", {
+src/domains/restaurant/service.ts:276:                  const { data: dispatchResult } = await supaDb.functions.invoke("dispatch-delivery", {
+src/engines/recommendations/recommendation-engine.ts:169:    const { data, error } = await db.functions.invoke("vector-similarity-search", {
+src/hooks/useLiveKitRoom.ts:290:      const { error } = await db.functions.invoke("livekit-room-token", {
+src/hooks/useLiveKitRoom.ts:302:      await db.functions.invoke("livekit-room-token", {
+src/hooks/useLiveKitRoom.ts:45:  const { data, error } = await db.functions.invoke("livekit-room-token", {
+src/hooks/useMasterAppBootstrap.ts:149:            supabase.functions.invoke("presence-heartbeat", {
+src/hooks/useMasterAppBootstrap.ts:162:              supabase.functions.invoke("presence-heartbeat", {
+src/lib/api/deep-scrape.ts:26:  const { data, error } = await supabase.functions.invoke("deep-scrape-build", {
+src/lib/api-gateway/connectors/careem-connector.ts:35:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/careem-connector.ts:68:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/deliveroo-connector.ts:36:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/deliveroo-connector.ts:65:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/talabat-connector.ts:35:    const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/connectors/talabat-connector.ts:68:      const { data, error } = await supabase.functions.invoke("gateway-marketplace-sync", {
+src/lib/api-gateway/orchestration-engine.ts:70:      const { data, error } = await supabase.functions.invoke("gateway-cron-sync", {
+src/lib/api/integration-health.ts:44:  const { data, error } = await db.functions.invoke("system-router", {
+src/lib/api/integration-health.ts:55:  const { data, error } = await db.functions.invoke("system-router", {
+src/lib/auth/guest-otp.ts:33:  const { data, error: invokeErr } = await db.functions.invoke("send-otp", {
+src/lib/auth/phone-identity.ts:39:  const { data, error: invokeErr } = await db.functions.invoke("send-otp", {
+src/lib/auth/phone-identity.ts:80:    const { data, error: invokeErr } = await db.functions.invoke("verify-otp", {
+src/lib/auth/provider-health.ts:68:      db.functions.invoke("send-otp", {
+src/lib/aws/aws-client.ts:27:    const { data, error } = await db.functions.invoke("aws-health-check", {
+src/lib/aws/aws-health.ts:12:    const { data, error } = await db.functions.invoke("aws-health-check", {});
+src/lib/aws/s3-storage.ts:20:  const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+src/lib/aws/s3-storage.ts:59:  const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+src/lib/aws/s3-storage.ts:77:  const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+src/lib/aws/s3-storage.ts:93:  const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+src/lib/aws/ses-email.ts:26:  const { data, error } = await db.functions.invoke("send-email", {
+src/lib/call/ice-config.ts:20:    const { data, error } = await supabase.functions.invoke("get-turn-credentials");
+src/lib/command-control/email-parser.ts:98:    const { data, error } = await supabase.functions.invoke("command-email-parse", {
+src/lib/dlq/dlq-client.ts:19:    const { error: fnErr } = await supabase.functions.invoke("dlq-ingest", {
+src/lib/engines/backend-connectivity-engine.ts:122:      supabase.functions.invoke("health-check", { method: "GET" }),
+src/lib/geo/spatial-service.ts:25:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/geo/spatial-service.ts:43:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/geo/spatial-service.ts:58:  const { data, error } = await supabase.functions.invoke("spatial-query", {
+src/lib/infrastructure/cache-layer.ts:253:      const { data: cacheResult } = await supabase.functions.invoke("cache-manager", {
+src/lib/media/media-upload.ts:99:      const { data, error } = await db.functions.invoke("s3-upload-proxy", {
+src/lib/merchant-qr/merchant-payment-executor.ts:249:    await db.functions.invoke("commission-split", {
+src/lib/monitoring.ts:366:      const { error } = await db.functions.invoke("check-subscription", { body: {} });
+src/lib/notifications/email-dispatcher.ts:18:    const { data, error } = await supabase.functions.invoke("send-email", {
+src/lib/notifications/notification-dispatcher.ts:151:  const { data, error } = await db.functions.invoke("notification-dispatcher", {
+src/lib/onboarding/pipeline/enrichment/enrichment.ai-description.generate.ts:103:    const { data, error } = await supabase.functions.invoke("storefront-description", {
+src/lib/onboarding/pipeline/media/media.download.service.ts:22:    const { data, error } = await db.functions.invoke("process-onboarding-media", {
+src/lib/onboarding/scraping/firecrawl-client.ts:17:  const { data, error } = await supabase.functions.invoke("scrape-proxy", {
+src/lib/orbit/get-rtc-config.ts:13:    const { data, error } = await db.functions.invoke("get-turn-credentials");
+src/lib/orbit/translate-message.ts:31:    const { data, error } = await db.functions.invoke("translate-message", {
+src/lib/orders/orderEngine.ts:168:    await db.functions.invoke("send-email", {
+src/lib/payments/paymentLiveConnector.ts:31:  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+src/lib/payments/paymentLiveConnector.ts:56:  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
+src/lib/payments/paymentLiveConnector.ts:89:  const { data, error } = await supabase.functions.invoke("process-refund", {
+src/lib/payments/paymentService.ts:111:  const { data, error } = await supabase.functions.invoke("process-refund", {
+src/lib/payments/paymentService.ts:27:  const { data, error } = await supabase.functions.invoke("create-checkout-session", {
+src/lib/payments/paymentService.ts:81:  const { data, error } = await supabase.functions.invoke("capture-payment-intent", {
+src/lib/payments/storefrontCheckoutService.ts:36:  const { data, error } = await supabase.functions.invoke("create-storefront-checkout", {
+src/lib/push/call-push-handler.ts:22:    const { data, error } = await db.functions.invoke("send-push-notification", {
+src/lib/push/call-push-handler.ts:63:    await db.functions.invoke("send-push-notification", {
+src/lib/push/registerPush.ts:333:  const { error } = await supabase.functions.invoke("send-push-notification", {
+src/lib/real-estate/listingCheckout.ts:27:  const { data, error } = await supabase.functions.invoke("create-listing-checkout", {
+src/lib/real-estate/listingCheckout.ts:40:  const { data, error } = await supabase.functions.invoke("create-listing-checkout", {
+src/lib/redis/presence-service.ts:105:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:156:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/presence-service.ts:177:    await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/presence-service.ts:22:    const { error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:35:    await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:47:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:61:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:75:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/presence-service.ts:91:    const { data, error } = await _supabase.functions.invoke("presence-heartbeat", {
+src/lib/redis/redis-client.ts:21:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:39:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:52:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:66:    const { data, error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/redis/redis-client.ts:83:    const { error } = await _supabase.functions.invoke("redis-proxy", {
+src/lib/runtime/execution-proof.ts:79:    detail: "Calls supabase.functions.invoke('wallet-transfer') with PIN, amount, wallets",
+src/lib/runtime/runtime-rpc-client.ts:33:  const { data, error } = await db.functions.invoke("runtime-control-plane", {
+src/lib/search-engine/search-engine-client.ts:113:  const { data, error } = await db.functions.invoke("system-router", {
+src/lib/search-engine/search-engine-client.ts:124:  const { data, error } = await db.functions.invoke("system-router", {
+src/lib/search-engine/search-engine-client.ts:56:    const { data, error } = await db.functions.invoke("marketplace-router", {
+src/lib/search-engine/search-engine-client.ts:81:    const { data, error } = await db.functions.invoke("search-global", {
+src/lib/search-engine/search-resolver.ts:151:    const { data, error } = await db.functions.invoke("search-global", {
+src/lib/search-engine/search-resolver.ts:80:    const { data, error } = await db.functions.invoke("marketplace-router", {
+src/lib/security-chief/backend-clean-contract.ts:109:      const { data, error } = await db.functions.invoke("get-turn-credentials");
+src/lib/security/otp-hardened.ts:32:    const { data, error: invokeErr } = await db.functions.invoke("send-otp", {
+src/lib/server-actions/adminPayouts.ts:17:  const { data, error } = await supabase.functions.invoke("admin-payout-reject", {
+src/lib/server-actions/adminPayouts.ts:6:  const { data, error } = await supabase.functions.invoke("admin-payout-approve", {
+src/lib/server-actions/bookings.ts:16:    const { data, error } = await supabase.functions.invoke("booking-create", {
+src/lib/server-actions/bookings.ts:29:  const { data, error } = await supabase.functions.invoke("booking-approve", {
+src/lib/server-actions/bookings.ts:37:  const { data, error } = await supabase.functions.invoke("booking-reject", {
+src/lib/server-actions/bookings.ts:45:  const { data, error } = await supabase.functions.invoke("booking-complete", {
+src/lib/server-actions/payouts.ts:10:  const { data, error } = await supabase.functions.invoke("payout-request-create", {
+src/lib/server-actions/refunds.ts:17:  const { data, error } = await supabase.functions.invoke("refund-process-booking", {
+src/lib/server-actions/refunds.ts:7:  const { data, error } = await supabase.functions.invoke("refund-request-booking", {
+src/lib/server-actions/rent.ts:8:  const { data, error } = await supabase.functions.invoke("rent-payment", {
+src/lib/shared/v4-delivery-bridge.ts:67:          const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/lib/social/review-pipeline.ts:35:    const { data, error } = await db.functions.invoke("submit-review", {
+src/lib/source/ingestion-runtime.ts:44:  const { data, error } = await supabase.functions.invoke("run-ingestion-pipeline", {
+src/lib/storage/assets.ts:23:      const { data, error } = await supabase.functions.invoke("s3-upload-proxy", {
+src/lib/storage/uploadFile.ts:35:      const { data, error } = await supabase.functions.invoke("s3-upload-proxy", {
+src/lib/wallet/wallet-engine.ts:13:    const { data, error } = await db.functions.invoke("wallet-ops", {
+src/lib/wallet/wallet-topup.ts:34:    const { data, error } = await db.functions.invoke("create-wallet-topup", {
+src/lib/wallet/wallet-transfer.ts:77:    const { data, error } = await db.functions.invoke("wallet-transfer", {
+src/lib/webrtc/getIceServers.ts:25:    const { data, error } = await supabase.functions.invoke("get-turn-credentials", {
+src/lib/webrtc/peer.ts:42:    const { data, error } = await db.functions.invoke("livekit-room-token", {
+src/pages/admin/AdminDldBackfillPage.tsx:56:  const { data, error } = await supabase.functions.invoke("dld-analytics", {
+src/pages/admin/AdminDldBackfillPage.tsx:65:  const { data, error } = await supabase.functions.invoke("dld-analytics", {
+src/pages/admin/AdminNotificationLabPage.tsx:124:      const { error } = await db.functions.invoke("send-notification-email", {
+src/pages/settings/SettingsSecurity.tsx:53:  const { data: beginData, error: beginErr } = await db.functions.invoke("webauthn-begin-registration");
+src/pages/settings/SettingsSecurity.tsx:78:  const { data: finishData, error: finishErr } = await db.functions.invoke("webauthn-finish-registration", {
+src/repositories/admin-ops.repository.ts:141:  const { data, error } = await db.functions.invoke("engine-cron-server", { body: {} });
+src/repositories/admin-ops.repository.ts:179:  const { data, error } = await db.functions.invoke("uae-scrape-onboard", {
+src/repositories/admin-ops.repository.ts:197:  await db.functions.invoke("platform-recovery", { body: { job } });
+src/repositories/ai.repository.ts:13:  const { data, error } = await supabase.functions.invoke("run-scheduled-audit", { body: {} });
+src/repositories/ai.repository.ts:19:  const { data, error } = await supabase.functions.invoke("generate-cv", { body });
+src/repositories/ai.repository.ts:25:  const { data, error } = await supabase.functions.invoke("translate-message", { body });
+src/repositories/ai.repository.ts:31:  const { error } = await supabase.functions.invoke("send-email", { body });
+src/repositories/ai.repository.ts:36:  const { data, error } = await supabase.functions.invoke("lease-workflow", { body });
+src/repositories/ai.repository.ts:43:    const { data, error } = await supabase.functions.invoke("check-subscription");
+src/repositories/ai.repository.ts:52:  const { data, error } = await supabase.functions.invoke("create-concierge-payment", { body });
+src/repositories/ai.repository.ts:58:  const { data, error } = await supabase.functions.invoke("create-booking-payment", { body });
+src/repositories/ai.repository.ts:7:  const { data, error } = await supabase.functions.invoke("ai-assistant", { body });
+src/repositories/auth.repository.ts:34:      await db.functions.invoke("presence-heartbeat", {
+src/repositories/auth.repository.ts:40:      await db.functions.invoke("presence-heartbeat", {
+src/repositories/auth-utils.repository.ts:49:  const { data, error } = await db.functions.invoke("tenant-signup", { body });
+src/repositories/billing.repository.ts:13:  const { data, error } = await supabase.functions.invoke("customer-portal");
+src/repositories/billing.repository.ts:7:  const { data, error } = await supabase.functions.invoke("create-checkout", { body: { priceId } });
+src/repositories/biometric.repository.ts:12:  const { data, error } = await db.functions.invoke("webauthn-registration-verify", {
+src/repositories/biometric.repository.ts:32:  const { data, error } = await db.functions.invoke("webauthn-authentication-challenge");
+src/repositories/biometric.repository.ts:39:  const { data, error } = await db.functions.invoke("webauthn-authentication-verify", {
+src/repositories/biometric.repository.ts:59:  const { data, error } = await db.functions.invoke("webauthn-login-challenge", {
+src/repositories/biometric.repository.ts:5:  const { data, error } = await db.functions.invoke("webauthn-registration-challenge");
+src/repositories/biometric.repository.ts:68:  const { data, error } = await db.functions.invoke("webauthn-login-verify", {
+src/repositories/booking.repository.ts:126:  const { data, error } = await db.functions.invoke("create-concierge-payment", {
+src/repositories/booking.repository.ts:93:    await db.functions.invoke("send-notification-email", {
+src/repositories/channel-manager.repository.ts:102:    const { error } = await db.functions.invoke("send-email", {
+src/repositories/channel-manager.repository.ts:138:    const { error } = await db.functions.invoke("send-email", {
+src/repositories/channel-manager.repository.ts:65:  const res = await db.functions.invoke("sync-ical", {
+src/repositories/communication.repository.ts:513:  await db.functions.invoke("send-notification-email", {
+src/repositories/communication.repository.ts:850:  const { data, error } = await db.functions.invoke("create-concierge-payment", { body });
+src/repositories/company.repository.ts:14:  const { data, error } = await db.functions.invoke("create-legal-notice-payment", {
+src/repositories/dashboard.repository.ts:365:  const { data, error } = await db.functions.invoke("sync-ical", { body });
+src/repositories/deals.repository.ts:44:  const { data, error } = await db.functions.invoke("process-refund", {
+src/repositories/deals.repository.ts:86:  const { data, error } = await db.functions.invoke("orbit-payment", {
+src/repositories/delivery.repository.ts:29:  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
+src/repositories/delivery.repository.ts:59:  const { data } = await db.functions.invoke("dispatch-delivery", {
+src/repositories/delivery.repository.ts:97:  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
+src/repositories/document-builder.repository.ts:36:  db.functions.invoke("send-email", { body }).catch(() => {});
+src/repositories/documents.repository.ts:35:  await db.functions.invoke("send-email", { body });
+src/repositories/domain/dashboard.repo.ts:69:    await db.functions.invoke("admin-trigger", {
+src/repositories/dunning.repository.ts:54:    await db.functions.invoke("send-email", { body: { to: data.email, subject, html } }).catch(() => {});
+src/repositories/escrow.repository.ts:14:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:30:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:38:  const { data, error } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/escrow.repository.ts:7:  const { data } = await supabase.functions.invoke("dispatch-delivery", {
+src/repositories/finances.repository.ts:10:  const { data, error } = await db.functions.invoke("create-connect-account");
+src/repositories/finances.repository.ts:16:  const { data, error } = await db.functions.invoke("disconnect-stripe");
+src/repositories/finances.repository.ts:4:  const { data, error } = await db.functions.invoke("check-connect-status");
+src/repositories/guest-portal.repository.ts:60:  const { error } = await db.functions.invoke("send-email", {
+src/repositories/inventory.repository.ts:73:  const { error } = await db.functions.invoke("send-email", { body });
+src/repositories/listing-contact.repository.ts:24:  const { data, error } = await db.functions.invoke("reveal-contact", {
+src/repositories/merchant-dashboard.repository.ts:62:  const { data, error } = await db.functions.invoke("translate-message", {
+src/repositories/mobility.repository.ts:137:  const { data, error } = await db.functions.invoke("dispatch-delivery", { body });
+src/repositories/mobility.repository.ts:75:  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
+src/repositories/onboarding.repository.ts:69:  const { data, error } = await db.functions.invoke("sync-ical", { body });
+src/repositories/order-actions.repository.ts:17:  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
+src/repositories/payment-notices.repository.ts:22:  await db.functions.invoke("send-email", { body: { to: email, subject, html } }).catch(() => {});
+src/repositories/payment-providers.repository.ts:16:  const { data } = await db.functions.invoke("check-connect-status");
+src/repositories/payment-providers.repository.ts:21:  const { data, error } = await db.functions.invoke("create-connect-account");
+src/repositories/payment-providers.repository.ts:27:  const { data, error } = await db.functions.invoke("disconnect-stripe");
+src/repositories/payments.repository.ts:122:  const { data, error } = await db.functions.invoke("create-concierge-payment", { body });
+src/repositories/payments.repository.ts:129:  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
+src/repositories/payments.repository.ts:136:  const { data, error } = await db.functions.invoke("mobile-money-payment", { body });
+src/repositories/payments.repository.ts:142:  const { data, error } = await db.functions.invoke("mobile-money-payment", {
+src/repositories/payments.repository.ts:151:  const { data, error } = await db.functions.invoke("crypto-payment", { body });
+src/repositories/payments.repository.ts:157:  const { data, error } = await db.functions.invoke("crypto-payment", {
+src/repositories/payments.repository.ts:15:  const { data, error } = await db.functions.invoke("rent-payment", { body: { ...body, mode: "checkout" } });
+src/repositories/payments.repository.ts:166:  const { data, error } = await db.functions.invoke("create-subscription", { body });
+src/repositories/payments.repository.ts:172:  const { data, error } = await db.functions.invoke("manage-subscription", { body });
+src/repositories/payments.repository.ts:178:  const { data, error } = await db.functions.invoke("subscription-portal", { body: {} });
+src/repositories/payments.repository.ts:197:  const { data, error } = await db.functions.invoke("refund-admin", {
+src/repositories/payments.repository.ts:205:  const { data, error } = await db.functions.invoke("refund-admin", {
+src/repositories/payments.repository.ts:213:  const { data, error } = await db.functions.invoke("refund-admin", {
+src/repositories/payments.repository.ts:221:  const { data, error } = await db.functions.invoke("refund-admin", {
+src/repositories/payments.repository.ts:22:  const { data, error } = await db.functions.invoke("create-checkout", { body });
+src/repositories/payments.repository.ts:29:  const { data, error } = await db.functions.invoke("verify-guest-payment", { body });
+src/repositories/payments.repository.ts:35:  const { data, error } = await db.functions.invoke("create-guest-checkout", { body });
+src/repositories/payments.repository.ts:42:  const { data, error } = await db.functions.invoke("create-wallet-topup", { body });
+src/repositories/payments.repository.ts:48:  const { data, error } = await db.functions.invoke("wallet-pin", { body });
+src/repositories/payments.repository.ts:55:  const { data, error } = await db.functions.invoke("orbit-payment", { body });
+src/repositories/payments.repository.ts:8:  const { data, error } = await db.functions.invoke("create-stripe-intent", { body });
+src/repositories/rental-data.repository.ts:110:  const { data, error } = await db.functions.invoke("send-email", { body });
+src/repositories/rental-data.repository.ts:176:  const { data, error } = await db.functions.invoke("rent-payment", { body: { ...body, mode: "checkout" } });
+src/repositories/rental.repository.ts:111:  const { data, error } = await db.functions.invoke("generate-pdf", { body });
+src/repositories/rental.repository.ts:324:  const { data, error } = await db.functions.invoke("tenant-signup", { body });
+src/repositories/rental.repository.ts:331:  const { error } = await db.functions.invoke("send-email", { body });
+src/repositories/rental.repository.ts:337:  const { data, error } = await db.functions.invoke("lease-workflow", { body });
+src/repositories/rental.repository.ts:381:  await db.functions.invoke("notify-booking", { body: { booking_request_id: bookingRequestId } });
+src/repositories/rental.repository.ts:535:  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
+src/repositories/rental.repository.ts:577:  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
+src/repositories/seasonal.repository.ts:117:  const { data, error } = await db.functions.invoke("send-email", { body });
+src/repositories/seasonal.repository.ts:124:  const { data, error } = await db.functions.invoke("create-booking-payment", { body });
+src/repositories/security-pin.repository.ts" },
+src/repositories/security-pin.repository.ts:100:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
+src/repositories/security-pin.repository.ts:61:      const { data, error } = await supabase.functions.invoke("wallet-pin", {
+src/repositories/settings.repository.ts:104:  const { data, error } = await db.functions.invoke("stripe-connect-login", { body: { org_id: orgId } });
+src/repositories/settings.repository.ts:98:  const { data, error } = await db.functions.invoke("create-connect-account", { body: { org_id: orgId } });
+src/repositories/storefront.repository.ts:157:  const { data, error } = await db.functions.invoke("ai-assistant", { body });
+src/repositories/storefront.repository.ts:203:  const { data, error } = await db.functions.invoke("ai-assistant", { body: { ...body, mode: "proxy" } });
+src/repositories/storefront.repository.ts:210:  const { data, error } = await db.functions.invoke("ai-assistant", { body: { ...body, mode: "category_suggest" } });
+src/repositories/storefront.repository.ts:217:  const { data, error } = await db.functions.invoke("ai-shopping-chat", { body });
+src/repositories/storefront.repository.ts:224:  const { data, error } = await db.functions.invoke("dispatch-ride", { body });
+src/repositories/subscription.repository.ts:7:  const { data, error } = await supabase.functions.invoke("check-subscription");
+src/repositories/tenant-docs.repository.ts:72:  const { data, error } = await db.functions.invoke("send-email", { body });
+src/repositories/tenant-portal.repository.ts:155:  const { data } = await db.functions.invoke("translate-message", {
+src/repositories/tenant-portal.repository.ts:91:  await db.functions.invoke("send-email", { body });
+src/repositories/tenant.repository.ts:36:  const { data, error } = await db.functions.invoke("rent-payment", {
+src/services/data/forex-data-service.ts:45:    const { data, error } = await db.functions.invoke("fx-rates", { method: "GET" });
+src/services/domain/kyc.service.ts:126:  const { data, error } = await db.functions.invoke("kyc-review", {
+src/services/e-signature.service.ts:143:  const { error: fnError } = await db.functions.invoke("esign-create-envelope", {
+src/services/e-signature.service.ts:196:    const { data: fnData, error: fnError } = await db.functions.invoke("esign-create-envelope", {
+src/services/e-signature.service.ts:228:  const { error: fnError } = await db.functions.invoke("esign-create-envelope", {
+src/services/e-signature.service.ts:74:  const { data: fnData, error: fnError } = await db.functions.invoke("esign-create-envelope", {
+src/services/plaid.service.ts:132:      const { data: accountsData, error: accountsError } = await db.functions.invoke("plaid-link-token", {
+src/services/plaid.service.ts:203:  const { data, error } = await db.functions.invoke("plaid-link-token", {
+src/services/plaid.service.ts:227:  const { data, error } = await db.functions.invoke("plaid-link-token", {
+src/services/plaid.service.ts:51:  const { data, error } = await db.functions.invoke("plaid-link-token", {
+src/services/plaid.service.ts:68:  const { data: exchangeData, error: exchangeError } = await db.functions.invoke("plaid-link-token", {
+src/services/plaid.service.ts:80:  const { data: accountsData, error: accountsError } = await db.functions.invoke("plaid-link-token", {

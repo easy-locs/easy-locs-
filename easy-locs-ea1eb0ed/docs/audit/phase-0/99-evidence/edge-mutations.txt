@@ -1,0 +1,521 @@
+# Edge function mutations (file:line:match)
+supabase/functions/_shared/brain-firewall.ts:113:      await supabase.from("engine_run_logs").insert({
+supabase/functions/_shared/food-firewall-adapter.ts:29:    await supabase.from("seed_merchants").update(fields).eq("id", merchantId);
+supabase/functions/_shared/inngest-client.ts:188:        const { error } = await db.from("entity_embeddings").upsert({
+supabase/functions/_shared/inngest-client.ts:353:            await db.from("entity_embeddings").update({
+supabase/functions/_shared/execution/adapters/marketplace/bootstrap.ts:42:        await sb.from("engine_run_logs").insert({
+supabase/functions/_shared/execution/adapters/ai/ai-adapter.ts:179:        const { error } = await sb.from("ai_interactions").insert({
+supabase/functions/_shared/execution/adapters/payments/bootstrap.ts:37:        await sb.from("engine_run_logs").insert({
+supabase/functions/_shared/execution/adapters/wallet/bootstrap.ts:35:        await sb.from("engine_run_logs").insert({
+supabase/functions/_shared/execution/adapters/wallet/wallet-repository.ts:93:      const { error: ledgerErr } = await sb.from("wallet_ledger_entries").insert({
+supabase/functions/auto-source-scrape/index.ts:137:            await supabase.from("imported_shop_raw").upsert({
+supabase/functions/auto-source-scrape/index.ts:222:                await supabase.from("imported_shop_raw").insert({
+supabase/functions/booking-approve/index.ts:62:      await admin.from("chat_messages_v2").insert({
+supabase/functions/booking-complete/index.ts:65:      await admin.from("chat_messages_v2").insert({
+supabase/functions/booking-create/index.ts:96:    const { error: convErr } = await admin.from("conversations_v2").insert({
+supabase/functions/booking-create/index.ts:137:    await admin.from("chat_messages_v2").insert({
+supabase/functions/booking-lifecycle/index.ts:170:        await supabase.from("notifications").insert({
+supabase/functions/booking-lifecycle/index.ts:181:      await supabase.from("audit_logs").insert({
+supabase/functions/booking-reject/index.ts:65:      await admin.from("chat_messages_v2").insert({
+supabase/functions/browser-user-repair-engine/index.ts:65:    const { data: run } = await supabase.from("browser_repair_runs").insert({
+supabase/functions/browser-user-repair-engine/index.ts:114:          try { await supabase.from("browser_repair_actions").insert(actions); } catch {}
+supabase/functions/browser-user-repair-engine/index.ts:120:            await supabase.from("browser_repair_events").insert({
+supabase/functions/browser-user-repair-engine/index.ts:248:            await supabase.from("conversations_v2").update({ type: "direct" } as any).eq("id", c.id);
+supabase/functions/browser-user-repair-engine/index.ts:489:          await supabase.from("seed_merchants").update({
+supabase/functions/browser-user-repair-engine/index.ts:541:        await supabase.from("engine_supervisor").update({ status: "idle" } as any).eq("status", "running");
+supabase/functions/browser-user-repair-engine/index.ts:573:          await supabase.from("browser_front_incidents").update({
+supabase/functions/browser-user-repair-engine/index.ts:652:      if (issues.length) { try { await supabase.from("browser_repair_issues").insert(issues); } catch {} }
+supabase/functions/browser-user-repair-engine/index.ts:655:      await supabase.from("browser_repair_runs").update({
+supabase/functions/browser-user-repair-engine/index.ts:685:          await supabase.from("browser_repair_watchdog").update({
+supabase/functions/browser-user-repair-engine/index.ts:693:          await supabase.from("browser_repair_watchdog").insert({
+supabase/functions/browser-user-repair-engine/index.ts:705:    await supabase.from("engine_run_logs").insert({
+supabase/functions/check-subscription/index.ts:135:      await supabaseClient.from("subscriptions").upsert({
+supabase/functions/check-subscription/index.ts:183:    await supabaseClient.from("subscriptions").update({ status: "inactive", plan: "free" }).eq("user_id", userId);
+supabase/functions/check-subscription/index.ts:185:    await supabaseClient.from("subscriptions").upsert({
+supabase/functions/cleanup-expired-media/index.ts:99:    await supabase.from("audit_logs").insert({
+supabase/functions/commission-split/index.ts:124:    const { error: insertError } = await supabase.from("commission_splits").insert(splits);
+supabase/functions/create-stripe-intent/index.ts:107:      await serviceClient.from("financial_audit_trail").insert({
+supabase/functions/create-wallet-topup/index.ts:115:    await supabase.from("payments").insert({
+supabase/functions/deep-scrape-build/index.ts:702:          .from("seed_merchants").insert(insertPayload).select("id").single();
+supabase/functions/deep-scrape-build/index.ts:725:        await db.from("seed_merchants").update({
+supabase/functions/deep-scrape-build/index.ts:739:        await db.from("entity_pipeline_queue").insert({
+supabase/functions/disconnect-stripe/index.ts:75:    await supabaseClient.from("audit_logs").insert({
+supabase/functions/dispatch-delivery/index.ts:176:      await supabaseAdmin.from("mobility_job_offers").insert({
+supabase/functions/dispatch-delivery/index.ts:280:      const { error } = await supabaseAdmin.from("mobility_jobs").update(updates).eq("id", job_id);
+supabase/functions/dispatch-delivery/index.ts:314:      const { error } = await supabaseAdmin.from("mobility_jobs").update(updates).eq("id", job_id);
+supabase/functions/dispatch-delivery/index.ts:338:      const { data: escrow, error } = await supabaseAdmin.from("escrow_payments").insert({
+supabase/functions/dispatch-delivery/index.ts:363:      const { error } = await supabaseAdmin.from("escrow_payments").update({
+supabase/functions/dispatch-delivery/index.ts:370:      await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/dispatch-delivery/index.ts:388:      const { error } = await supabaseAdmin.from("escrow_payments").update({
+supabase/functions/dispatch-ride/index.ts:100:          .from("customer_profiles").insert({ user_id: userId }).select("id").single();
+supabase/functions/dispatch-ride/index.ts:116:      const { data: job, error } = await db.from("mobility_jobs").insert({
+supabase/functions/dispatch-ride/index.ts:152:        await db.from("mobility_fare_quotes").insert({
+supabase/functions/dispatch-ride/index.ts:167:        await db.from("parcel_job_details").insert({
+supabase/functions/dispatch-ride/index.ts:213:      await db.from("mobility_jobs").update({
+supabase/functions/dispatch-ride/index.ts:229:        await db.from("rider_presence").update({
+supabase/functions/dispatch-ride/index.ts:270:      await db.from("mobility_jobs").update({
+supabase/functions/dispatch-ride/index.ts:280:      await db.from("mobility_job_offers").update({
+supabase/functions/dispatch-ride/index.ts:292:      await db.from("rider_presence").update({
+supabase/functions/dispatch-ride/index.ts:297:      await db.from("trip_live_state").upsert({
+supabase/functions/dispatch-ride/index.ts:317:      await db.from("mobility_job_offers").update({
+supabase/functions/dispatch-ride/index.ts:362:      await db.from("mobility_jobs").update(updates).eq("id", job_id);
+supabase/functions/dispatch-ride/index.ts:366:        await db.from("rider_presence").update({
+supabase/functions/dispatch-ride/index.ts:371:        await db.from("trip_live_state").delete().eq("job_id", job_id);
+supabase/functions/dispatch-ride/index.ts:405:      await db.from("mobility_jobs").update(updates).eq("id", job_id);
+supabase/functions/dispatch-ride/index.ts:440:        await db.from("mobility_jobs").update({
+supabase/functions/dispatch-ride/index.ts:460:          await db.from("mobility_jobs").update({
+supabase/functions/dispatch-ride/index.ts:523:  await db.from("mobility_job_offers").insert(offers);
+supabase/functions/dispatch-ride/index.ts:527:  await db.from("mobility_dispatch_attempts").insert({
+supabase/functions/dispatch-ride/index.ts:540:  await db.from("mobility_jobs").update({
+supabase/functions/dispatch-webhook/index.ts:115:      await supabase.from("webhook_deliveries").insert({
+supabase/functions/dispatch-webhook/index.ts:126:        await supabase.from("webhooks").update({
+supabase/functions/dispatch-webhook/index.ts:131:        await supabase.from("webhooks").update({
+supabase/functions/email-enqueue/index.ts:61:    const { data: job, error: jqErr } = await admin.from("job_queue").insert({
+supabase/functions/engine-cron-server/index.ts:112:        () => supabase.from("engine_supervisor").upsert(payload as any, { onConflict: "engine_name" }),
+supabase/functions/engine-cron-server/index.ts:182:          const { data: created, error: createErr } = await supabase.from("organizations").insert({
+supabase/functions/engine-cron-server/index.ts:195:              await supabase.from("merchant_onboarding_profiles").upsert({ id: created.id, merchant_name: seed.name, city: seed.city ?? "Dubai", onboarding_status: "completed" } as any, { onConflict: "id" });
+supabase/functions/engine-cron-server/index.ts:247:          await supabase.from("menu_items").delete().eq("merchant_profile_id", storefront.id);
+supabase/functions/engine-cron-server/index.ts:258:          await supabase.from("menu_items").insert(rows as any);
+supabase/functions/engine-cron-server/index.ts:317:        await supabase.from("seed_merchants").update({ vertical } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:336:          await supabase.from("seed_merchants").update({ subcategory: sub, taxonomy_score: 75 } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:356:          await supabase.from("seed_merchants").update({ subcategory: sub } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:375:        await supabase.from("seed_merchants").update({ category: cat } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:393:        if (Object.keys(fixes).length) { await supabase.from("seed_merchants").update(fixes as any).eq("id", m.id); repaired++; }
+supabase/functions/engine-cron-server/index.ts:409:        await supabase.from("seed_merchants").update({
+supabase/functions/engine-cron-server/index.ts:427:          await supabase.from("seed_merchants").update({ menu_items_json: { sections: [{ name: "Menu", items: cleaned }], totalItems: cleaned.length }, menu_quality_flag: "normalized" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:448:        const { data: hotelRow } = await supabase.from("hotels").upsert({
+supabase/functions/engine-cron-server/index.ts:479:          const { data: roomRow } = await supabase.from("hotel_rooms").upsert({
+supabase/functions/engine-cron-server/index.ts:498:            await supabase.from("hotel_rate_plans").upsert({
+supabase/functions/engine-cron-server/index.ts:518:            await supabase.from("hotel_inventory_calendar").upsert({
+supabase/functions/engine-cron-server/index.ts:538:        await supabase.from("seed_merchants").update({ hotel_normalized: true, pipeline_stage: "normalized" } as any).eq("id", seed.id);
+supabase/functions/engine-cron-server/index.ts:567:          await supabase.from("seed_merchants").update({ source_url: `https://search.google.com/local/search?q=${encodeURIComponent(m.name)}` } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:579:        await supabase.from("seed_merchants").update({ needs_rescrape: true } as any).eq("id", s.id);
+supabase/functions/engine-cron-server/index.ts:594:        if (Object.keys(updates).length) { await supabase.from("seed_merchants").update(updates as any).eq("id", m.id); corrected++; }
+supabase/functions/engine-cron-server/index.ts:604:          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "cleanup:no_name" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:644:        await supabase.from("seed_merchants").update({ coherence_status: coherent ? "coherent" : "suspect", coherence_score: score } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:655:        await supabase.from("seed_merchants").update({ visibility_score: score, overall_quality_score: score } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:680:        if (targetMode === "live") { await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); published++; }
+supabase/functions/engine-cron-server/index.ts:681:        else if (targetMode === "search_only") { await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); searchOnly++; }
+supabase/functions/engine-cron-server/index.ts:682:        else { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "stabilization_gate_failed", overall_quality_score: score, visibility_decision_reason: `publish-gate:score=${score}` } as any).eq("id", m.id); blocked++; }
+supabase/functions/engine-cron-server/index.ts:696:          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-food" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:738:        await supabase.from("seed_merchants").update({
+supabase/functions/engine-cron-server/index.ts:760:          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-service" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:775:          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null, visibility_decision_reason: "publish-gate-grocery" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:788:        await supabase.from("seed_merchants").update({ visibility_mode: "live", blocking_reason: null, visibility_decision_reason: `auto-publish:score=${m.overall_quality_score}` } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:801:        if (shouldHide) { await supabase.from("seed_merchants").update({ visibility_mode: "hidden", unpublish_reason: "quality_gate_failed", overall_quality_score: score, visibility_decision_reason: `auto-unpublish:score=${score}` } as any).eq("id", m.id); unpublished++; }
+supabase/functions/engine-cron-server/index.ts:814:          await supabase.from("seed_merchants").update({ visibility_mode: "live", visibility_decision_reason: `visibility-optimizer:score=${score}` } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:817:          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", visibility_decision_reason: `visibility-optimizer:score=${score}` } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:830:          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: null } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:844:          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "food_quality_gate" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:858:          await supabase.from("seed_merchants").update({ is_duplicate: true, duplicate_of: seen.get(key) } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:871:          await supabase.from("seed_merchants").update({ slug } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:882:        await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "self_healing:missing_required_fields" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:906:        await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "integrity_failure" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:917:          await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "dead_flow:incomplete" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:936:        await supabase.from("seed_merchants").update({ overall_quality_score: score, visibility_score: score } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:948:          await supabase.from("seed_merchants").update({ storefront_page_id: null } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:960:          await supabase.from("seed_merchants").update({ visibility_mode: "search_only", blocking_reason: "state_healing:suspect_coherence" } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:978:          await supabase.from("commission_splits").insert({ order_id: o.id, gross_amount: gross, platform_fee: Math.round(gross * 0.05 * 100) / 100, merchant_net: Math.round(gross * 0.85 * 100) / 100, driver_fee: Math.round(gross * 0.10 * 100) / 100, currency: o.currency ?? "AED", status: "auto_reconciled" } as any);
+supabase/functions/engine-cron-server/index.ts:990:          await supabase.from("wallet_accounts").update({ balance: 0 } as any).eq("id", w.id);
+supabase/functions/engine-cron-server/index.ts:1004:          await supabase.from("fx_rates").upsert({ base: "AED", target: "USD", rate: 0.2723, updated_at: now } as any, { onConflict: "base,target" });
+supabase/functions/engine-cron-server/index.ts:1005:          await supabase.from("fx_rates").upsert({ base: "AED", target: "EUR", rate: 0.2510, updated_at: now } as any, { onConflict: "base,target" });
+supabase/functions/engine-cron-server/index.ts:1015:        await supabase.from("aml_events").update({ status: "reviewed" } as any).eq("id", e.id);
+supabase/functions/engine-cron-server/index.ts:1026:        await supabase.from("coupons").update({ status: "expired" } as any).eq("id", c.id);
+supabase/functions/engine-cron-server/index.ts:1037:        await supabase.from("qr_sessions").update({ status: "expired" } as any).eq("id", s.id);
+supabase/functions/engine-cron-server/index.ts:1048:        await supabase.from("abandoned_cart_events").update({ status: "reminded" } as any).eq("id", c.id);
+supabase/functions/engine-cron-server/index.ts:1062:        await supabase.from("support_tickets").update({ status: "escalated", escalated_at: now } as any).eq("id", t.id);
+supabase/functions/engine-cron-server/index.ts:1078:        await supabase.from("orders").update({ status: "delayed", delay_reason: "auto:stale_processing" } as any).eq("id", o.id);
+supabase/functions/engine-cron-server/index.ts:1122:          await supabase.from("loyalty_accounts").update({ tier: newTier } as any).eq("id", a.id);
+supabase/functions/engine-cron-server/index.ts:1135:          await supabase.from("merchant_staff").update({ role: "staff" } as any).eq("id", s.id);
+supabase/functions/engine-cron-server/index.ts:1161:        await supabase.from("notifications").delete().eq("id", n.id);
+supabase/functions/engine-cron-server/index.ts:1177:        await supabase.from("storefront_products").update({ status: "out_of_stock" } as any).eq("id", i.id);
+supabase/functions/engine-cron-server/index.ts:1217:        await supabase.from("seed_merchants").update({ overall_quality_score: score } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:1305:        await supabase.from("seed_merchants").update({ visibility_score: score } as any).eq("id", m.id);
+supabase/functions/engine-cron-server/index.ts:1397:        await supabase.from("zone_live_profiles").upsert({ zone_id: zoneId, vibe: dominant.includes("bar") || dominant.includes("club") ? "nightlife" : dominant.includes("restaurant") ? "active" : "calm", density: Math.min(100, entities.length), activity_score: Math.min(100, entities.length * 2), dominant_categories: dominant, entity_count: entities.length, updated_at: new Date().toISOString() } as any, { onConflict: "zone_id" });
+supabase/functions/engine-cron-server/index.ts:1420:        await supabase.from("user_radar_profiles").upsert({ user_id: userId, preferred_categories: topCats, taste_scores_json: tasteScores, last_updated_at: new Date().toISOString() } as any, { onConflict: "user_id" });
+supabase/functions/engine-cron-server/index.ts:1482:        await supabase.from("rides").update({ status: "failed" } as any).eq("id", r.id);
+supabase/functions/engine-cron-server/index.ts:1483:        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.auto_failed", payload: { reason: "no_driver_found" } } as any);
+supabase/functions/engine-cron-server/index.ts:1491:        await supabase.from("rides").update({ status: "cancelled" } as any).eq("id", r.id);
+supabase/functions/engine-cron-server/index.ts:1492:        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.auto_cancelled", payload: { reason: "stuck_accepted" } } as any);
+supabase/functions/engine-cron-server/index.ts:1500:        await supabase.from("rides").update({ status: "searching" } as any).eq("id", r.id);
+supabase/functions/engine-cron-server/index.ts:1501:        await supabase.from("ride_events").insert({ ride_id: r.id, event_type: "ride.activated", payload: { reason: "schedule_due" } } as any);
+supabase/functions/engine-cron-server/index.ts:1644:      try { await supabase.from("module_health").update(update).eq("module", mod); } catch(e) {
+supabase/functions/engine-cron-server/index.ts:1677:      await supabase.from("platform_recovery_runs").insert({ id: crypto.randomUUID(), trigger_type: "engine-cron-server-v3", status: "completed", report_json: report } as any);
+supabase/functions/engine-cron-server/index.ts:1683:      await supabase.from("engine_run_logs").insert({ engine_name: "engine-cron-server", status: "ok", duration_ms: elapsed, items_processed: report.engines_triggered, effect_summary: `v3: ${report.engines_triggered} engines, ${report.errors} errors in ${elapsed}ms` } as any);
+supabase/functions/expire-listings/index.ts:97:          await supabase.from("notifications").insert({
+supabase/functions/fx-rates/index.ts:157:      await supabase.from("fx_rates_cache").insert({
+supabase/functions/generate-rent-receipt/index.ts:239:    await sb.from("rent_calls").update({
+supabase/functions/generate-rent-receipt/index.ts:246:    await sb.from("documents").insert({
+supabase/functions/generate-rent-receipt/index.ts:265:        await sb.from("notifications").insert({
+supabase/functions/lease-workflow/index.ts:157:      await supabase.from("documents").insert({
+supabase/functions/lease-workflow/index.ts:195:        await supabase.from("notifications").insert({
+supabase/functions/lease-workflow/index.ts:217:        await supabase.from("notifications").insert({
+supabase/functions/lease-workflow/index.ts:228:      await supabase.from("audit_logs").insert({
+supabase/functions/lease-workflow/index.ts:313:        const { error: insertErr } = await supabase.from("rent_calls").insert(rentCalls);
+supabase/functions/lease-workflow/index.ts:322:        await supabase.from("notifications").insert({
+supabase/functions/lease-workflow/index.ts:337:        await supabase.from("notifications").insert({
+supabase/functions/lease-workflow/index.ts:348:      await supabase.from("audit_logs").insert({
+supabase/functions/master-runtime-qa-engine/index.ts:123:        await supabase.from("runtime_qa_steps").insert(result.steps.map((s) => ({ run_id: runId, scenario_id: scenarioRow.id, module_key: result.moduleKey, scenario_key: result.key, step_key: s.key, status: s.status, elapsed_ms: s.elapsedMs, details_json: s.details ?? {} })));
+supabase/functions/master-runtime-qa-engine/index.ts:269:            await supabase.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "master_runtime_qa:missing_required_fields" } as any).eq("id", (row as any).id);
+supabase/functions/master-runtime-qa-engine/index.ts:285:          await supabase.from("engine_supervisor").update({ status: "idle" } as any).eq("status", "running");
+supabase/functions/master-runtime-qa-engine/index.ts:298:    await supabase.from("runtime_qa_runs").update({
+supabase/functions/master-runtime-qa-engine/index.ts:325:        await supabase.from("runtime_qa_watchdog").update({
+supabase/functions/master-runtime-qa-engine/index.ts:334:        await supabase.from("runtime_qa_watchdog").insert({
+supabase/functions/master-runtime-qa-engine/index.ts:346:    await supabase.from("engine_run_logs").insert({
+supabase/functions/notify-booking/index.ts:305:        await supabase.from("notifications").insert({
+supabase/functions/notify-booking/index.ts:328:      await supabase.from("chat_messages_v2").insert({
+supabase/functions/orbit-payment/index.ts:348:      const { data: txRecord } = await supabase.from("unified_wallet_transactions").insert({
+supabase/functions/orbit-payment/index.ts:366:      await supabase.from("audit_logs").insert({
+supabase/functions/orbit-payment/index.ts:487:      await supabase.from("deal_events").insert({
+supabase/functions/orbit-payment/index.ts:501:      await supabase.from("audit_logs").insert({
+supabase/functions/orbit-payment/index.ts:559:          await supabase.from("deal_events").insert({
+supabase/functions/payment-notification/index.ts:67:    const { error: notifError } = await supabase.from("notifications").insert({
+supabase/functions/payment-notification/index.ts:90:    await supabase.from("payment_provider_events").insert({
+supabase/functions/pipeline-worker/index.ts:88:      await db.from("entity_pipeline_queue").delete().in("id", duplicateQueueIds);
+supabase/functions/pipeline-worker/index.ts:130:        await db.from("entity_pipeline_queue").insert(rows);
+supabase/functions/pipeline-worker/index.ts:150:          await db.from("entity_pipeline_queue").update({
+supabase/functions/pipeline-worker/index.ts:169:          await db.from("entity_pipeline_queue").update({
+supabase/functions/pipeline-worker/index.ts:191:        await db.from("entity_pipeline_queue").update({
+supabase/functions/pipeline-worker/index.ts:228:        await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:243:        await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:250:        await db.from("seed_merchants").update({ pipeline_stage: "vertical_classified" }).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:293:        await db.from("seed_merchants").update(updates).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:322:        await db.from("seed_merchants").update(updates).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:339:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:347:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:353:        await db.from("seed_merchants").update({ pipeline_stage: "rebuilt" }).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:379:        await db.from("seed_merchants").update(updates).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:399:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:405:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:411:        await db.from("seed_merchants").update({ pipeline_stage: "deduped" }).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:460:        await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:509:            () => db.from("engine_run_logs").insert({
+supabase/functions/pipeline-worker/index.ts:522:        await db.from("seed_merchants").update(updateFields).eq("id", entityId);
+supabase/functions/pipeline-worker/index.ts:543:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:553:            () => db.from("engine_run_logs").insert({
+supabase/functions/pipeline-worker/index.ts:564:          await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:571:        await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:581:      await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:589:      await db.from("seed_merchants").update({
+supabase/functions/pipeline-worker/index.ts:655:        await db.from("seed_merchants").update({
+supabase/functions/platform-recovery/index.ts:64:      await supabase.from("boost_analytics_daily").upsert({
+supabase/functions/platform-recovery/index.ts:125:        await supabase.from("platform_recovery_runs").delete().in("id", toDelete);
+supabase/functions/platform-recovery/index.ts:309:  await supabase.from("platform_recovery_runs").insert({
+supabase/functions/process-refund/index.ts:159:    await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/qr-payment-session/index.ts:72:      const { error: insertError } = await supabase.from("qr_payment_sessions").insert({
+supabase/functions/qr-payment-session/index.ts:183:      await supabase.from("qr_payment_sessions").update({
+supabase/functions/qr-payment-session/index.ts:191:      await supabase.from("transaction_intents").insert({
+supabase/functions/receive-email/index.ts:220:      await supabase.from("audit_logs").insert({
+supabase/functions/receive-email/index.ts:246:    const { error: insertErr } = await supabase.from("chat_messages_v2").insert({
+supabase/functions/receive-email/index.ts:279:      await supabase.from("notifications").insert({
+supabase/functions/refund-process-booking/index.ts:83:      await admin.from("bookings_v2").update({
+supabase/functions/rent-lifecycle-cron/index.ts:43:  await sb.from("notifications").insert({
+supabase/functions/rent-lifecycle-cron/index.ts:62:  await sb.from("chat_messages_v2").insert({
+supabase/functions/rent-lifecycle-cron/index.ts:175:      const { data: newRc, error: insertErr } = await sb.from("rent_calls").insert({
+supabase/functions/rent-lifecycle-cron/index.ts:257:        await sb.from("rent_calls").update({ last_reminder_at: todayStr }).eq("id", rc.id);
+supabase/functions/rent-lifecycle-cron/index.ts:269:        await sb.from("rent_calls").update({
+supabase/functions/rent-lifecycle-cron/index.ts:288:        await sb.from("rent_calls").update({
+supabase/functions/rent-lifecycle-cron/index.ts:314:        await sb.from("rent_calls").update({
+supabase/functions/rent-reminders/index.ts:204:          await supabase.from("notifications").insert({
+supabase/functions/rent-reminders/index.ts:222:        await supabase.from("chat_messages_v2").insert({
+supabase/functions/rent-reminders/index.ts:249:          await supabase.from("notifications").insert({
+supabase/functions/rent-reminders/index.ts:260:        await supabase.from("rent_calls").update({
+supabase/functions/rent-reminders/index.ts:266:        await supabase.from("audit_logs").insert({
+supabase/functions/repair-worker/index.ts:191:          await sb.from("products").insert(rows);
+supabase/functions/repair-worker/index.ts:262:      await sb.from("repair_proofs").insert(proofRows).throwOnError();
+supabase/functions/reveal-contact/index.ts:163:    await adminClient.from("contact_reveals").insert({
+supabase/functions/run-engine-cron/index.ts:41:        await sb.from("seed_merchants").update({ visibility_score: Math.max(score, 10) }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:66:      await sb.from("seed_merchants").update({ visibility_mode: "full" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:77:      await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:87:      await sb.from("seed_merchants").update({ visibility_mode: "hidden", blocking_reason: "low_quality_auto" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:97:      await sb.from("notifications").delete().eq("id", n.id);
+supabase/functions/run-engine-cron/index.ts:122:        await sb.from("wallet_accounts").update({ balance: Math.round(ledgerBal * 100) / 100 }).eq("id", w.id);
+supabase/functions/run-engine-cron/index.ts:150:      await sb.from("qr_sessions").update({ status: "expired" }).eq("id", s.id);
+supabase/functions/run-engine-cron/index.ts:167:      await sb.from("coupons").update({ active: false }).eq("id", c.id);
+supabase/functions/run-engine-cron/index.ts:178:        await sb.from("boost_campaigns").update({ status: "completed" }).eq("id", c.id);
+supabase/functions/run-engine-cron/index.ts:202:      await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:268:        await sb.from("seed_merchants").update({ gate_status: "passed" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:271:        await sb.from("seed_merchants").update({ gate_status: "blocked", blocking_reason: blockers.join(", ") }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:284:        await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:297:        await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:310:        await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:323:        await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:361:        await sb.from("support_tickets").update({ priority: "critical" }).eq("id", t.id);
+supabase/functions/run-engine-cron/index.ts:383:      await sb.from("seed_merchants").update({ visibility_mode: "search_only" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:411:    const { data: run } = await sb.from("merchant_scrape_runs").insert({
+supabase/functions/run-engine-cron/index.ts:432:        await sb.from("merchant_scrape_runs").update({
+supabase/functions/run-engine-cron/index.ts:446:      if (runId) await sb.from("merchant_scrape_runs").update({ status: "error", finished_at: new Date().toISOString(), error_message: e?.message }).eq("id", runId);
+supabase/functions/run-engine-cron/index.ts:467:        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:482:        await sb.from("seed_merchants").update({
+supabase/functions/run-engine-cron/index.ts:506:        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:526:        await sb.from("seed_merchants").update({ visibility_mode: newMode, gate_status: score >= 40 ? "passed" : "blocked" }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:540:      await sb.from("seed_merchants").update({ is_published: true, published_at: new Date().toISOString() } as any).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:594:        await sb.from("hotels").update(payload).eq("id", existing[0].id);
+supabase/functions/run-engine-cron/index.ts:597:        await sb.from("hotels").insert(payload);
+supabase/functions/run-engine-cron/index.ts:636:        await sb.from("hotel_rooms").insert({
+supabase/functions/run-engine-cron/index.ts:662:      await sb.from("hotel_rate_plans").insert([
+supabase/functions/run-engine-cron/index.ts:730:        await sb.from("hotel_inventory_calendar").upsert(rows.slice(i, i + 30), {
+supabase/functions/run-engine-cron/index.ts:752:        await sb.from("hotels").update(fixes).eq("id", h.id);
+supabase/functions/run-engine-cron/index.ts:823:      await sb.from("hotels").update({
+supabase/functions/run-engine-cron/index.ts:851:      await sb.from("hotels").update({
+supabase/functions/run-engine-cron/index.ts:897:      await sb.from("seed_merchants").update({ trust_score: trust, ranking_score: ranking }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:920:          await sb.from("seed_merchants").update({
+supabase/functions/run-engine-cron/index.ts:943:          await sb.from("seed_merchants").update({
+supabase/functions/run-engine-cron/index.ts:951:          await sb.from("seed_merchants").update({
+supabase/functions/run-engine-cron/index.ts:995:      await sb.from("seed_merchants").update({ visibility_score: blended, quality_deep_score: q, quality_scanned_at: new Date().toISOString() }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:1049:        await sb.from("seed_merchants").update(fixes).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:1064:      await sb.from("qr_sessions").update({ status: "expired" }).eq("id", s.id);
+supabase/functions/run-engine-cron/index.ts:1070:      await sb.from("notifications").delete().eq("id", n.id);
+supabase/functions/run-engine-cron/index.ts:1076:      await sb.from("coupons").update({ active: false }).eq("id", c.id);
+supabase/functions/run-engine-cron/index.ts:1083:        await sb.from("boost_campaigns").update({ status: "completed" }).eq("id", c.id);
+supabase/functions/run-engine-cron/index.ts:1090:      await sb.from("engine_run_logs").delete().eq("id", l.id);
+supabase/functions/run-engine-cron/index.ts:1096:      await sb.from("worker_health_snapshots").delete().eq("id", s.id);
+supabase/functions/run-engine-cron/index.ts:1127:        await sb.from("engine_supervisor").update({ status: "idle", consecutive_failures: 0 }).eq("engine_name", e.engine_name);
+supabase/functions/run-engine-cron/index.ts:1137:    await sb.from("worker_health_snapshots").insert({
+supabase/functions/run-engine-cron/index.ts:1171:        await sb.from("engine_run_logs").insert({
+supabase/functions/run-engine-cron/index.ts:1205:      await sb.from("engine_run_logs").update({
+supabase/functions/run-engine-cron/index.ts:1222:        await sb.from("menu_items").update({ price: 0, price_flag: "invalid_corrected" }).eq("id", item.id);
+supabase/functions/run-engine-cron/index.ts:1225:        await sb.from("menu_items").update({ price_flag: "suspiciously_high" }).eq("id", item.id);
+supabase/functions/run-engine-cron/index.ts:1240:        await sb.from("seed_merchants").update({ is_open: true }).eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:1261:      await sb.from("worker_health_snapshots").insert({
+supabase/functions/run-engine-cron/index.ts:1287:      await sb.from("merchant_media").delete().eq("id", m.id);
+supabase/functions/run-engine-cron/index.ts:1295:      await sb.from("menu_items").delete().eq("id", item.id);
+supabase/functions/run-engine-cron/index.ts:1310:      await sb.from("bookings").update({ status: "expired" }).eq("id", b.id);
+supabase/functions/run-engine-cron/index.ts:1333:    await sb.from("worker_health_snapshots").insert({
+supabase/functions/run-engine-cron/index.ts:1440:        await sb.from("engine_supervisor").update({ enabled: false, status: "disabled" }).eq("engine_name", engine.engine_name);
+supabase/functions/run-engine-cron/index.ts:1446:      const { data: lockResult } = await sb.from("engine_supervisor").update({
+supabase/functions/run-engine-cron/index.ts:1454:          await sb.from("engine_supervisor").update({
+supabase/functions/run-engine-cron/index.ts:1482:        await sb.from("engine_supervisor").update({
+supabase/functions/run-engine-cron/index.ts:1495:        const { error: logErr } = await sb.from("engine_run_logs").insert({
+supabase/functions/run-engine-cron/index.ts:1522:        await sb.from("engine_supervisor").update({
+supabase/functions/run-engine-cron/index.ts:1533:        await sb.from("engine_run_logs").insert({
+supabase/functions/run-ingestion-pipeline/index.ts:259:      const { error: updateErr } = await db.from("seed_merchants").update(updatePayload).eq("id", entity.id);
+supabase/functions/run-scheduled-audit/index.ts:219:      await supabase.from("audit_reports").insert(rows);
+supabase/functions/send-email/index.ts:258:      await supabase.from("audit_logs").insert({
+supabase/functions/send-notification-email/index.ts:602:    await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/stripe-webhook/index.ts:217:            await supabase.from("subscriptions").update({ status: "past_due" }).eq("user_id", userId);
+supabase/functions/stripe-webhook/index.ts:274:          await supabase.from("saga_events").insert({
+supabase/functions/stripe-webhook/index.ts:292:          await supabase.from("rent_calls").update({
+supabase/functions/stripe-webhook/index.ts:311:          await supabase.from("audit_logs").insert({
+supabase/functions/stripe-webhook/index.ts:319:            await supabase.from("chat_messages_v2").insert({
+supabase/functions/stripe-webhook/index.ts:361:      await supabase.from("commission_splits").insert({
+supabase/functions/stripe-webhook/index.ts:402:      await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:424:      await supabase.from("qr_payment_sessions").update({
+supabase/functions/stripe-webhook/index.ts:437:    await supabase.from("payment_provider_events").insert({
+supabase/functions/stripe-webhook/index.ts:581:    await supabase.from("chat_messages_v2").insert({
+supabase/functions/stripe-webhook/index.ts:613:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:631:  await supabase.from("audit_logs").insert({
+supabase/functions/stripe-webhook/index.ts:658:  const { error: updateError } = await supabase.from("marketplace_bookings").update({
+supabase/functions/stripe-webhook/index.ts:695:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:750:  const { error: bkUpdateErr } = await supabase.from("bookings").update({ status: "paid" }).eq("id", bookingRequestId);
+supabase/functions/stripe-webhook/index.ts:792:      await supabase.from("seasonal_bookings").insert({
+supabase/functions/stripe-webhook/index.ts:811:    await supabase.from("reservations").insert({
+supabase/functions/stripe-webhook/index.ts:827:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:883:  await supabase.from("rent_calls").update({
+supabase/functions/stripe-webhook/index.ts:912:      await supabase.from("documents").insert({
+supabase/functions/stripe-webhook/index.ts:932:      await supabase.from("rent_calls").update({
+supabase/functions/stripe-webhook/index.ts:944:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:961:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1039:  await supabase.from("payment_events").upsert({
+supabase/functions/stripe-webhook/index.ts:1057:  await supabase.from("bookings").update({
+supabase/functions/stripe-webhook/index.ts:1063:  await supabase.from("wallet_transactions").insert({
+supabase/functions/stripe-webhook/index.ts:1080:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1092:    await supabase.from("chat_messages").insert({
+supabase/functions/stripe-webhook/index.ts:1103:  await supabase.from("payment_events").update({ processed: true }).eq("id", eventId);
+supabase/functions/stripe-webhook/index.ts:1127:  await supabase.from("payment_events").upsert({
+supabase/functions/stripe-webhook/index.ts:1144:  await supabase.from("rent_payments").update({
+supabase/functions/stripe-webhook/index.ts:1151:  await supabase.from("wallet_transactions").insert({
+supabase/functions/stripe-webhook/index.ts:1168:    await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1179:  await supabase.from("payment_events").update({ processed: true }).eq("id", eventId);
+supabase/functions/stripe-webhook/index.ts:1193:  await supabase.from("subscriptions").upsert(
+supabase/functions/stripe-webhook/index.ts:1204:  await supabase.from("subscriptions").update({ status: "canceled", plan: "free", stripe_subscription_id: null }).eq("user_id", userId);
+supabase/functions/stripe-webhook/index.ts:1250:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1260:  const { error: ledgerError } = await supabase.from("wallet_ledger_entries").insert({
+supabase/functions/stripe-webhook/index.ts:1283:  await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1323:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1353:  await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1393:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1425:  await supabase.from("notifications").insert({
+supabase/functions/stripe-webhook/index.ts:1491:  await supabase.from("order_status_history").insert({
+supabase/functions/stripe-webhook/index.ts:1502:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1516:    await supabase.from("notifications").upsert({
+supabase/functions/stripe-webhook/index.ts:1533:    await supabase.from("notifications").upsert({
+supabase/functions/stripe-webhook/index.ts:1613:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1633:    await supabase.from("notifications").upsert({
+supabase/functions/stripe-webhook/index.ts:1710:  await supabase.from("order_status_history").insert({
+supabase/functions/stripe-webhook/index.ts:1720:  await supabase.from("payment_events").insert({
+supabase/functions/stripe-webhook/index.ts:1732:    await supabase.from("notifications").upsert({
+supabase/functions/stripe-webhook/index.ts:1747:    await supabase.from("notifications").upsert({
+supabase/functions/sync-ical/index.ts:183:      const { error: insertError } = await supabase.from("reservations").insert({
+supabase/functions/wallet-ops/index.ts:96:  await sb.from("audit_logs").insert({ user_id: userId, action: `wallet_${action}`, metadata_json: { ...meta, ts: new Date().toISOString() } });
+supabase/functions/wallet-ops/index.ts:239:      await sb.from("orders").update({ payment_status: "held_in_escrow", wallet_status: "captured" }).eq("id", order_id);
+supabase/functions/wallet-ops/index.ts:241:      await sb.from("wallet_transactions").update({ status: "captured" }).eq("order_id", order_id).eq("transaction_type", "order_authorization");
+supabase/functions/wallet-ops/index.ts:290:      await sb.from("orders").update({ payment_status: "authorized" }).eq("id", order_id);
+supabase/functions/wallet-pin/index.ts:282:      await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:333:        await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:375:      await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:404:        await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:418:        await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:438:      await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:499:      await supabase.from("audit_logs").insert({
+supabase/functions/wallet-pin/index.ts:565:      await supabase.from("audit_logs").insert({
+supabase/functions/wallet-transfer/index.ts:405:      await sb.from("audit_logs").insert({
+supabase/functions/wallet-transfer/index.ts:420:      await sb.from("audit_logs").insert({
+supabase/functions/wallet-transfer/index.ts:575:    await sb.from("financial_audit_trail").insert({
+supabase/functions/rent-payment/index.ts:191:  await supabase.from("rent_calls").update({
+supabase/functions/rent-payment/index.ts:251:    .from("rent_calls").insert(payment).select().single();
+supabase/functions/rent-payment/index.ts:254:  await admin.from("notifications").insert({
+supabase/functions/guest-session/index.ts:90:      const { data, error } = await supabase.from("guest_sessions").insert({
+supabase/functions/guest-session/index.ts:136:      await supabase.from("guest_sessions").update({ last_activity_at: new Date().toISOString() }).eq("id", data.id);
+supabase/functions/guest-session/index.ts:192:      const { data: msg, error: msgErr } = await supabase.from("chat_messages_v2").insert({
+supabase/functions/guest-session/index.ts:215:      await supabase.from("guest_sessions").update({
+supabase/functions/guest-session/index.ts:239:        await supabase.from("notifications").insert({
+supabase/functions/guest-session/index.ts:343:      const { error } = await supabase.from("guest_call_signals").insert({
+supabase/functions/guest-session/index.ts:365:        await supabase.from("notifications").insert({
+supabase/functions/guest-session/index.ts:422:      await supabase.from("guest_call_signals").insert({
+supabase/functions/rent-create-payment/index.ts:79:    await admin.from("notifications").insert({
+supabase/functions/seller-kpi-snapshot/index.ts:56:      await admin.from("seller_kpi_snapshots").insert({
+supabase/functions/alert-dispatcher/index.ts:162:      await supabase.from("admin_alert_log").insert({
+supabase/functions/alert-dispatcher/index.ts:185:      await supabase.from("admin_alert_log").insert({
+supabase/functions/alert-dispatcher/index.ts:233:      await supabase.from("admin_alert_log").insert({
+supabase/functions/alert-dispatcher/index.ts:249:      await supabase.from("admin_alert_log").insert({
+supabase/functions/backup-storage/index.ts:69:          await supabase.from("storage_backup_manifests").insert({
+supabase/functions/backup-storage/index.ts:82:          await supabase.from("storage_backup_manifests").insert({
+supabase/functions/backup-storage/index.ts:105:        await supabase.from("config_snapshots").insert({
+supabase/functions/cache-manager/index.ts:154:      await supabase.from("server_cache").upsert(
+supabase/functions/cache-manager/index.ts:179:          await supabase.from("server_cache").delete().eq("cache_key", key);
+supabase/functions/cache-manager/index.ts:194:        await supabase.from("server_cache").delete().eq("domain", domain);
+supabase/functions/cache-manager/index.ts:237:          await supabase.from("server_cache").upsert(
+supabase/functions/dlq-processor/index.ts:82:        await supabase.from("queue_poison_messages").upsert({
+supabase/functions/dlq-processor/index.ts:132:            const { error: msgErr } = await supabase.from("messages").insert({
+supabase/functions/dlq-processor/index.ts:146:            await supabase.from("boundary_validation_quarantine").insert({
+supabase/functions/dlq-processor/index.ts:163:          await supabase.from("job_queue").insert({
+supabase/functions/dlq-processor/index.ts:181:          await supabase.from("job_queue").insert({
+supabase/functions/job-queue-worker/index.ts:194:        await supabase.from("queue_poison_messages").upsert({
+supabase/functions/job-queue-worker/index.ts:253:          await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:271:          await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:280:        const { count: claimCount } = await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:311:              await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:323:          await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:339:            await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:355:            await supabase.from("queue_poison_messages").upsert({
+supabase/functions/job-queue-worker/index.ts:371:            await supabase.from("job_queue").update({
+supabase/functions/job-queue-worker/index.ts:523:            await supabase.from("queue_poison_messages").upsert({
+supabase/functions/public-health/index.ts:126:      await supabase.from("system_uptime_log").insert({
+supabase/functions/watchdog-ping/index.ts:277:  await supabase.from("system_uptime_log").insert({
+supabase/functions/command-approval-webhook/index.ts:224:        await supabase.from("approval_requests").update({ status: "expired", updated_at: new Date().toISOString() }).eq("id", approval.id);
+supabase/functions/command-approval-webhook/index.ts:258:          await supabase.from("approval_requests").update({ status: "expired", updated_at: new Date().toISOString() }).eq("id", approval.id);
+supabase/functions/command-approval-webhook/index.ts:273:          await supabase.from("approval_requests").update({
+supabase/functions/command-approval-webhook/index.ts:285:          await supabase.from("rollback_points").insert({
+supabase/functions/command-approval-webhook/index.ts:293:          await supabase.from("approval_requests").update({
+supabase/functions/command-approval-webhook/index.ts:298:        await supabase.from("command_audit_log").insert({
+supabase/functions/command-approval-webhook/index.ts:322:        await supabase.from("approval_requests").update({
+supabase/functions/command-approval-webhook/index.ts:329:        await supabase.from("command_audit_log").insert({
+supabase/functions/command-approval-webhook/index.ts:367:        const { data: approval, error: insertErr } = await supabase.from("approval_requests").insert({
+supabase/functions/command-approval-webhook/index.ts:388:          await supabase.from("approval_requests").update({
+supabase/functions/command-approval-webhook/index.ts:393:        await supabase.from("command_audit_log").insert({
+supabase/functions/command-email-intake/index.ts:106:    const { data: emailRecord, error: insertErr } = await supabase.from("command_emails").insert({
+supabase/functions/command-email-intake/index.ts:125:      await supabase.from("command_emails").update({
+supabase/functions/command-email-intake/index.ts:132:    await supabase.from("command_audit_log").insert({
+supabase/functions/command-github-webhook/index.ts:190:  const { data: approval, error: insertErr } = await supabase.from("approval_requests").insert({
+supabase/functions/command-github-webhook/index.ts:218:    await supabase.from("approval_requests").update({
+supabase/functions/command-github-webhook/index.ts:223:  await supabase.from("command_audit_log").insert({
+supabase/functions/command-monitoring-cron/index.ts:259:      await db.from("approval_requests").update({
+supabase/functions/command-monitoring-cron/index.ts:310:    await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:334:    await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:355:    await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:367:    await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:386:        await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:400:        await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:406:      await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:417:    await db.from("system_health_snapshots").insert({
+supabase/functions/command-monitoring-cron/index.ts:577:    const { data } = await supabase.from("monitoring_findings").insert({
+supabase/functions/command-monitoring-cron/index.ts:595:      await supabase.from("command_audit_log").insert({
+supabase/functions/command-monitoring-cron/index.ts:607:  await supabase.from("command_audit_log").insert({
+supabase/functions/process-referral-reward/index.ts:86:        await db.from("referral_redemptions").update({ status: "credited" }).eq("id", ref.id).eq("status", "pending");
+supabase/functions/process-referral-reward/index.ts:95:        const creditReferrer = await db.from("wallet_transactions").insert({
+supabase/functions/process-referral-reward/index.ts:111:        const creditReferee = await db.from("wallet_transactions").insert({
+supabase/functions/process-referral-reward/index.ts:137:          await db.from("notifications").insert([
+supabase/functions/process-referral-reward/index.ts:158:          await db.from("activity_logs").upsert({
+supabase/functions/webauthn-authentication-challenge/index.ts:46:    await supabase.from("webauthn_challenges").insert({
+supabase/functions/webauthn-login-challenge/index.ts:78:    await supabase.from("webauthn_challenges").insert({
+supabase/functions/webauthn-registration-challenge/index.ts:34:    await supabase.from("webauthn_challenges").insert({
+supabase/functions/send-sms/index.ts:71:      await supabase.from("sms_log").insert({
+supabase/functions/send-sms/index.ts:105:    await supabase.from("sms_log").insert({
+supabase/functions/crypto-payment/index.ts:159:    await supabaseAdmin.from("payment_provider_events").insert({
+supabase/functions/crypto-webhook/index.ts:93:    await supabase.from("payment_provider_events").insert({
+supabase/functions/crypto-webhook/index.ts:125:      await supabase.from("payment_provider_events").insert({
+supabase/functions/crypto-webhook/index.ts:176:          await supabase.from("wallet_ledger_entries").insert({
+supabase/functions/crypto-webhook/index.ts:191:      await supabase.from("notifications").insert({
+supabase/functions/manage-subscription/index.ts:98:        await supabaseAdmin.from("subscriptions").update({
+supabase/functions/manage-subscription/index.ts:113:        await supabaseAdmin.from("subscriptions").update({
+supabase/functions/manage-subscription/index.ts:153:        await supabaseAdmin.from("subscriptions").update({
+supabase/functions/manage-subscription/index.ts:169:    await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/mobile-money-payment/index.ts:164:    await supabaseAdmin.from("payment_provider_events").insert({
+supabase/functions/mobile-money-webhook/index.ts:50:    await supabase.from("payment_provider_events").insert({
+supabase/functions/mobile-money-webhook/index.ts:83:      await supabase.from("payment_provider_events").insert({
+supabase/functions/mobile-money-webhook/index.ts:116:          await supabase.from("wallet_ledger_entries").insert({
+supabase/functions/mobile-money-webhook/index.ts:131:      await supabase.from("notifications").insert({
+supabase/functions/refund-admin/index.ts:313:            await supabaseAdmin.from("wallet_ledger_entries").insert({
+supabase/functions/refund-admin/index.ts:328:        await supabaseAdmin.from("notifications").insert({
+supabase/functions/refund-admin/index.ts:343:        await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/refund-admin/index.ts:391:          await supabaseAdmin.from("notifications").insert({
+supabase/functions/refund-admin/index.ts:402:        await supabaseAdmin.from("audit_logs").insert({
+supabase/functions/webauthn-begin-registration/index.ts:47:    await supabase.from("webauthn_challenges").delete()
+supabase/functions/webauthn-begin-registration/index.ts:69:    const { error: insertErr } = await supabase.from("webauthn_challenges").insert({
+supabase/functions/webauthn-finish-registration/index.ts:104:    await supabase.from("webauthn_challenges").delete().eq("id", storedChallenge.id);
+supabase/functions/webauthn-finish-registration/index.ts:107:    const { error: credErr } = await supabase.from("webauthn_credentials").upsert({
+supabase/functions/command-center-api/index.ts:231:  await supabase.from("command_audit_log").insert({
+supabase/functions/command-center-api/index.ts:275:  await supabase.from("agent_circuit_breakers").upsert(
+supabase/functions/command-center-api/index.ts:286:  await supabase.from("command_audit_log").insert({
+supabase/functions/command-center-api/index.ts:335:  await supabase.from("command_audit_log").insert({
+supabase/functions/omega-server-loop/index.ts:269:    await supabase.from("omega_decisions").insert({
+supabase/functions/cleanup-orphan-media/index.ts:79:    await supabase.from("audit_logs").insert({
+supabase/functions/job-runner/index.ts:71:  const { error: insertErr } = await supabase.from("job_queue").insert({
+supabase/functions/gdpr-export/index.ts:217:    await supabase.from("audit_logs").insert({
+supabase/functions/gdpr-delete-account/index.ts:117:    const { error: providerError } = await supabase.from("providers").update({
+supabase/functions/gdpr-delete-account/index.ts:129:    const { error: webauthnError } = await supabase.from("webauthn_credentials").delete().eq("user_id", userId);
+supabase/functions/gdpr-delete-account/index.ts:138:    await supabase.from("audit_logs").insert({
+supabase/functions/gdpr-deletion-processor/index.ts:71:        await supabase.from("owner_profiles").update(ownerAnon).eq("user_id", userId);
+supabase/functions/gdpr-deletion-processor/index.ts:74:        await supabase.from("bookings").update(bookingAnon).eq("user_id", userId);
+supabase/functions/gdpr-deletion-processor/index.ts:77:        await supabase.from("documents").update(docAnon).eq("user_id", userId);
+supabase/functions/gdpr-deletion-processor/index.ts:100:        await supabase.from("profiles").update(profileAnon).eq("id", userId);
+supabase/functions/gdpr-deletion-processor/index.ts:102:        await supabase.from("audit_logs").insert({
+supabase/functions/ses-webhook/index.ts:230:      const { error } = await supabase.from("email_delivery_events").insert(row);
+supabase/functions/ses-webhook/index.ts:235:      const { error } = await supabase.from("email_suppressions").upsert(row, { onConflict: "email_address" });
+supabase/functions/dispatch-cron/index.ts:146:                await supabase.from("mobility_job_offers").insert(offers);
+supabase/functions/verify-otp/index.ts:80:      await supabase.from("phone_otp_sessions").update({ status: "expired" }).eq("id", session.id);
+supabase/functions/verify-otp/index.ts:86:      await supabase.from("phone_otp_sessions").update({ status: "blocked" }).eq("id", session.id);
+supabase/functions/verify-otp/index.ts:107:    await supabase.from("phone_otp_sessions").update(updateFields).eq("id", session.id);
+supabase/functions/esign-create-envelope/index.ts:139:      await db.from("lease_signatures").upsert({
+supabase/functions/plaid-link-token/index.ts:166:      const { error: upsertError } = await db.from("plaid_items").upsert({
+supabase/functions/vector-embed/index.ts:38:        const { error } = await db.from("entity_embeddings").upsert({
+supabase/functions/vector-embed/index.ts:80:      const { error } = await db.from("entity_embeddings").upsert(upserts, {
+supabase/functions/plaid-webhook/index.ts:344:    await db.from("plaid_webhook_events").insert({
+supabase/functions/gateway-cron-sync/index.ts:208:    const { error: syncEventErr } = await db.from("gateway_sync_events").insert({
+supabase/functions/gateway-cron-sync/index.ts:224:    const { error: stateErr } = await db.from("gateway_connector_state").upsert({
+supabase/functions/gateway-cron-sync/index.ts:249:      const { error: normInsertErr } = await db.from("gateway_normalized_data").insert(batch);
+supabase/functions/gateway-webhook-ingest/index.ts:110:    const { error: logError } = await db.from("gateway_webhook_log").insert({
+supabase/functions/gateway-webhook-ingest/index.ts:132:      const { error: dataError } = await db.from("gateway_normalized_data").insert(dataRows);
+supabase/functions/gateway-webhook-ingest/index.ts:138:    const { error: syncError } = await db.from("gateway_sync_events").insert({
+supabase/functions/orbit-ai-support/index.ts:124:    await supabase.from("support_messages").insert({
+supabase/functions/orbit-ai-support/index.ts:132:    await supabase.from("support_traces").insert({
+supabase/functions/orbit-ai-support/index.ts:172:    await supabase.from("support_messages").insert({
+supabase/functions/orbit-ai-support/index.ts:185:      await supabase.from("support_sessions").update({
+supabase/functions/orbit-ai-support/index.ts:195:      await supabase.from("support_traces").insert({
+supabase/functions/orbit-ai-support/index.ts:209:      await supabase.from("support_traces").insert({
+supabase/functions/orbit-ai-support/index.ts:221:      await supabase.from("support_traces").insert({
+supabase/functions/orbit-ai-support/index.ts:231:      await supabase.from("support_sessions").update({
+supabase/functions/chief-agent/index.ts:306:    await supabase.from("agent_command_history").insert({
+supabase/functions/chief-agent/index.ts:327:    await supabase.from("sentinel_telemetry").insert({
+supabase/functions/execution-loop/index.ts:164:    await getSupabase().from("engine_run_logs").insert({
+supabase/functions/execution-loop/index.ts:1073:      await sb.schema("system").from("execution_tasks").update({
+supabase/functions/ai-content-enrichment/index.ts:232:  const { error: upsertErr } = await db.from("content_enrichments").upsert({
+supabase/functions/ai-eval-runner/index.ts:120:          await db.from("ai_eval_runs").insert({
+supabase/functions/ai-eval-runner/index.ts:153:        await db.from("ai_eval_runs").insert({
+supabase/functions/ai-eval-runner/index.ts:164:        await db.from("ai_eval_runs").insert({
+supabase/functions/ai-rag/index.ts:257:      await db.from("ai_conversation_memory").insert([
+supabase/functions/ai-recommendations/index.ts:186:    await db.from("ai_recommendations_cache").upsert({
+supabase/functions/csp-report/index.ts:37:    await admin.from("security_csp_reports").insert({
+supabase/functions/execution-runner-callback/index.ts:191:        await sb.from("engine_run_logs").insert({
+supabase/functions/execution-runner-callback/index.ts:295:    await sb.from("engine_run_logs").insert({
