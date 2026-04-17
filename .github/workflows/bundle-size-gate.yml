@@ -49,14 +49,39 @@ jobs:
 
       - name: Refresh baseline on main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
         run: |
+          set -e
           npm run bundle:gate -- update
-          if ! git diff --quiet -- bundle-size-baseline.json; then
-            git config user.name 'github-actions[bot]'
-            git config user.email 'github-actions[bot]@users.noreply.github.com'
-            git add bundle-size-baseline.json
-            git commit -m 'chore(ci): refresh bundle size baseline [skip ci]'
-            git push
-          else
-            echo 'Baseline unchanged.'
+          if git diff --quiet -- bundle-size-baseline.json; then
+            echo 'Baseline unchanged — nothing to commit.'
+            exit 0
           fi
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add bundle-size-baseline.json
+          git commit -m 'chore(ci): refresh bundle size baseline [skip ci]'
+          # Rebase against any concurrent pushes, then push with retry.
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if git rebase origin/main; then
+              if git push origin HEAD:main; then
+                echo "Baseline refreshed (attempt ${attempt})."
+                exit 0
+              fi
+            else
+              echo "Rebase failed on attempt ${attempt}; aborting and retrying."
+              git rebase --abort || true
+            fi
+            sleep 5
+          done
+          echo "Could not refresh baseline after 3 attempts; gate result is preserved (this step is non-blocking)."
+          exit 0
+
+      - name: Upload baseline artifact (audit trail)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-size-baseline-${{ github.sha }}
+          path: easy-locs-ea1eb0ed/bundle-size-baseline.json
+          retention-days: 30
