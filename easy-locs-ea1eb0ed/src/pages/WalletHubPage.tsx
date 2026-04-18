@@ -43,7 +43,7 @@ const fadeSlide = {
 };
 
 export default function WalletHubPage() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const navigate = useNavigate();
   const { user, userCountry, profileLoaded } = useAuth();
   const { displayName: accountName, accountLabel: accountTypeLabel, accountType } = useAccountIdentity();

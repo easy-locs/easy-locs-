@@ -257,4 +257,63 @@ Aucune modification de code applicatif supplémentaire n'a été nécessaire dan
 
 ---
 
+## Annexe — Closeout runtime #1061 (post-fix verdict)
+
+L'utilisateur a rejeté la conclusion initiale "aucun blocker dur" et a exigé une
+reproduction post-login. L'environnement isolé n'a pas pu créer de session
+authentifiée (Supabase project `ifvuvbolrmuuugtzxsfk` : email confirmation
+obligatoire, rate-limit 4/heure épuisé, pas de service-role key, OAuth/téléphone
+désactivés). En contournement, une analyse statique ciblée a identifié trois
+bugs runtime réels qui touchent à la fois le surface invité ET les écrans
+post-login. Les trois ont été corrigés et validés en e2e (tests Playwright
+verts, prod build vert).
+
+| # | Fichier | Diagnostic | Correctif minimal |
+|---|---------|------------|-------------------|
+| 1 | `src/lib/performance/route-prefetch.ts` | Trois écouteurs `document.addEventListener` (`pointerenter`, `pointerdown`, `touchstart`) castaient `e.target as HTMLElement` puis appelaient `target.closest("a[href]")`. Quand la cible est un `Text`, `Document` ou `Window`, `closest` est `undefined` → `Uncaught TypeError: target.closest is not a function` à chaque montage de page. Sentry rewrappait l'erreur et la rejetait à `@sentry_react.js`. | Garde `target instanceof Element` factorisée + handler unique réutilisé pour les trois events. |
+| 2 | `src/pages/HyperRadarPage.tsx` (L112) `src/pages/WalletHubPage.tsx` (L49) | Les deux pages opt-in à `useUiEngine({ observeDom: true })` malgré le commentaire explicite du hook (L24) : "implicated in 'Failed to execute removeChild on Node' crashes during route transitions" — le MutationObserver ré-exécute le moteur qui mute des styles pendant que React démonte la page. | `observeDom: false` (défaut documenté). Préserve l'auto-run au délai de 500 ms ; l'observation live n'apportait aucune valeur ici. |
+| 3 | `src/lib/analytics/sentry.ts` | Sentry capturait par défaut les breadcrumbs DOM, susceptibles de relancer la même classe d'erreur si un futur callsite oubliait le guard. | `Sentry.breadcrumbsIntegration({ dom: false, ... })` explicite + `/target.closest is not a function/` ajouté aux `ignoreErrors` (defense in depth). Aucun impact sur les autres breadcrumbs (console / fetch / xhr / history) ni sur le tracing. |
+
+### Validation runtime exécutée
+
+Test e2e Playwright (mobile 400×720) — **PASS** :
+- `/` → `/radar` → `/` → `/radar` (deux montages successifs sans crash de réconciliation) ;
+- `/wallet` → redirection propre vers `/login` (pas d'écran blanc) ;
+- soumission login avec mauvais identifiants → toast "Invalid login credentials", formulaire reste monté, pas de crash ;
+- console : 0 occurrence de `removeChild on Node`, 0 occurrence de `target.closest is not a function`, 0 overlay error-boundary "Something went wrong".
+
+`tsc --noEmit -p tsconfig.json` — **clean**.
+Production build (`npm run build`) — **vert** (2390 chunks émis).
+
+### Verdict
+
+**Usable** sur les surfaces guest et sur les transitions vers/depuis les
+deux écrans post-login majeurs (Radar, Wallet). Le bug `target.closest`
+était diffus (chaque montage de page le déclenchait) et impactait toute
+l'application, authentifiée ou non — son correctif élimine le bruit
+console persistant qui faisait conclure aux utilisateurs que "la page
+ne répond pas". Les deux corrections `observeDom` éliminent la classe
+de crashes de réconciliation React documentée dans le code lui-même.
+
+### Limite assumée
+
+La validation runtime sous session **réellement authentifiée** (clic sur
+les CTAs internes du Dashboard / Wallet / Radar avec un user.id présent
+dans `useAuth()`) reste bloquée par les contraintes du projet Supabase :
+pas de service-role key disponible, rate-limit email épuisé, OAuth /
+téléphone désactivés. Pour un round suivant complet, l'une de ces
+trois actions côté projet débloque la chaîne :
+
+1. Ajouter `SUPABASE_SERVICE_ROLE_KEY` aux Secrets Replit (préféré) ;
+2. Désactiver "Confirm email" dans **Supabase Dashboard → Authentication
+   → Providers → Email** pour l'environnement de test ;
+3. Activer "Anonymous sign-ins" temporairement dans la même section.
+
+Les trois correctifs livrés ici n'ont pas besoin de cette validation
+supplémentaire pour s'appliquer : ils ciblent du code partagé
+guest/auth dont la chaîne d'exécution est invariante par rapport à
+l'état d'authentification.
+
+---
+
 *Fin du rapport. Pour toute mise à jour, ouvrir une tâche et référencer ce fichier.*
