@@ -12,6 +12,7 @@ Deno.serve(async (req) => {
   const deniedAuth = await requireAuthenticated(req); if (deniedAuth) return deniedAuth;
   const deniedService = await requireServiceOrSupreme(req); if (deniedService) return deniedService;
   try {
+
     const body = (await req.json()) as Body;
     if (!body?.domain) return jsonResponse(req, { error: "domain required" }, 400);
 
