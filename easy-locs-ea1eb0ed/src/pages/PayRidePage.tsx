@@ -29,6 +29,10 @@ export default function PayRidePage() {
       setErrorMsg("Please sign in to make a payment");
       return;
     }
+    if (!threadId) {
+      setErrorMsg("Missing conversation reference — please reopen this payment from the chat.");
+      return;
+    }
 
     setPaymentState("processing");
     setErrorMsg("");
@@ -84,6 +88,15 @@ export default function PayRidePage() {
         currency: "AED",
         type: "ride_payment",
         threadId,
+        payerId: user.id,
+        correlationId,
+      }, "payride", { userId: user.id, correlationId });
+      // Close the loop: notify Orbit so the chat thread receives a payment confirmation message.
+      platformBus.emit("orbit:notify_payment", {
+        threadId,
+        amount: numericAmount,
+        currency: "AED",
+        kind: "ride_payment",
         payerId: user.id,
         correlationId,
       }, "payride", { userId: user.id, correlationId });
