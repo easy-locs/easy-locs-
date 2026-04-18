@@ -341,8 +341,11 @@ begin
   end if;
 end $$;
 
+<<<<<<< HEAD
 -- Seed the 6 canonical queues (logical only — table is shared)
 -- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
+=======
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
@@ -787,7 +790,11 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
+<<<<<<< HEAD
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+=======
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
 do $$
 begin
@@ -806,7 +813,6 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
-
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
     -- otherwise with a logged incident) so this schedule is safe to
