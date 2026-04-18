@@ -48,6 +48,7 @@ Deno.serve(async (req) => {
       reason: `heal:${body.agent_id}`,
       metadata: { healed_from: body.agent_id },
     });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
