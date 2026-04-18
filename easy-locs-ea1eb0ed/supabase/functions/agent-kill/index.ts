@@ -1,5 +1,11 @@
 // agent-kill — Terminates an agent + cancels its in-flight tasks.
 // Supreme-only: a killed agent is a destructive action.
+//
+// Prefers the atomic `army.kill_agent` RPC (which performs the agent
+// update, task cancellation, and incident logging in a single
+// transaction). If the RPC is unavailable or errors, falls back to
+// manual updates so the kill still completes. An additional incident
+// is always logged from the edge layer for observability.
 import {
   armyClient, jsonResponse, logIncident, preflight, requireSupreme,
 } from "../_shared/army.ts";
@@ -33,7 +39,7 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
-      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
+      p_agent_id: body.agent_id, p_reason: reason,
     });
 
     if (error) {
