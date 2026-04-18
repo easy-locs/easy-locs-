@@ -142,6 +142,11 @@ export function __resetBeaconQueueForTests(): void {
     clearTimeout(beaconFlushTimer);
     beaconFlushTimer = null;
   }
+  // Reset the unload-listener bookkeeping too so successive tests don't
+  // leak state across cases (each test re-installs its own listeners as
+  // soon as it enqueues a metric).
+  beaconUnloadHooked = false;
+  alertedMetrics.clear();
 }
 
 function flushBeaconQueue(endpoint: string): void {
