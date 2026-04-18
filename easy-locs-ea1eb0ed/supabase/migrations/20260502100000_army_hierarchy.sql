@@ -317,6 +317,7 @@ on conflict (name) do nothing;
 create table if not exists army.queue_messages (
   id              bigserial primary key,
   queue_name      text not null references army.queue_registry(name),
+
   payload         jsonb not null,
   visible_at      timestamptz not null default now(),
   locked_until    timestamptz,
@@ -340,8 +341,6 @@ begin
   end if;
 end $$;
 
--- Seed the 6 canonical queues (logical only — table is shared)
--- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
 
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
@@ -671,6 +670,7 @@ alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
 alter table army.queue_registry   enable row level security;
 
+
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
 create policy army_roles_read on army.agent_roles
@@ -688,6 +688,7 @@ begin
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
       'queue_messages','queue_registry','agent_roles','agent_policies'])
+
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
@@ -784,12 +785,13 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
--- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
 -- ----------------------------------------------------------------------------
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
     -- TTL sweep + stuck-task detection
+
     perform cron.schedule(
       'army_ttl_sweep',
       '*/5 * * * *',
@@ -802,7 +804,6 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
-
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
     -- otherwise with a logged incident) so this schedule is safe to
@@ -846,6 +847,7 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
+
   end if;
 exception when others then null;
 end $$;
