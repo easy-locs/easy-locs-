@@ -46,6 +46,7 @@ Chief Orchestrator
 - Views: `v_general_state`, `v_army_dashboard` (cockpit feeds).
 
 ### Edge functions
+
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
 | `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
