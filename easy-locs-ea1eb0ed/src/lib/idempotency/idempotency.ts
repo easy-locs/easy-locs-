@@ -20,6 +20,7 @@
  * crash on the dedup path itself.
  */
 import { db } from "@/services/db";
+import { globalSingleFlight } from "@/lib/orchestration/single-flight";
 
 /**
  * Minimal RPC client shape used by this module. Avoids dragging the full
@@ -140,24 +141,34 @@ export async function withIdempotency<T>(
     throw new Error("[idempotency] namespace and key are required");
   }
 
-  const hash = await hashPayload(payload);
-  const claim = (await rpcClaim(namespace, key, hash, ttlSeconds))
-    ?? memoClaim(namespace, key, hash, ttlSeconds);
+  const sfKey = `idem::${namespace}::${key}`;
 
-  if (!claim.isNew) {
-    return { result: claim.result as T, replayed: true };
-  }
+  // Wrap the entire claim+execute+finalize cycle in single-flight so
+  // concurrent same-key callers in the same process share one
+  // execution (cross-process dedup is still handled by the RPC claim
+  // below). This is the explicit pairing called for in
+  // docs/hardening.md ("single-flight handles the in-process collision,
+  // idempotency handles the cross-process race").
+  return globalSingleFlight.run<IdempotencyResult<T>>(sfKey, async () => {
+    const hash = await hashPayload(payload);
+    const claim = (await rpcClaim(namespace, key, hash, ttlSeconds))
+      ?? memoClaim(namespace, key, hash, ttlSeconds);
 
-  try {
-    const result = await fn();
-    memoFinalize(namespace, key, "succeeded", result);
-    void rpcFinalize(namespace, key, "succeeded", result);
-    return { result, replayed: false };
-  } catch (e) {
-    memoFinalize(namespace, key, "failed", { error: (e as Error).message });
-    void rpcFinalize(namespace, key, "failed", { error: (e as Error).message });
-    throw e;
-  }
+    if (!claim.isNew) {
+      return { result: claim.result as T, replayed: true };
+    }
+
+    try {
+      const result = await fn();
+      memoFinalize(namespace, key, "succeeded", result);
+      void rpcFinalize(namespace, key, "succeeded", result);
+      return { result, replayed: false };
+    } catch (e) {
+      memoFinalize(namespace, key, "failed", { error: (e as Error).message });
+      void rpcFinalize(namespace, key, "failed", { error: (e as Error).message });
+      throw e;
+    }
+  });
 }
 
 export function __resetIdempotencyMemoForTests(): void {
