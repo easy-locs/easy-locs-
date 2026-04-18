@@ -70,6 +70,7 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 <<<<<<< HEAD
 <<<<<<< HEAD
 
+<<<<<<< HEAD
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 =======
@@ -90,6 +91,9 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
 >>>>>>> 48a041c00a (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> 66d403e569 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 interface Body {
   role_code: string;
   domain: string;
