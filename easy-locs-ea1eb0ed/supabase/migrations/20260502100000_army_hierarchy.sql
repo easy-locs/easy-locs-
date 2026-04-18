@@ -899,6 +899,30 @@ begin
       end;
     end if;
 
+    -- Autonomous pipeline tick: drives the whole army every minute
+    -- without any human intervention. Calls the army-tick edge function
+    -- with the service-role key so the entire chain advances.
+    if exists (select 1 from pg_extension where extname = 'pg_net') then
+      begin
+        perform cron.schedule(
+          'army_tick_dispatcher_v2',
+          '* * * * *',
+          format($cron$
+            select net.http_post(
+              url     := %L,
+              headers := jsonb_build_object('Content-Type','application/json',
+                                            'Authorization','Bearer ' || %L),
+              body    := '{}'::jsonb
+            );
+          $cron$,
+          coalesce(current_setting('app.supabase_url', true), '') || '/functions/v1/army-tick',
+          coalesce(current_setting('app.service_role_key', true), '')
+          )
+        );
+      exception when others then null;
+      end;
+    end if;
+
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
       'army_queue_drain',
