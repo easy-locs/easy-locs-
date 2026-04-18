@@ -103,6 +103,7 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 =======
@@ -132,6 +133,8 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 =======
 
 >>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
