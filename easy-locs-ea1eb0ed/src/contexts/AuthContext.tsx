@@ -607,15 +607,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   //   - explicit signup_method === "phone" tag (set by Signup.tsx — kept for
   //     backward compatibility)
   //   - user.phone present + user.email empty/null → phone-only account (defensive)
-  // Typed view onto the supabase-js User. We pick only the fields we need
-  // and keep them strictly optional so the gate can never silently widen.
-  type AuthUserView = {
-    phone?: string | null;
-    email?: string | null;
-    phone_confirmed_at?: string | null;
-    user_metadata?: { signup_method?: string } | null;
-  };
-  const u = (user ?? null) as AuthUserView | null;
+  // We use "as any" or explicit cast because Supabase types may lag behind native fields.
+  const u = user as any;
   const hasPhone = !!u?.phone;
   const hasEmail = !!u?.email;
   const phoneConfirmed = !!u?.phone_confirmed_at;
