@@ -9,16 +9,20 @@ import {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident,
   preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, jsonResponse, preflight, requireSupreme,
   spawnAgent,
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -37,6 +41,8 @@ import {
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident,
   preflight, requireSupreme, spawnAgent,
 >>>>>>> 66d403e569 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body { agent_id: string; }
@@ -64,6 +70,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -74,6 +81,8 @@ Deno.serve(async (req) => {
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 66d403e569 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     // Check quotas before spawning
     const check = await canSpawn(sb, {
       roleCode: agent.role_code, domain: agent.domain,
@@ -96,6 +105,17 @@ Deno.serve(async (req) => {
       reason: `heal:${body.agent_id}`,
       metadata: { healed_from: body.agent_id },
     });
+=======
+    const result = await spawnAgent(sb, {
+      roleCode: agent.role_code,
+      domain: agent.domain ?? "ops",
+      taskType: "respawn",
+      dedupKey: `heal:${body.agent_id}`,
+      parentId: agent.parent_id ?? undefined,
+      reason: `heal:${body.agent_id}`,
+      metadata: { healed_from: body.agent_id },
+    });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
   } catch (e) {
