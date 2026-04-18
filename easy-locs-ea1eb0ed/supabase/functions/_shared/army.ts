@@ -92,8 +92,11 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call. Plain authenticated
@@ -106,6 +109,7 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   if (id.kind === "user" && id.supreme) return null;
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -164,6 +168,8 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 =======
 
 >>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
