@@ -4,7 +4,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 export default function OrbitContactsPage() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   return (
     <SubPageShell>
       <ErrorBoundary>

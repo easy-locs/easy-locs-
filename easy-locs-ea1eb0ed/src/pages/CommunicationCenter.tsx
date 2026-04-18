@@ -45,7 +45,7 @@ const CONTEXT_PANEL_THREAD_TYPES = new Set(
 const VALID_SECTIONS: CommSection[] = ["chats", "calls", "groups", "you"];
 
 export const CommunicationCenter = () => {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { orgId, user } = useAuth();
   const navigate = useNavigate();
   const { conversationId: routeConversationId } = useParams<{ conversationId?: string }>();

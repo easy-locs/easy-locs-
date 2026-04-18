@@ -75,7 +75,7 @@ const AdvancedCheckout = lazy(() => import("@/components/storefront/AdvancedChec
 type ShopTab = "overview" | "menu" | "reviews" | "info";
 
 export default function ShopPage() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { slug: shopSlug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

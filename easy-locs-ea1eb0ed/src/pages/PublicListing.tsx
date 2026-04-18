@@ -23,7 +23,7 @@ import SubPageShell from "@/components/layout/SubPageShell";
 import ListingMapSection from "@/components/public/ListingMapSection";
 
 const PublicListing = () => {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { slug, propertySlug } = useParams<{ slug?: string; propertySlug?: string }>();
   const listingSlug = slug || propertySlug;
   const [searchParams] = useSearchParams();
