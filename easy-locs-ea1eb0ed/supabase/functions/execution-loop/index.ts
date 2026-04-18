@@ -55,7 +55,6 @@ import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/boot
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
 import { bootstrapDeployPreviewAdapters } from "../_shared/execution/adapters/deploy/preview/bootstrap.ts";
 import { bootstrapDeployProdAdapters } from "../_shared/execution/adapters/deploy/prod/bootstrap.ts";
-<<<<<<< HEAD
 // LC6 (#877) — post-settlement auto-rollback dispatcher for deploy.prod.
 import {
   createSupabaseRollbackDispatcher,
@@ -65,16 +64,6 @@ import {
 import { createGithubRevertClientFromEnv } from "../_shared/execution/rollback/github-client.ts";
 // LC1 (#871) — code.edit primitive used by Level-C build agents.
 import { bootstrapCodeEditAdapter } from "../_shared/execution/adapters/code/bootstrap.ts";
-// L7 P4 (#928) — content + contacts adapter families. Gated by
-// `agent.content.enabled` / `agent.contacts.enabled` feature flags; when
-// the flags are off, registration is a no-op and legacy direct-write
-// paths remain active.
-import { bootstrapContentAdapters } from "../_shared/execution/adapters/content/bootstrap.ts";
-import { bootstrapContactsAdapters } from "../_shared/execution/adapters/contacts/bootstrap.ts";
-=======
-// LC1 (#871) — code.edit primitive used by Level-C build agents.
-import { bootstrapCodeEditAdapter } from "../_shared/execution/adapters/code/bootstrap.ts";
->>>>>>> 72f31d38c (LC1 (#871): sandboxed code.edit tool adapter)
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import {
@@ -413,7 +402,6 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       await bootstrapBuildAdapters(sb);
       await bootstrapTestAdapters(sb);
       await bootstrapDeployPreviewAdapters(sb);
-<<<<<<< HEAD
       // LC6 (#877): pass a real GitHub revert client when the runner
       // secrets are present. Without them LC6 stays off and the
       // adapter keeps its LC2 default (`rollback_strategy="none"`).
@@ -433,11 +421,6 @@ async function ensureAdaptersBootstrapped(sb: SupabaseClient): Promise<void> {
       // returns early when the flag is off.
       await bootstrapContentAdapters(sb);
       await bootstrapContactsAdapters(sb);
-=======
-      await bootstrapDeployProdAdapters(sb);
-      // LC1 (#871): code.edit primitive for Level-C build agents.
-      await bootstrapCodeEditAdapter(sb);
->>>>>>> 72f31d38c (LC1 (#871): sandboxed code.edit tool adapter)
     })().catch((e) => {
       _bootstrapPromise = null;
       throw e;
