@@ -132,7 +132,7 @@ CREATE OR REPLACE FUNCTION system.dependency_state_is_acceptable(s system.execut
 RETURNS BOOLEAN
 LANGUAGE sql IMMUTABLE
 AS $$
-  SELECT s IN ('approved','queued','running','succeeded','rolled_back')
+  SELECT s IN ('approved','queued','running','succeeded','rolling_back','rolled_back')
 $$;
 
 -- Defense-in-depth: enforce the DAG invariant at the database boundary so a
@@ -365,7 +365,7 @@ AS $$
   WITH active AS (
     SELECT t.*
       FROM system.execution_tasks t
-     WHERE t.status IN ('queued','running','pending_review','approved')
+     WHERE t.status IN ('queued','running','pending_review','approved','rolling_back')
   ),
   -- 1. End-to-end timeout
   timeouts AS (
@@ -378,9 +378,8 @@ AS $$
            ) AS evidence
       FROM active a
      WHERE a.max_duration_ms IS NOT NULL
-       AND a.status = 'running'                  -- only running tasks can transition to `failed`
-       AND a.started_at IS NOT NULL
-       AND a.started_at + (a.max_duration_ms || ' milliseconds')::interval < now()
+       AND a.status IN ('running', 'rolling_back') -- only active execution can transition to terminal failure here
+       AND COALESCE(a.started_at, a.created_at) + (a.max_duration_ms || ' milliseconds')::interval < now()
   ),
   -- 2. Running tasks with no recent heartbeat
   no_heartbeat AS (
@@ -406,14 +405,34 @@ AS $$
              'stuck_threshold_ms', a.stuck_threshold_ms
            ) AS evidence
       FROM active a
-     WHERE a.status IN ('queued','approved','running')
+     WHERE a.status IN ('queued','approved','running','rolling_back')
        AND a.stuck_threshold_ms IS NOT NULL
        AND a.stage_started_at IS NOT NULL
        AND a.stage_started_at + ((a.stuck_threshold_ms * 3) || ' milliseconds')::interval < now()
        AND NOT EXISTS (SELECT 1 FROM timeouts WHERE timeouts.task_id = a.id)
        AND NOT EXISTS (SELECT 1 FROM no_heartbeat WHERE no_heartbeat.task_id = a.id)
   ),
-  -- 4. Locks held past TTL with the underlying task still active
+  -- 4. Orphan: in-flight (`running`) row with no owning worker / no lock.
+  --    Detects rows that lost their executor (worker crash before
+  --    heartbeat/lock release). Distinct from `no_heartbeat` because it
+  --    fires immediately rather than waiting for the heartbeat window.
+  orphan_running AS (
+    SELECT a.id AS task_id, a.type, a.domain, a.status, a.attempt_count, a.max_attempts,
+           'orphan_no_owner'::TEXT AS rule,
+           jsonb_build_object(
+             'lock_key', a.lock_key,
+             'locked_by', a.locked_by,
+             'started_at', a.started_at
+           ) AS evidence
+      FROM active a
+     WHERE a.status = 'running'
+       AND (a.lock_key IS NULL OR a.locked_by IS NULL)
+       AND COALESCE(a.started_at, a.stage_started_at, a.created_at) + INTERVAL '30 seconds' < now()
+       AND NOT EXISTS (SELECT 1 FROM timeouts    WHERE timeouts.task_id    = a.id)
+       AND NOT EXISTS (SELECT 1 FROM no_heartbeat WHERE no_heartbeat.task_id = a.id)
+       AND NOT EXISTS (SELECT 1 FROM no_progress  WHERE no_progress.task_id  = a.id)
+  ),
+  -- 5. Locks held past TTL with the underlying task still active
   lock_expired AS (
     SELECT a.id AS task_id, a.type, a.domain, a.status, a.attempt_count, a.max_attempts,
            'lock_ttl_expired'::TEXT AS rule,
@@ -433,6 +452,7 @@ AS $$
   SELECT * FROM timeouts
   UNION ALL SELECT * FROM no_heartbeat
   UNION ALL SELECT * FROM no_progress
+  UNION ALL SELECT * FROM orphan_running
   UNION ALL SELECT * FROM lock_expired
   LIMIT p_limit;
 $$;
@@ -464,6 +484,7 @@ BEGIN
   -- exception.
   v_target := CASE v_row.status
     WHEN 'running'        THEN 'failed'::system.execution_task_status
+    WHEN 'rolling_back'   THEN 'failed'::system.execution_task_status
     WHEN 'queued'         THEN 'cancelled'::system.execution_task_status
     WHEN 'approved'       THEN 'cancelled'::system.execution_task_status
     WHEN 'pending_review' THEN 'cancelled'::system.execution_task_status
@@ -569,7 +590,23 @@ AS $$
 DECLARE
   r RECORD;
   v_outcome TEXT;
+  v_lock_key BIGINT := hashtextextended('system.watchdog_tick.singleton', 0);
 BEGIN
+  -- Single-claimer / anti-stampede: a transaction-scoped advisory lock
+  -- ensures at most one tick reconciles candidates at any moment, even
+  -- under concurrent invocations from cron + manual + edge-function. The
+  -- lock is released automatically at COMMIT/ROLLBACK so a crashing tick
+  -- never poisons the next one (idempotent across restart). When the
+  -- lock can't be acquired, we return a single sentinel row so callers
+  -- can observe the skip without thinking the system is silent.
+  IF NOT pg_try_advisory_xact_lock(v_lock_key) THEN
+    out_action  := 'skipped_concurrent';
+    out_task_id := NULL;
+    out_rule    := NULL;
+    RETURN NEXT;
+    RETURN;
+  END IF;
+
   FOR r IN SELECT * FROM system.scan_stuck_tasks(p_limit) LOOP
     IF r.rule = 'timeout' THEN
       IF system.watchdog_fail_task(r.task_id, 'timeout', 'task exceeded max_duration_ms', r.evidence) THEN
@@ -601,7 +638,7 @@ BEGIN
   UPDATE system.execution_tasks
      SET last_heartbeat_at = now()
    WHERE id = p_task_id
-     AND status IN ('queued','running');
+     AND status IN ('queued','running','rolling_back');
   RETURN FOUND;
 END;
 $$;
@@ -764,7 +801,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'system-watchdog-tick schedule failed: %', SQLERRM;
 END;
 $cron_wd$;
-
 -- ── 7. Grants ─────────────────────────────────────────────────────────────
 GRANT EXECUTE ON FUNCTION system.resolve_task_verb_defaults(TEXT)                                  TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION system.validate_task_dependencies(UUID, UUID[])                          TO authenticated, service_role;
