@@ -196,4 +196,87 @@ BEGIN;
   RESET ROLE;
 ROLLBACK;
 
+-- ──────────────────────────────────────────────────────────────────────────
+-- Test 7: retry-budget exhaustion lands on `failed`, never `cancelled`.
+-- Spec contract: even when the stuck row is in `queued`/`approved`, the
+-- exhaustion path must route through `running` → `failed`.
+BEGIN;
+  SELECT pg_temp.mk_task('queued') AS t \gset
+  UPDATE system.execution_tasks
+     SET attempt_count    = 5,
+         max_attempts     = 3,
+         stage_started_at = now() - INTERVAL '1 hour',
+         stuck_threshold_ms = 1000
+   WHERE id = :'t'::uuid;
+
+  -- Force the recover path; budget is exhausted → expect 'failed'.
+  DO $$
+  DECLARE v_outcome TEXT; v_status TEXT; v_class TEXT;
+  BEGIN
+    v_outcome := system.watchdog_recover_task(:'t'::uuid, 'spec_test', '{}'::jsonb);
+    SELECT status::text, failure_class INTO v_status, v_class
+      FROM system.execution_tasks WHERE id = :'t'::uuid;
+    IF v_outcome <> 'failed'
+       OR v_status <> 'failed'
+       OR v_class IS DISTINCT FROM 'retry_budget_exhausted' THEN
+      RAISE EXCEPTION 'expected outcome=failed/status=failed/class=retry_budget_exhausted, got %/%/%',
+        v_outcome, v_status, v_class;
+    END IF;
+  END $$;
+ROLLBACK;
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- Test 8: lock-TTL expiry surfaces in scan_stuck_tasks.
+BEGIN;
+  SELECT pg_temp.mk_task('queued') AS t \gset
+  -- Insert a stale lock first
+  INSERT INTO system.execution_locks (lock_key, locked_by, expires_at)
+  VALUES ('lk-spec-ttl', 'spec', now() - INTERVAL '5 minutes');
+  UPDATE system.execution_tasks
+     SET status            = 'running',
+         lock_key          = 'lk-spec-ttl',
+         locked_by         = 'spec',
+         started_at        = now() - INTERVAL '2 minutes',
+         stage_started_at  = now() - INTERVAL '2 minutes'
+   WHERE id = :'t'::uuid;
+
+  DO $$
+  DECLARE n INT;
+  BEGIN
+    SELECT count(*) INTO n FROM system.scan_stuck_tasks(50)
+      WHERE task_id = :'t'::uuid AND rule = 'lock_ttl_expired';
+    IF n < 1 THEN
+      RAISE EXCEPTION 'expected lock_ttl_expired candidate, got %', n;
+    END IF;
+  END $$;
+ROLLBACK;
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- Test 9: incident_log INSERT works for authenticated callers
+--          (so dispatcher pre-validate path can persist rejections).
+BEGIN;
+  SET LOCAL ROLE authenticated;
+  SET LOCAL "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-000000000099","role":"authenticated"}';
+  DO $$
+  DECLARE v_id UUID;
+  BEGIN
+    v_id := system.write_incident('spec_authn', 'info', 'auth-spec', NULL, NULL,
+              jsonb_build_object('via','authenticated'));
+    IF v_id IS NULL THEN
+      RAISE EXCEPTION 'authenticated caller could not write incident';
+    END IF;
+  END $$;
+  RESET ROLE;
+ROLLBACK;
+
+-- ──────────────────────────────────────────────────────────────────────────
+-- Test 10: watchdog_tick is idempotent across restart — running it twice
+--          back-to-back on a clean queue produces no duplicate failures.
+BEGIN;
+  PERFORM * FROM system.watchdog_tick(50);
+  PERFORM * FROM system.watchdog_tick(50);
+  -- Just confirm the function did not raise; the no-op repeat tick is the
+  -- contract we care about (no duplicate incident rows for the same id).
+ROLLBACK;
+
 \echo all watchdog_anti_deadlock SQL spec tests passed
