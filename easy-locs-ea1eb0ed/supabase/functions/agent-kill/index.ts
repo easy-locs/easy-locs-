@@ -13,12 +13,12 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Body;
     if (!body?.agent_id) return jsonResponse(req, { error: "agent_id required" }, 400);
     const sb = armyClient();
+    const reason = body.reason ?? "manual";
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
     if (error) return jsonResponse(req, { error: error.message }, 500);
     return jsonResponse(req, { ok: true, result: data });
-=======
     const reason = body.reason ?? "manual";
     const { error: e1 } = await sb.schema("army").from("agent_instances")
       .update({ status: "terminated", terminated_at: new Date().toISOString() })
@@ -34,7 +34,8 @@ Deno.serve(async (req) => {
       role: "supreme_commander", message: `agent killed: ${reason}`,
     });
     return jsonResponse(req, { ok: true });
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
