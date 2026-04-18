@@ -602,6 +602,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
         clearReferralCaches();
+        queryClient.clear();
       }
       // Drop any cached role/admin lookup so the next render reflects the
       // new session immediately (sign-in, sign-out, token refresh, user swap).

@@ -125,7 +125,7 @@ export default function BuyerDeliveryDashboard({ className }: Props) {
         refresh();
       })
       .subscribe();
-    return () => { channel.unsubscribe(); };
+    return () => { void db.removeChannel(channel); };
   }, [user, refresh]);
 
   if (loading) {
