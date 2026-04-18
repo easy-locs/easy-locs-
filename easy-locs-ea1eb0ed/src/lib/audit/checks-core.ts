@@ -1,4 +1,4 @@
-import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile, verifyAuthCacheIsolation } from "@/lib/qa/system-verify";
+import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile, verifyAuthCacheIsolation, verifyRealtimeNoLeak, verifySubscriptionLifecycle, verifyNavigationStability } from "@/lib/qa/system-verify";
 import { verifyRlsBasicAccess } from "@/lib/qa/rls-checks";
 
 export async function auditAuthChecks() {
@@ -107,18 +107,32 @@ export async function auditRouteConfigChecks() {
     "/payment/:orderId",
     "/admin/system-verify",
   ];
+  const navStability = await verifyNavigationStability();
 
-  return requiredRoutes.map((route) => ({
-    ok: true,
-    key: `routes.${route}`,
-    group: "routes",
-    severity: "info" as const,
-    impact: 0,
-    title: `Route declared: ${route}`,
-    expected: "route exists in router",
-    actual: "assumed by RC layer",
-    hint: "",
-  }));
+  return [
+    ...requiredRoutes.map((route) => ({
+      ok: true,
+      key: `routes.${route}`,
+      group: "routes",
+      severity: "info" as const,
+      impact: 0,
+      title: `Route declared: ${route}`,
+      expected: "route exists in router",
+      actual: "assumed by RC layer",
+      hint: "",
+    })),
+    {
+      ok: navStability.ok,
+      key: "routes.navigation_stability",
+      group: "routes",
+      severity: navStability.ok ? ("info" as const) : ("warning" as const),
+      impact: navStability.ok ? 0 : 8,
+      title: navStability.ok ? "Navigation history stable" : "Navigation history coalescing",
+      expected: "history.length grows by N after N pushes",
+      actual: navStability.reason,
+      hint: navStability.ok ? "" : "Inspect for redirect-effect loops or replaceState abuse",
+    },
+  ];
 }
 
 export async function auditMobileChecks() {

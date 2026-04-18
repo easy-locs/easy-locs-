@@ -230,6 +230,7 @@ function PropertyTenantsSection({
 }) {
   const [showAssign, setShowAssign] = useState(false);
   const [search, setSearch] = useState("");
+  const [assigningId, setAssigningId] = useState<string | null>(null);
   const unassigned = allTenants.filter(t => !t.property_id).filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
@@ -255,8 +256,14 @@ function PropertyTenantsSection({
                 className="w-full bg-background border border-border/50 rounded-md px-2.5 py-1.5 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-accent" />
               <div className="max-h-32 overflow-y-auto space-y-1">
                 {unassigned.map(t => (
-                  <button key={t.id} onClick={async () => { const ok = await onAssignTenant(t.id, property.id); if (ok) setShowAssign(false); }}
-                    className="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-accent/10 transition-colors flex items-center gap-2">
+                  <button key={t.id} disabled={assigningId !== null}
+                    onClick={async () => {
+                      if (assigningId !== null) return;
+                      setAssigningId(t.id);
+                      try { const ok = await onAssignTenant(t.id, property.id); if (ok) setShowAssign(false); }
+                      finally { setAssigningId(null); }
+                    }}
+                    className="w-full text-left px-2.5 py-1.5 text-xs rounded hover:bg-accent/10 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                     <Users className="h-3 w-3 text-muted-foreground" />
                     <span className="text-foreground">{t.name}</span>
                     {t.email && <span className="text-muted-foreground ml-auto">{t.email}</span>}
