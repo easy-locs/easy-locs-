@@ -111,9 +111,105 @@ function sendToPostHog(payload: VitalPayload): void {
   } catch {}
 }
 
+/**
+ * Optional dedicated collection endpoint (set via `VITE_WEB_VITALS_ENDPOINT`).
+ * When configured, payloads are batched (5s window or 10 entries, whichever
+ * comes first) and shipped via `navigator.sendBeacon` so they survive page
+ * unload — the same pattern Meta / Google use for their own RUM pipelines.
+ *
+ * The PostHog path is preserved so this is purely additive: teams that want
+ * a self-hosted ingest (e.g. an Edge Function persisting to a `web_vitals`
+ * table for long-term trend analysis) can flip the env var without losing
+ * existing PostHog dashboards.
+ */
+function getBeaconEndpoint(): string | undefined {
+  try {
+    const v = import.meta.env.VITE_WEB_VITALS_ENDPOINT;
+    return typeof v === "string" && v.length > 0 ? v : undefined;
+  } catch {
+    return undefined;
+  }
+}
+const BEACON_BATCH_MAX = 10;
+const BEACON_FLUSH_INTERVAL_MS = 5000;
+const beaconQueue: VitalPayload[] = [];
+let beaconFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let beaconUnloadHooked = false;
+
+export function __resetBeaconQueueForTests(): void {
+  beaconQueue.length = 0;
+  if (beaconFlushTimer) {
+    clearTimeout(beaconFlushTimer);
+    beaconFlushTimer = null;
+  }
+}
+
+function flushBeaconQueue(endpoint: string): void {
+  if (beaconQueue.length === 0) return;
+  const batch = beaconQueue.splice(0, beaconQueue.length);
+  const body = JSON.stringify({ metrics: batch, sent_at: Date.now() });
+  try {
+    if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+      const blob = new Blob([body], { type: "application/json" });
+      const ok = navigator.sendBeacon(endpoint, blob);
+      if (ok) return;
+    }
+    // Fallback: keepalive fetch survives page unload up to 64KB.
+    void fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+      credentials: "omit",
+      mode: "cors",
+    }).catch(() => {});
+  } catch {
+    // Last-resort: drop the batch silently — perf telemetry must never throw
+    // into the app's main code path.
+  }
+}
+
+function enqueueBeacon(payload: VitalPayload): void {
+  const endpoint = getBeaconEndpoint();
+  if (!endpoint) return;
+  beaconQueue.push(payload);
+
+  if (!beaconUnloadHooked && typeof window !== "undefined") {
+    beaconUnloadHooked = true;
+    const flushOnHide = () => {
+      const ep = getBeaconEndpoint();
+      if (ep) flushBeaconQueue(ep);
+    };
+    // `pagehide` is the modern, cross-browser unload signal that fires for
+    // bfcache navigation too. `visibilitychange` covers tab-switch on mobile.
+    window.addEventListener("pagehide", flushOnHide, { capture: true });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flushOnHide();
+    }, { capture: true });
+  }
+
+  if (beaconQueue.length >= BEACON_BATCH_MAX) {
+    if (beaconFlushTimer) {
+      clearTimeout(beaconFlushTimer);
+      beaconFlushTimer = null;
+    }
+    flushBeaconQueue(endpoint);
+    return;
+  }
+
+  if (!beaconFlushTimer) {
+    beaconFlushTimer = setTimeout(() => {
+      beaconFlushTimer = null;
+      const ep = getBeaconEndpoint();
+      if (ep) flushBeaconQueue(ep);
+    }, BEACON_FLUSH_INTERVAL_MS);
+  }
+}
+
 export function reportWebVital(metric: Metric): void {
   const payload = buildPayload(metric);
   sendToPostHog(payload);
+  enqueueBeacon(payload);
   alertOnRegression(metric);
 
   if (import.meta.env.DEV) {

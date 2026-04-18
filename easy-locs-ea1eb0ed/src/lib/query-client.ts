@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { QueryClient, keepPreviousData } from "@tanstack/react-query";
 import { getCached, setCached, listAllKeys } from "@/lib/cache/idb-cache";
 
 export const queryClient = new QueryClient({
@@ -11,6 +11,12 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       refetchOnReconnect: "always",
       networkMode: "offlineFirst",
+      // Stale-while-revalidate UX default: when a query key changes (filters,
+      // pagination, sort), keep the previous data on screen while the new
+      // request is in flight. Eliminates the "blank list" flash that breaks
+      // the "instantaneous" feel on Radar / Marketplace / Wallet history.
+      // Hooks that need a different behavior can opt out per-query.
+      placeholderData: keepPreviousData,
     },
     mutations: {
       retry: 1,
