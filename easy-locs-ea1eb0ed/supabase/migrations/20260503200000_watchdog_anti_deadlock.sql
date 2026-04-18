@@ -667,10 +667,66 @@ CREATE OR REPLACE VIEW system.watchdog_loop_health AS
     effect_summary,
     error_message
     FROM public.engine_run_logs
-   WHERE engine = 'watchdog-loop'
+   WHERE engine_name = 'watchdog-loop'
    ORDER BY started_at DESC
    LIMIT 50;
 GRANT SELECT ON system.watchdog_loop_health TO authenticated, service_role;
+
+-- Cron-friendly wrapper: runs `watchdog_tick` AND writes a row into
+-- `engine_run_logs` so `watchdog_loop_health` (and the admin card it
+-- powers) stays accurate regardless of whether the tick was driven by
+-- pg_cron directly or by the `watchdog-loop` edge function.
+CREATE OR REPLACE FUNCTION system.watchdog_tick_with_log(p_limit INT DEFAULT 200)
+RETURNS INT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, system
+AS $$
+DECLARE
+  v_started TIMESTAMPTZ := clock_timestamp();
+  v_count   INT := 0;
+  v_summary TEXT;
+  v_counts  JSONB := '{}'::jsonb;
+  r RECORD;
+BEGIN
+  FOR r IN SELECT * FROM system.watchdog_tick(p_limit) LOOP
+    v_count := v_count + 1;
+    v_counts := jsonb_set(
+      v_counts,
+      ARRAY[r.out_action || ':' || r.out_rule],
+      to_jsonb(COALESCE((v_counts ->> (r.out_action || ':' || r.out_rule))::INT, 0) + 1),
+      true
+    );
+  END LOOP;
+  v_summary := CASE WHEN v_count = 0
+    THEN format('tick: no stuck tasks (limit=%s)', p_limit)
+    ELSE format('tick: %s actions taken — %s', v_count, v_counts::TEXT)
+  END;
+  INSERT INTO public.engine_run_logs (
+    engine_name, category, started_at, finished_at, duration_ms,
+    status, effect_summary, db_rows_affected, metadata_json, trigger_source
+  ) VALUES (
+    'watchdog-loop', 'execution-layer', v_started, clock_timestamp(),
+    EXTRACT(MILLISECONDS FROM clock_timestamp() - v_started)::INT,
+    'ok', v_summary, v_count,
+    jsonb_build_object('tickCount', v_count, 'counts', v_counts, 'limit', p_limit),
+    'pg_cron'
+  );
+  RETURN v_count;
+EXCEPTION WHEN OTHERS THEN
+  INSERT INTO public.engine_run_logs (
+    engine_name, category, started_at, finished_at, duration_ms,
+    status, effect_summary, error_message, metadata_json, trigger_source
+  ) VALUES (
+    'watchdog-loop', 'execution-layer', v_started, clock_timestamp(),
+    EXTRACT(MILLISECONDS FROM clock_timestamp() - v_started)::INT,
+    'error', 'watchdog-loop crashed', SQLERRM,
+    jsonb_build_object('limit', p_limit, 'sqlstate', SQLSTATE),
+    'pg_cron'
+  );
+  RAISE;
+END;
+$$;
 
 -- ── 6d. Schedule: run watchdog_tick every minute (idempotent) ────────────
 DO $cron_wd$
@@ -685,7 +741,7 @@ BEGIN
     PERFORM cron.schedule(
       'system-watchdog-tick',
       '* * * * *',
-      $wd$SELECT system.watchdog_tick(200)$wd$
+      $wd$SELECT system.watchdog_tick_with_log(200)$wd$
     );
   END IF;
 EXCEPTION WHEN OTHERS THEN
@@ -701,6 +757,7 @@ GRANT EXECUTE ON FUNCTION system.scan_stuck_tasks(INT)                          
 GRANT EXECUTE ON FUNCTION system.watchdog_fail_task(UUID, TEXT, TEXT, JSONB)                       TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_recover_task(UUID, TEXT, JSONB)                          TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_tick(INT)                                                TO service_role;
+GRANT EXECUTE ON FUNCTION system.watchdog_tick_with_log(INT)                                       TO service_role;
 GRANT EXECUTE ON FUNCTION system.task_heartbeat(UUID)                                              TO service_role;
 GRANT EXECUTE ON FUNCTION system.admin_release_task_lock(UUID, TEXT)                               TO authenticated;
 GRANT EXECUTE ON FUNCTION system.admin_force_fail_task(UUID, TEXT)                                 TO authenticated;
