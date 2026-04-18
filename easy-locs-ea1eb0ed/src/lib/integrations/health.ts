@@ -10,7 +10,7 @@
  */
 
 import { INTEGRATION_REGISTRY, snapshotEnv, type IntegrationId } from "./registry";
-import { getSentryHealth } from "@/lib/analytics/sentry";
+import { getSentryHealth } from "@/lib/analytics/sentry-boot-shim";
 import { getPostHogHealth } from "@/lib/analytics/posthog";
 import { getMaplibreHealth, getMapboxHealth } from "@/lib/maplibre/config";
 import { getAwsClientHealth } from "@/lib/aws/aws-health";

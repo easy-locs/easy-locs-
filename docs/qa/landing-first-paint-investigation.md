@@ -101,6 +101,13 @@ mobile.
   the **eager preload set** (target: ≤ 700 KB brotli) so regressions
   are caught at build time.
 
+## Implementation status
+
+| # | Status         | Notes                                                                                              |
+|---:|---------------|----------------------------------------------------------------------------------------------------|
+| 3 | **Implemented** | New `src/lib/analytics/sentry-boot-shim.ts` wraps `initSentryBoot` / `captureBootCrash` / `reportTimeToFirstRender` / `getSentryHealth` with a queue. `main.tsx` and `lib/integrations/health.ts` now import from the shim, so `@sentry/react` is reached only via the dynamic `import("@/lib/analytics/sentry")` inside `flushSentryBoot()` (called in the existing Stage 1 `requestIdleCallback`). Errors thrown before flush are queued via `window.error` / `unhandledrejection` listeners and drained once the SDK is loaded. Expected eager-bundle savings: ≈ 115 KB brotli (the entire `vendor-sentry-*` chunk leaves the entry's static graph). |
+| 1, 2, 4, 5, 6 | Pending | See ranked table above. None implemented in this pass.                                  |
+
 ## Caveats
 
 - The 8.1 s figure was measured against `vite dev`, which serves
