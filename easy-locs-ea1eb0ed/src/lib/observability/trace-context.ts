@@ -204,7 +204,15 @@ export function installFetchTracePropagation(): void {
         : input instanceof URL
           ? input.toString()
           : input.url;
-      if (!/supabase\.co|replit\.dev|localhost|127\.0\.0\.1|^\//i.test(url)) {
+      if (!/replit\.dev|localhost|127\.0\.0\.1|^\//i.test(url)) {
+        return orig(input, init);
+      }
+      // Do NOT inject trace headers on Supabase requests: Edge Functions
+      // (and PostgREST) do not list x-trace-id / x-span-id / x-request-id /
+      // traceparent in their CORS Access-Control-Allow-Headers, so any custom
+      // header here breaks the preflight and silently kills auth flows like
+      // send-otp / verify-otp. Same-origin (app) requests keep propagation.
+      if (/supabase\.co/i.test(url)) {
         return orig(input, init);
       }
       const headers = new Headers(init?.headers || (input instanceof Request ? input.headers : undefined));

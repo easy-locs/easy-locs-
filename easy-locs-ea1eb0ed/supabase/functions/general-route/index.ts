@@ -2,14 +2,15 @@
 // to a captain (creating sub-tasks of type 'captain_plan'). Domain-scoped.
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse,
-  logMessage, preflight, requireServiceOrSupreme,
+  logMessage, preflight, requireAuthenticated, requireServiceOrSupreme,
 } from "../_shared/army.ts";
 
 interface Body { domain: string; max?: number; }
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
+  const deniedAuth = await requireAuthenticated(req); if (deniedAuth) return deniedAuth;
+  const deniedService = await requireServiceOrSupreme(req); if (deniedService) return deniedService;
   try {
 
     const body = (await req.json()) as Body;
