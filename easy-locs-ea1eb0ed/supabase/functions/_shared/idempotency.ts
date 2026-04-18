@@ -11,6 +11,7 @@
  * Storage: public.idempotency_keys (see migration
  * 20260503000000_hardening_idempotency_keys.sql).
  */
+<<<<<<< HEAD
 /**
  * Minimal RPC client shape used by the shared idempotency helper.
  * Avoids importing the full supabase-js typings (which require the Deno
@@ -22,6 +23,10 @@ type SupabaseClient = {
     args: Record<string, unknown>,
   ) => Promise<{ data: unknown; error: { message: string } | null }>;
 };
+=======
+// deno-lint-ignore no-explicit-any
+type SupabaseClient = any;
+>>>>>>> ef8e1ca202 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
 export interface ClaimResult {
   isNew: boolean;
