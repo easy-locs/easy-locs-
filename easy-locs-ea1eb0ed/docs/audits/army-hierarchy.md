@@ -52,6 +52,7 @@ Chief Orchestrator
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -60,6 +61,9 @@ Chief Orchestrator
 
 <<<<<<< HEAD
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
 | `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |

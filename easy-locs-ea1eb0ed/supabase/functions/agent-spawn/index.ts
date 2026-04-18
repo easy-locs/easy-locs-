@@ -27,6 +27,7 @@
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
 <<<<<<< HEAD
+<<<<<<< HEAD
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
@@ -94,6 +95,9 @@ import {
 import {
   armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 <<<<<<< HEAD
@@ -107,6 +111,7 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -127,6 +132,8 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 =======
 
 >>>>>>> 66d403e569 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 interface Body {
   role_code: string;
   domain: string;
@@ -205,6 +212,22 @@ Deno.serve(async (req) => {
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 =======
 >>>>>>> d261dae5d8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+
+    // Pre-check quotas/policy (canSpawn) up-front so policy violations
+    // can be logged with full context before we ever take an
+    // idempotency claim.
+    const pre2 = await canSpawn(sb, {
+      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
+      dedupKey: b.dedup_key,
+    });
+    if (!pre2.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "policy_violation", role: b.role_code,
+        message: `spawn rejected: ${pre2.reason}`,
+        context: { domain: b.domain, type: b.task_type, dedup_key: b.dedup_key },
+      });
+      return jsonResponse(req, { ok: false, reason: pre2.reason }, 409);
+    }
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
