@@ -3,6 +3,16 @@
 ## Overview
 Easy-Locs is a worldwide super-app (190+ countries, 120+ currencies, 31 languages) built with React + Vite + TypeScript + Supabase. Five main pillars: Dashboard, Radar, Orbit, Wallet, Me. Taxonomy: 14 primary categories, 268 subcategories.
 
+## Agent Watchdog & Anti-Deadlock (Task #1016)
+- **Schema**: migration `20260503100000_agent_watchdog_hardening.sql` adds `timeout_seconds`, `deadline_at`, `last_heartbeat_at`, `stalled_at` to `system.execution_tasks`; creates `system.execution_task_dependencies` (typed edge table) and `system.agent_incident_log` (append-only, RLS admin-read); creates the single-row `system.agent_watchdog_settings` (default timeout 600s, staleness 300s, autofail 600s, max-silence 300s).
+- **Stamp deadline on run**: `BEFORE UPDATE` trigger `trg_z_execution_tasks_set_deadline` (runs after the state-machine trigger) sets `deadline_at`/`timeout_seconds`/`last_heartbeat_at` whenever a task transitions into `running`, and clears `stalled_at` on exit.
+- **Watchdog loop**: edge function `agent-watchdog` (registered in `autonomous-cron-dispatcher` at 60s cadence) calls `system.run_agent_watchdog()`, which (1) flags running tasks past `deadline_at` or with stale `last_heartbeat_at` as `stalled` + writes `stall_detected` incidents, (2) auto-fails tasks stalled past the autofail threshold (`running → failed` with `error_code = WATCHDOG_AUTOFAIL`), (3) auto-releases dependency edges whose upstream is terminally resolved, (4) updates `agent_watchdog_settings.last_run_at`/`last_run_summary`.
+- **Dependency guard**: `system.validate_task_dependency` + `system.add_task_dependency` reject any edge whose `depends_on` target is not in `approved/queued/running/succeeded` (catches the deadlock pattern where an approved task depended on a Draft task). Rejections write `dependency_rejected` incidents. TS surface in `src/core/execution/dependency-guard.ts`, mirrored by `__tests__/dependency-guard.test.ts` (18 tests).
+- **Operator overrides**: `system.extend_task_deadline`, `system.force_release_dependency` (actor + reason required), `system.acknowledge_incident` — each writes its own audit row.
+- **Health**: `system.agent_watchdog_health()` returns `{ healthy, last_run_at, silence_seconds, max_silence_seconds, last_run_summary, open_incidents_24h }`; cockpit must surface a visible alert when `healthy=false`.
+- **Heartbeat**: `system.execution_task_heartbeat(task_id)` lets agents bump `last_heartbeat_at` without going through a status update.
+- **Runbook**: `docs/agent-platform/watchdog-runbook.md`.
+
 ## Next-Gen IA (Task #770)
 - **Hybrid retrieval**: `hybrid_search_listings(p_query, p_query_embedding, p_match_count)` SQL RPC fuses BM25 (tsvector GIN on generated `listings.search_tsv`) with pgvector cosine via Reciprocal Rank Fusion (k=60). Used by the new `ai-rag` edge function.
 - **RAG assistant** (`supabase/functions/ai-rag`): hybrid retrieval + per-domain primers (radar/marketplace/property/ride/general) + conversation memory (`ai_conversation_memory`) + inline numbered citations. Routed at `ai-router/rag`. Client helper: `src/lib/ai/rag-client.ts` (`askRag`).

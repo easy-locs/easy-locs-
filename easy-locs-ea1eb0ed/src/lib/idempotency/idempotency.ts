@@ -21,6 +21,22 @@
  */
 import { db } from "@/services/db";
 
+/**
+ * Minimal RPC client shape used by this module. Avoids dragging the full
+ * generated supabase-js types here (which couple to the auto-generated
+ * Database union and would force every consumer of this helper to
+ * recompile when the RPC catalog changes).
+ */
+interface RpcClient {
+  rpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+}
+function rpcClient(): RpcClient {
+  return db as unknown as RpcClient;
+}
+
 export interface IdempotencyOptions {
   namespace: string;
   key: string;
@@ -82,7 +98,7 @@ function memoFinalize(namespace: string, key: string, status: "succeeded" | "fai
 
 async function rpcClaim(namespace: string, key: string, hash: string, ttlSeconds: number) {
   try {
-    const { data, error } = await (db as any).rpc("claim_idempotency_key", {
+    const { data, error } = await rpcClient().rpc("claim_idempotency_key", {
       p_namespace: namespace,
       p_key: key,
       p_payload_hash: hash,
@@ -104,7 +120,7 @@ async function rpcClaim(namespace: string, key: string, hash: string, ttlSeconds
 
 async function rpcFinalize(namespace: string, key: string, status: "succeeded" | "failed", result: unknown) {
   try {
-    await (db as any).rpc("finalize_idempotency_key", {
+    await rpcClient().rpc("finalize_idempotency_key", {
       p_namespace: namespace,
       p_key: key,
       p_status: status,
