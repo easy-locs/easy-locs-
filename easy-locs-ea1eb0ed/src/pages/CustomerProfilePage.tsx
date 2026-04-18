@@ -156,7 +156,7 @@ export default function CustomerProfilePage() {
       <SettingsSectionCard
         title="Activity"
         items={[
-          { label: "My Reviews", path: "/settings/reviews", icon: Star },
+          { label: "My Reviews", path: "/me/reviews", icon: Star },
           { label: "Favorites", path: "/favorites", icon: Heart },
         ]}
       />

@@ -4,6 +4,7 @@ import { db } from "@/services/db";
 import { toast } from "sonner";
 import { NotificationSound } from "@/families/notifications/notification-sound";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { removeRealtimeChannel } from "@/lib/realtime";
 
 export function useFoodOrderRealtime(shopId: string | undefined) {
   const qc = useQueryClient();
@@ -43,7 +44,7 @@ export function useFoodOrderRealtime(shopId: string | undefined) {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      removeRealtimeChannel(channel);
     };
   }, [shopId, qc]);
 }
@@ -72,7 +73,7 @@ export function useFoodOrderTrackingRealtime(orderId: string | undefined) {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
+      removeRealtimeChannel(channel);
     };
   }, [orderId, qc]);
 }

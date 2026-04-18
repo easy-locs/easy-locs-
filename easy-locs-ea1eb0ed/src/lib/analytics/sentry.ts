@@ -91,6 +91,21 @@ export function initSentryBoot() {
           enableLongTask: true,
           enableInp: true,
         }),
+        // Task #1061: explicit breadcrumbs config that disables DOM
+        // capture. Sentry's default DOM listener calls `target.closest()`
+        // on every click / keypress event target, but custom CustomEvent
+        // dispatches via the platform-bus surface non-Element targets
+        // (Document, Window, abstract bus nodes), causing
+        // "Uncaught TypeError: target.closest is not a function" to spam
+        // the console on every page mount. Console / fetch / history /
+        // xhr breadcrumbs remain on for debugging.
+        Sentry.breadcrumbsIntegration({
+          console: true,
+          dom: false,
+          fetch: true,
+          history: true,
+          xhr: true,
+        }),
         Sentry.feedbackIntegration({ autoInject: false }),
         Sentry.extraErrorDataIntegration({ depth: 4 }),
       ],
@@ -109,6 +124,9 @@ export function initSentryBoot() {
         /Failed to fetch dynamically imported module/,
         /Unable to preload CSS/,
         /net::ERR_/,
+        // Task #1061: Sentry's own DOM instrumentation crash leaking to
+        // window.onerror when a non-Element event target is observed.
+        /target\.closest is not a function/,
       ],
       beforeSend(event) {
         const msg = event.exception?.values?.[0]?.value || event.message || "";
@@ -272,6 +290,16 @@ export function initSentry() {
         enableLongTask: true,
         enableInp: true,
       }),
+      // Task #1061: see initSentryBoot() — DOM breadcrumbs disabled to
+      // prevent `target.closest is not a function` console spam from
+      // non-Element CustomEvent targets dispatched on the platform bus.
+      Sentry.breadcrumbsIntegration({
+        console: true,
+        dom: false,
+        fetch: true,
+        history: true,
+        xhr: true,
+      }),
       Sentry.replayIntegration({
         maskAllText: true,
         maskAllInputs: true,
@@ -295,6 +323,7 @@ export function initSentry() {
       /Failed to fetch dynamically imported module/,
       /Unable to preload CSS/,
       /net::ERR_/,
+      /target\.closest is not a function/,
     ],
     beforeSend(event) {
       const msg = event.exception?.values?.[0]?.value || event.message || "";
