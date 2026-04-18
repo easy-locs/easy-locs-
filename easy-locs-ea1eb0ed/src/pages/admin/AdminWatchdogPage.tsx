@@ -12,13 +12,18 @@ import {
 import { AppCard } from "@/components/ui/AppCard";
 import { Button } from "@/components/ui/button";
 import {
+  adminForceFailTask,
+  adminReleaseTaskLock,
   listIncidents,
+  listLoopHealth,
   listRecentTimeouts,
   previewStuckTasks,
   type IncidentRow,
+  type LoopHealthRow,
   type RecentTimeoutRow,
   type StuckCandidate,
 } from "@/core/execution/watchdog";
+import { useToast } from "@/hooks/use-toast";
 
 type Tab = "incidents" | "stuck" | "timeouts";
 
@@ -31,31 +36,66 @@ const SEVERITY_COLOR: Record<string, string> = {
 
 export default function AdminWatchdogPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [tab, setTab] = useState<Tab>("incidents");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [incidents, setIncidents] = useState<IncidentRow[]>([]);
   const [stuck, setStuck] = useState<StuckCandidate[]>([]);
   const [timeouts, setTimeouts] = useState<RecentTimeoutRow[]>([]);
+  const [loopHealth, setLoopHealth] = useState<LoopHealthRow[]>([]);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [acting, setActing] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
     setError(null);
-    const [iRes, sRes, tRes] = await Promise.all([
+    const [iRes, sRes, tRes, hRes] = await Promise.all([
       listIncidents(200),
       previewStuckTasks(50),
       listRecentTimeouts(100),
+      listLoopHealth(20),
     ]);
-    if (iRes.error) setError(iRes.error);
-    else setIncidents(iRes.rows);
-    if (sRes.error && !iRes.error) setError(sRes.error);
-    else if (!sRes.error) setStuck(sRes.rows);
-    if (tRes.error && !iRes.error && !sRes.error) setError(tRes.error);
-    else if (!tRes.error) setTimeouts(tRes.rows);
+    const firstErr = iRes.error ?? sRes.error ?? tRes.error ?? hRes.error ?? null;
+    if (firstErr) setError(firstErr);
+    if (!iRes.error) setIncidents(iRes.rows);
+    if (!sRes.error) setStuck(sRes.rows);
+    if (!tRes.error) setTimeouts(tRes.rows);
+    if (!hRes.error) setLoopHealth(hRes.rows);
     setLastRefreshed(new Date());
     setLoading(false);
   }, []);
+
+  const onReleaseLock = useCallback(async (taskId: string) => {
+    const reason = window.prompt("Reason for releasing the lock?", "manual override");
+    if (reason === null) return;
+    setActing(taskId);
+    const res = await adminReleaseTaskLock(taskId, reason);
+    setActing(null);
+    if (res.error) {
+      toast({ title: "Release lock failed", description: res.error, variant: "destructive" });
+    } else {
+      toast({ title: res.ok ? "Lock released" : "No lock to release" });
+      void refresh();
+    }
+  }, [toast, refresh]);
+
+  const onForceFail = useCallback(async (taskId: string) => {
+    const reason = window.prompt(
+      "Reason for force-failing this task? (audited)",
+      "manual override",
+    );
+    if (reason === null) return;
+    setActing(taskId);
+    const res = await adminForceFailTask(taskId, reason);
+    setActing(null);
+    if (res.error) {
+      toast({ title: "Force-fail failed", description: res.error, variant: "destructive" });
+    } else {
+      toast({ title: res.ok ? "Task forced to terminal" : "Task already terminal" });
+      void refresh();
+    }
+  }, [toast, refresh]);
 
   useEffect(() => {
     refresh();
@@ -156,8 +196,17 @@ export default function AdminWatchdogPage() {
           ))}
         </div>
 
+        <LoopHealthCard rows={loopHealth} />
+
         {tab === "incidents" && <IncidentsTable rows={incidents} />}
-        {tab === "stuck" && <StuckTable rows={stuck} />}
+        {tab === "stuck" && (
+          <StuckTable
+            rows={stuck}
+            acting={acting}
+            onReleaseLock={onReleaseLock}
+            onForceFail={onForceFail}
+          />
+        )}
         {tab === "timeouts" && <TimeoutsTable rows={timeouts} />}
 
         {lastRefreshed && (
@@ -206,7 +255,68 @@ function IncidentsTable({ rows }: { rows: IncidentRow[] }) {
   );
 }
 
-function StuckTable({ rows }: { rows: StuckCandidate[] }) {
+function LoopHealthCard({ rows }: { rows: LoopHealthRow[] }) {
+  const last = rows[0];
+  const lagMs = last?.age_ms != null ? Math.round(last.age_ms) : null;
+  const recentErrors = rows.filter((r) => r.status === "error").length;
+  const isStale = lagMs != null && lagMs > 5 * 60_000;
+  const tone = !last
+    ? "border-amber-500/40"
+    : last.status === "error" || isStale
+      ? "border-destructive/40"
+      : "border-border/30";
+  return (
+    <AppCard className={`p-3 mb-3 ${tone}`}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[0.625rem] uppercase tracking-wide text-muted-foreground">
+          Watchdog loop health
+        </span>
+        <span className="text-[0.625rem] text-muted-foreground">
+          last 20 ticks · errors: {recentErrors}
+        </span>
+      </div>
+      {!last ? (
+        <p className="text-xs text-amber-500">
+          No tick recorded yet. The watchdog cron may not be running.
+        </p>
+      ) : (
+        <div className="text-xs text-foreground">
+          <div>
+            Last tick: <span className="font-mono">{new Date(last.started_at).toLocaleTimeString()}</span>{" "}
+            · status:{" "}
+            <span className={last.status === "error" ? "text-destructive font-bold" : ""}>
+              {last.status}
+            </span>{" "}
+            · lag:{" "}
+            <span className={isStale ? "text-destructive font-bold" : ""}>
+              {lagMs != null ? `${lagMs} ms` : "—"}
+            </span>
+          </div>
+          {last.effect_summary && (
+            <div className="text-[0.625rem] text-muted-foreground truncate">
+              {last.effect_summary}
+            </div>
+          )}
+          {last.error_message && (
+            <div className="text-[0.625rem] text-destructive truncate">{last.error_message}</div>
+          )}
+        </div>
+      )}
+    </AppCard>
+  );
+}
+
+function StuckTable({
+  rows,
+  acting,
+  onReleaseLock,
+  onForceFail,
+}: {
+  rows: StuckCandidate[];
+  acting: string | null;
+  onReleaseLock: (taskId: string) => void;
+  onForceFail: (taskId: string) => void;
+}) {
   if (rows.length === 0) {
     return (
       <AppCard className="p-6 text-center">
@@ -236,6 +346,26 @@ function StuckTable({ rows }: { rows: StuckCandidate[] }) {
           <pre className="text-[0.625rem] bg-muted/40 p-2 rounded overflow-x-auto max-h-32">
             {JSON.stringify(r.evidence, null, 2)}
           </pre>
+          <div className="flex gap-2 mt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={acting === r.task_id}
+              onClick={() => onReleaseLock(r.task_id)}
+              className="text-[0.625rem] h-7"
+            >
+              Release lock
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={acting === r.task_id}
+              onClick={() => onForceFail(r.task_id)}
+              className="text-[0.625rem] h-7"
+            >
+              Force-fail
+            </Button>
+          </div>
         </AppCard>
       ))}
     </div>
