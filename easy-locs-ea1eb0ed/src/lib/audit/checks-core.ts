@@ -1,4 +1,4 @@
-import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile, verifyAuthCacheIsolation, verifyRealtimeNoLeak, verifySubscriptionLifecycle } from "@/lib/qa/system-verify";
+import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile, verifyAuthCacheIsolation } from "@/lib/qa/system-verify";
 import { verifyRlsBasicAccess } from "@/lib/qa/rls-checks";
 
 export async function auditAuthChecks() {
