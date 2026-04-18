@@ -19,6 +19,7 @@ export function armyClient(): SupabaseClient {
 =======
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 /**
+=======
  * Resolve the caller's identity from the Authorization header.
  * Returns one of:
  *   - { kind: "service" }                — service role JWT (cron / internal)

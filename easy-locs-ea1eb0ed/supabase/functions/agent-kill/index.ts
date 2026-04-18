@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
-      p_agent_id: body.agent_id, p_reason: reason,
+      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
 
     if (error) {
