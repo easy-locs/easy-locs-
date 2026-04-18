@@ -52,8 +52,7 @@ export const ALLOWED_HEADERS = [
 export function getCorsHeaders(req: Request): Record<string, string> {
   return {
     "Access-Control-Allow-Origin": getAllowedOrigin(req),
-    "Access-Control-Allow-Headers":
-      "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
+    "Access-Control-Allow-Headers": ALLOWED_HEADERS,
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Vary": "Origin",
   };
