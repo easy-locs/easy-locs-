@@ -18,6 +18,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     // Task #998 uses an RPC for atomicity; Task #1018 uses individual updates + logIncident.
@@ -32,12 +33,17 @@ Deno.serve(async (req) => {
 >>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+    // Prefer the atomic RPC (Task #998); fall back to manual updates if
+    // the RPC is unavailable (preserves Task #1018 behavior). Either
+    // way, the kill is recorded via logIncident.
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
 
     if (error) {
-      // Fallback to manual update if RPC fails or is missing (preserving Task #1018 logic)
       const { error: e1 } = await sb.schema("army").from("agent_instances")
         .update({ status: "terminated", terminated_at: new Date().toISOString() })
         .eq("id", body.agent_id);
@@ -57,6 +63,7 @@ Deno.serve(async (req) => {
     });
 
     return jsonResponse(req, { ok: true, result: data });
+<<<<<<< HEAD
 =======
     const { error: e1 } = await sb.schema("army").from("agent_instances")
       .update({ status: "terminated", terminated_at: new Date().toISOString() })
@@ -88,6 +95,8 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { ok: true });
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
