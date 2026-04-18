@@ -47,6 +47,7 @@ Chief Orchestrator
 
 ### Edge functions
 
+
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
 the boundary, then `assertNotKilled()` and `hasPermission()` before any
 write. `agent-spawn` and `agent-heal` are the only callers allowed to
