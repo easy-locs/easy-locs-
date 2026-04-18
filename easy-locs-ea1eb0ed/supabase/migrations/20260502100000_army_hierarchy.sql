@@ -757,14 +757,14 @@ language plpgsql security definer set search_path = army, public as $$
 declare
   cfg army.tick_config%rowtype;
 begin
-  if (select is_killed from army.system_flags where id = 1) then
+  if army.is_killed() then
     return;
   end if;
   select * into cfg from army.tick_config where id = 1;
   if cfg.supabase_url is null or length(cfg.supabase_url) = 0
      or cfg.service_role_key is null or length(cfg.service_role_key) = 0 then
     if cfg.last_warned_at is null or cfg.last_warned_at < now() - interval '1 hour' then
-      insert into army.incident_log(severity, kind, role, message, context)
+      insert into army.incident_log(severity, kind, source_role, message, context)
       values ('warn','tick_config_missing','supreme_commander',
               'army.tick_config not set — autonomous tick disabled',
               jsonb_build_object('hint','update army.tick_config set supabase_url=..., service_role_key=...'));
