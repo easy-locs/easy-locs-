@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -18,18 +19,20 @@ const VerifyEmail = () => {
   const { t } = useI18n();
 
   useEffect(() => {
-    const isVerified = (u: { email_confirmed_at?: string | null; phone_confirmed_at?: string | null; phone?: string | null; email?: string | null } | null | undefined) => {
+    // A user is considered verified for the purpose of leaving this screen if
+    // Supabase has stamped either of its native confirmation timestamps. We
+    // intentionally do NOT consider a phone-only account verified by absence
+    // of an email alone — phone OTP verification must have actually happened.
+    const isVerified = (u: User | null | undefined): boolean => {
       if (!u) return false;
       if (u.email_confirmed_at) return true;
       if (u.phone_confirmed_at) return true;
-      // Phone-only account with no email — nothing to verify here.
-      if (u.phone && !u.email) return true;
       return false;
     };
 
     const check = async () => {
       const { data: { user } } = await getUser();
-      if (isVerified(user as never)) {
+      if (isVerified(user)) {
         navigate("/dashboard", { replace: true });
       }
       if (user?.email) setEmail(user.email);
@@ -39,7 +42,7 @@ const VerifyEmail = () => {
     const { data: { subscription } } = onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         getUser().then(({ data: { user } }) => {
-          if (isVerified(user as never)) {
+          if (isVerified(user)) {
             navigate("/dashboard", { replace: true });
           }
         });

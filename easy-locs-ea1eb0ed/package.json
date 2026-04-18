@@ -18,6 +18,8 @@
     "bundle:trend": "npx tsx scripts/bundle-size-gate.ts trend-check",
     "lint": "eslint .",
     "check:pillar-routes": "npx tsx scripts/check-pillar-routes.ts",
+    "check:route-uniqueness": "npx tsx scripts/check-route-uniqueness.ts",
+    "check:import-aliases": "npx tsx scripts/check-import-aliases.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
