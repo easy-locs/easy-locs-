@@ -8,12 +8,15 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
@@ -21,6 +24,7 @@ import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -105,6 +109,10 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+} from "../_shared/army.ts";
+import { withIdempotency } from "../_shared/idempotency.ts";
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 
 >>>>>>> 48a041c00a (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -130,6 +138,7 @@ Deno.serve(async (req) => {
       if (!b?.[k]) return jsonResponse(req, { error: `${k} required` }, 400);
     }
     const sb = armyClient();
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -175,6 +184,9 @@ Deno.serve(async (req) => {
       return jsonResponse(req, { ok: false, reason: pre2.reason }, 409);
     }
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    await assertNotKilled(sb);
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
@@ -200,12 +212,15 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 =======
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -216,6 +231,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
     }
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -257,6 +273,8 @@ Deno.serve(async (req) => {
 >>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 =======
 >>>>>>> 2b3f449d46 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
