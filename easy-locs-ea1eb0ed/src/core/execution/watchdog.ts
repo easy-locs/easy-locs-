@@ -141,6 +141,57 @@ export interface RecentTimeoutRow {
   attempt_count: number | null;
 }
 
+// ── Watchdog loop health (last cron tick) ────────────────────────────────
+export interface LoopHealthRow {
+  id: string;
+  started_at: string;
+  finished_at: string | null;
+  age_ms: number | null;
+  status: string;
+  effect_summary: string | null;
+  error_message: string | null;
+}
+
+export async function listLoopHealth(limit = 20): Promise<{
+  rows: LoopHealthRow[];
+  error?: string;
+}> {
+  const { data, error } = await supabase
+    .schema(SYSTEM_SCHEMA)
+    .from("watchdog_loop_health")
+    .select("*")
+    .limit(Math.min(Math.max(1, Math.floor(limit)), 50));
+  if (error) return { rows: [], error: error.message };
+  return { rows: (data ?? []) as unknown as LoopHealthRow[] };
+}
+
+// ── Manual overrides (super-admin only; SQL enforces) ────────────────────
+export async function adminReleaseTaskLock(
+  taskId: string,
+  reason: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!taskId) return { ok: false, error: "taskId is required" };
+  const { data, error } = await client().rpc("admin_release_task_lock", {
+    p_task_id: taskId,
+    p_reason: reason ?? "manual override",
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: Boolean(data) };
+}
+
+export async function adminForceFailTask(
+  taskId: string,
+  reason: string,
+): Promise<{ ok: boolean; error?: string }> {
+  if (!taskId) return { ok: false, error: "taskId is required" };
+  const { data, error } = await client().rpc("admin_force_fail_task", {
+    p_task_id: taskId,
+    p_reason: reason ?? "manual override",
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: Boolean(data) };
+}
+
 export async function listRecentTimeouts(limit = 100): Promise<{
   rows: RecentTimeoutRow[];
   error?: string;

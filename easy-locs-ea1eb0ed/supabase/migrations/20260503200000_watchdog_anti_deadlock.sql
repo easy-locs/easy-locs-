@@ -125,6 +125,16 @@ CREATE TABLE IF NOT EXISTS system.task_dependencies (
 CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on
   ON system.task_dependencies (depends_on_task_id);
 
+-- States that satisfy a "dependency is approved or post-approval" check.
+-- A task may depend ONLY on tasks already in one of these states. Defined
+-- before the DAG trigger because the trigger's body invokes it.
+CREATE OR REPLACE FUNCTION system.dependency_state_is_acceptable(s system.execution_task_status)
+RETURNS BOOLEAN
+LANGUAGE sql IMMUTABLE
+AS $$
+  SELECT s IN ('approved','queued','running','succeeded','rolled_back')
+$$;
+
 -- Defense-in-depth: enforce the DAG invariant at the database boundary so a
 -- direct service-role insert into `task_dependencies` cannot bypass the
 -- client-side `validate_task_dependencies` check.
@@ -190,15 +200,6 @@ CREATE POLICY task_deps_service_role_write
   ON system.task_dependencies FOR ALL
   USING (auth.role() = 'service_role')
   WITH CHECK (auth.role() = 'service_role');
-
--- States that satisfy a "dependency is approved or post-approval" check.
--- A task may depend ONLY on tasks already in one of these states.
-CREATE OR REPLACE FUNCTION system.dependency_state_is_acceptable(s system.execution_task_status)
-RETURNS BOOLEAN
-LANGUAGE sql IMMUTABLE
-AS $$
-  SELECT s IN ('approved','queued','running','succeeded','rolling_back','rolled_back')
-$$;
 
 -- Validate a proposed dependency set:
 --   * every dep_id exists
@@ -358,7 +359,7 @@ AS $$
   WITH active AS (
     SELECT t.*
       FROM system.execution_tasks t
-     WHERE t.status IN ('queued','running','pending_review','approved','rolling_back')
+     WHERE t.status IN ('queued','running','pending_review','approved')
   ),
   -- 1. End-to-end timeout
   timeouts AS (
@@ -397,7 +398,7 @@ AS $$
              'stuck_threshold_ms', a.stuck_threshold_ms
            ) AS evidence
       FROM active a
-     WHERE a.status IN ('queued','approved','running','rolling_back')
+     WHERE a.status IN ('queued','approved','running')
        AND a.stuck_threshold_ms IS NOT NULL
        AND a.stage_started_at IS NOT NULL
        AND a.stage_started_at + ((a.stuck_threshold_ms * 3) || ' milliseconds')::interval < now()
@@ -440,13 +441,32 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, system
 AS $$
-DECLARE v_row system.execution_tasks;
+DECLARE
+  v_row    system.execution_tasks;
+  v_target system.execution_task_status;
+  v_action TEXT;
 BEGIN
   SELECT * INTO v_row FROM system.execution_tasks WHERE id = p_task_id FOR UPDATE;
   IF NOT FOUND THEN RETURN FALSE; END IF;
-  IF v_row.status NOT IN ('queued','running','pending_review','approved','rolling_back') THEN
+
+  -- Pick the only legal terminal transition for the task's current status.
+  -- The `assert_task_transition` matrix forbids queued/approved/pending_review
+  -- → failed, so for those states we route through `cancelled` instead. This
+  -- keeps the watchdog deterministic and never raises an illegal-transition
+  -- exception.
+  v_target := CASE v_row.status
+    WHEN 'running'        THEN 'failed'::system.execution_task_status
+    WHEN 'queued'         THEN 'cancelled'::system.execution_task_status
+    WHEN 'approved'       THEN 'cancelled'::system.execution_task_status
+    WHEN 'pending_review' THEN 'cancelled'::system.execution_task_status
+    WHEN 'blocked'        THEN 'cancelled'::system.execution_task_status
+    ELSE NULL
+  END;
+  IF v_target IS NULL THEN
+    -- Already terminal (succeeded/failed/cancelled/rejected/rolled_back/draft)
     RETURN FALSE;
   END IF;
+  v_action := CASE v_target WHEN 'failed' THEN 'watchdog_auto_fail' ELSE 'watchdog_auto_cancel' END;
 
   -- Release any owned lock so the next attempt (or operator) is unblocked.
   IF v_row.lock_key IS NOT NULL THEN
@@ -454,8 +474,8 @@ BEGIN
   END IF;
 
   UPDATE system.execution_tasks
-     SET status              = 'failed',
-         failed_at           = now(),
+     SET status              = v_target,
+         failed_at           = CASE WHEN v_target = 'failed' THEN now() ELSE failed_at END,
          failure_class       = p_failure_class,
          error_code          = COALESCE(p_reason, p_failure_class),
          watchdog_intervened = TRUE,
@@ -465,13 +485,14 @@ BEGIN
    WHERE id = p_task_id;
 
   PERFORM system.write_incident(
-    'watchdog_auto_fail', 'error', 'watchdog-loop',
+    v_action, 'error', 'watchdog-loop',
     p_task_id, NULL,
     jsonb_build_object(
       'failure_class', p_failure_class,
       'reason', p_reason,
       'evidence', p_evidence,
-      'previous_status', v_row.status
+      'previous_status', v_row.status,
+      'new_status', v_target
     )
   );
   RETURN TRUE;
@@ -564,10 +585,113 @@ BEGIN
   UPDATE system.execution_tasks
      SET last_heartbeat_at = now()
    WHERE id = p_task_id
-     AND status IN ('queued','running','rolling_back');
+     AND status IN ('queued','running');
   RETURN FOUND;
 END;
 $$;
+
+-- ── 6b. Admin manual overrides (super-admin only) ────────────────────────
+-- Force-release a stuck lock without changing the task status. Audited via
+-- incident_log so the action is visible alongside watchdog activity.
+CREATE OR REPLACE FUNCTION system.admin_release_task_lock(
+  p_task_id UUID,
+  p_reason  TEXT DEFAULT 'manual override'
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, system
+AS $$
+DECLARE v_row system.execution_tasks; v_actor TEXT;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
+    RAISE EXCEPTION 'admin_release_task_lock: forbidden' USING ERRCODE = '42501';
+  END IF;
+  v_actor := COALESCE(auth.uid()::text, 'unknown');
+  SELECT * INTO v_row FROM system.execution_tasks WHERE id = p_task_id FOR UPDATE;
+  IF NOT FOUND THEN RETURN FALSE; END IF;
+  IF v_row.lock_key IS NULL THEN RETURN FALSE; END IF;
+
+  DELETE FROM system.execution_locks WHERE lock_key = v_row.lock_key;
+  UPDATE system.execution_tasks
+     SET lock_key = NULL, locked_by = NULL, watchdog_intervened = TRUE
+   WHERE id = p_task_id;
+
+  PERFORM system.write_incident(
+    'admin_release_lock', 'warn', 'admin:' || v_actor,
+    p_task_id, NULL,
+    jsonb_build_object('reason', p_reason, 'released_lock_key', v_row.lock_key,
+                       'previous_status', v_row.status)
+  );
+  RETURN TRUE;
+END;
+$$;
+
+-- Force-fail (or auto-cancel for pre-execution states) a task. Routes through
+-- the same watchdog_fail_task path so the state-machine matrix is honoured.
+CREATE OR REPLACE FUNCTION system.admin_force_fail_task(
+  p_task_id UUID,
+  p_reason  TEXT DEFAULT 'manual override'
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, system
+AS $$
+DECLARE v_actor TEXT; v_ok BOOLEAN;
+BEGIN
+  IF auth.uid() IS NULL OR NOT public.has_role(auth.uid(), 'admin'::public.app_role) THEN
+    RAISE EXCEPTION 'admin_force_fail_task: forbidden' USING ERRCODE = '42501';
+  END IF;
+  v_actor := COALESCE(auth.uid()::text, 'unknown');
+  v_ok := system.watchdog_fail_task(p_task_id, 'manual_override', p_reason,
+                                    jsonb_build_object('actor', v_actor));
+  PERFORM system.write_incident(
+    'admin_force_fail', 'warn', 'admin:' || v_actor,
+    p_task_id, NULL,
+    jsonb_build_object('reason', p_reason, 'applied', v_ok)
+  );
+  RETURN v_ok;
+END;
+$$;
+
+-- ── 6c. Watchdog loop health view ────────────────────────────────────────
+-- Surfaces the last tick (latency, error?) directly from engine_run_logs so
+-- the admin page can show "is the watchdog actually running?" without
+-- depending on the cron infrastructure schema.
+CREATE OR REPLACE VIEW system.watchdog_loop_health AS
+  SELECT
+    id,
+    started_at,
+    finished_at,
+    EXTRACT(EPOCH FROM (now() - started_at)) * 1000 AS age_ms,
+    status,
+    effect_summary,
+    error_message
+    FROM public.engine_run_logs
+   WHERE engine = 'watchdog-loop'
+   ORDER BY started_at DESC
+   LIMIT 50;
+GRANT SELECT ON system.watchdog_loop_health TO authenticated, service_role;
+
+-- ── 6d. Schedule: run watchdog_tick every minute (idempotent) ────────────
+DO $cron_wd$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'
+  ) THEN
+    BEGIN
+      PERFORM cron.unschedule('system-watchdog-tick');
+    EXCEPTION WHEN OTHERS THEN NULL;
+    END;
+    PERFORM cron.schedule(
+      'system-watchdog-tick',
+      '* * * * *',
+      $wd$SELECT system.watchdog_tick(200)$wd$
+    );
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'system-watchdog-tick schedule failed: %', SQLERRM;
+END;
+$cron_wd$;
 
 -- ── 7. Grants ─────────────────────────────────────────────────────────────
 GRANT EXECUTE ON FUNCTION system.resolve_task_verb_defaults(TEXT)                                  TO authenticated, service_role;
@@ -578,6 +702,8 @@ GRANT EXECUTE ON FUNCTION system.watchdog_fail_task(UUID, TEXT, TEXT, JSONB)    
 GRANT EXECUTE ON FUNCTION system.watchdog_recover_task(UUID, TEXT, JSONB)                          TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_tick(INT)                                                TO service_role;
 GRANT EXECUTE ON FUNCTION system.task_heartbeat(UUID)                                              TO service_role;
+GRANT EXECUTE ON FUNCTION system.admin_release_task_lock(UUID, TEXT)                               TO authenticated;
+GRANT EXECUTE ON FUNCTION system.admin_force_fail_task(UUID, TEXT)                                 TO authenticated;
 GRANT SELECT ON system.incident_log         TO authenticated;
 GRANT SELECT ON system.task_dependencies    TO authenticated;
 GRANT SELECT ON system.task_verb_defaults   TO authenticated;
