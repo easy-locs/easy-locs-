@@ -3,7 +3,7 @@
 // generals. Honours kill switch + policies. Idempotent on order_id.
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logIncident,
-  logMessage, preflight, requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+  logMessage, preflight, ARMY_DOMAINS,
 } from "../_shared/army.ts";
 
 interface Body { order_id: string; }
@@ -20,7 +20,6 @@ function inferDomain(text: string): typeof ARMY_DOMAINS[number] {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = (await requireAuthenticated(req)) ?? (await requireServiceOrSupreme(req)); if (denied) return denied;
   try {
 
     const body = (await req.json()) as Body;
