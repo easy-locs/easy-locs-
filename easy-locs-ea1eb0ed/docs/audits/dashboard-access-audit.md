@@ -144,7 +144,7 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
-`emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
+`emailVerified` accepte désormais deux signaux primaires (et un legacy) :
 
 - `user.email_confirmed_at` — signup email vérifié ;
 - `user.phone_confirmed_at` — **nouveau**, source canonique Supabase pour OTP téléphone (champ natif du type `User` de `@supabase/supabase-js`, aucun cast requis) ;
@@ -189,14 +189,14 @@ L'environnement de cette tâche n'a pas de credentials Supabase ni de session li
 
 1. Ouvrir `/login`, mode téléphone (par défaut).
 2. Saisir un numéro et l'OTP reçu.
-3. Vérifier que l'URL atterrit sur `/dashboard` and **pas** `/verify-email`.
+3. Vérifier que l'URL atterrit sur `/dashboard` et **pas** `/verify-email`.
 4. Vérifier dans la console réseau qu'aucune redirection 30x/SPA ne reboucle.
 5. Vérifier en SQL côté Supabase :
    ```sql
    select id, email, email_confirmed_at, phone, phone_confirmed_at
    from auth.users where id = '<uid>';
    ```
-   `phone_confirmed_at` doit être non-null pour le compte testé (ou c'est un compte phone-only sans email).
+   `phone_confirmed_at` doit être non-null pour le compte testé.
 6. Captures (DOM `/dashboard` + console) à déposer dans `docs/audits/screenshots/` pour clore la boucle d'audit.
 
 > Le correctif est purement additif côté logique de garde (un OR supplémentaire + détection phone-only) et ne peut pas régresser les utilisateurs email-verified déjà fonctionnels. Le risque résiduel se limite aux comptes téléphone — ceux-là précisément qui étaient bloqués.
