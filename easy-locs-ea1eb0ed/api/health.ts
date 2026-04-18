@@ -73,16 +73,25 @@ async function checkSupabase(): Promise<CheckResult> {
 
 async function checkEdgeFunction(url: string, name: string): Promise<CheckResult> {
   const start = Date.now();
+  if (!HEALTH_CHECK_SECRET) {
+    return {
+      status: "skipped",
+      latencyMs: 0,
+      error: "HEALTH_CHECK_SECRET not configured in this environment",
+      details: { endpoint: name },
+    };
+  }
   try {
+    // Both `health-check` and `integration-health-monitor` accept
+    // `Authorization: Bearer <HEALTH_CHECK_SECRET>` as a dedicated monitor
+    // probe — bypassing the router-origin and service-role guards. The anon
+    // apikey is still attached to satisfy the Supabase Functions gateway.
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      "x-router-origin": "vercel-health",
+      "Authorization": `Bearer ${HEALTH_CHECK_SECRET}`,
     };
-    if (HEALTH_CHECK_SECRET) {
-      headers["Authorization"] = `Bearer ${HEALTH_CHECK_SECRET}`;
-    } else if (SUPABASE_ANON_KEY) {
+    if (SUPABASE_ANON_KEY) {
       headers["apikey"] = SUPABASE_ANON_KEY;
-      headers["Authorization"] = `Bearer ${SUPABASE_ANON_KEY}`;
     }
     const res = await fetchWithTimeout(url, { method: "GET", headers }, 4000);
     const latencyMs = Date.now() - start;
