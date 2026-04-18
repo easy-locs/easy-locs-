@@ -1,5 +1,6 @@
 import React from "react";
 import { emitRuntimeError } from "@/lib/shared/runtime-error-hub";
+import { captureException } from "@/lib/analytics/sentry";
 
 interface Props {
   children: React.ReactNode;
@@ -27,14 +28,12 @@ export class GlobalErrorBoundary extends React.Component<Props, State> {
       createdAt: new Date().toISOString(),
     });
 
-    void import("@/lib/analytics/sentry")
-      .then(({ captureException }) => {
-        captureException(error, {
-          boundary: "GlobalErrorBoundary",
-          componentStack: info.componentStack,
-        });
-      })
-      .catch(() => {});
+    try {
+      captureException(error, {
+        boundary: "GlobalErrorBoundary",
+        componentStack: info.componentStack,
+      });
+    } catch {}
 
     void import("@/lib/ai-audit/triggers")
       .then(({ reportUIRegression }) => {
