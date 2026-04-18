@@ -45,6 +45,8 @@ export async function auditAuthChecks() {
 
 export async function auditRealtimeChecks() {
   const realtime = await verifyRealtimeChannel();
+  const noLeak = await verifyRealtimeNoLeak();
+  const lifecycle = await verifySubscriptionLifecycle();
 
   return [
     {
@@ -57,6 +59,28 @@ export async function auditRealtimeChecks() {
       expected: "subscribe/unsubscribe succeeds",
       actual: realtime.reason,
       hint: realtime.ok ? "" : "Verify realtime enabled and websocket connectivity",
+    },
+    {
+      ok: noLeak.ok,
+      key: "realtime.no_leak",
+      group: "realtime",
+      severity: noLeak.ok ? "info" : "critical",
+      impact: noLeak.ok ? 0 : 14,
+      title: noLeak.ok ? "Realtime channels do not leak" : "Realtime channels leak after teardown",
+      expected: "ownedChannels returns to baseline after teardown",
+      actual: noLeak.reason,
+      hint: noLeak.ok ? "" : "Audit removeRealtimeChannel callers; ensure teardown runs in effect cleanup",
+    },
+    {
+      ok: lifecycle.ok,
+      key: "realtime.lifecycle_integrity",
+      group: "realtime",
+      severity: lifecycle.ok ? "info" : "critical",
+      impact: lifecycle.ok ? 0 : 12,
+      title: lifecycle.ok ? "Subscription lifecycle integral" : "Subscription lifecycle broken",
+      expected: "subscribe → unsubscribe → re-subscribe yields fresh channel",
+      actual: lifecycle.reason,
+      hint: lifecycle.ok ? "" : "Inspect createRealtimeChannel registry cleanup paths",
     },
   ];
 }
