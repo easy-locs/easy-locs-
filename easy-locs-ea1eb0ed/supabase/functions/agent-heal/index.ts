@@ -5,16 +5,22 @@
 import {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident,
   preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, jsonResponse, preflight, requireSupreme,
   spawnAgent,
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
 =======
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident,
   preflight, requireSupreme, spawnAgent,
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body { agent_id: string; }
@@ -38,8 +44,11 @@ Deno.serve(async (req) => {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     // Check quotas before spawning
     const check = await canSpawn(sb, {
       roleCode: agent.role_code, domain: agent.domain,
