@@ -27,6 +27,13 @@ const VerifyEmail = () => {
     // Supabase has stamped either of its native confirmation timestamps. We
     // intentionally do NOT consider a phone-only account verified by absence
     // of an email alone — phone OTP verification must have actually happened.
+<<<<<<< HEAD
+    // However, if it's a phone-only account with no email attached, there is
+    // nothing to verify on this screen.
+=======
+>>>>>>> 3a6e2ecb33 (Task #1002 — Audit dashboard access and unblock phone-OTP users)
+=======
+>>>>>>> c999f1a7c3 (Fix login issue for phone users and improve verification process)
     const isVerified = (u: User | null | undefined): boolean => {
       if (!u) return false;
       if (u.email_confirmed_at) return true;

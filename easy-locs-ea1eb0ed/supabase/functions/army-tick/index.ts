@@ -15,18 +15,50 @@ import {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
 =======
   requireAuthenticated, ARMY_DOMAINS,
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
   requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
 >>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, ARMY_DOMAINS,
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
@@ -51,14 +83,27 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   const deniedService = await requireServiceOrSupreme(req);
   const deniedAuth = await requireAuthenticated(req);
   if (deniedService && deniedAuth) return deniedService;
 =======
   const denied = await requireAuthenticated(req); if (denied) return denied;
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
+<<<<<<< HEAD
 <<<<<<< HEAD
 =======
   const deniedService = await requireServiceOrSupreme(req);
@@ -67,6 +112,31 @@ Deno.serve(async (req) => {
 >>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const deniedService = await requireServiceOrSupreme(req);
+  const deniedAuth = await requireAuthenticated(req);
+  if (deniedService && deniedAuth) return deniedService;
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const deniedService = await requireServiceOrSupreme(req);
+  const deniedAuth = await requireAuthenticated(req);
+  if (deniedService && deniedAuth) return deniedService;
+>>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const denied = await requireAuthenticated(req); if (denied) return denied;
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const deniedService = await requireServiceOrSupreme(req);
+  const deniedAuth = await requireAuthenticated(req);
+  if (deniedService && deniedAuth) return deniedService;
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   try {
     const sb = armyClient();
     await assertNotKilled(sb);

@@ -340,6 +340,15 @@ begin
   end if;
 end $$;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+-- Seed the 6 canonical queues (logical only — table is shared)
+-- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
+=======
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+
+=======
+>>>>>>> fdd152f1ea (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
 -- ----------------------------------------------------------------------------
@@ -784,6 +793,13 @@ grant execute on function army.run_tick() to service_role;
 <<<<<<< HEAD
 <<<<<<< HEAD
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+=======
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+-- ----------------------------------------------------------------------------
+=======
+-- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+>>>>>>> 0ca258b8bd (Task #998 — Hierarchical agent army (Command Center + Supabase))
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
