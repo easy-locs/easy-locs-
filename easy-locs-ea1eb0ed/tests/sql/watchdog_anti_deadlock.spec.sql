@@ -252,19 +252,21 @@ BEGIN;
 ROLLBACK;
 
 -- ──────────────────────────────────────────────────────────────────────────
--- Test 9: incident_log INSERT works for authenticated callers
---          (so dispatcher pre-validate path can persist rejections).
+-- Test 9: write_incident integrity gate — non-admin authenticated callers
+--          are rejected (42501) so the immutable audit log cannot be
+--          spoofed from a regular user JWT.
 BEGIN;
   SET LOCAL ROLE authenticated;
   SET LOCAL "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-000000000099","role":"authenticated"}';
   DO $$
-  DECLARE v_id UUID;
   BEGIN
-    v_id := system.write_incident('spec_authn', 'info', 'auth-spec', NULL, NULL,
-              jsonb_build_object('via','authenticated'));
-    IF v_id IS NULL THEN
-      RAISE EXCEPTION 'authenticated caller could not write incident';
-    END IF;
+    BEGIN
+      PERFORM system.write_incident('spec_authn', 'info', 'spoofed-actor', NULL, NULL,
+                jsonb_build_object('via','authenticated_non_admin'));
+      RAISE EXCEPTION 'non-admin write_incident should have been forbidden';
+    EXCEPTION WHEN insufficient_privilege THEN
+      NULL;
+    END;
   END $$;
   RESET ROLE;
 ROLLBACK;

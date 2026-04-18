@@ -326,15 +326,41 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public, system
 AS $$
-DECLARE v_id UUID;
+DECLARE
+  v_id           UUID;
+  v_caller       UUID    := auth.uid();
+  v_role         TEXT    := auth.role();
+  v_is_service   BOOLEAN := (v_role = 'service_role');
+  v_is_admin     BOOLEAN := (v_caller IS NOT NULL AND public.has_role(v_caller, 'admin'::public.app_role));
+  v_safe_actor   TEXT;
 BEGIN
+  -- Audit-integrity gate (defense-in-depth, executed under SECURITY DEFINER):
+  --   * service_role  → trusted, may set any actor verbatim
+  --   * admin user    → trusted, but actor is forced to `admin:<uid>` so a
+  --                     malicious admin cannot impersonate the watchdog
+  --                     loop or another service component.
+  --   * everyone else → rejected with 42501 (PostgREST returns 401/403).
+  -- This preserves the immutable-audit guarantee even when EXECUTE is
+  -- granted to authenticated (so the dispatcher's pre-validate path can
+  -- log structured rejections from a user JWT).
+  IF NOT v_is_service AND NOT v_is_admin THEN
+    RAISE EXCEPTION 'system.write_incident: forbidden (service_role or admin required)'
+      USING ERRCODE = '42501';
+  END IF;
+
+  v_safe_actor := CASE
+    WHEN v_is_service THEN COALESCE(NULLIF(BTRIM(p_actor), ''), 'service')
+    ELSE 'admin:' || COALESCE(v_caller::text, 'unknown')
+  END;
+
   INSERT INTO system.incident_log (
     kind, severity, actor, related_task_id, related_dependency_task_id, evidence_json
   ) VALUES (
     p_kind, p_severity,
-    COALESCE(NULLIF(BTRIM(p_actor), ''), 'unknown'),
+    v_safe_actor,
     p_related_task_id, p_related_dependency_task_id,
     COALESCE(p_evidence, '{}'::jsonb)
+      || jsonb_build_object('caller_role', v_role, 'caller_uid', v_caller)
   )
   RETURNING id INTO v_id;
   RETURN v_id;

@@ -144,16 +144,7 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 `emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
-=======
-### `src/contexts/AuthContext.tsx`
-
-=======
->>>>>>> 0c2096e957 (Fix login issue for phone users and improve verification process)
-`emailVerified` accepte désormais deux signaux primaires (et un legacy) :
->>>>>>> 3a6e2ecb33 (Task #1002 — Audit dashboard access and unblock phone-OTP users)
 
 - `user.email_confirmed_at` — signup email vérifié ;
 - `user.phone_confirmed_at` — **nouveau**, source canonique Supabase pour OTP téléphone (champ natif du type `User` de `@supabase/supabase-js`, aucun cast requis) ;
@@ -205,15 +196,7 @@ L'environnement de cette tâche n'a pas de credentials Supabase ni de session li
    select id, email, email_confirmed_at, phone, phone_confirmed_at
    from auth.users where id = '<uid>';
    ```
-<<<<<<< HEAD
-<<<<<<< HEAD
    `phone_confirmed_at` doit être non-null pour le compte testé (ou c'est un compte phone-only sans email).
-=======
-   `phone_confirmed_at` doit être non-null for le compte testé.
->>>>>>> 6dc71f3a6a (Task #1002 — Audit dashboard access and unblock phone-OTP users)
-=======
-   `phone_confirmed_at` doit être non-null pour le compte testé.
->>>>>>> c999f1a7c3 (Fix login issue for phone users and improve verification process)
 6. Captures (DOM `/dashboard` + console) à déposer dans `docs/audits/screenshots/` pour clore la boucle d'audit.
 
 > Le correctif est purement additif côté logique de garde (un OR supplémentaire + détection phone-only) et ne peut pas régresser les utilisateurs email-verified déjà fonctionnels. Le risque résiduel se limite aux comptes téléphone — ceux-là précisément qui étaient bloqués.

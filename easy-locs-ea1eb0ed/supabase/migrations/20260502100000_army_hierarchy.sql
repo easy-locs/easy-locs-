@@ -340,15 +340,9 @@ begin
   end if;
 end $$;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 -- Seed the 6 canonical queues (logical only — table is shared)
 -- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
-=======
->>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
-=======
->>>>>>> fdd152f1ea (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
 -- ----------------------------------------------------------------------------
@@ -790,16 +784,8 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
-=======
--- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
->>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
-=======
--- pg_cron jobs (best-effort: skip if pg_cron unavailable)
->>>>>>> 0ca258b8bd (Task #998 — Hierarchical agent army (Command Center + Supabase))
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
@@ -816,8 +802,6 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
-<<<<<<< HEAD
-<<<<<<< HEAD
 
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
@@ -828,21 +812,14 @@ begin
       '* * * * *',
       $cron$ select army.run_tick(); $cron$
     );
-=======
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
-<<<<<<< HEAD
     -- Autonomous pipeline tick: drives the whole army every minute
     -- without any human intervention. Calls the army-tick edge function
     -- with the service-role key so the entire chain advances.
     if exists (select 1 from pg_extension where extname = 'pg_net') then
       begin
         perform cron.schedule(
-<<<<<<< HEAD
           'army_tick_dispatcher_v2',
-=======
-          'army_tick_dispatcher',
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
           '* * * * *',
           format($cron$
             select net.http_post(
@@ -859,17 +836,6 @@ begin
       exception when others then null;
       end;
     end if;
-=======
-    -- Autonomous tick — runs every minute. army.run_tick() validates
-    -- that supabase_url + service_role_key are present (and aborts
-    -- otherwise with a logged incident) so this schedule is safe to
-    -- create unconditionally.
-    perform cron.schedule(
-      'army_tick_dispatcher',
-      '* * * * *',
-      $cron$ select army.run_tick(); $cron$
-    );
->>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
@@ -880,11 +846,6 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
-<<<<<<< HEAD
-=======
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   end if;
 exception when others then null;
 end $$;
