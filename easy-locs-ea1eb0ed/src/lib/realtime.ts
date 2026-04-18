@@ -184,6 +184,26 @@ export function removeHardenedChannel(name: string): void {
   realtimeHardener.destroyChannel(name);
 }
 
+/**
+ * Snapshot of internal channel-tracking state. Exposed for diagnostics
+ * and lifecycle-integrity probes (see lib/qa/system-verify.ts). Round 8
+ * stress-verification surface — used by /admin/system-verify to detect
+ * realtime leaks, count drift, and lifecycle inconsistencies in CI/QA.
+ */
+export function getRealtimeStats(): {
+  ownedChannels: number;
+  pendingChannels: number;
+  ownedChannelNames: string[];
+  pendingChannelNames: string[];
+} {
+  return {
+    ownedChannels: ownedChannels.size,
+    pendingChannels: pendingChannels.size,
+    ownedChannelNames: Array.from(ownedChannels.keys()),
+    pendingChannelNames: Array.from(pendingChannels.keys()),
+  };
+}
+
 export function broadcastRealtimeToTabs(channelName: string, event: unknown): void {
   getCrossTabClient().then((mod) => {
     if (!mod) return;
