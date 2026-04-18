@@ -160,9 +160,6 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
 
-=======
-=======
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> eb2660a6ac (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 878fbaa58a (Task #998 — Hierarchical agent army (Command Center + Supabase))
@@ -170,6 +167,8 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 =======
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> 5d35bf2156 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 850bb97fd8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
