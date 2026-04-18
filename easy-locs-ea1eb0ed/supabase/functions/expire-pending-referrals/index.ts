@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { claimIdempotencyKey } from "../_shared/idempotency.ts";
 
 const DEFAULT_EXPIRY_DAYS = 90;
 const MIN_EXPIRY_DAYS = 1;
@@ -36,6 +37,23 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db = createClient(supabaseUrl, serviceKey);
+
+    // Task #1004 — idempotency. A re-triggered cron run within the
+    // same UTC day is a no-op (one expiry sweep per day per window).
+    const today = new Date().toISOString().slice(0, 10);
+    const claim = await claimIdempotencyKey(
+      db,
+      "referral-expire",
+      `${today}:${expiryDays}d`,
+      { today, expiryDays },
+      60 * 60 * 23, // ~1 day TTL
+    );
+    if (!claim.isNew) {
+      return new Response(
+        JSON.stringify({ status: "ok", deduplicated: true, replayed: claim.result }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const cutoffDate = new Date(Date.now() - expiryDays * 86400000).toISOString();
 

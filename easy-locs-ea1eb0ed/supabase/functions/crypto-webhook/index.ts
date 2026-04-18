@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { claimIdempotencyKey } from "../_shared/idempotency.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[CRYPTO-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -106,15 +107,19 @@ Deno.serve(async (req) => {
 
     if (event.type === "charge:confirmed" || event.type === "charge:completed") {
       const dedupeKey = `${chargeId}_${event.type}`;
-      const { data: existingProcessed } = await supabase
-        .from("payment_provider_events")
-        .select("id")
-        .eq("provider", "coinbase_commerce")
-        .eq("event_id", dedupeKey)
-        .eq("event_type", "crypto_processed")
-        .maybeSingle();
 
-      if (existingProcessed) {
+      // Task #1004 — unified idempotency layer. Replays of the same
+      // (chargeId, event.type) within the TTL never re-credit a wallet
+      // or re-mark an order paid.
+      const claim = await claimIdempotencyKey(
+        supabase,
+        "crypto-webhook",
+        dedupeKey,
+        { chargeId, type: event.type, userId, orderId },
+        60 * 60 * 24 * 7, // 7d retention for payment dedup
+      );
+
+      if (!claim.isNew) {
         logStep("Duplicate webhook event, skipping", { chargeId, eventType: event.type });
         return new Response(JSON.stringify({ status: "ok", deduplicated: true }), {
           status: 200,
@@ -122,6 +127,7 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Best-effort secondary log in the existing audit table.
       await supabase.from("payment_provider_events").insert({
         provider: "coinbase_commerce",
         event_type: "crypto_processed",
