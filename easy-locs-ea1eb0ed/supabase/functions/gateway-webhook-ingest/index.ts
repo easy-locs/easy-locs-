@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
       headers: {
         "Access-Control-Allow-Origin": "",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "content-type, x-gateway-source, x-gateway-secret",
+        "Access-Control-Allow-Headers": "content-type, x-gateway-source, x-gateway-secret, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
         "Access-Control-Max-Age": "86400",
       },
     });
