@@ -787,7 +787,7 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
--- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
 -- ----------------------------------------------------------------------------
 do $$
 begin
@@ -806,7 +806,6 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
-
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
     -- otherwise with a logged incident) so this schedule is safe to
