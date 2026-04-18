@@ -45,7 +45,9 @@ async function resolveTargetUser(entityId: string, entityType?: string): Promise
       .eq("id", entityId)
       .maybeSingle();
     if (sf?.owner_id) return sf.owner_id;
-  } catch (_) {}
+  } catch (e) {
+    console.warn("[useRadarContact] storefront_pages lookup failed:", e);
+  }
 
   try {
     const { data: ml } = await supabase
@@ -54,7 +56,9 @@ async function resolveTargetUser(entityId: string, entityType?: string): Promise
       .eq("id", entityId)
       .maybeSingle();
     if (ml?.created_by || ml?.org_id) return ml.created_by || ml.org_id;
-  } catch (_) {}
+  } catch (e) {
+    console.warn("[useRadarContact] marketplace_listings lookup failed:", e);
+  }
 
   return null;
 }

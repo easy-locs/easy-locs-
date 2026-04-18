@@ -114,28 +114,13 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
 
         case "dotted_labels":
         case "untranslated_keys": {
-          const els = Array.from(document.querySelectorAll("*")).filter(
-            (el): el is HTMLElement => el instanceof HTMLElement
-          );
-
-          let count = 0;
-          for (const el of els) {
-            if (alreadyPatched(el)) continue;
-            const text = (el.textContent ?? "").trim();
-            if (!text || text.length > 80) continue;
-
-            const shouldPatch =
-              issue.type === "dotted_labels"
-                ? /[A-Za-zÀ-ÿ]\.[A-Za-zÀ-ÿ]/.test(text)
-                : /^[a-z0-9_.-]+$/.test(text) && text.includes(".");
-
-            if (shouldPatch) {
-              el.textContent = titleize(text);
-              markPatched(el, issue.id);
-              count++;
-            }
-          }
-          results.push({ issueId: issue.id, patched: count > 0, message: `Sanitized ${count} labels.` });
+          // NOTE: previously rewrote `el.textContent` directly. That mutates
+          // React-managed text nodes and causes "Failed to execute removeChild
+          // on Node" crashes when React next re-renders the same subtree.
+          // Reverted to a report-only path; the underlying i18n fix should be
+          // made in source instead of patched in the live DOM.
+          void titleize;
+          results.push({ issueId: issue.id, patched: false, message: "Report-only (no DOM mutation)." });
           break;
         }
 
@@ -162,25 +147,12 @@ export function applySafePatches(issues: UiIssue[]): SafePatchResult[] {
         }
 
         case "empty_section": {
-          const sections = Array.from(
-            document.querySelectorAll("[data-empty-state], [data-empty-section]")
-          ).filter((el): el is HTMLElement => el instanceof HTMLElement);
-
-          let count = 0;
-          for (const section of sections) {
-            if (alreadyPatched(section)) continue;
-            if ((section.textContent ?? "").trim().length < 4) {
-              section.innerHTML = `
-                <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px;">
-                  <p style="font-size:14px;color:hsl(var(--muted-foreground));">Nothing to show yet</p>
-                  <p style="font-size:12px;color:hsl(var(--muted-foreground)/0.7);">This section will appear when content is available.</p>
-                </div>
-              `;
-              markPatched(section, issue.id);
-              count++;
-            }
-          }
-          results.push({ issueId: issue.id, patched: count > 0, message: `Patched ${count} empty sections.` });
+          // NOTE: previously assigned `section.innerHTML = "..."` to inject an
+          // empty-state placeholder. That clobbers React-managed children and
+          // causes "Failed to execute removeChild on Node" on the next render.
+          // Reverted to a report-only path; empty-state UX should be authored
+          // in the React tree, not patched into the DOM.
+          results.push({ issueId: issue.id, patched: false, message: "Report-only (no DOM mutation)." });
           break;
         }
 

@@ -1,5 +1,8 @@
 {pkgs}: {
   deps = [
+    pkgs.libudev0-shim
+    pkgs.systemd
+    pkgs.k6
     pkgs.libxslt
     pkgs.libGL
     pkgs.freetype

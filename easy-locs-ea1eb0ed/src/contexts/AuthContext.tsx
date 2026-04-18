@@ -380,7 +380,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user]);
 
   const { subscription, refreshSubscription, resetSubscription } = useSubscriptionLoader(session, user?.id);
-  const refreshSubRef = useCallback(() => refreshSubscription(), [refreshSubscription]);
+  // Ref-backed wrappers so identity is STABLE for the entire lifetime of the
+  // provider. The auth init effect below has a one-shot guard
+  // (`authInitRef.current`) but React still tears down the effect (running
+  // its cleanup — `mounted = false`, clear safety timeout, unsubscribe) when
+  // *any* dep identity changes. Previously `refreshSubRef` re-created itself
+  // each time `refreshSubscription` did (i.e. as soon as `setSession` ran
+  // mid-hydration), which tore down the effect mid-flight; the late
+  // `setLoading(false)` was then gated out by the now-false `mounted`,
+  // leaving the dashboard stuck on an infinite loader (task #1058).
+  const refreshSubMut = useRef(refreshSubscription);
+  useEffect(() => { refreshSubMut.current = refreshSubscription; }, [refreshSubscription]);
+  const refreshSubRef = useCallback(() => refreshSubMut.current(), []);
+
+  // Same treatment for `fetchDualRoleDeferred` — its identity changed every
+  // time `onboardingCompleted` did, which also tore down the auth init
+  // effect mid-hydration.
+  const fetchDualRoleDeferredMut = useRef(fetchDualRoleDeferred);
+  useEffect(() => { fetchDualRoleDeferredMut.current = fetchDualRoleDeferred; }, [fetchDualRoleDeferred]);
 
   useEffect(() => {
     if (authInitRef.current) return;
@@ -482,7 +499,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const retryProfile = await fetchProfileCritical(userId);
                 applyProfileData(retryProfile);
                 await fetchOrgDetails(retryOrgIds);
-                await fetchDualRoleDeferred(userId);
+                await fetchDualRoleDeferredMut.current(userId);
               } catch (retryErr) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
@@ -499,7 +516,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             void (async () => {
               try {
                 await fetchOrgDetails(orgIds);
-                await fetchDualRoleDeferred(userId);
+                await fetchDualRoleDeferredMut.current(userId);
               } catch (deferredErr) {
                 authWarn("LOGIN_PROFILE_HYDRATE_RESULT", {
                   traceId: hydrateTraceId, success: false,
@@ -585,6 +602,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
         clearReferralCaches();
+        queryClient.clear();
       }
       // Drop any cached role/admin lookup so the next render reflects the
       // new session immediately (sign-in, sign-out, token refresh, user swap).
@@ -599,7 +617,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       window.clearTimeout(safetyTimeout);
       authSub.unsubscribe();
     };
-  }, [fetchOrgIdFast, fetchProfileCritical, fetchOrgDetails, fetchDualRoleDeferred, checkDbHealth, refreshSubRef, resetSubscription]);
+    // Intentionally one-shot: this effect is gated by `authInitRef` and any
+    // dep churn here would tear it down mid-hydration (see comment near
+    // `refreshSubRef` above). All callbacks used inside the effect are
+    // either already stable (memoised on stable deps) or accessed through
+    // the ref-backed wrappers (`refreshSubRef`, `fetchDualRoleDeferredMut`).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
   useEffect(() => {
@@ -655,6 +679,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut().catch((err) => {
       structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
     });
+    // Drop the previous user's TanStack Query cache so the next user (or the
+    // anonymous session that follows) cannot briefly see stale data hydrated
+    // from the prior session (orders, wallet balance, profile, etc.).
+    queryClient.clear();
     setUser(null);
     setSession(null);
     setOrgId(null);

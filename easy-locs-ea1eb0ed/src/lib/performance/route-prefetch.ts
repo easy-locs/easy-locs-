@@ -79,38 +79,30 @@ export function prefetchPillar(pillarName: string): void {
 export function setupHoverPrefetch(): void {
   if (typeof window === "undefined") return;
 
-  document.addEventListener("pointerenter", (e) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
-    if (!anchor) return;
+  // Task #1061: every listener guards on `instanceof Element` because
+  // `e.target` can legitimately be a Text node, Document, or Window —
+  // none of which have `closest()`. The previous unsafe HTMLElement cast
+  // produced "Uncaught TypeError: target.closest is not a function" on
+  // every page mount, which Sentry's wrap re-threw at @sentry_react.js
+  // and surfaced as an uncaught runtime error in the console.
+  const anchorFromEvent = (e: Event): HTMLAnchorElement | null => {
+    const target = e.target;
+    if (!(target instanceof Element)) return null;
+    return target.closest("a[href]") as HTMLAnchorElement | null;
+  };
 
-    const href = anchor.getAttribute("href");
-    if (!href || href.startsWith("http") || href.startsWith("mailto:")) return;
-
-    const path = href.startsWith("#") ? href.slice(1) : href;
-
-    prefetchRoute(path);
-  }, { capture: true, passive: true });
-
-  document.addEventListener("pointerdown", (e) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
+  const handle = (e: Event): void => {
+    const anchor = anchorFromEvent(e);
     if (!anchor) return;
     const href = anchor.getAttribute("href");
     if (!href || href.startsWith("http") || href.startsWith("mailto:")) return;
     const path = href.startsWith("#") ? href.slice(1) : href;
     prefetchRoute(path);
-  }, { capture: true, passive: true });
+  };
 
-  document.addEventListener("touchstart", (e) => {
-    const target = e.target as HTMLElement;
-    const anchor = target.closest("a[href]") as HTMLAnchorElement | null;
-    if (!anchor) return;
-    const href = anchor.getAttribute("href");
-    if (!href || href.startsWith("http") || href.startsWith("mailto:")) return;
-    const path = href.startsWith("#") ? href.slice(1) : href;
-    prefetchRoute(path);
-  }, { capture: true, passive: true });
+  document.addEventListener("pointerenter", handle, { capture: true, passive: true });
+  document.addEventListener("pointerdown", handle, { capture: true, passive: true });
+  document.addEventListener("touchstart", handle, { capture: true, passive: true });
 }
 
 export function setupPredictivePrefetch(): void {
