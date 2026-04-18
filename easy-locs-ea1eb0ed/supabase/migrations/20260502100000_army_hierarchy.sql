@@ -715,8 +715,73 @@ begin
 end $$;
 
 -- ----------------------------------------------------------------------------
--- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- 16. Tick configuration + autonomous dispatcher
 -- ----------------------------------------------------------------------------
+-- Single-row config table holding the URL+key the cron uses to reach
+-- the `army-tick` edge function. Lives in the army schema so it is
+-- covered by the supreme-only RLS policies above. Operator must run
+-- once after first deploy:
+--
+--   update army.tick_config
+--      set supabase_url = 'https://<ref>.supabase.co',
+--          service_role_key = '<service-role-jwt>'
+--    where id = 1;
+--
+-- Until that happens, army.run_tick() short-circuits and writes a
+-- single incident_log entry per hour so the gap is visible in the
+-- cockpit. No URL/key is ever stored in the migration itself.
+create table if not exists army.tick_config (
+  id                smallint primary key default 1 check (id = 1),
+  supabase_url      text,
+  service_role_key  text,
+  last_run_at       timestamptz,
+  last_warned_at    timestamptz,
+  updated_at        timestamptz not null default now()
+);
+insert into army.tick_config(id) values (1) on conflict (id) do nothing;
+alter table army.tick_config enable row level security;
+drop policy if exists army_tick_config_supreme on army.tick_config;
+create policy army_tick_config_supreme on army.tick_config
+  for all to authenticated using (army.current_is_supreme()) with check (army.current_is_supreme());
+
+-- run_tick: invoked by pg_cron every minute. Validates non-empty
+-- config, then calls the army-tick edge function via pg_net.
+create or replace function army.run_tick() returns void
+language plpgsql security definer set search_path = army, public as $$
+declare
+  cfg army.tick_config%rowtype;
+begin
+  if (select is_killed from army.system_flags where id = 1) then
+    return;
+  end if;
+  select * into cfg from army.tick_config where id = 1;
+  if cfg.supabase_url is null or length(cfg.supabase_url) = 0
+     or cfg.service_role_key is null or length(cfg.service_role_key) = 0 then
+    if cfg.last_warned_at is null or cfg.last_warned_at < now() - interval '1 hour' then
+      insert into army.incident_log(severity, kind, role, message, context)
+      values ('warn','tick_config_missing','supreme_commander',
+              'army.tick_config not set — autonomous tick disabled',
+              jsonb_build_object('hint','update army.tick_config set supabase_url=..., service_role_key=...'));
+      update army.tick_config set last_warned_at = now() where id = 1;
+    end if;
+    return;
+  end if;
+  if not exists (select 1 from pg_extension where extname = 'pg_net') then
+    return;
+  end if;
+  perform net.http_post(
+    url     := cfg.supabase_url || '/functions/v1/army-tick',
+    headers := jsonb_build_object('Content-Type','application/json',
+                                  'Authorization','Bearer ' || cfg.service_role_key),
+    body    := '{}'::jsonb
+  );
+  update army.tick_config set last_run_at = now() where id = 1;
+end;
+$$;
+revoke all on function army.run_tick() from public;
+grant execute on function army.run_tick() to service_role;
+
+-- pg_cron jobs (best-effort: skip if pg_cron unavailable)
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
@@ -734,29 +799,15 @@ begin
       $cron$
     );
 
-    -- Autonomous pipeline tick: drives the whole army every minute
-    -- without any human intervention. Calls the army-tick edge function
-    -- with the service-role key so the entire chain advances.
-    if exists (select 1 from pg_extension where extname = 'pg_net') then
-      begin
-        perform cron.schedule(
-          'army_tick_dispatcher',
-          '* * * * *',
-          format($cron$
-            select net.http_post(
-              url     := %L,
-              headers := jsonb_build_object('Content-Type','application/json',
-                                            'Authorization','Bearer ' || %L),
-              body    := '{}'::jsonb
-            );
-          $cron$,
-          coalesce(current_setting('app.supabase_url', true), '') || '/functions/v1/army-tick',
-          coalesce(current_setting('app.service_role_key', true), '')
-          )
-        );
-      exception when others then null;
-      end;
-    end if;
+    -- Autonomous tick — runs every minute. army.run_tick() validates
+    -- that supabase_url + service_role_key are present (and aborts
+    -- otherwise with a logged incident) so this schedule is safe to
+    -- create unconditionally.
+    perform cron.schedule(
+      'army_tick_dispatcher',
+      '* * * * *',
+      $cron$ select army.run_tick(); $cron$
+    );
 
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
