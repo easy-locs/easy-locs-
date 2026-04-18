@@ -10,7 +10,7 @@ import { HomeRouter, MarketplaceHomeRouter } from "@/components/app/AppRouters";
 const {
   AIAssistant, AISearch, Accounting, AccountingEntries, AddProperty, AuditTrail, Billing,
   BoostDashboardPage, Buildings, CVGenerator, Candidates, CategorySubscriptions, ChannelManager,
-  ChargesRegularization, Collaboration, CommandCenter, Company, ConciergeOperations, CountryWorkspace, CreateListing,
+  ChargesRegularization, Collaboration, CommandCenter, ArmyCockpit, Company, ConciergeOperations, CountryWorkspace, CreateListing,
   CustomerProfilePage, Dashboard, DashboardCommandCenter, DataImport, DeveloperPortal, Documents,
   DunningLetters, DynamicPricing,
   Expenses, Finances, FiscalReport, FurnitureInventory, Index, Interventions, IslamicSectionPage,
@@ -92,6 +92,7 @@ export function DashboardRoutes() {
           (defined above). Legacy CommandCenter page is reachable at /dashboard/command-legacy
           to preserve any deep links until callers migrate. */}
       <Route path="/dashboard/command-legacy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><CommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/dashboard/army" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><Suspense fallback={<PillarSkeleton pillar="dashboard" />}><ArmyCockpit /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/country/:countryCode" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><CountryWorkspace /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/boost" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><BoostDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/dashboard/properties" element={<ProtectedRoute><FeatureErrorBoundary featureName="Dashboard"><RealEstateModulePage /></FeatureErrorBoundary></ProtectedRoute>}>
