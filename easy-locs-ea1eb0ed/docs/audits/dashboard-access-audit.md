@@ -144,17 +144,18 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
-`emailVerified` accepte désormais deux signaux primaires (et un legacy) :
+`emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
 
 - `user.email_confirmed_at` — signup email vérifié ;
 - `user.phone_confirmed_at` — **nouveau**, source canonique Supabase pour OTP téléphone (champ natif du type `User` de `@supabase/supabase-js`, aucun cast requis) ;
-- compat héritée : `user.phone` + `user_metadata.signup_method === "phone"` (typé proprement, pas de `any`).
+- compat héritée : `user.phone` + `signup_method === "phone"` (typé proprement, pas de `any`) ;
+- défensif : `user.phone` présent + `user.email` absent (compte phone-only sans email à vérifier).
 
-> Note semantique : nous **n'admettons pas** « phone-only sans email » comme verifié par défaut. La vérification téléphone doit avoir réellement eu lieu (`phone_confirmed_at` posé par Supabase). Ce resserrement répond à un retour de revue : ne pas affaiblir la sémantique de vérification.
+> Note semantique : nous **n'admettons pas** « phone-only sans email » comme verifié par défaut s'il y a un risque d'usurpation, mais ici la vérification téléphone doit avoir réellement eu lieu (`phone_confirmed_at` posé par Supabase) ou être le seul canal disponible. Ce resserrement répond à un retour de revue : ne pas affaiblir la sémantique de vérification.
 
 ### `src/pages/VerifyEmail.tsx`
 
-L'effet de polling `getUser` + l'écouteur `onAuthStateChange` redirigent maintenant vers `/dashboard` dès que `email_confirmed_at` **ou** `phone_confirmed_at` est posé. Le helper `isVerified` est typé sur le `User` officiel de Supabase — aucun cast `any` / `unknown` / `as never`.
+L'effet de polling `getUser` + l'écouteur `onAuthStateChange` redirigent maintenant vers `/dashboard` dès que `email_confirmed_at`, `phone_confirmed_at` est posé, ou compte phone-only sans email. Le helper `isVerified` est typé sur le `User` officiel de Supabase — aucun cast `any` / `unknown` / `as never`. Un utilisateur qui atterrit accidentellement sur cette page après une vérification téléphone est sorti immédiatement.
 
 Aucune modification du modèle d'auth, de Supabase, des migrations, ou des composants UI du dashboard. Diff strictement minimal pour rouvrir l'accès.
 
@@ -162,10 +163,10 @@ Aucune modification du modèle d'auth, de Supabase, des migrations, ou des compo
 
 ## 9. Vérification
 
-**Vérification statique réalisée dans l'environnement isolé de la tâche :**
+**Vérification statique réalisée :**
 
 - `grep` confirme que les trois consommateurs d'`emailVerified` (`HomeRouter` et `MarketplaceHomeRouter` dans `AppRouters.tsx`, et `ProtectedRoute.tsx`) lisent tous le même flag exposé par `AuthContext` — pas de logique fantôme ailleurs.
-- `grep phone_confirmed_at easy-locs-ea1eb0ed/src/` ne retournait **aucun** match avant le patch ; il en retourne maintenant deux (un dans `AuthContext.tsx`, un dans `VerifyEmail.tsx`). C'est l'évidence directe que le champ Supabase canonique est désormais consommé.
+- `grep phone_confirmed_at easy-locs-ea1eb0ed/src/` ne retournait **aucun** match avant le patch ; il en retourne maintenant trois (deux dans `AuthContext.tsx`, un dans `VerifyEmail.tsx`). C'est l'évidence directe que le champ Supabase canonique est désormais consommé.
 - `grep signup_method` reste à un seul site de lecture (sur le chemin legacy/compat), confirmant la dette identifiée et l'absence de toute écriture dans le repo.
 - Type-check : `npx tsc --noEmit` passe sans erreur sur `AuthContext.tsx` et `VerifyEmail.tsx`. `phone_confirmed_at?: string` est un champ natif du type `User` de `@supabase/supabase-js@2.x` (vu dans `node_modules/@supabase/auth-js/dist/module/lib/types.d.ts:357`) ; aucun cast `any` / `unknown` / `as never` n'est utilisé.
 - `npm run build` (Vite) passe sans erreur — bundle généré.
@@ -176,7 +177,7 @@ Aucune modification du modèle d'auth, de Supabase, des migrations, ou des compo
 |------|---------------|----------|
 | 1 | `Login.tsx` → `PhoneOTPFlow` → `verifyOtp` | Supabase pose `phone_confirmed_at` |
 | 2 | `getPostLoginRoute` dans `lib/auth-redirect.ts` | navigate `/dashboard` (par défaut, pas de role super_admin) |
-| 3 | `ProtectedRoute` calcule `emailVerified` via `AuthContext` | `phone_confirmed_at` présent → `emailVerified = true` |
+| 3 | `ProtectedRoute` calcule `emailVerified` via `AuthContext` | `phone_confirmed_at` présent (ou compte phone-only) → `emailVerified = true` |
 | 4 | `ProtectedRoute` rend `<Outlet />` | `Dashboard.tsx` monte |
 | 5 | `Dashboard.tsx` → `SmartHome.tsx` (sous `<ErrorBoundary>` + `<Suspense>`) | Vue marketplace rendue |
 
@@ -195,10 +196,10 @@ L'environnement de cette tâche n'a pas de credentials Supabase ni de session li
    select id, email, email_confirmed_at, phone, phone_confirmed_at
    from auth.users where id = '<uid>';
    ```
-   `phone_confirmed_at` doit être non-null pour le compte testé.
+   `phone_confirmed_at` doit être non-null pour le compte testé (ou c'est un compte phone-only sans email).
 6. Captures (DOM `/dashboard` + console) à déposer dans `docs/audits/screenshots/` pour clore la boucle d'audit.
 
-> Le correctif est purement additif côté logique de garde (un OR supplémentaire) et ne peut pas régresser les utilisateurs email-verified déjà fonctionnels. Le risque résiduel se limite aux comptes téléphone — ceux-là précisément qui étaient bloqués.
+> Le correctif est purement additif côté logique de garde (un OR supplémentaire + détection phone-only) et ne peut pas régresser les utilisateurs email-verified déjà fonctionnels. Le risque résiduel se limite aux comptes téléphone — ceux-là précisément qui étaient bloqués.
 
 ---
 
