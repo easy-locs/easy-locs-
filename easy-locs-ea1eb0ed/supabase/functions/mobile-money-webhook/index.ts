@@ -1,5 +1,7 @@
+// PUBLIC: Flutterwave mobile-money webhook — auth via verif-hash header.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[MOBILE-MONEY-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -9,7 +11,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, verif-hash, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
-Deno.serve(withEdgeLogging("mobile-money-webhook", async (req, logger) => {
+Deno.serve(withRateLimit("mobile-money-webhook", withEdgeLogging("mobile-money-webhook", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -151,4 +153,4 @@ Deno.serve(withEdgeLogging("mobile-money-webhook", async (req, logger) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-}));
+}, { maxRequests: 60, windowSeconds: 60 })));

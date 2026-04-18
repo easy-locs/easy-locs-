@@ -1,3 +1,4 @@
+// PUBLIC: Domain router — JWT verification handled internally via shared EdgeRouter middleware (requireAuth: true).
 import { EdgeRouter, proxyToFunction } from "../_shared/edge-function-consolidation.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 

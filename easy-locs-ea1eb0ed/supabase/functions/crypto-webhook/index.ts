@@ -1,6 +1,8 @@
+// PUBLIC: Crypto payment provider webhook — auth via provider HMAC signature + idempotency key.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { claimIdempotencyKey, finalizeIdempotencyKey } from "../_shared/idempotency.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[CRYPTO-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -41,7 +43,7 @@ async function verifyWebhookSignature(payload: string, signature: string, secret
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("crypto-webhook", async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -235,4 +237,4 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}, { maxRequests: 120, windowSeconds: 60 }));

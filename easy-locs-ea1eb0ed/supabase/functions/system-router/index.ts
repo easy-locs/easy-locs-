@@ -1,3 +1,4 @@
+// PUBLIC: Domain router — JWT + rate-limit via shared createDomainRouter middleware.
 import { createDomainRouter, type RouteContext } from "../_shared/domain-router.ts";
 import { proxyToFunction } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";

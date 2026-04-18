@@ -1,3 +1,4 @@
+// PUBLIC: Merge-conflict alerts cron — auth via x-internal-secret / requireRouterOrigin.
 /**
  * merge-conflict-recovery-alerts-cron (task #973, #980)
  *
@@ -40,6 +41,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -374,7 +376,7 @@ async function dispatch(alert: Alert): Promise<{ ok: boolean; status: number }> 
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("merge-conflict-recovery-alerts-cron", async (req) => {
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
   const qsCheck = rejectQuerySecrets(req);
@@ -436,4 +438,4 @@ Deno.serve(async (req) => {
     console.error("[merge-conflict-recovery-alerts-cron] error:", msg);
     return new Response(JSON.stringify({ error: msg }), { status: 500 });
   }
-});
+}, { maxRequests: 30, windowSeconds: 60 }));
