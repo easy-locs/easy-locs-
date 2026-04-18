@@ -7,7 +7,7 @@
  * the first matching <Route>, so duplicates produce dead code that is hard
  * to spot in review. This test fails the build whenever any absolute
  * `<Route path="...">` literal appears more than once across the pillar
- * route files.
+ * route files (every `.tsx` under `src/routes`, including `index.tsx`).
  */
 import path from "node:path";
 import { describe, it, expect } from "vitest";
@@ -19,7 +19,7 @@ import {
 
 const routesDir = path.resolve(__dirname, "..", "routes");
 
-describe("src/routes/*.routes.tsx — route uniqueness", () => {
+describe("src/routes/*.tsx — route uniqueness", () => {
   it("declares every absolute route path at most once", () => {
     const occurrences = collectRouteOccurrences(routesDir);
     const duplicates = findDuplicateRoutes(occurrences);
@@ -29,7 +29,7 @@ describe("src/routes/*.routes.tsx — route uniqueness", () => {
         .map(([p, list]) => `  "${p}" declared in: ${list.map((o) => o.file).join(", ")}`)
         .join("\n");
       throw new Error(
-        `Duplicate route path(s) detected across src/routes/*.routes.tsx:\n${detail}\n\n` +
+        `Duplicate route path(s) detected across src/routes/*.tsx:\n${detail}\n\n` +
           "Remove the duplicate <Route path=\"...\"> declaration — React Router " +
           "silently shadows later duplicates with the first match (see Task #988).",
       );

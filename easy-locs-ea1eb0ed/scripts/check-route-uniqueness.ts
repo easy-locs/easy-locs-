@@ -6,7 +6,7 @@
  * /admin/control/* block (24 lines of dead code shadowed by an earlier
  * identical block) and a duplicated /dashboard/command-center route.
  *
- * Scans every `src/routes/*.routes.tsx` file, extracts every
+ * Scans every `src/routes/*.tsx` file, extracts every
  * `<Route path="...">` literal (absolute paths only — relative children
  * are scoped to their parent and therefore cannot collide globally), and
  * fails the build when any path string appears more than once across the
@@ -35,9 +35,13 @@ export function extractRoutePaths(source: string): string[] {
 }
 
 export function collectRouteOccurrences(routesDir: string): RouteOccurrence[] {
+  // Include every `.tsx` file under src/routes — not just `*.routes.tsx`.
+  // The task contract (#991) names `src/routes/*.tsx`, and `index.tsx`
+  // (the router root) also contains <Route path="..."> declarations that
+  // can collide with pillar files.
   const files = fs
     .readdirSync(routesDir)
-    .filter((f) => f.endsWith(".routes.tsx"));
+    .filter((f) => f.endsWith(".tsx"));
 
   const out: RouteOccurrence[] = [];
   for (const file of files) {
@@ -85,7 +89,7 @@ function main(): void {
   if (dups.size > 0) {
     console.error(
       `[route-uniqueness] ${dups.size} duplicated route path(s) detected ` +
-        `across src/routes/*.routes.tsx:\n`,
+        `across src/routes/*.tsx:\n`,
     );
     for (const [p, list] of dups) {
       console.error(`  "${p}" declared ${list.length} times:`);
@@ -101,7 +105,7 @@ function main(): void {
 
   console.log(
     `[route-uniqueness] OK — ${occurrences.length} absolute route path(s) ` +
-      `across src/routes/*.routes.tsx are unique.`,
+      `across src/routes/*.tsx are unique.`,
   );
 }
 
