@@ -97,6 +97,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // metadata tag (already folded into `phoneVerified`) or, last-resort,
   // a phone identity with no email at all (task #1002 + #1025).
   if (!emailConfirmed && !phoneVerified) {
+    // Defensive fallback for legacy phone-only accounts that arrived
+    // before Supabase began stamping `phone_confirmed_at` and never had
+    // `signup_method=phone` written either (task #1002 + #1025). Such
+    // accounts are recognized by having a phone identity and no email at
+    // all — let them through so they aren't trapped in the verification
+    // loop. Every other unverified user goes through /verify-account.
     const u = user as { phone?: string | null; email?: string | null; phone_confirmed_at?: string | null };
     const hasPhoneIdentity = !!u?.phone;
     const hasEmailIdentity = !!u?.email;
@@ -105,7 +111,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       // Unified verification flow — /verify-account handles BOTH email and
       // phone cases and auto-routes verified users to /dashboard. The old
       // /verify-email route now redirects here as well for back-compat.
-      return <Navigate to="/verify-account" replace />;
+      //
+      // Carry `from` + an explicit `reason` so the redirect is no longer
+      // silent: any debugging (and the destination page) can see *why*
+      // the user was bounced (task #1049 acceptance: "no silent redirect
+      // away from /dashboard").
+      return (
+        <Navigate
+          to="/verify-account"
+          replace
+          state={{ from: location, reason: "verification-required" }}
+        />
+      );
     }
   }
 
