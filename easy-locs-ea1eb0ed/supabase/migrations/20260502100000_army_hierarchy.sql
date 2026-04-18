@@ -715,7 +715,7 @@ begin
 end $$;
 
 -- ----------------------------------------------------------------------------
--- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- 16. Tick configuration + autonomous dispatcher
 -- ----------------------------------------------------------------------------
 -- Single-row config table holding the URL+key the cron uses to reach
 -- the `army-tick` edge function. Lives in the army schema so it is
