@@ -362,10 +362,6 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
     logs.push(`[${ts()}] quota.consume_failed ${post.blockedReason ?? "rejected"}`);
     return {
       success: false,
-      // Both `error` (legacy LB1 #834 surface) and `errorCode`/`errorMessage`
-      // (canonical task #1017 surface) are emitted so older orchestrator
-      // hooks and the new governance dashboards both see a populated field.
-      error: `Quota accounting failed: ${post.blockedReason ?? "rejected"}`,
       errorCode: "QUOTA_EXCEEDED",
       errorMessage: `Quota accounting failed: ${post.blockedReason ?? "rejected"}`,
       logs,
@@ -386,17 +382,8 @@ async function executeWithGuards(opts: CommonExecuteOpts, ctx: ExecutionContext)
         quota_block_reason: post.blockedReason,
         quota_block_window: post.blockedWindow,
       },
-      effects: {
-        provider: interaction.provider,
-        model: interaction.model,
-        prompt_tokens: interaction.promptTokens,
-        completion_tokens: interaction.completionTokens,
-        tokens: interaction.promptTokens + interaction.completionTokens,
-        cost_usd: interaction.costUsd,
-        latency_ms: interaction.latencyMs,
-        quota_block_reason: post.blockedReason,
-        quota_block_window: post.blockedWindow,
-      },
+      logs,
+      actionsTaken: [`ai.${opts.taskType.toLowerCase()}`],
     };
   }
 
