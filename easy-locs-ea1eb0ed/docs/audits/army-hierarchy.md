@@ -46,6 +46,7 @@ Chief Orchestrator
 - Views: `v_general_state`, `v_army_dashboard` (cockpit feeds).
 
 ### Edge functions
+<<<<<<< HEAD
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
 | `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
@@ -58,6 +59,20 @@ Chief Orchestrator
 | `agent-spawn` | **Supreme** | privileged | **Sole** agent creation path (calls `spawnAgent()`) |
 | `agent-heal` | **Supreme** | privileged | Recycle a crashed agent (calls `spawnAgent()`) |
 | `agent-kill` | **Supreme** | Supreme | Terminate agent + cancel its in-flight tasks |
+=======
+| Function | Edge auth | Purpose |
+| --- | --- | --- |
+| `army-tick` | authenticated | Cron-driven dispatcher: walks every stage of the pipeline once |
+| `orchestrator-dispatch` | authenticated | Order → tasks |
+| `general-route` | authenticated | Pick tasks → captain |
+| `captain-plan` | authenticated | Build worker plan |
+| `worker-execute` | authenticated | Execute a single mission |
+| `worker-report` | authenticated | Roll up to order |
+| `incident-escalate` | authenticated | Promote to general / Supreme |
+| `agent-spawn` | **Supreme** | **Sole** agent creation path (calls `spawnAgent()`) |
+| `agent-heal` | **Supreme** | Recycle a crashed agent (calls `spawnAgent()`) |
+| `agent-kill` | **Supreme** | Terminate agent + cancel its in-flight tasks |
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
 the boundary, then `assertNotKilled()` and `hasPermission()` before any
