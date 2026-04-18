@@ -182,15 +182,28 @@ export class TaskDispatcher {
           }
         }
         if (dependsOn.length > 0 && insertedRow.id && !validation.blocked) {
-          const edges = dependsOn.map((depId) => ({
-            task_id: insertedRow!.id,
-            depends_on_task_id: depId,
-          }));
-          const { error: depErr } = await systemClient
-            .from("task_dependencies")
-            .insert(edges);
-          if (depErr) {
-            dbError = `task_dependencies_insert_failed: ${depErr.message}`;
+          // Atomic: the SQL wrapper attaches all edges inside a savepoint
+          // and, on rejection, compensates by marking the just-inserted
+          // task `blocked` + writes an immutable incident_log row in the
+          // same transaction. Guarantees no orphan task ever runs without
+          // its declared dependencies (closes the dispatch-vs-edges race).
+          const { data: attachData, error: attachErr } = await systemClient.rpc(
+            "attach_task_dependencies",
+            { p_task_id: insertedRow.id, p_depends_on: dependsOn },
+          );
+          if (attachErr) {
+            dbError = `attach_task_dependencies_failed: ${attachErr.message}`;
+            failureClass = "validation_failed";
+            throw new Error(dbError);
+          }
+          const attachRow = (Array.isArray(attachData) ? attachData[0] : attachData) as
+            | { ok?: boolean; error?: string }
+            | null;
+          if (attachRow && attachRow.ok === false) {
+            // The SQL wrapper already wrote an incident and forced the
+            // task to `blocked`. Surface a structured failure to callers.
+            insertedRow = { ...insertedRow, status: "blocked" } as ExecutionTaskRow;
+            dbError = `dependency_rejected: ${attachRow.error ?? "unknown"}`;
             failureClass = "validation_failed";
             throw new Error(dbError);
           }
