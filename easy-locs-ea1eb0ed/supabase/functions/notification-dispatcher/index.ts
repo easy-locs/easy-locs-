@@ -3,6 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
+import { claimIdempotencyKey } from "../_shared/idempotency.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -146,13 +147,17 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
     logger.info("dispatch_started", { userId: user_id, event_type, priority, channels: payload.channels });
 
     if (payload.dedupe_key) {
-      const { data: existing } = await supabase
-        .from("app_notifications")
-        .select("id")
-        .eq("user_id", user_id)
-        .contains("metadata", { dedupe_key: payload.dedupe_key })
-        .limit(1);
-      if (existing && existing.length > 0) {
+      // Task #1004 — unified idempotency layer. Replays of the same
+      // (user, event_type, dedupe_key) within the TTL never produce a
+      // second notification, even if the prior in_app row was cleared.
+      const claim = await claimIdempotencyKey(
+        supabase,
+        "notification-dispatcher",
+        `${user_id}:${event_type}:${payload.dedupe_key}`,
+        { user_id, event_type, dedupe_key: payload.dedupe_key },
+        60 * 60 * 24, // 24h TTL
+      );
+      if (!claim.isNew) {
         logger.info("deduplicated", { dedupe_key: payload.dedupe_key });
         return new Response(
           JSON.stringify({ status: "deduplicated", dedupe_key: payload.dedupe_key }),
