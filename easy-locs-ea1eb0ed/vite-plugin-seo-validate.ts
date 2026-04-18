@@ -203,7 +203,12 @@ export function seoValidatePlugin(): Plugin {
           "robots.txt",
           ".well-known/indexnow-key.txt",
         ];
-        const missingTrust = trustFiles.filter(f => !fs.existsSync(path.resolve(distDir, f)));
+        const publicDir = path.resolve("public");
+        const missingTrust = trustFiles.filter(
+          f =>
+            !fs.existsSync(path.resolve(distDir, f)) &&
+            !fs.existsSync(path.resolve(publicDir, f))
+        );
 
         const feedFiles = ["feed.xml", "feed/cities.xml", "feed/services.xml", "feed/atom.xml", "feed/cities-atom.xml", "feed/services-atom.xml"];
         const missingFeeds = feedFiles.filter(f => !fs.existsSync(path.resolve(distDir, f)));

@@ -58,6 +58,30 @@ export class TaskDispatcher {
       const probeId = crypto.randomUUID();
       const depCheck = await validateTaskDependencies(probeId, dependsOn);
       if (!depCheck.ok) {
+        // Persist a structured incident so dispatch-time rejections are
+        // visible in the admin watchdog page (the trigger-based incident
+        // path only fires when an INSERT actually reaches the DB; this
+        // pre-validate path returns earlier and would otherwise be silent).
+        try {
+          const systemClientForIncident = supabase.schema("system") as unknown as SystemRpcClient;
+          await systemClientForIncident.rpc("write_incident", {
+            p_kind: "dependency_rejected",
+            p_severity: "warn",
+            p_actor: "task-dispatcher",
+            p_related_task_id: null,
+            p_related_dependency_task_id: depCheck.offendingId,
+            p_evidence: {
+              stage: "pre_insert_validate",
+              type: request.type,
+              domain: request.domain,
+              reason: depCheck.reason,
+              error: depCheck.error ?? null,
+              depends_on: dependsOn,
+            },
+          });
+        } catch {
+          // Incident logging must never block the structured rejection.
+        }
         return {
           ok: false,
           task: null,
