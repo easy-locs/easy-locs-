@@ -132,7 +132,7 @@ CREATE OR REPLACE FUNCTION system.dependency_state_is_acceptable(s system.execut
 RETURNS BOOLEAN
 LANGUAGE sql IMMUTABLE
 AS $$
-  SELECT s IN ('approved','queued','running','succeeded','rolled_back')
+  SELECT s IN ('approved','queued','running','succeeded','rolling_back','rolled_back')
 $$;
 
 -- Defense-in-depth: enforce the DAG invariant at the database boundary so a
@@ -365,7 +365,7 @@ AS $$
   WITH active AS (
     SELECT t.*
       FROM system.execution_tasks t
-     WHERE t.status IN ('queued','running','pending_review','approved')
+     WHERE t.status IN ('queued','running','pending_review','approved','rolling_back')
   ),
   -- 1. End-to-end timeout
   timeouts AS (
@@ -378,9 +378,8 @@ AS $$
            ) AS evidence
       FROM active a
      WHERE a.max_duration_ms IS NOT NULL
-       AND a.status = 'running'                  -- only running tasks can transition to `failed`
-       AND a.started_at IS NOT NULL
-       AND a.started_at + (a.max_duration_ms || ' milliseconds')::interval < now()
+       AND a.status IN ('running', 'rolling_back') -- only active execution can transition to terminal failure here
+       AND COALESCE(a.started_at, a.created_at) + (a.max_duration_ms || ' milliseconds')::interval < now()
   ),
   -- 2. Running tasks with no recent heartbeat
   no_heartbeat AS (
@@ -406,7 +405,7 @@ AS $$
              'stuck_threshold_ms', a.stuck_threshold_ms
            ) AS evidence
       FROM active a
-     WHERE a.status IN ('queued','approved','running')
+     WHERE a.status IN ('queued','approved','running','rolling_back')
        AND a.stuck_threshold_ms IS NOT NULL
        AND a.stage_started_at IS NOT NULL
        AND a.stage_started_at + ((a.stuck_threshold_ms * 3) || ' milliseconds')::interval < now()
@@ -464,6 +463,7 @@ BEGIN
   -- exception.
   v_target := CASE v_row.status
     WHEN 'running'        THEN 'failed'::system.execution_task_status
+    WHEN 'rolling_back'   THEN 'failed'::system.execution_task_status
     WHEN 'queued'         THEN 'cancelled'::system.execution_task_status
     WHEN 'approved'       THEN 'cancelled'::system.execution_task_status
     WHEN 'pending_review' THEN 'cancelled'::system.execution_task_status
@@ -601,7 +601,7 @@ BEGIN
   UPDATE system.execution_tasks
      SET last_heartbeat_at = now()
    WHERE id = p_task_id
-     AND status IN ('queued','running');
+     AND status IN ('queued','running','rolling_back');
   RETURN FOUND;
 END;
 $$;
@@ -764,7 +764,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'system-watchdog-tick schedule failed: %', SQLERRM;
 END;
 $cron_wd$;
-
 -- ── 7. Grants ─────────────────────────────────────────────────────────────
 GRANT EXECUTE ON FUNCTION system.resolve_task_verb_defaults(TEXT)                                  TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION system.validate_task_dependencies(UUID, UUID[])                          TO authenticated, service_role;
