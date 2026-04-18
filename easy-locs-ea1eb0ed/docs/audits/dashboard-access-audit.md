@@ -144,7 +144,9 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
-`emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
+### `src/contexts/AuthContext.tsx`
+
+`emailVerified` accepte désormais deux signaux primaires (et un legacy) :
 
 - `user.email_confirmed_at` — signup email vérifié ;
 - `user.phone_confirmed_at` — **nouveau**, source canonique Supabase pour OTP téléphone (champ natif du type `User` de `@supabase/supabase-js`, aucun cast requis) ;
