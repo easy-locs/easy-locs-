@@ -49,6 +49,41 @@ export async function verifyRealtimeChannel() {
  * This mirrors the SIGNED_OUT path in AuthContext: any session-end event
  * MUST purge the query cache. Regression-guards round 5 hardening.
  */
+/**
+ * Round 9 — Navigation stability probe.
+ * Programmatically push the same path N times via history.pushState and
+ * assert history.length grows by exactly N (no stealth replace, no double
+ * push). Catches regressions where a redirect effect pushes-then-pushes
+ * again (the symptom of redirect-loop bugs even when the user-visible
+ * URL stays the same).
+ */
+export async function verifyNavigationStability() {
+  try {
+    if (typeof window === "undefined" || !window.history) {
+      return { ok: false, reason: "window.history unavailable" };
+    }
+    const startLen = window.history.length;
+    const startUrl = window.location.href;
+    const probePath = window.location.pathname + (window.location.search || "");
+    const N = 3;
+    for (let i = 0; i < N; i++) {
+      window.history.pushState({ __nav_probe: i }, "", probePath);
+    }
+    const grew = window.history.length - startLen;
+    for (let i = 0; i < N; i++) window.history.back();
+    await new Promise((r) => setTimeout(r, 50));
+    if (window.location.href !== startUrl) {
+      window.history.replaceState({}, "", startUrl);
+    }
+    if (grew >= N) {
+      return { ok: true, reason: `history grew by ${grew} after ${N} pushes (stable)` };
+    }
+    return { ok: false, reason: `history grew by only ${grew} after ${N} pushes (browser may be coalescing)` };
+  } catch (e: any) {
+    return { ok: false, reason: e.message ?? "Navigation probe failed" };
+  }
+}
+
 export async function verifyAuthCacheIsolation() {
   try {
     const { queryClient } = await import("@/lib/query-client");

@@ -174,24 +174,32 @@ export default function HyperRadarPage() {
     if (webglUnavailable) setSheetSnap("half");
   }, [webglUnavailable]);
 
+  const lastRadarSubStateRef = useRef<string | null>(null);
   useEffect(() => {
-    if (selectedEntity) {
-      fsmSetSubState("RADAR_DETAIL_PREVIEW");
-    } else if (deferredSearch) {
-      fsmSetSubState("RADAR_SEARCHING");
-    } else if (entities.length > 0 && !loading) {
-      fsmSetSubState("RADAR_RESULTS");
-    } else {
-      fsmSetSubState("RADAR_IDLE");
-    }
+    const next = selectedEntity
+      ? "RADAR_DETAIL_PREVIEW"
+      : deferredSearch
+      ? "RADAR_SEARCHING"
+      : entities.length > 0 && !loading
+      ? "RADAR_RESULTS"
+      : "RADAR_IDLE";
+    if (lastRadarSubStateRef.current === next) return;
+    lastRadarSubStateRef.current = next;
+    fsmSetSubState(next);
   }, [selectedEntity, deferredSearch, entities.length, loading, fsmSetSubState]);
 
+  const lastRadarCtxRef = useRef<string>("");
   useEffect(() => {
-    fsmUpdateCtx("radar", {
+    const payload = {
       lastQuery: deferredSearch || undefined,
       lastFilters: filterValues as Record<string, unknown>,
       lastEntity: selectedEntity ? { id: selectedEntity.id, name: selectedEntity.name, type: selectedEntity.type } : undefined,
-    });
+    };
+    let serialized = "";
+    try { serialized = JSON.stringify(payload); } catch { serialized = String(Date.now()); }
+    if (lastRadarCtxRef.current === serialized) return;
+    lastRadarCtxRef.current = serialized;
+    fsmUpdateCtx("radar", payload);
   }, [deferredSearch, filterValues, selectedEntity, fsmUpdateCtx]);
 
   useEffect(() => {

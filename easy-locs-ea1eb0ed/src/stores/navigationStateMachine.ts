@@ -448,6 +448,15 @@ export const useNavigationStateMachine = create<NavigationStateMachine>((set, ge
   },
 
   updatePillarContext: (pillar: Pillar, ctx: Partial<PillarContext>) => {
+    const current = get().pillarContexts[pillar] as Record<string, unknown>;
+    let changed = false;
+    for (const k of Object.keys(ctx) as Array<keyof PillarContext>) {
+      if (!Object.is(current[k as string], (ctx as Record<string, unknown>)[k as string])) {
+        changed = true;
+        break;
+      }
+    }
+    if (!changed) return;
     set((s) => ({
       pillarContexts: {
         ...s.pillarContexts,

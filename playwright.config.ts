@@ -31,15 +31,5 @@ export default defineConfig({
         { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
         { name: 'webkit', use: { ...devices['Desktop Safari'] } },
       ]
-    : [
-        {
-          name: 'chromium',
-          use: {
-            ...devices['Desktop Chrome'],
-            launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE
-              ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE }
-              : undefined,
-          },
-        },
-      ],
+    : [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
 });

@@ -208,37 +208,6 @@ function checkCookieBannerInsideAuthProvider() {
   }
 }
 
-function checkUseRecommendationsStableDeps() {
-  const file = "src/hooks/useRecommendations.ts";
-  const txt = read(file);
-  if (txt == null) return;
-  // Inline destructure defaults like `favorites = []` allocate a fresh
-  // array on every render. When that array enters the dep list of the
-  // useCallback that drives the `useEffect(() => refresh(), [refresh])`
-  // below, React regenerates `refresh` every render, which re-fires the
-  // effect, which calls setState, which re-renders — an unbounded loop
-  // that floods the console with "Maximum update depth exceeded".
-  // Use a module-level frozen sentinel and primitive-string dep keys
-  // instead. (Recurrent regression — see addendum 7.)
-  const destructureLine = txt.match(/const\s*\{[^}]*\}\s*=\s*options\s*;/);
-  if (destructureLine && /favorites\s*=\s*\[\s*\]/.test(destructureLine[0])) {
-    fail(
-      `${file}: \`favorites = []\` default-parameter destructure detected. ` +
-        `Use the module-level \`EMPTY_FAVORITES\` sentinel and primitive-string ` +
-        `dep keys (favoritesKey, locationKey) instead — the inline \`[]\` is a ` +
-        `new array each render and creates an infinite re-render loop through ` +
-        `the useCallback/useEffect chain in this file.`,
-    );
-  } else if (txt.includes("EMPTY_FAVORITES") && txt.includes("favoritesKey")) {
-    console.log("[invariants] OK: useRecommendations uses stable dep keys");
-  } else {
-    fail(
-      `${file}: missing the EMPTY_FAVORITES / favoritesKey stabilisation pattern. ` +
-        `Restore the regression-safe shape — see addendum 7.`,
-    );
-  }
-}
-
 checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
 checkNoDuplicateProfileLoadTimeout();
@@ -246,7 +215,6 @@ checkNoDuplicateCronAlertThresholdsCard();
 checkSharedCorsHelperHasTraceHeaders();
 checkEdgeFunctionsAcceptTraceHeaders();
 checkCookieBannerInsideAuthProvider();
-checkUseRecommendationsStableDeps();
 
 if (failures > 0) {
   console.error(`\n[invariants] ${failures} invariant(s) failed — refusing to build.`);

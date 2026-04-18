@@ -57,7 +57,7 @@ function MerchantOpsHub({ profileId }: { profileId: string | null }) {
 }
 
 export default function MerchantDashboardPage() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const [params] = useSearchParams();
   const profileId = params.get("id");
 

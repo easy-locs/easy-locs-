@@ -107,7 +107,9 @@ const Login = () => {
   const reduced = useReducedMotion() ?? false;
 
   useEffect(() => {
-    isPlatformAuthenticatorAvailable().then(setBiometricLoginAvailable);
+    let cancelled = false;
+    isPlatformAuthenticatorAvailable().then((v) => { if (!cancelled) setBiometricLoginAvailable(v); });
+    return () => { cancelled = true; };
   }, []);
 
   // Friendly notice when ProtectedRoute bounced an unauthenticated user

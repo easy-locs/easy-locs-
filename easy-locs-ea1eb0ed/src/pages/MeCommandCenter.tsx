@@ -84,7 +84,7 @@ interface ShopData {
 }
 
 export default function MeCommandCenter() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const profile = useOrbitIdentity();

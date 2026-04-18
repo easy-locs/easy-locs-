@@ -257,7 +257,6 @@ Aucune modification de code applicatif supplémentaire n'a été nécessaire dan
 
 ---
 
-<<<<<<< HEAD
 ## Annexe — Closeout runtime #1061 (post-fix verdict)
 
 L'utilisateur a rejeté la conclusion initiale "aucun blocker dur" et a exigé une
@@ -314,5 +313,7 @@ Les trois correctifs livrés ici n'ont pas besoin de cette validation
 supplémentaire pour s'appliquer : ils ciblent du code partagé
 guest/auth dont la chaîne d'exécution est invariante par rapport à
 l'état d'authentification.
+
+---
 
 *Fin du rapport. Pour toute mise à jour, ouvrir une tâche et référencer ce fichier.*

@@ -36,7 +36,7 @@ const STEPS = [
 // Countries are now sourced from CountrySelect (global-country-registry)
 
 const Onboarding = () => {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const [step, setStep] = useState(0);
   const [selectedType, setSelectedType] = useState<UserType | null>(null);
   const [country, setCountry] = useState<string | null>(null);

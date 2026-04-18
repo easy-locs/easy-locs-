@@ -8,7 +8,7 @@
  * This component is a PURE SHELL — render only.
  * Card system adoption: sections use LifecycleCardShell + UniverseCard via adapters.
  */
-import { memo, useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
+import { memo, useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from "react";
 import { BoostSlotRenderer } from "@/components/boost/BoostSlotRenderer";
 import { Link, useNavigate } from "react-router-dom";
 import { MapPin, Wallet, QrCode, Send, ChevronRight, Building2, Coffee, UtensilsCrossed, Car, Package, RotateCcw, Heart, ShoppingBag } from "lucide-react";
@@ -476,14 +476,16 @@ export default function SmartHome() {
   const { smartNavigate, overlayState, closeOverlay } = useSmartNavigation();
   const fsmSetSubState = useNavigationStateMachine((s) => s.setPillarSubState);
 
+  const lastDashboardSubStateRef = useRef<string | null>(null);
   useEffect(() => {
-    if (radarDrawerOpen) {
-      fsmSetSubState("DASHBOARD_INTERACTION");
-    } else if (overlayState.activeOverlay) {
-      fsmSetSubState("DASHBOARD_PREVIEW");
-    } else {
-      fsmSetSubState("DASHBOARD_IDLE");
-    }
+    const next = radarDrawerOpen
+      ? "DASHBOARD_INTERACTION"
+      : overlayState.activeOverlay
+      ? "DASHBOARD_PREVIEW"
+      : "DASHBOARD_IDLE";
+    if (lastDashboardSubStateRef.current === next) return;
+    lastDashboardSubStateRef.current = next;
+    fsmSetSubState(next);
   }, [radarDrawerOpen, overlayState.activeOverlay, fsmSetSubState]);
 
   const openRadarDrawer = useCallback((sort?: string) => {

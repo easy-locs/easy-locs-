@@ -44,7 +44,7 @@ type PropertyDetail = {
 };
 
 const PropertyDetailHub = () => {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { propertyId } = useParams<{ propertyId: string }>();
   const navigate = useNavigate();
   const { orgId, userCountry } = useAuth();
