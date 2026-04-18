@@ -47,6 +47,9 @@ Chief Orchestrator
 
 ### Edge functions
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
 | `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
@@ -59,6 +62,7 @@ Chief Orchestrator
 | `agent-spawn` | **Supreme** | privileged | **Sole** agent creation path (calls `spawnAgent()`) |
 | `agent-heal` | **Supreme** | privileged | Recycle a crashed agent (calls `spawnAgent()`) |
 | `agent-kill` | **Supreme** | Supreme | Terminate agent + cancel its in-flight tasks |
+<<<<<<< HEAD
 =======
 | Function | Edge auth | Purpose |
 | --- | --- | --- |
@@ -73,6 +77,8 @@ Chief Orchestrator
 | `agent-heal` | **Supreme** | Recycle a crashed agent (calls `spawnAgent()`) |
 | `agent-kill` | **Supreme** | Terminate agent + cancel its in-flight tasks |
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
 the boundary, then `assertNotKilled()` and `hasPermission()` before any
