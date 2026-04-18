@@ -1,0 +1,3728 @@
+[
+  {
+    "schema": "public",
+    "name": "abandoned_cart_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "accounting_entries",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "acquisition_outreach_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "activities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "activities_public",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "activity_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ad_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "address_search_cache",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "address_usage_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "admin_alerts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "agent_command_history",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_category_suggestions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_chat_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_chat_threads",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_chat_usage",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_decision_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ai_ops_suggestions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "aml_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "api_keys",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "app_notifications",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "approval_actions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "approval_queues",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "audit_findings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "audit_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "audit_reports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "auto_discovered_merchants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "auto_repeat_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "automation_workflows",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "blocked_users",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "booking_commissions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "booking_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "booking_tasks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "bookings_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_analytics_daily",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_campaigns",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_clicks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_creatives",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_impressions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_leads",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_purchases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "boost_slots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "branches",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "brands",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_front_incidents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_repair_actions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_repair_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_repair_issues",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_repair_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_repair_watchdog",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "browser_telemetry_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "buildings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "business_compliance_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "business_videos",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "call_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "call_participants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "call_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "call_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "call_transcripts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "candidates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_attribute_definitions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_categories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_families",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_place_viewports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_places",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_subcategories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_synonyms",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_tags",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_taxonomy",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_unit_groups",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_units",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "canonical_verticals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_media",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_product_attributes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_product_tags",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_translations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "catalog_variants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "categories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "category_attributes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "category_cleanup_tasks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "category_fulfillment_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "category_subscriptions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "chat_attachments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "chat_messages_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "churn_risk_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "city_supply_balancer_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "claim_attempts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "classification_learning",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "collaboration_invitations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "commission_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "commission_splits",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "companies",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "competitor_price_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "compliance_cases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "concierge_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "concierge_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "concierge_services",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "concierge_services_public",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "contact_clicks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "contact_reveals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "contacts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "conversation_participants_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "conversation_preferences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "conversation_threads",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "conversations_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_asset_policies",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_asset_variants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_assets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_canonical_values",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_countries",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_currency_rates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_geo_points",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_geo_session_points",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_geo_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_identity_aliases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_locales",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_modules_registry",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_profile_visibility",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "core_timezones_catalog",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "coupons",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "cross_service_journeys",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "current_ranking_state",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "customer_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "customer_recommendations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "customer_relationships",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deal_documents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deal_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deal_offers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deal_rooms",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deal_timeline",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "deals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_disputes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_missions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_offers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_pricing_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_proofs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_ratings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "delivery_vehicle_capabilities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "device_attestations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "device_fingerprints",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "dispatch_offers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "document_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "documents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_clusters",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_earnings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_locations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_metrics",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_mission_offers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_payouts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_positioning",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "driver_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "dunning_letters",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "email_queue",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "engine_registry",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "engine_reports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "engine_run_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "engine_supervisor",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "entities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "entity_ai_scores",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "entity_feedback_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "entity_pipeline_queue",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "entity_taxonomy_mapping",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "escrow_payments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "eta_projection_cache",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "exchange_connectors",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "exchange_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "exchange_quotes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "executive_kpi_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "expenses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "favorite_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "featured_shops",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "financial_reconciliation",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "fraud_edges",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "fraud_entities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "fraud_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "furniture_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "fx_rates_cache",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "geo_live_context",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "geo_live_zone_overlays",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ghost_call_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "group_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "growth_city_pages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "growth_demand_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "growth_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "guest_call_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "guest_checkout_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "guest_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotel_availability",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotel_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotel_inventory_calendar",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotel_rate_plans",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotel_rooms",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "hotels",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "import_batches",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "import_test_batches",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "imported_shop_assets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "imported_shop_raw",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "incident_case_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "incident_cases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "internal_config",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "interventions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "inventory_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "inventory_reports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "inventory_rooms",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "journey_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "jurisdiction_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "kyc_documents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "landlord_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "launch_gate_results",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "leases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "listing_coupons",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "listing_reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "listing_views",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "live_status_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "live_tracking_points",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "live_tracking_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "live_trackings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "live_translation_stream",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "local_services",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "log_export_jobs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "login_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "loyalty_accounts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "loyalty_ledger",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "loyalty_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_branches_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_business_entities_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_catalog_categories_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_catalog_items_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_catalogs_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_driver_profiles_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_favorites_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_fleet_units_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_food_items_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_grocery_items_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_hotel_units_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_item_assets_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_item_option_groups_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_item_options_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_operating_hours_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_pharmacy_items_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_property_units_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_providers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_reviews_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_reviews_public",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_service_offers_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_services",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_services_public",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_storefronts_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "marketplace_travel_offers_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "media_assets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "media_upload_jobs_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "menu_categories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "menu_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_accounts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_activation_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_balances",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_coverage_areas",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_delivery_runtime",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_delivery_zones",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_field_overrides",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_geo_context",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_menu_import_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_menu_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_onboarding_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_onboarding_sources",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_onboarding_state",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_outreach_campaigns",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_override_history",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_private_contacts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_scrape_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_source_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_staff",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "merchant_visual_audit",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "message_translations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "migration_conflicts_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "migration_entity_map_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "migration_jobs_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_ai_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_dispatch_attempts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_dispatch_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_driver_scores",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_driver_stats",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_fare_quotes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_job_offers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_jobs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "mobility_pricing_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "moderation_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "module_health",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "newsletter_subscribers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "notification_deliveries",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "notification_preferences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "notification_templates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "notifications",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_audit",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_canonical_records",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_import_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_recrawl_jobs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_review_actions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_review_queue",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_shop_candidates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "onboarding_source_records",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ops_live_metrics",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ops_sla_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_call_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_call_sessions_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_call_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_call_signals_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_contacts_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_device_keys",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_group_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_group_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_groups",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_identity_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_launch_audits",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_media_open_logs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_profiles_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_telemetry_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orbit_user_settings_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "order_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "order_payout_locks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "order_status_history",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "org_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "org_secrets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "organizations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orgs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "orgs_tenant_view",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ota_connections",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "owner_private_financials",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "owner_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "owner_profiles_safe",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "parcel_job_details",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_intents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_method_links",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_nonces",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_notices",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_provider_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payment_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payout_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "payout_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "permission_templates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "phone_otp_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "platform_actions_log",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "platform_health_scores",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "platform_policy_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "platform_recovery_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "platform_settings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "pos_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "pricing_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "product_search_index",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "products",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "properties",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "property_blocked_dates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "property_documents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "property_listings_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "property_units",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "public_discovered_merchants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "public_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "public_marketplace_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "public_storefront_settings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "push_tokens",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "qr_order_targets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "qr_payment_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "qr_targets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "radar_opportunities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "radar_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "radar_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ranking_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "real_estate_leads",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "real_estate_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "recommendation_signals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "recon_alerts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "referral_rewards",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "referrals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "refund_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "reminders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rent_calls",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rent_payments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rent_revisions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "reservations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ride_disputes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "ride_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rider_presence",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rider_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rider_runtime_state",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rides",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rtc_config",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "rtc_signaling_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "runtime_qa_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "runtime_qa_scenarios",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "runtime_qa_steps",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "runtime_qa_watchdog",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "sales_ai_activities",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "sales_ai_leads",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "sales_ai_sequence_runs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "sales_ai_sequence_steps",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "sales_ai_sequences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "saved_addresses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "saved_carts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "saved_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "saved_searches",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "seasonal_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "security_nonces",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "security_reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "seed_merchant_promos",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "seed_merchants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "seed_products",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "seller_kpi_snapshots",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "service_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "service_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "service_providers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "settlement_ledger",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "settlement_records",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "share_links",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "shop_follows",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "shop_tables",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "shop_terminals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "source_ingestion_queue",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "stay_availability",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "stay_bookings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "stealth_notification_routes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "stealth_notifications",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storage_assets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_access_invites",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_addresses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_affiliate_clicks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_affiliate_conversions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_affiliate_programs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_affiliates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_ai_chats",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_analytics_daily",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_analytics_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_auction_bids",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_auctions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_auto_notifications",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_badges",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_bundle_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_bundles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_cart_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_carts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_catalog_categories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_challenge_progress",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_challenges",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_comparisons",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_coupon_usage",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_coupons",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_crm_customers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_deal_subscribers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_digital_products",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_digital_purchases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_faq",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_flash_sales",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_gift_card_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_gift_cards",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_growth_metrics",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_import_jobs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_influencer_collabs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_inventory_alerts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_invoices",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_leaderboard",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_live_chat",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_live_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_history",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_points",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_programs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_rewards",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_tiers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_loyalty_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_notification_log",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_notification_preferences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_order_items",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_p2p_listings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_p2p_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_pages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_product_questions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_products",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_referral_conversions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_referral_links",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_refund_policies",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_return_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_returns",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_review_votes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_rfq_quotes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_rfqs",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_risk_flags",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_shipments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_shipping_zones",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_social_comments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_social_likes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_social_posts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_stock_movements",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_store_credits",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_store_group_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_store_groups",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_sub_box_enrollments",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_sub_boxes",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_subscription_orders",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_subscription_plans",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_subscriptions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_subscriptions_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_support_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_support_tickets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_tax_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_ticket_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_translations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_trust_scores",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_user_badges",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_vendor_payouts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_vendors",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_warehouse_stock",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_warehouse_transfers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_warehouses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_wishlist",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_wishlist_shares",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "storefront_wishlists",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "subcategories",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "subscriptions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "support_ticket_messages",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "support_tickets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "surge_pricing_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "surge_pricing_rules",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "system_feature_flags",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tasks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "taxonomy_aliases",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "taxonomy_assignments_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "taxonomy_gap_candidates",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "taxonomy_nodes_core",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "team_tasks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "team_workspace_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "team_workspaces",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tenant_documents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tenant_invitations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tenant_private_contacts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tenants",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "topup_requests",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tracking_positions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "tracking_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "transaction_intents",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "transaction_journal",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "trip_live_state",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "trip_location_points",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "unified_wallet_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "universal_reputation_scores",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_active_address_context",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_addresses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_ai_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_favorites",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_key_bundles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_kyc_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_loyalty",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_notification_preferences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_payment_preferences",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_presence",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_private_data",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_push_tokens",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_radar_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_radar_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_radar_recommendations",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_radar_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_reports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_risk_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_roles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_saved_addresses",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_sessions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_subscriptions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_trust_graph",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "user_wallet_credits",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vault_files",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vendor_commissions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "verified_reviews",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "verticals",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "visual_audit_reports",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_food_deliveroo_dubai_quality",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_food_deliveroo_dubai_visibility",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_food_gate_failures",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_hotel_calendar_coverage",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_hotel_gate_failures",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_hotel_quality",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "vw_hotel_rate_plan_coverage",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_accounts",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_balances",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_balances_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_credit_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_ledger_entries",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_limit_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_order_splits",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_pins",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_security_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_transaction_challenges",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_transactions",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_transfers",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallet_trusted_devices",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallets",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "wallets_v2",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "webhook_deliveries",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "webhooks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "workspace_members",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "workspace_settings",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "workspaces",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "zone_events",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "zone_live_profiles",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "public",
+    "name": "zones",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "system",
+    "name": "execution_locks",
+    "rls_enabled": true,
+    "comment": null
+  },
+  {
+    "schema": "system",
+    "name": "execution_tasks",
+    "rls_enabled": true,
+    "comment": null
+  }
+]

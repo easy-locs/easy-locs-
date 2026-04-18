@@ -1,0 +1,4300 @@
+[
+  {
+    "schema": "public",
+    "table": "abandoned_cart_events",
+    "name": "abandoned_cart_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "accounting_entries",
+    "name": "accounting_entries_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "acquisition_outreach_logs",
+    "name": "acquisition_outreach_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activities",
+    "name": "activities_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activities_public",
+    "name": "activities_public_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activity_logs",
+    "name": "activity_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ad_events",
+    "name": "ad_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "address_usage_events",
+    "name": "address_usage_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "admin_alerts",
+    "name": "admin_alerts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "agent_command_history_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "agent_command_history_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "ai_category_suggestions",
+    "name": "ai_category_suggestions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_messages",
+    "name": "ai_chat_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_threads",
+    "name": "ai_chat_threads_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_usage",
+    "name": "ai_chat_usage_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_decision_logs",
+    "name": "ai_decision_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_ops_suggestions",
+    "name": "ai_ops_suggestions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "aml_events",
+    "name": "aml_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "api_keys",
+    "name": "api_keys_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "app_notifications",
+    "name": "app_notifications_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "approval_actions",
+    "name": "approval_actions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "approval_queues",
+    "name": "approval_queues_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_findings",
+    "name": "audit_findings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_logs",
+    "name": "audit_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_reports",
+    "name": "audit_reports_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "auto_discovered_merchants",
+    "name": "auto_discovered_merchants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "auto_repeat_orders",
+    "name": "auto_repeat_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "automation_workflows",
+    "name": "automation_workflows_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "blocked_users",
+    "name": "blocked_users_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_commissions",
+    "name": "booking_commissions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_requests",
+    "name": "booking_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_tasks",
+    "name": "booking_tasks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_buyer_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (buyer_user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_owner_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (owner_user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings_v2",
+    "name": "bookings_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_analytics_daily",
+    "name": "boost_analytics_daily_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_campaigns",
+    "name": "boost_campaigns_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_clicks",
+    "name": "boost_clicks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_creatives",
+    "name": "boost_creatives_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_impressions",
+    "name": "boost_impressions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_leads",
+    "name": "boost_leads_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_purchases",
+    "name": "boost_purchases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_slots",
+    "name": "boost_slots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "branches",
+    "name": "branches_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "brands",
+    "name": "brands_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_front_incidents",
+    "name": "browser_front_incidents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_actions",
+    "name": "browser_repair_actions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_events",
+    "name": "browser_repair_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_issues",
+    "name": "browser_repair_issues_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_runs",
+    "name": "browser_repair_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_watchdog",
+    "name": "browser_repair_watchdog_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_telemetry_events",
+    "name": "browser_telemetry_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "buildings",
+    "name": "buildings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "business_compliance_profiles",
+    "name": "business_compliance_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "business_videos",
+    "name": "business_videos_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "call_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_participants",
+    "name": "call_participants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_sessions",
+    "name": "call_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_signals",
+    "name": "call_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_transcripts",
+    "name": "call_transcripts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "candidates",
+    "name": "candidates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_attribute_definitions",
+    "name": "canonical_attribute_definitions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_categories",
+    "name": "canonical_categories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_families",
+    "name": "canonical_families_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "canonical_places_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_subcategories",
+    "name": "canonical_subcategories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_synonyms",
+    "name": "canonical_synonyms_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_tags",
+    "name": "canonical_tags_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_taxonomy",
+    "name": "canonical_taxonomy_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_unit_groups",
+    "name": "canonical_unit_groups_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_units",
+    "name": "canonical_units_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_verticals",
+    "name": "canonical_verticals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_items",
+    "name": "catalog_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_media",
+    "name": "catalog_media_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_attributes",
+    "name": "catalog_product_attributes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_tags",
+    "name": "catalog_product_tags_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_translations",
+    "name": "catalog_translations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_variants",
+    "name": "catalog_variants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "categories",
+    "name": "categories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_attributes",
+    "name": "category_attributes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_cleanup_tasks",
+    "name": "category_cleanup_tasks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_fulfillment_rules",
+    "name": "category_fulfillment_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_subscriptions",
+    "name": "category_subscriptions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_attachments",
+    "name": "chat_attachments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "chat_messages_v2_conversation_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (conversation_id) REFERENCES conversations_v2(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "chat_messages_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "chat_messages_v2_sender_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (sender_user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "churn_risk_profiles",
+    "name": "churn_risk_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "city_supply_balancer_logs",
+    "name": "city_supply_balancer_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "claim_attempts",
+    "name": "claim_attempts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "classification_learning",
+    "name": "classification_learning_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "collaboration_invitations",
+    "name": "collaboration_invitations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "commission_rules",
+    "name": "commission_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "commission_splits",
+    "name": "commission_splits_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "companies",
+    "name": "companies_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "competitor_price_snapshots",
+    "name": "competitor_price_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "compliance_cases",
+    "name": "compliance_cases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_service_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (service_id) REFERENCES concierge_services(id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_orders",
+    "name": "concierge_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services",
+    "name": "concierge_services_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services_public",
+    "name": "concierge_services_public_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contact_clicks",
+    "name": "contact_clicks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contact_reveals",
+    "name": "contact_reveals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contacts",
+    "name": "contacts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_conversation_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (conversation_id) REFERENCES conversations_v2(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_conversation_id_user_id_key",
+    "type": "u",
+    "definition": "UNIQUE (conversation_id, user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_preferences",
+    "name": "conversation_preferences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_threads",
+    "name": "conversation_threads_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "conversations_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_policies",
+    "name": "core_asset_policies_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_variants",
+    "name": "core_asset_variants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_assets",
+    "name": "core_assets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_canonical_values",
+    "name": "core_canonical_values_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_currency_rates",
+    "name": "core_currency_rates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_points",
+    "name": "core_geo_points_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_session_points",
+    "name": "core_geo_session_points_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_sessions",
+    "name": "core_geo_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_identity_aliases",
+    "name": "core_identity_aliases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_modules_registry",
+    "name": "core_modules_registry_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_profile_visibility",
+    "name": "core_profile_visibility_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_profiles",
+    "name": "core_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "coupons",
+    "name": "coupons_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "cross_service_journeys",
+    "name": "cross_service_journeys_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_profiles",
+    "name": "customer_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_recommendations",
+    "name": "customer_recommendations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_relationships",
+    "name": "customer_relationships_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_documents",
+    "name": "deal_documents_deal_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "deal_documents",
+    "name": "deal_documents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_events",
+    "name": "deal_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_offers",
+    "name": "deal_offers_deal_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "deal_offers",
+    "name": "deal_offers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_rooms",
+    "name": "deal_rooms_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_timeline",
+    "name": "deal_timeline_deal_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (deal_id) REFERENCES deals(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "deal_timeline",
+    "name": "deal_timeline_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deals",
+    "name": "deals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_disputes",
+    "name": "delivery_disputes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_missions",
+    "name": "delivery_missions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_offers",
+    "name": "delivery_offers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_pricing_rules",
+    "name": "delivery_pricing_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_proofs",
+    "name": "delivery_proofs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_ratings",
+    "name": "delivery_ratings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "device_fingerprints",
+    "name": "device_fingerprints_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "dispatch_offers",
+    "name": "dispatch_offers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "document_requests",
+    "name": "document_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "documents",
+    "name": "documents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_clusters",
+    "name": "driver_clusters_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_earnings",
+    "name": "driver_earnings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_locations",
+    "name": "driver_locations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_metrics",
+    "name": "driver_metrics_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_mission_offers",
+    "name": "driver_mission_offers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_payouts",
+    "name": "driver_payouts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_positioning",
+    "name": "driver_positioning_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_profiles",
+    "name": "driver_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_sessions",
+    "name": "driver_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "dunning_letters",
+    "name": "dunning_letters_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "email_queue",
+    "name": "email_queue_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_registry",
+    "name": "engine_registry_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_reports",
+    "name": "engine_reports_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_run_logs",
+    "name": "engine_run_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_supervisor",
+    "name": "engine_supervisor_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entities",
+    "name": "entities_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_feedback_signals",
+    "name": "entity_feedback_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_pipeline_queue",
+    "name": "entity_pipeline_queue_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_taxonomy_mapping",
+    "name": "entity_taxonomy_mapping_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "escrow_payments",
+    "name": "escrow_payments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "eta_projection_cache",
+    "name": "eta_projection_cache_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_connectors",
+    "name": "exchange_connectors_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_orders",
+    "name": "exchange_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_quotes",
+    "name": "exchange_quotes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "executive_kpi_snapshots",
+    "name": "executive_kpi_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "expenses",
+    "name": "expenses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "favorite_listings",
+    "name": "favorite_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "featured_shops",
+    "name": "featured_shops_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "financial_reconciliation",
+    "name": "financial_reconciliation_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_edges",
+    "name": "fraud_edges_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_entities",
+    "name": "fraud_entities_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_events",
+    "name": "fraud_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "furniture_items",
+    "name": "furniture_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fx_rates_cache",
+    "name": "fx_rates_cache_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "geo_live_context",
+    "name": "geo_live_context_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_call_sessions_callee_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (callee_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_call_sessions_caller_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (caller_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_call_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "group_members",
+    "name": "group_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_city_pages",
+    "name": "growth_city_pages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_demand_events",
+    "name": "growth_demand_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_logs",
+    "name": "growth_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_call_signals",
+    "name": "guest_call_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_checkout_sessions",
+    "name": "guest_checkout_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_sessions",
+    "name": "guest_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_availability",
+    "name": "hotel_availability_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_bookings",
+    "name": "hotel_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_inventory_calendar",
+    "name": "hotel_inventory_calendar_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rate_plans",
+    "name": "hotel_rate_plans_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rooms",
+    "name": "hotel_rooms_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotels",
+    "name": "hotels_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "import_batches",
+    "name": "import_batches_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "import_test_batches",
+    "name": "import_test_batches_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_assets",
+    "name": "imported_shop_assets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_raw",
+    "name": "imported_shop_raw_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "incident_case_events",
+    "name": "incident_case_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "incident_cases",
+    "name": "incident_cases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "interventions",
+    "name": "interventions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_items",
+    "name": "inventory_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_reports",
+    "name": "inventory_reports_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_rooms",
+    "name": "inventory_rooms_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "journey_events",
+    "name": "journey_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "jurisdiction_rules",
+    "name": "jurisdiction_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "kyc_documents",
+    "name": "kyc_documents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "landlord_profiles",
+    "name": "landlord_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "launch_gate_results",
+    "name": "launch_gate_results_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "leases",
+    "name": "leases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_coupons",
+    "name": "listing_coupons_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_reviews",
+    "name": "listing_reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_views",
+    "name": "listing_views_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_status_snapshots",
+    "name": "live_status_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_points",
+    "name": "live_tracking_points_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_sessions",
+    "name": "live_tracking_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_trackings",
+    "name": "live_trackings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_translation_stream",
+    "name": "live_translation_stream_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "local_services",
+    "name": "local_services_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "log_export_jobs",
+    "name": "log_export_jobs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "login_events",
+    "name": "login_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_accounts",
+    "name": "loyalty_accounts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_ledger",
+    "name": "loyalty_ledger_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_transactions",
+    "name": "loyalty_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_bookings",
+    "name": "marketplace_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_branches_core",
+    "name": "marketplace_branches_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_business_entities_core",
+    "name": "marketplace_business_entities_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_categories_core",
+    "name": "marketplace_catalog_categories_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_items_core",
+    "name": "marketplace_catalog_items_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalogs_core",
+    "name": "marketplace_catalogs_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_driver_profiles_core",
+    "name": "marketplace_driver_profiles_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_favorites_core",
+    "name": "marketplace_favorites_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_assets_core",
+    "name": "marketplace_item_assets_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_option_groups_core",
+    "name": "marketplace_item_option_groups_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_options_core",
+    "name": "marketplace_item_options_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_listings",
+    "name": "marketplace_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_operating_hours_core",
+    "name": "marketplace_operating_hours_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_providers",
+    "name": "marketplace_providers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews",
+    "name": "marketplace_reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_core",
+    "name": "marketplace_reviews_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_public",
+    "name": "marketplace_reviews_public_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services",
+    "name": "marketplace_services_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services_public",
+    "name": "marketplace_services_public_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_storefronts_core",
+    "name": "marketplace_storefronts_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "media_assets",
+    "name": "media_assets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "media_upload_jobs_core",
+    "name": "media_upload_jobs_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "menu_categories",
+    "name": "menu_categories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "menu_items",
+    "name": "menu_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_accounts",
+    "name": "merchant_accounts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_activation_events",
+    "name": "merchant_activation_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_balances",
+    "name": "merchant_balances_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_coverage_areas",
+    "name": "merchant_coverage_areas_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_delivery_zones",
+    "name": "merchant_delivery_zones_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_field_overrides",
+    "name": "merchant_field_overrides_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_import_items",
+    "name": "merchant_menu_import_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_snapshots",
+    "name": "merchant_menu_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_profiles",
+    "name": "merchant_onboarding_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_sources",
+    "name": "merchant_onboarding_sources_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_state",
+    "name": "merchant_onboarding_state_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_outreach_campaigns",
+    "name": "merchant_outreach_campaigns_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_override_history",
+    "name": "merchant_override_history_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_private_contacts",
+    "name": "merchant_private_contacts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_profiles",
+    "name": "merchant_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_scrape_runs",
+    "name": "merchant_scrape_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_source_snapshots",
+    "name": "merchant_source_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_staff",
+    "name": "merchant_staff_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_visual_audit",
+    "name": "merchant_visual_audit_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "message_translations",
+    "name": "message_translations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "messages",
+    "name": "messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_conflicts_core",
+    "name": "migration_conflicts_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_entity_map_core",
+    "name": "migration_entity_map_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_jobs_core",
+    "name": "migration_jobs_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_ai_logs",
+    "name": "mobility_ai_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_attempts",
+    "name": "mobility_dispatch_attempts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_runs",
+    "name": "mobility_dispatch_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_driver_scores",
+    "name": "mobility_driver_scores_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_fare_quotes",
+    "name": "mobility_fare_quotes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_job_offers",
+    "name": "mobility_job_offers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_jobs",
+    "name": "mobility_jobs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_pricing_snapshots",
+    "name": "mobility_pricing_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "moderation_events",
+    "name": "moderation_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "module_health",
+    "name": "module_health_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "newsletter_subscribers",
+    "name": "newsletter_subscribers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_deliveries",
+    "name": "notification_deliveries_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_preferences",
+    "name": "notification_preferences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_templates",
+    "name": "notification_templates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notifications",
+    "name": "notifications_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_audit",
+    "name": "onboarding_audit_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_canonical_records",
+    "name": "onboarding_canonical_records_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_import_runs",
+    "name": "onboarding_import_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_recrawl_jobs",
+    "name": "onboarding_recrawl_jobs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_actions",
+    "name": "onboarding_review_actions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_queue",
+    "name": "onboarding_review_queue_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_shop_candidates",
+    "name": "onboarding_shop_candidates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_source_records",
+    "name": "onboarding_source_records_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ops_live_metrics",
+    "name": "ops_live_metrics_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ops_sla_events",
+    "name": "ops_sla_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions",
+    "name": "orbit_call_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions_v2",
+    "name": "orbit_call_sessions_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals",
+    "name": "orbit_call_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals_v2",
+    "name": "orbit_call_signals_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_contacts_v2",
+    "name": "orbit_contacts_owner_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (owner_user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_contacts_v2",
+    "name": "orbit_contacts_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_device_keys",
+    "name": "orbit_device_keys_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_group_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (group_id) REFERENCES orbit_groups(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_group_id_user_id_key",
+    "type": "u",
+    "definition": "UNIQUE (group_id, user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "orbit_group_messages_group_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (group_id) REFERENCES orbit_groups(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "orbit_group_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "orbit_group_messages_sender_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (sender_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_created_by_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (created_by) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_identity_profiles",
+    "name": "orbit_identity_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_launch_audits",
+    "name": "orbit_launch_audits_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_media_open_logs",
+    "name": "orbit_media_open_logs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "orbit_profiles_v2_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "orbit_profiles_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_telemetry_events",
+    "name": "orbit_telemetry_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_items",
+    "name": "order_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_payout_locks",
+    "name": "order_payout_locks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_status_history",
+    "name": "order_status_history_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orders",
+    "name": "orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "org_members_org_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (org_id) REFERENCES orgs(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "org_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "org_members_user_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "org_secrets",
+    "name": "org_secrets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "organizations_owner_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (owner_id) REFERENCES auth.users(id) ON DELETE SET NULL"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "organizations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orgs",
+    "name": "orgs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orgs_tenant_view",
+    "name": "orgs_tenant_view_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ota_connections",
+    "name": "ota_connections_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_private_financials",
+    "name": "owner_private_financials_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles",
+    "name": "owner_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles_safe",
+    "name": "owner_profiles_safe_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "parcel_job_details",
+    "name": "parcel_job_details_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_events",
+    "name": "payment_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_intents",
+    "name": "payment_intents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_method_links",
+    "name": "payment_method_links_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_notices",
+    "name": "payment_notices_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_provider_events",
+    "name": "payment_provider_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_requests",
+    "name": "payment_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_sessions",
+    "name": "payment_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payments",
+    "name": "payments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payout_profiles",
+    "name": "payout_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payout_requests",
+    "name": "payout_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "permission_templates",
+    "name": "permission_templates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "phone_otp_sessions",
+    "name": "phone_otp_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_actions_log",
+    "name": "platform_actions_log_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_health_scores",
+    "name": "platform_health_scores_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_policy_rules",
+    "name": "platform_policy_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_recovery_runs",
+    "name": "platform_recovery_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_settings",
+    "name": "platform_settings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "pos_orders",
+    "name": "pos_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "pricing_rules",
+    "name": "pricing_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "products",
+    "name": "products_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "profiles_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "properties",
+    "name": "properties_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_blocked_dates",
+    "name": "property_blocked_dates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_documents",
+    "name": "property_documents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_listings_v2",
+    "name": "property_listings_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_units",
+    "name": "property_units_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_discovered_merchants",
+    "name": "public_discovered_merchants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_listings",
+    "name": "public_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_marketplace_listings",
+    "name": "public_marketplace_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_storefront_settings",
+    "name": "public_storefront_settings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "push_tokens",
+    "name": "push_tokens_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_order_targets",
+    "name": "qr_order_targets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_payment_sessions",
+    "name": "qr_payment_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_targets",
+    "name": "qr_targets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_opportunities",
+    "name": "radar_opportunities_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_rules",
+    "name": "radar_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_signals",
+    "name": "radar_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ranking_snapshots",
+    "name": "ranking_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_leads",
+    "name": "real_estate_leads_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_listings",
+    "name": "real_estate_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "recommendation_signals",
+    "name": "recommendation_signals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "recon_alerts",
+    "name": "recon_alerts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_rewards_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_rewards_referred_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (referred_user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_rewards_referrer_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (referrer_user_id) REFERENCES auth.users(id)"
+  },
+  {
+    "schema": "public",
+    "table": "referrals",
+    "name": "referrals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "refund_requests",
+    "name": "refund_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reminders",
+    "name": "reminders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_calls",
+    "name": "rent_calls_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_payments",
+    "name": "rent_payments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_revisions",
+    "name": "rent_revisions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reservations",
+    "name": "reservations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reviews",
+    "name": "reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ride_disputes",
+    "name": "ride_disputes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ride_events",
+    "name": "ride_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rider_profiles",
+    "name": "rider_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rides",
+    "name": "rides_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_config",
+    "name": "rtc_config_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_signaling_messages",
+    "name": "rtc_signaling_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_runs",
+    "name": "runtime_qa_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_scenarios",
+    "name": "runtime_qa_scenarios_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_steps",
+    "name": "runtime_qa_steps_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_watchdog",
+    "name": "runtime_qa_watchdog_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_activities",
+    "name": "sales_ai_activities_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_leads",
+    "name": "sales_ai_leads_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_runs",
+    "name": "sales_ai_sequence_runs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_steps",
+    "name": "sales_ai_sequence_steps_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequences",
+    "name": "sales_ai_sequences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_addresses",
+    "name": "saved_addresses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_carts",
+    "name": "saved_carts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_listings",
+    "name": "saved_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_searches",
+    "name": "saved_searches_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seasonal_bookings",
+    "name": "seasonal_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "security_nonces",
+    "name": "security_nonces_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "security_reviews",
+    "name": "security_reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchant_promos",
+    "name": "seed_merchant_promos_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchants",
+    "name": "seed_merchants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_products",
+    "name": "seed_products_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seller_kpi_snapshots",
+    "name": "seller_kpi_snapshots_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_bookings",
+    "name": "service_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_profiles",
+    "name": "service_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_providers",
+    "name": "service_providers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_ledger",
+    "name": "settlement_ledger_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_records",
+    "name": "settlement_records_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "share_links",
+    "name": "share_links_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_follows",
+    "name": "shop_follows_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_tables",
+    "name": "shop_tables_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_terminals",
+    "name": "shop_terminals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "source_ingestion_queue",
+    "name": "source_ingestion_queue_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stay_availability",
+    "name": "stay_availability_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stay_bookings",
+    "name": "stay_bookings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notification_routes",
+    "name": "stealth_notification_routes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notifications",
+    "name": "stealth_notifications_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storage_assets",
+    "name": "storage_assets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_access_invites",
+    "name": "storefront_access_invites_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_addresses",
+    "name": "storefront_addresses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_clicks",
+    "name": "storefront_affiliate_clicks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_conversions",
+    "name": "storefront_affiliate_conversions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_programs",
+    "name": "storefront_affiliate_programs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliates",
+    "name": "storefront_affiliates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ai_chats",
+    "name": "storefront_ai_chats_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_daily",
+    "name": "storefront_analytics_daily_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_events",
+    "name": "storefront_analytics_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auction_bids",
+    "name": "storefront_auction_bids_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auctions",
+    "name": "storefront_auctions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auto_notifications",
+    "name": "storefront_auto_notifications_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_badges",
+    "name": "storefront_badges_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundle_items",
+    "name": "storefront_bundle_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundles",
+    "name": "storefront_bundles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_cart_items",
+    "name": "storefront_cart_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_carts",
+    "name": "storefront_carts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_catalog_categories",
+    "name": "storefront_catalog_categories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenge_progress",
+    "name": "storefront_challenge_progress_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenges",
+    "name": "storefront_challenges_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_comparisons",
+    "name": "storefront_comparisons_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupon_usage",
+    "name": "storefront_coupon_usage_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupons",
+    "name": "storefront_coupons_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_crm_customers",
+    "name": "storefront_crm_customers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_deal_subscribers",
+    "name": "storefront_deal_subscribers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_products",
+    "name": "storefront_digital_products_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_purchases",
+    "name": "storefront_digital_purchases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_faq",
+    "name": "storefront_faq_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_flash_sales",
+    "name": "storefront_flash_sales_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_card_transactions",
+    "name": "storefront_gift_card_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_cards",
+    "name": "storefront_gift_cards_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_growth_metrics",
+    "name": "storefront_growth_metrics_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_import_jobs",
+    "name": "storefront_import_jobs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_influencer_collabs",
+    "name": "storefront_influencer_collabs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_inventory_alerts",
+    "name": "storefront_inventory_alerts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_invoices",
+    "name": "storefront_invoices_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_leaderboard",
+    "name": "storefront_leaderboard_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_chat",
+    "name": "storefront_live_chat_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_sessions",
+    "name": "storefront_live_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_history",
+    "name": "storefront_loyalty_history_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_members",
+    "name": "storefront_loyalty_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_points",
+    "name": "storefront_loyalty_points_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_programs",
+    "name": "storefront_loyalty_programs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_rewards",
+    "name": "storefront_loyalty_rewards_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_tiers",
+    "name": "storefront_loyalty_tiers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_transactions",
+    "name": "storefront_loyalty_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_log",
+    "name": "storefront_notification_log_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_preferences",
+    "name": "storefront_notification_preferences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_order_items",
+    "name": "storefront_order_items_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_orders",
+    "name": "storefront_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_listings",
+    "name": "storefront_p2p_listings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_transactions",
+    "name": "storefront_p2p_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_pages",
+    "name": "storefront_pages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_product_questions",
+    "name": "storefront_product_questions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_conversions",
+    "name": "storefront_referral_conversions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_links",
+    "name": "storefront_referral_links_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_refund_policies",
+    "name": "storefront_refund_policies_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_return_requests",
+    "name": "storefront_return_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_returns",
+    "name": "storefront_returns_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_review_votes",
+    "name": "storefront_review_votes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_reviews",
+    "name": "storefront_reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfq_quotes",
+    "name": "storefront_rfq_quotes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfqs",
+    "name": "storefront_rfqs_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_risk_flags",
+    "name": "storefront_risk_flags_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipments",
+    "name": "storefront_shipments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipping_zones",
+    "name": "storefront_shipping_zones_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_comments",
+    "name": "storefront_social_comments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_likes",
+    "name": "storefront_social_likes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_posts",
+    "name": "storefront_social_posts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_stock_movements",
+    "name": "storefront_stock_movements_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_credits",
+    "name": "storefront_store_credits_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_group_members",
+    "name": "storefront_store_group_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_groups",
+    "name": "storefront_store_groups_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_box_enrollments",
+    "name": "storefront_sub_box_enrollments_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_boxes",
+    "name": "storefront_sub_boxes_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_orders",
+    "name": "storefront_subscription_orders_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_plans",
+    "name": "storefront_subscription_plans_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions",
+    "name": "storefront_subscriptions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions_v2",
+    "name": "storefront_subscriptions_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_messages",
+    "name": "storefront_support_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_tickets",
+    "name": "storefront_support_tickets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_tax_rules",
+    "name": "storefront_tax_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ticket_messages",
+    "name": "storefront_ticket_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_translations",
+    "name": "storefront_translations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_trust_scores",
+    "name": "storefront_trust_scores_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_user_badges",
+    "name": "storefront_user_badges_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendor_payouts",
+    "name": "storefront_vendor_payouts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendors",
+    "name": "storefront_vendors_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_stock",
+    "name": "storefront_warehouse_stock_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_transfers",
+    "name": "storefront_warehouse_transfers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouses",
+    "name": "storefront_warehouses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist",
+    "name": "storefront_wishlist_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist_shares",
+    "name": "storefront_wishlist_shares_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlists",
+    "name": "storefront_wishlists_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "subcategories",
+    "name": "subcategories_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "subscriptions",
+    "name": "subscriptions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "support_ticket_messages",
+    "name": "support_ticket_messages_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "support_tickets",
+    "name": "support_tickets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_events",
+    "name": "surge_pricing_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_rules",
+    "name": "surge_pricing_rules_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "system_feature_flags",
+    "name": "system_feature_flags_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tasks",
+    "name": "tasks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_aliases",
+    "name": "taxonomy_aliases_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_assignments_core",
+    "name": "taxonomy_assignments_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_gap_candidates",
+    "name": "taxonomy_gap_candidates_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_nodes_core",
+    "name": "taxonomy_nodes_core_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_tasks",
+    "name": "team_tasks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspace_members",
+    "name": "team_workspace_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspaces",
+    "name": "team_workspaces_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_documents",
+    "name": "tenant_documents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_invitations",
+    "name": "tenant_invitations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_private_contacts",
+    "name": "tenant_private_contacts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenants",
+    "name": "tenants_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "topup_requests",
+    "name": "topup_requests_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_positions",
+    "name": "tracking_positions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_sessions",
+    "name": "tracking_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_intents",
+    "name": "transaction_intents_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_journal",
+    "name": "transaction_journal_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "trip_location_points",
+    "name": "trip_location_points_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "unified_wallet_transactions",
+    "name": "unified_wallet_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "universal_reputation_scores",
+    "name": "universal_reputation_scores_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_active_address_context",
+    "name": "user_active_address_context_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (user_id, context_type)"
+  },
+  {
+    "schema": "public",
+    "table": "user_addresses",
+    "name": "user_addresses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_favorites",
+    "name": "user_favorites_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_key_bundles",
+    "name": "user_key_bundles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_kyc_profiles",
+    "name": "user_kyc_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_notification_preferences",
+    "name": "user_notification_preferences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_payment_preferences",
+    "name": "user_payment_preferences_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_private_data",
+    "name": "user_private_data_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_profiles",
+    "name": "user_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_push_tokens",
+    "name": "user_push_tokens_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_events",
+    "name": "user_radar_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_profiles",
+    "name": "user_radar_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_recommendations",
+    "name": "user_radar_recommendations_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_sessions",
+    "name": "user_radar_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_reports",
+    "name": "user_reports_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_roles",
+    "name": "user_roles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_saved_addresses",
+    "name": "user_saved_addresses_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_sessions",
+    "name": "user_sessions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "vault_files",
+    "name": "vault_files_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "vendor_commissions",
+    "name": "vendor_commissions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "verified_reviews",
+    "name": "verified_reviews_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "verticals",
+    "name": "verticals_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "visual_audit_reports",
+    "name": "visual_audit_reports_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "wallet_accounts_owner_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (owner_user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "wallet_accounts_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_balances",
+    "name": "wallet_balances_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_credit_transactions",
+    "name": "wallet_credit_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_ledger_entries",
+    "name": "wallet_ledger_entries_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_limit_profiles",
+    "name": "wallet_limit_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_order_splits",
+    "name": "wallet_order_splits_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_pins",
+    "name": "wallet_pins_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_security_events",
+    "name": "wallet_security_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transaction_challenges",
+    "name": "wallet_transaction_challenges_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transactions",
+    "name": "wallet_transactions_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wallet_transfers_idempotency_key_key",
+    "type": "u",
+    "definition": "UNIQUE (idempotency_key)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wallet_transfers_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_trusted_devices",
+    "name": "wallet_trusted_devices_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets",
+    "name": "wallets_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "wallets_v2_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "wallets_v2_user_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "wallets_v2_user_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE"
+  },
+  {
+    "schema": "public",
+    "table": "webhook_deliveries",
+    "name": "webhook_deliveries_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "webhooks",
+    "name": "webhooks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_members",
+    "name": "workspace_members_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_settings",
+    "name": "workspace_settings_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspaces",
+    "name": "workspaces_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zone_events",
+    "name": "zone_events_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zone_live_profiles",
+    "name": "zone_live_profiles_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zones",
+    "name": "zones_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "execution_locks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (lock_key)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_approval_policy_chk",
+    "type": "c",
+    "definition": "CHECK ((approval_policy = ANY (ARRAY['none'::text, 'single_admin'::text, 'two_person'::text, 'auto'::text])))"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_parent_task_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (parent_task_id) REFERENCES system.execution_tasks(id) ON DELETE SET NULL"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_pkey",
+    "type": "p",
+    "definition": "PRIMARY KEY (id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_root_task_id_fkey",
+    "type": "f",
+    "definition": "FOREIGN KEY (root_task_id) REFERENCES system.execution_tasks(id) ON DELETE SET NULL"
+  }
+]

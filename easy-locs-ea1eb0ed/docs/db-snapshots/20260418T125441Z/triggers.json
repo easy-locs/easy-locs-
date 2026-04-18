@@ -1,0 +1,38 @@
+[
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "trg_cp_zone_key",
+    "action_timing": "BEFORE",
+    "event": "INSERT",
+    "action_orientation": "ROW",
+    "action_statement": "EXECUTE FUNCTION cp_zone_key_trigger()"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "trg_cp_zone_key",
+    "action_timing": "BEFORE",
+    "event": "UPDATE",
+    "action_orientation": "ROW",
+    "action_statement": "EXECUTE FUNCTION cp_zone_key_trigger()"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "trg_execution_tasks_state_machine",
+    "action_timing": "BEFORE",
+    "event": "UPDATE",
+    "action_orientation": "ROW",
+    "action_statement": "EXECUTE FUNCTION system.execution_tasks_enforce_state_machine()"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "trg_execution_tasks_touch_updated_at",
+    "action_timing": "BEFORE",
+    "event": "UPDATE",
+    "action_orientation": "ROW",
+    "action_statement": "EXECUTE FUNCTION system.execution_tasks_touch_updated_at()"
+  }
+]
