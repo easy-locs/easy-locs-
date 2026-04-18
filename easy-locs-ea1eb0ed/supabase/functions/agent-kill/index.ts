@@ -37,10 +37,13 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
+=======
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     // Prefer the atomic RPC (Task #998); fall back to manual updates if
     // the RPC is unavailable (preserves Task #1018 behavior). Either
     // way, the kill is recorded via logIncident.
+<<<<<<< HEAD
 <<<<<<< HEAD
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
