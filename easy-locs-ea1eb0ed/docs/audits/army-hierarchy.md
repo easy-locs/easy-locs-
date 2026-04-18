@@ -50,6 +50,7 @@ Chief Orchestrator
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -98,15 +99,21 @@ Chief Orchestrator
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+| Function | Role | Purpose |
+| --- | --- | --- |
+| `orchestrator-dispatch` | Chief | Order → tasks |
+| `general-route` | General | Pick tasks → captain |
+| `captain-plan` | Captain | Build worker plan |
+| `worker-execute` | Worker | Execute a single mission |
+| `worker-report` | Worker | Roll up to order |
+| `incident-escalate` | any | Promote to general / Supreme |
+| `agent-spawn` | privileged | **Sole** agent creation path |
+| `agent-kill` | Supreme | Terminate agent + cancel tasks |
+| `agent-heal` | privileged | Recycle a crashed agent |
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
-Every function calls `requireAuthenticated()` or `requireSupreme()` at
-the boundary, then `assertNotKilled()` and `hasPermission()` before any
-write. `agent-spawn` and `agent-heal` are the only callers allowed to
-create agent instances — both go through the shared `spawnAgent()`
-primitive. The autonomous `army-tick` is invoked once per minute by
-`pg_cron` (when `pg_net` + `pg_cron` are present), so a single order
-issued from the cockpit travels the entire chain without any further
-manual call.
+Every function calls `assertNotKilled()` first and `hasPermission()` second.
 
 ### Reproduction (8 conditions, RPC `army.can_spawn`)
 1. Kill switch off.
