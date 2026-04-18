@@ -110,6 +110,7 @@ export const PrayerTimesPage = safeLazy(() => import("@/pages/PrayerTimesPage"),
 export const IslamicSectionPage = safeLazy(() => import("@/pages/islamic/IslamicSectionPage"), "IslamicSectionPage");
 export const NewsPage = safeLazy(() => import("@/pages/NewsPage"), "NewsPage");
 export const CommandCenter = safeLazy(() => import("@/pages/CommandCenter"), "CommandCenter");
+export const ArmyCockpit = safeLazy(() => import("@/pages/ArmyCockpit"), "ArmyCockpit");
 
 // Real Estate Vertical — Marketplace
 export const RealEstateMarketplace = safeLazy(() => import("@/pages/real-estate/RealEstateMarketplace"), "RealEstateMarketplace");
