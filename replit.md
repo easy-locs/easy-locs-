@@ -912,6 +912,7 @@ App.tsx routes are organized into clean, labeled sections:
    - **Persistence**: `src/devos/runtime/devos-persistence.ts` — All incidents, proofs, audit results, and runtime logs stored in localStorage with auto-rotation (max 200 entries per category, 500 log entries)
    - **Separation**: DevOS never owns business logic — strictly reads, audits, monitors, repairs
    - **Documentation**: `docs/devos/DEVOS_ARCHITECTURE.md`, `ARCHITECTURE_GUARDRAILS.md`
+   - **Controlled Self-Evolution (Level C, Level D-prep)**: `src/devos/evolution/` — Four-stage pipeline (audit → planner → commander → repair) with mandatory human/commander approval chokepoint, task ID registry with content-hash dedup and lineage tracking, safeguards (no recursive spawning, max concurrent tasks, pipeline depth cap, loop guard, rejection-streak escalation), monitoring (events log, accepted/rejected counts, performance-impact view), 24h ban on rolled-back content hashes, configurable limits via `getEvolutionConfig()/setEvolutionConfig()`, and Level D feature flag (`LEVEL_D_ENABLED`, default OFF, gated by `DEVOS_LEVEL_D_ALLOW=true` env). Policy: `docs/EVOLUTION_POLICY.md`. Tests: `src/devos/evolution/__tests__/evolution.test.ts` (10/10 pass via `tsx`).
 8. **ADMIN** — Admin panel (/admin/*)
 9. **DEEP LINKS / QR** — Public deep links, QR resolvers
 10. **SEO / LEGAL** — Programmatic SEO pages, legal pages
