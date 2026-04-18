@@ -18,10 +18,30 @@ SECURITY DEFINER
 SET search_path = public, system
 AS $$
 DECLARE
-  v_dep   UUID;
-  v_err   TEXT;
-  v_state TEXT;
+  v_dep        UUID;
+  v_err        TEXT;
+  v_state      TEXT;
+  v_caller     UUID    := auth.uid();
+  v_is_service BOOLEAN := (auth.role() = 'service_role');
 BEGIN
+  -- ── Authz gate (defense-in-depth) ───────────────────────────────────────
+  -- This function is SECURITY DEFINER and can mutate task status as a
+  -- compensation step, so it MUST gate every caller exactly like the
+  -- canonical dispatch RPC. Allowed callers:
+  --   * service_role  (edge functions / cron / dispatcher)
+  --   * authenticated users with the `admin` role on public.user_roles
+  -- Anyone else is rejected with a structured incident + 42501.
+  IF NOT v_is_service THEN
+    IF v_caller IS NULL OR NOT public.has_role(v_caller, 'admin'::public.app_role) THEN
+      PERFORM system.write_incident(
+        'unauthorized_attach_attempt', 'critical', 'attach_task_dependencies',
+        p_task_id, NULL,
+        jsonb_build_object('caller', v_caller, 'role', auth.role()));
+      RAISE EXCEPTION 'attach_task_dependencies: forbidden (admin or service_role required)'
+        USING ERRCODE = '42501';
+    END IF;
+  END IF;
+
   IF p_task_id IS NULL THEN
     RAISE EXCEPTION 'attach_task_dependencies: p_task_id is required'
       USING ERRCODE = '22023';
@@ -44,11 +64,8 @@ BEGIN
     v_err := SQLERRM;
 
     -- Compensate: force the orphan task into `blocked` so the orchestrator
-    -- can never pick it up. Use a direct UPDATE because the offending row
-    -- may not be in `running` (so the assert_task_transition matrix
-    -- accepts queued/approved/pending_review/blocked → blocked as a no-op
-    -- or downward step). We bypass the matrix here on purpose because
-    -- this IS the safety compensation.
+    -- can never pick it up. Direct UPDATE bypasses the transition matrix
+    -- on purpose because this IS the safety compensation.
     SELECT status::TEXT INTO v_state
       FROM system.execution_tasks WHERE id = p_task_id;
     IF v_state IS NOT NULL AND v_state NOT IN ('failed','cancelled','succeeded','blocked') THEN
@@ -78,9 +95,20 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) FROM authenticated;
+-- Only service_role gets a direct grant. The function ALSO performs an
+-- in-body has_role(..,'admin') check on auth.uid() so admin callers are
+-- explicitly allowed via that path; everyone else is rejected with 42501
+-- and a critical incident row.
+GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO service_role;
+-- Authenticated callers must reach the function through the in-body
+-- admin gate; we still grant EXECUTE so the gate has a chance to run
+-- (otherwise PostgREST returns 42501 before the structured incident
+-- can be written).
+GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO authenticated;
 
 COMMENT ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) IS
   'Atomic edge attachment with compensating block + incident on rejection. '
+  'Authz: service_role OR authenticated user with admin role. '
   'Used by TaskDispatcher to guarantee no orphan task ever runs without its '
   'declared dependencies. See task #1017.';
