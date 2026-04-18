@@ -131,6 +131,30 @@ export const CommunicationCenter = () => {
 
   useEffect(() => {
     const threadParam = searchParams.get("thread") || searchParams.get("booking") || searchParams.get("deal") || searchParams.get("tenant");
+    const entityParam = searchParams.get("entity");
+    const entityName = searchParams.get("name");
+
+    // Handle Radar → Orbit fallback: /orbit?entity=<id>&name=<name> when no
+    // direct thread could be resolved. We surface the entity context in the
+    // chats section so the user lands somewhere coherent instead of an empty
+    // screen, and clear the params so back-navigation doesn't loop.
+    if (entityParam && !threadParam) {
+      setActiveSection("chats");
+      const entityThread = threads.find(t => t.entityId === entityParam);
+      if (entityThread && selectedThreadIdRef.current !== entityThread.id) {
+        setSelectedThread(entityThread);
+      } else if (!entityThread && entityName) {
+        toast.info(`Opening Orbit for ${entityName} — no direct conversation yet.`);
+      }
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.delete("entity");
+        next.delete("name");
+        return next;
+      }, { replace: true });
+      return;
+    }
+
     if (!threadParam || loading) return;
     const found = threads.find(t =>
       t.id === `booking-${threadParam}` || t.id === threadParam ||
