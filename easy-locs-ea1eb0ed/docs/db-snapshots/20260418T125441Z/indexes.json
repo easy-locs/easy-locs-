@@ -1,0 +1,3692 @@
+[
+  {
+    "schema": "public",
+    "table": "abandoned_cart_events",
+    "name": "abandoned_cart_events_pkey",
+    "definition": "CREATE UNIQUE INDEX abandoned_cart_events_pkey ON public.abandoned_cart_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "accounting_entries",
+    "name": "accounting_entries_pkey",
+    "definition": "CREATE UNIQUE INDEX accounting_entries_pkey ON public.accounting_entries USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "acquisition_outreach_logs",
+    "name": "acquisition_outreach_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX acquisition_outreach_logs_pkey ON public.acquisition_outreach_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activities",
+    "name": "activities_pkey",
+    "definition": "CREATE UNIQUE INDEX activities_pkey ON public.activities USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activities_public",
+    "name": "activities_public_pkey",
+    "definition": "CREATE UNIQUE INDEX activities_public_pkey ON public.activities_public USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "activity_logs",
+    "name": "activity_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX activity_logs_pkey ON public.activity_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ad_events",
+    "name": "ad_events_pkey",
+    "definition": "CREATE UNIQUE INDEX ad_events_pkey ON public.ad_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "address_usage_events",
+    "name": "address_usage_events_pkey",
+    "definition": "CREATE UNIQUE INDEX address_usage_events_pkey ON public.address_usage_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "admin_alerts",
+    "name": "admin_alerts_pkey",
+    "definition": "CREATE UNIQUE INDEX admin_alerts_pkey ON public.admin_alerts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "agent_command_history_pkey",
+    "definition": "CREATE UNIQUE INDEX agent_command_history_pkey ON public.agent_command_history USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "idx_agent_command_history_correlation",
+    "definition": "CREATE INDEX idx_agent_command_history_correlation ON public.agent_command_history USING btree (correlation_id)"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "idx_agent_command_history_user",
+    "definition": "CREATE INDEX idx_agent_command_history_user ON public.agent_command_history USING btree (user_id, created_at DESC)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_category_suggestions",
+    "name": "ai_category_suggestions_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_category_suggestions_pkey ON public.ai_category_suggestions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_messages",
+    "name": "ai_chat_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_chat_messages_pkey ON public.ai_chat_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_threads",
+    "name": "ai_chat_threads_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_chat_threads_pkey ON public.ai_chat_threads USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_usage",
+    "name": "ai_chat_usage_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_chat_usage_pkey ON public.ai_chat_usage USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_decision_logs",
+    "name": "ai_decision_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_decision_logs_pkey ON public.ai_decision_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ai_ops_suggestions",
+    "name": "ai_ops_suggestions_pkey",
+    "definition": "CREATE UNIQUE INDEX ai_ops_suggestions_pkey ON public.ai_ops_suggestions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "aml_events",
+    "name": "aml_events_pkey",
+    "definition": "CREATE UNIQUE INDEX aml_events_pkey ON public.aml_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "api_keys",
+    "name": "api_keys_pkey",
+    "definition": "CREATE UNIQUE INDEX api_keys_pkey ON public.api_keys USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "app_notifications",
+    "name": "app_notifications_pkey",
+    "definition": "CREATE UNIQUE INDEX app_notifications_pkey ON public.app_notifications USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "approval_actions",
+    "name": "approval_actions_pkey",
+    "definition": "CREATE UNIQUE INDEX approval_actions_pkey ON public.approval_actions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "approval_queues",
+    "name": "approval_queues_pkey",
+    "definition": "CREATE UNIQUE INDEX approval_queues_pkey ON public.approval_queues USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_findings",
+    "name": "audit_findings_pkey",
+    "definition": "CREATE UNIQUE INDEX audit_findings_pkey ON public.audit_findings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_logs",
+    "name": "audit_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX audit_logs_pkey ON public.audit_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "audit_reports",
+    "name": "audit_reports_pkey",
+    "definition": "CREATE UNIQUE INDEX audit_reports_pkey ON public.audit_reports USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "auto_discovered_merchants",
+    "name": "auto_discovered_merchants_pkey",
+    "definition": "CREATE UNIQUE INDEX auto_discovered_merchants_pkey ON public.auto_discovered_merchants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "auto_repeat_orders",
+    "name": "auto_repeat_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX auto_repeat_orders_pkey ON public.auto_repeat_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "automation_workflows",
+    "name": "automation_workflows_pkey",
+    "definition": "CREATE UNIQUE INDEX automation_workflows_pkey ON public.automation_workflows USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "blocked_users",
+    "name": "blocked_users_pkey",
+    "definition": "CREATE UNIQUE INDEX blocked_users_pkey ON public.blocked_users USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_commissions",
+    "name": "booking_commissions_pkey",
+    "definition": "CREATE UNIQUE INDEX booking_commissions_pkey ON public.booking_commissions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_requests",
+    "name": "booking_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX booking_requests_pkey ON public.booking_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "booking_tasks",
+    "name": "booking_tasks_pkey",
+    "definition": "CREATE UNIQUE INDEX booking_tasks_pkey ON public.booking_tasks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX bookings_pkey ON public.bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings_v2",
+    "name": "bookings_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX bookings_v2_pkey ON public.bookings_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_analytics_daily",
+    "name": "boost_analytics_daily_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_analytics_daily_pkey ON public.boost_analytics_daily USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_campaigns",
+    "name": "boost_campaigns_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_campaigns_pkey ON public.boost_campaigns USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_clicks",
+    "name": "boost_clicks_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_clicks_pkey ON public.boost_clicks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_creatives",
+    "name": "boost_creatives_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_creatives_pkey ON public.boost_creatives USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_impressions",
+    "name": "boost_impressions_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_impressions_pkey ON public.boost_impressions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_leads",
+    "name": "boost_leads_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_leads_pkey ON public.boost_leads USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_purchases",
+    "name": "boost_purchases_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_purchases_pkey ON public.boost_purchases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "boost_slots",
+    "name": "boost_slots_pkey",
+    "definition": "CREATE UNIQUE INDEX boost_slots_pkey ON public.boost_slots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "branches",
+    "name": "branches_pkey",
+    "definition": "CREATE UNIQUE INDEX branches_pkey ON public.branches USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "brands",
+    "name": "brands_pkey",
+    "definition": "CREATE UNIQUE INDEX brands_pkey ON public.brands USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_front_incidents",
+    "name": "browser_front_incidents_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_front_incidents_pkey ON public.browser_front_incidents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_actions",
+    "name": "browser_repair_actions_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_repair_actions_pkey ON public.browser_repair_actions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_events",
+    "name": "browser_repair_events_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_repair_events_pkey ON public.browser_repair_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_issues",
+    "name": "browser_repair_issues_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_repair_issues_pkey ON public.browser_repair_issues USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_runs",
+    "name": "browser_repair_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_repair_runs_pkey ON public.browser_repair_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_watchdog",
+    "name": "browser_repair_watchdog_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_repair_watchdog_pkey ON public.browser_repair_watchdog USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "browser_telemetry_events",
+    "name": "browser_telemetry_events_pkey",
+    "definition": "CREATE UNIQUE INDEX browser_telemetry_events_pkey ON public.browser_telemetry_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "buildings",
+    "name": "buildings_pkey",
+    "definition": "CREATE UNIQUE INDEX buildings_pkey ON public.buildings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "business_compliance_profiles",
+    "name": "business_compliance_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX business_compliance_profiles_pkey ON public.business_compliance_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "business_videos",
+    "name": "business_videos_pkey",
+    "definition": "CREATE UNIQUE INDEX business_videos_pkey ON public.business_videos USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "call_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX call_logs_pkey ON public.call_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "idx_call_logs_conversation_id",
+    "definition": "CREATE INDEX idx_call_logs_conversation_id ON public.call_logs USING btree (conversation_id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_participants",
+    "name": "call_participants_pkey",
+    "definition": "CREATE UNIQUE INDEX call_participants_pkey ON public.call_participants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_sessions",
+    "name": "call_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX call_sessions_pkey ON public.call_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_signals",
+    "name": "call_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX call_signals_pkey ON public.call_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "call_transcripts",
+    "name": "call_transcripts_pkey",
+    "definition": "CREATE UNIQUE INDEX call_transcripts_pkey ON public.call_transcripts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "candidates",
+    "name": "candidates_pkey",
+    "definition": "CREATE UNIQUE INDEX candidates_pkey ON public.candidates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_attribute_definitions",
+    "name": "canonical_attribute_definitions_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_attribute_definitions_pkey ON public.canonical_attribute_definitions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_categories",
+    "name": "canonical_categories_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_categories_pkey ON public.canonical_categories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_families",
+    "name": "canonical_families_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_families_pkey ON public.canonical_families USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "canonical_places_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_places_pkey ON public.canonical_places USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "idx_cp_geohash",
+    "definition": "CREATE INDEX idx_cp_geohash ON public.canonical_places USING btree (geohash)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "idx_cp_latlng",
+    "definition": "CREATE INDEX idx_cp_latlng ON public.canonical_places USING btree (lat, lng)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "idx_cp_zone_key",
+    "definition": "CREATE INDEX idx_cp_zone_key ON public.canonical_places USING btree (zone_key)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_subcategories",
+    "name": "canonical_subcategories_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_subcategories_pkey ON public.canonical_subcategories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_synonyms",
+    "name": "canonical_synonyms_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_synonyms_pkey ON public.canonical_synonyms USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_tags",
+    "name": "canonical_tags_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_tags_pkey ON public.canonical_tags USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_taxonomy",
+    "name": "canonical_taxonomy_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_taxonomy_pkey ON public.canonical_taxonomy USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_unit_groups",
+    "name": "canonical_unit_groups_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_unit_groups_pkey ON public.canonical_unit_groups USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_units",
+    "name": "canonical_units_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_units_pkey ON public.canonical_units USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_verticals",
+    "name": "canonical_verticals_pkey",
+    "definition": "CREATE UNIQUE INDEX canonical_verticals_pkey ON public.canonical_verticals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_items",
+    "name": "catalog_items_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_items_pkey ON public.catalog_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_media",
+    "name": "catalog_media_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_media_pkey ON public.catalog_media USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_attributes",
+    "name": "catalog_product_attributes_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_product_attributes_pkey ON public.catalog_product_attributes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_tags",
+    "name": "catalog_product_tags_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_product_tags_pkey ON public.catalog_product_tags USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_translations",
+    "name": "catalog_translations_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_translations_pkey ON public.catalog_translations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_variants",
+    "name": "catalog_variants_pkey",
+    "definition": "CREATE UNIQUE INDEX catalog_variants_pkey ON public.catalog_variants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "categories",
+    "name": "categories_pkey",
+    "definition": "CREATE UNIQUE INDEX categories_pkey ON public.categories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_attributes",
+    "name": "category_attributes_pkey",
+    "definition": "CREATE UNIQUE INDEX category_attributes_pkey ON public.category_attributes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_cleanup_tasks",
+    "name": "category_cleanup_tasks_pkey",
+    "definition": "CREATE UNIQUE INDEX category_cleanup_tasks_pkey ON public.category_cleanup_tasks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_fulfillment_rules",
+    "name": "category_fulfillment_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX category_fulfillment_rules_pkey ON public.category_fulfillment_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "category_subscriptions",
+    "name": "category_subscriptions_pkey",
+    "definition": "CREATE UNIQUE INDEX category_subscriptions_pkey ON public.category_subscriptions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_attachments",
+    "name": "chat_attachments_pkey",
+    "definition": "CREATE UNIQUE INDEX chat_attachments_pkey ON public.chat_attachments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "chat_messages_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX chat_messages_v2_pkey ON public.chat_messages_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "idx_chat_messages_v2_conv",
+    "definition": "CREATE INDEX idx_chat_messages_v2_conv ON public.chat_messages_v2 USING btree (conversation_id)"
+  },
+  {
+    "schema": "public",
+    "table": "churn_risk_profiles",
+    "name": "churn_risk_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX churn_risk_profiles_pkey ON public.churn_risk_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "city_supply_balancer_logs",
+    "name": "city_supply_balancer_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX city_supply_balancer_logs_pkey ON public.city_supply_balancer_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "claim_attempts",
+    "name": "claim_attempts_pkey",
+    "definition": "CREATE UNIQUE INDEX claim_attempts_pkey ON public.claim_attempts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "classification_learning",
+    "name": "classification_learning_pkey",
+    "definition": "CREATE UNIQUE INDEX classification_learning_pkey ON public.classification_learning USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "collaboration_invitations",
+    "name": "collaboration_invitations_pkey",
+    "definition": "CREATE UNIQUE INDEX collaboration_invitations_pkey ON public.collaboration_invitations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "commission_rules",
+    "name": "commission_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX commission_rules_pkey ON public.commission_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "commission_splits",
+    "name": "commission_splits_pkey",
+    "definition": "CREATE UNIQUE INDEX commission_splits_pkey ON public.commission_splits USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "companies",
+    "name": "companies_pkey",
+    "definition": "CREATE UNIQUE INDEX companies_pkey ON public.companies USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "competitor_price_snapshots",
+    "name": "competitor_price_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX competitor_price_snapshots_pkey ON public.competitor_price_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "compliance_cases",
+    "name": "compliance_cases_pkey",
+    "definition": "CREATE UNIQUE INDEX compliance_cases_pkey ON public.compliance_cases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX concierge_bookings_pkey ON public.concierge_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_orders",
+    "name": "concierge_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX concierge_orders_pkey ON public.concierge_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services",
+    "name": "concierge_services_pkey",
+    "definition": "CREATE UNIQUE INDEX concierge_services_pkey ON public.concierge_services USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services_public",
+    "name": "concierge_services_public_pkey",
+    "definition": "CREATE UNIQUE INDEX concierge_services_public_pkey ON public.concierge_services_public USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contact_clicks",
+    "name": "contact_clicks_pkey",
+    "definition": "CREATE UNIQUE INDEX contact_clicks_pkey ON public.contact_clicks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contact_reveals",
+    "name": "contact_reveals_pkey",
+    "definition": "CREATE UNIQUE INDEX contact_reveals_pkey ON public.contact_reveals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "contacts",
+    "name": "contacts_pkey",
+    "definition": "CREATE UNIQUE INDEX contacts_pkey ON public.contacts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_conversation_id_user_id_key",
+    "definition": "CREATE UNIQUE INDEX conversation_participants_v2_conversation_id_user_id_key ON public.conversation_participants_v2 USING btree (conversation_id, user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conversation_participants_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX conversation_participants_v2_pkey ON public.conversation_participants_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "idx_conv_part_v2_conv",
+    "definition": "CREATE INDEX idx_conv_part_v2_conv ON public.conversation_participants_v2 USING btree (conversation_id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "idx_conv_part_v2_user",
+    "definition": "CREATE INDEX idx_conv_part_v2_user ON public.conversation_participants_v2 USING btree (user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_preferences",
+    "name": "conversation_preferences_pkey",
+    "definition": "CREATE UNIQUE INDEX conversation_preferences_pkey ON public.conversation_preferences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_threads",
+    "name": "conversation_threads_pkey",
+    "definition": "CREATE UNIQUE INDEX conversation_threads_pkey ON public.conversation_threads USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "conversations_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX conversations_v2_pkey ON public.conversations_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "uq_conversations_v2_direct_pair",
+    "definition": "CREATE UNIQUE INDEX uq_conversations_v2_direct_pair ON public.conversations_v2 USING btree (((metadata ->> 'direct_user_ids'::text))) WHERE ((type = 'direct'::text) AND ((metadata ->> 'direct_user_ids'::text) IS NOT NULL))"
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_policies",
+    "name": "core_asset_policies_pkey",
+    "definition": "CREATE UNIQUE INDEX core_asset_policies_pkey ON public.core_asset_policies USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_variants",
+    "name": "core_asset_variants_pkey",
+    "definition": "CREATE UNIQUE INDEX core_asset_variants_pkey ON public.core_asset_variants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_assets",
+    "name": "core_assets_pkey",
+    "definition": "CREATE UNIQUE INDEX core_assets_pkey ON public.core_assets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_canonical_values",
+    "name": "core_canonical_values_pkey",
+    "definition": "CREATE UNIQUE INDEX core_canonical_values_pkey ON public.core_canonical_values USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_currency_rates",
+    "name": "core_currency_rates_pkey",
+    "definition": "CREATE UNIQUE INDEX core_currency_rates_pkey ON public.core_currency_rates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_points",
+    "name": "core_geo_points_pkey",
+    "definition": "CREATE UNIQUE INDEX core_geo_points_pkey ON public.core_geo_points USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_session_points",
+    "name": "core_geo_session_points_pkey",
+    "definition": "CREATE UNIQUE INDEX core_geo_session_points_pkey ON public.core_geo_session_points USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_sessions",
+    "name": "core_geo_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX core_geo_sessions_pkey ON public.core_geo_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_identity_aliases",
+    "name": "core_identity_aliases_pkey",
+    "definition": "CREATE UNIQUE INDEX core_identity_aliases_pkey ON public.core_identity_aliases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_modules_registry",
+    "name": "core_modules_registry_pkey",
+    "definition": "CREATE UNIQUE INDEX core_modules_registry_pkey ON public.core_modules_registry USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_profile_visibility",
+    "name": "core_profile_visibility_pkey",
+    "definition": "CREATE UNIQUE INDEX core_profile_visibility_pkey ON public.core_profile_visibility USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "core_profiles",
+    "name": "core_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX core_profiles_pkey ON public.core_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "coupons",
+    "name": "coupons_pkey",
+    "definition": "CREATE UNIQUE INDEX coupons_pkey ON public.coupons USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "cross_service_journeys",
+    "name": "cross_service_journeys_pkey",
+    "definition": "CREATE UNIQUE INDEX cross_service_journeys_pkey ON public.cross_service_journeys USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_profiles",
+    "name": "customer_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX customer_profiles_pkey ON public.customer_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_recommendations",
+    "name": "customer_recommendations_pkey",
+    "definition": "CREATE UNIQUE INDEX customer_recommendations_pkey ON public.customer_recommendations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "customer_relationships",
+    "name": "customer_relationships_pkey",
+    "definition": "CREATE UNIQUE INDEX customer_relationships_pkey ON public.customer_relationships USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_documents",
+    "name": "deal_documents_pkey",
+    "definition": "CREATE UNIQUE INDEX deal_documents_pkey ON public.deal_documents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_events",
+    "name": "deal_events_pkey",
+    "definition": "CREATE UNIQUE INDEX deal_events_pkey ON public.deal_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_offers",
+    "name": "deal_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX deal_offers_pkey ON public.deal_offers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_rooms",
+    "name": "deal_rooms_pkey",
+    "definition": "CREATE UNIQUE INDEX deal_rooms_pkey ON public.deal_rooms USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_timeline",
+    "name": "deal_timeline_pkey",
+    "definition": "CREATE UNIQUE INDEX deal_timeline_pkey ON public.deal_timeline USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "deals",
+    "name": "deals_pkey",
+    "definition": "CREATE UNIQUE INDEX deals_pkey ON public.deals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_disputes",
+    "name": "delivery_disputes_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_disputes_pkey ON public.delivery_disputes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_missions",
+    "name": "delivery_missions_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_missions_pkey ON public.delivery_missions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_offers",
+    "name": "delivery_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_offers_pkey ON public.delivery_offers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_pricing_rules",
+    "name": "delivery_pricing_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_pricing_rules_pkey ON public.delivery_pricing_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_proofs",
+    "name": "delivery_proofs_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_proofs_pkey ON public.delivery_proofs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_ratings",
+    "name": "delivery_ratings_pkey",
+    "definition": "CREATE UNIQUE INDEX delivery_ratings_pkey ON public.delivery_ratings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "device_fingerprints",
+    "name": "device_fingerprints_pkey",
+    "definition": "CREATE UNIQUE INDEX device_fingerprints_pkey ON public.device_fingerprints USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "dispatch_offers",
+    "name": "dispatch_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX dispatch_offers_pkey ON public.dispatch_offers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "document_requests",
+    "name": "document_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX document_requests_pkey ON public.document_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "documents",
+    "name": "documents_pkey",
+    "definition": "CREATE UNIQUE INDEX documents_pkey ON public.documents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_clusters",
+    "name": "driver_clusters_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_clusters_pkey ON public.driver_clusters USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_earnings",
+    "name": "driver_earnings_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_earnings_pkey ON public.driver_earnings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_locations",
+    "name": "driver_locations_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_locations_pkey ON public.driver_locations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_metrics",
+    "name": "driver_metrics_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_metrics_pkey ON public.driver_metrics USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_mission_offers",
+    "name": "driver_mission_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_mission_offers_pkey ON public.driver_mission_offers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_payouts",
+    "name": "driver_payouts_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_payouts_pkey ON public.driver_payouts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_positioning",
+    "name": "driver_positioning_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_positioning_pkey ON public.driver_positioning USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_profiles",
+    "name": "driver_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_profiles_pkey ON public.driver_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "driver_sessions",
+    "name": "driver_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX driver_sessions_pkey ON public.driver_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "dunning_letters",
+    "name": "dunning_letters_pkey",
+    "definition": "CREATE UNIQUE INDEX dunning_letters_pkey ON public.dunning_letters USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "email_queue",
+    "name": "email_queue_pkey",
+    "definition": "CREATE UNIQUE INDEX email_queue_pkey ON public.email_queue USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_registry",
+    "name": "engine_registry_pkey",
+    "definition": "CREATE UNIQUE INDEX engine_registry_pkey ON public.engine_registry USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_reports",
+    "name": "engine_reports_pkey",
+    "definition": "CREATE UNIQUE INDEX engine_reports_pkey ON public.engine_reports USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_run_logs",
+    "name": "engine_run_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX engine_run_logs_pkey ON public.engine_run_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "engine_supervisor",
+    "name": "engine_supervisor_pkey",
+    "definition": "CREATE UNIQUE INDEX engine_supervisor_pkey ON public.engine_supervisor USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entities",
+    "name": "entities_pkey",
+    "definition": "CREATE UNIQUE INDEX entities_pkey ON public.entities USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_feedback_signals",
+    "name": "entity_feedback_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX entity_feedback_signals_pkey ON public.entity_feedback_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_pipeline_queue",
+    "name": "entity_pipeline_queue_pkey",
+    "definition": "CREATE UNIQUE INDEX entity_pipeline_queue_pkey ON public.entity_pipeline_queue USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "entity_taxonomy_mapping",
+    "name": "entity_taxonomy_mapping_pkey",
+    "definition": "CREATE UNIQUE INDEX entity_taxonomy_mapping_pkey ON public.entity_taxonomy_mapping USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "escrow_payments",
+    "name": "escrow_payments_pkey",
+    "definition": "CREATE UNIQUE INDEX escrow_payments_pkey ON public.escrow_payments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "eta_projection_cache",
+    "name": "eta_projection_cache_pkey",
+    "definition": "CREATE UNIQUE INDEX eta_projection_cache_pkey ON public.eta_projection_cache USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_connectors",
+    "name": "exchange_connectors_pkey",
+    "definition": "CREATE UNIQUE INDEX exchange_connectors_pkey ON public.exchange_connectors USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_orders",
+    "name": "exchange_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX exchange_orders_pkey ON public.exchange_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_quotes",
+    "name": "exchange_quotes_pkey",
+    "definition": "CREATE UNIQUE INDEX exchange_quotes_pkey ON public.exchange_quotes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "executive_kpi_snapshots",
+    "name": "executive_kpi_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX executive_kpi_snapshots_pkey ON public.executive_kpi_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "expenses",
+    "name": "expenses_pkey",
+    "definition": "CREATE UNIQUE INDEX expenses_pkey ON public.expenses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "favorite_listings",
+    "name": "favorite_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX favorite_listings_pkey ON public.favorite_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "featured_shops",
+    "name": "featured_shops_pkey",
+    "definition": "CREATE UNIQUE INDEX featured_shops_pkey ON public.featured_shops USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "financial_reconciliation",
+    "name": "financial_reconciliation_pkey",
+    "definition": "CREATE UNIQUE INDEX financial_reconciliation_pkey ON public.financial_reconciliation USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_edges",
+    "name": "fraud_edges_pkey",
+    "definition": "CREATE UNIQUE INDEX fraud_edges_pkey ON public.fraud_edges USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_entities",
+    "name": "fraud_entities_pkey",
+    "definition": "CREATE UNIQUE INDEX fraud_entities_pkey ON public.fraud_entities USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_events",
+    "name": "fraud_events_pkey",
+    "definition": "CREATE UNIQUE INDEX fraud_events_pkey ON public.fraud_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "furniture_items",
+    "name": "furniture_items_pkey",
+    "definition": "CREATE UNIQUE INDEX furniture_items_pkey ON public.furniture_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "fx_rates_cache",
+    "name": "fx_rates_cache_pkey",
+    "definition": "CREATE UNIQUE INDEX fx_rates_cache_pkey ON public.fx_rates_cache USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "geo_live_context",
+    "name": "geo_live_context_pkey",
+    "definition": "CREATE UNIQUE INDEX geo_live_context_pkey ON public.geo_live_context USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_call_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX ghost_call_sessions_pkey ON public.ghost_call_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "group_members",
+    "name": "group_members_pkey",
+    "definition": "CREATE UNIQUE INDEX group_members_pkey ON public.group_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_city_pages",
+    "name": "growth_city_pages_pkey",
+    "definition": "CREATE UNIQUE INDEX growth_city_pages_pkey ON public.growth_city_pages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_demand_events",
+    "name": "growth_demand_events_pkey",
+    "definition": "CREATE UNIQUE INDEX growth_demand_events_pkey ON public.growth_demand_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "growth_logs",
+    "name": "growth_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX growth_logs_pkey ON public.growth_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_call_signals",
+    "name": "guest_call_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX guest_call_signals_pkey ON public.guest_call_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_checkout_sessions",
+    "name": "guest_checkout_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX guest_checkout_sessions_pkey ON public.guest_checkout_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "guest_sessions",
+    "name": "guest_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX guest_sessions_pkey ON public.guest_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_availability",
+    "name": "hotel_availability_pkey",
+    "definition": "CREATE UNIQUE INDEX hotel_availability_pkey ON public.hotel_availability USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_bookings",
+    "name": "hotel_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX hotel_bookings_pkey ON public.hotel_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_inventory_calendar",
+    "name": "hotel_inventory_calendar_pkey",
+    "definition": "CREATE UNIQUE INDEX hotel_inventory_calendar_pkey ON public.hotel_inventory_calendar USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rate_plans",
+    "name": "hotel_rate_plans_pkey",
+    "definition": "CREATE UNIQUE INDEX hotel_rate_plans_pkey ON public.hotel_rate_plans USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rooms",
+    "name": "hotel_rooms_pkey",
+    "definition": "CREATE UNIQUE INDEX hotel_rooms_pkey ON public.hotel_rooms USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "hotels",
+    "name": "hotels_pkey",
+    "definition": "CREATE UNIQUE INDEX hotels_pkey ON public.hotels USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "import_batches",
+    "name": "import_batches_pkey",
+    "definition": "CREATE UNIQUE INDEX import_batches_pkey ON public.import_batches USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "import_test_batches",
+    "name": "import_test_batches_pkey",
+    "definition": "CREATE UNIQUE INDEX import_test_batches_pkey ON public.import_test_batches USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_assets",
+    "name": "imported_shop_assets_pkey",
+    "definition": "CREATE UNIQUE INDEX imported_shop_assets_pkey ON public.imported_shop_assets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_raw",
+    "name": "imported_shop_raw_pkey",
+    "definition": "CREATE UNIQUE INDEX imported_shop_raw_pkey ON public.imported_shop_raw USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "incident_case_events",
+    "name": "incident_case_events_pkey",
+    "definition": "CREATE UNIQUE INDEX incident_case_events_pkey ON public.incident_case_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "incident_cases",
+    "name": "incident_cases_pkey",
+    "definition": "CREATE UNIQUE INDEX incident_cases_pkey ON public.incident_cases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "interventions",
+    "name": "interventions_pkey",
+    "definition": "CREATE UNIQUE INDEX interventions_pkey ON public.interventions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_items",
+    "name": "inventory_items_pkey",
+    "definition": "CREATE UNIQUE INDEX inventory_items_pkey ON public.inventory_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_reports",
+    "name": "inventory_reports_pkey",
+    "definition": "CREATE UNIQUE INDEX inventory_reports_pkey ON public.inventory_reports USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_rooms",
+    "name": "inventory_rooms_pkey",
+    "definition": "CREATE UNIQUE INDEX inventory_rooms_pkey ON public.inventory_rooms USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "journey_events",
+    "name": "journey_events_pkey",
+    "definition": "CREATE UNIQUE INDEX journey_events_pkey ON public.journey_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "jurisdiction_rules",
+    "name": "jurisdiction_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX jurisdiction_rules_pkey ON public.jurisdiction_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "kyc_documents",
+    "name": "kyc_documents_pkey",
+    "definition": "CREATE UNIQUE INDEX kyc_documents_pkey ON public.kyc_documents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "landlord_profiles",
+    "name": "landlord_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX landlord_profiles_pkey ON public.landlord_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "launch_gate_results",
+    "name": "launch_gate_results_pkey",
+    "definition": "CREATE UNIQUE INDEX launch_gate_results_pkey ON public.launch_gate_results USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "leases",
+    "name": "leases_pkey",
+    "definition": "CREATE UNIQUE INDEX leases_pkey ON public.leases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_coupons",
+    "name": "listing_coupons_pkey",
+    "definition": "CREATE UNIQUE INDEX listing_coupons_pkey ON public.listing_coupons USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_reviews",
+    "name": "listing_reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX listing_reviews_pkey ON public.listing_reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "listing_views",
+    "name": "listing_views_pkey",
+    "definition": "CREATE UNIQUE INDEX listing_views_pkey ON public.listing_views USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_status_snapshots",
+    "name": "live_status_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX live_status_snapshots_pkey ON public.live_status_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_points",
+    "name": "live_tracking_points_pkey",
+    "definition": "CREATE UNIQUE INDEX live_tracking_points_pkey ON public.live_tracking_points USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_sessions",
+    "name": "live_tracking_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX live_tracking_sessions_pkey ON public.live_tracking_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_trackings",
+    "name": "live_trackings_pkey",
+    "definition": "CREATE UNIQUE INDEX live_trackings_pkey ON public.live_trackings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "live_translation_stream",
+    "name": "live_translation_stream_pkey",
+    "definition": "CREATE UNIQUE INDEX live_translation_stream_pkey ON public.live_translation_stream USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "local_services",
+    "name": "local_services_pkey",
+    "definition": "CREATE UNIQUE INDEX local_services_pkey ON public.local_services USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "log_export_jobs",
+    "name": "log_export_jobs_pkey",
+    "definition": "CREATE UNIQUE INDEX log_export_jobs_pkey ON public.log_export_jobs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "login_events",
+    "name": "login_events_pkey",
+    "definition": "CREATE UNIQUE INDEX login_events_pkey ON public.login_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_accounts",
+    "name": "loyalty_accounts_pkey",
+    "definition": "CREATE UNIQUE INDEX loyalty_accounts_pkey ON public.loyalty_accounts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_ledger",
+    "name": "loyalty_ledger_pkey",
+    "definition": "CREATE UNIQUE INDEX loyalty_ledger_pkey ON public.loyalty_ledger USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_transactions",
+    "name": "loyalty_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX loyalty_transactions_pkey ON public.loyalty_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_bookings",
+    "name": "marketplace_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_bookings_pkey ON public.marketplace_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_branches_core",
+    "name": "marketplace_branches_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_branches_core_pkey ON public.marketplace_branches_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_business_entities_core",
+    "name": "marketplace_business_entities_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_business_entities_core_pkey ON public.marketplace_business_entities_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_categories_core",
+    "name": "marketplace_catalog_categories_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_catalog_categories_core_pkey ON public.marketplace_catalog_categories_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_items_core",
+    "name": "marketplace_catalog_items_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_catalog_items_core_pkey ON public.marketplace_catalog_items_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalogs_core",
+    "name": "marketplace_catalogs_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_catalogs_core_pkey ON public.marketplace_catalogs_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_driver_profiles_core",
+    "name": "marketplace_driver_profiles_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_driver_profiles_core_pkey ON public.marketplace_driver_profiles_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_favorites_core",
+    "name": "marketplace_favorites_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_favorites_core_pkey ON public.marketplace_favorites_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_assets_core",
+    "name": "marketplace_item_assets_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_item_assets_core_pkey ON public.marketplace_item_assets_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_option_groups_core",
+    "name": "marketplace_item_option_groups_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_item_option_groups_core_pkey ON public.marketplace_item_option_groups_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_options_core",
+    "name": "marketplace_item_options_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_item_options_core_pkey ON public.marketplace_item_options_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_listings",
+    "name": "marketplace_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_listings_pkey ON public.marketplace_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_operating_hours_core",
+    "name": "marketplace_operating_hours_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_operating_hours_core_pkey ON public.marketplace_operating_hours_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_providers",
+    "name": "marketplace_providers_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_providers_pkey ON public.marketplace_providers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews",
+    "name": "marketplace_reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_reviews_pkey ON public.marketplace_reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_core",
+    "name": "marketplace_reviews_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_reviews_core_pkey ON public.marketplace_reviews_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_public",
+    "name": "marketplace_reviews_public_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_reviews_public_pkey ON public.marketplace_reviews_public USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services",
+    "name": "marketplace_services_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_services_pkey ON public.marketplace_services USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services_public",
+    "name": "marketplace_services_public_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_services_public_pkey ON public.marketplace_services_public USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_storefronts_core",
+    "name": "marketplace_storefronts_core_pkey",
+    "definition": "CREATE UNIQUE INDEX marketplace_storefronts_core_pkey ON public.marketplace_storefronts_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "media_assets",
+    "name": "media_assets_pkey",
+    "definition": "CREATE UNIQUE INDEX media_assets_pkey ON public.media_assets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "media_upload_jobs_core",
+    "name": "media_upload_jobs_core_pkey",
+    "definition": "CREATE UNIQUE INDEX media_upload_jobs_core_pkey ON public.media_upload_jobs_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "menu_categories",
+    "name": "menu_categories_pkey",
+    "definition": "CREATE UNIQUE INDEX menu_categories_pkey ON public.menu_categories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "menu_items",
+    "name": "menu_items_pkey",
+    "definition": "CREATE UNIQUE INDEX menu_items_pkey ON public.menu_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_accounts",
+    "name": "merchant_accounts_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_accounts_pkey ON public.merchant_accounts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_activation_events",
+    "name": "merchant_activation_events_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_activation_events_pkey ON public.merchant_activation_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_balances",
+    "name": "merchant_balances_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_balances_pkey ON public.merchant_balances USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_coverage_areas",
+    "name": "merchant_coverage_areas_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_coverage_areas_pkey ON public.merchant_coverage_areas USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_delivery_zones",
+    "name": "merchant_delivery_zones_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_delivery_zones_pkey ON public.merchant_delivery_zones USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_field_overrides",
+    "name": "merchant_field_overrides_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_field_overrides_pkey ON public.merchant_field_overrides USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "idx_mgc_place",
+    "definition": "CREATE INDEX idx_mgc_place ON public.merchant_geo_context USING btree (canonical_place_id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "idx_mgc_zone",
+    "definition": "CREATE INDEX idx_mgc_zone ON public.merchant_geo_context USING btree (zone_key)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_import_items",
+    "name": "merchant_menu_import_items_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_menu_import_items_pkey ON public.merchant_menu_import_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_snapshots",
+    "name": "merchant_menu_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_menu_snapshots_pkey ON public.merchant_menu_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_profiles",
+    "name": "merchant_onboarding_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_onboarding_profiles_pkey ON public.merchant_onboarding_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_sources",
+    "name": "merchant_onboarding_sources_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_onboarding_sources_pkey ON public.merchant_onboarding_sources USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_state",
+    "name": "merchant_onboarding_state_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_onboarding_state_pkey ON public.merchant_onboarding_state USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_outreach_campaigns",
+    "name": "merchant_outreach_campaigns_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_outreach_campaigns_pkey ON public.merchant_outreach_campaigns USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_override_history",
+    "name": "merchant_override_history_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_override_history_pkey ON public.merchant_override_history USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_private_contacts",
+    "name": "merchant_private_contacts_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_private_contacts_pkey ON public.merchant_private_contacts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_profiles",
+    "name": "merchant_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_profiles_pkey ON public.merchant_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_scrape_runs",
+    "name": "merchant_scrape_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_scrape_runs_pkey ON public.merchant_scrape_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_source_snapshots",
+    "name": "merchant_source_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_source_snapshots_pkey ON public.merchant_source_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_staff",
+    "name": "merchant_staff_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_staff_pkey ON public.merchant_staff USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_visual_audit",
+    "name": "merchant_visual_audit_pkey",
+    "definition": "CREATE UNIQUE INDEX merchant_visual_audit_pkey ON public.merchant_visual_audit USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "message_translations",
+    "name": "message_translations_pkey",
+    "definition": "CREATE UNIQUE INDEX message_translations_pkey ON public.message_translations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "messages",
+    "name": "messages_pkey",
+    "definition": "CREATE UNIQUE INDEX messages_pkey ON public.messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_conflicts_core",
+    "name": "migration_conflicts_core_pkey",
+    "definition": "CREATE UNIQUE INDEX migration_conflicts_core_pkey ON public.migration_conflicts_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_entity_map_core",
+    "name": "migration_entity_map_core_pkey",
+    "definition": "CREATE UNIQUE INDEX migration_entity_map_core_pkey ON public.migration_entity_map_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "migration_jobs_core",
+    "name": "migration_jobs_core_pkey",
+    "definition": "CREATE UNIQUE INDEX migration_jobs_core_pkey ON public.migration_jobs_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_ai_logs",
+    "name": "mobility_ai_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_ai_logs_pkey ON public.mobility_ai_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_attempts",
+    "name": "mobility_dispatch_attempts_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_dispatch_attempts_pkey ON public.mobility_dispatch_attempts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_runs",
+    "name": "mobility_dispatch_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_dispatch_runs_pkey ON public.mobility_dispatch_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_driver_scores",
+    "name": "mobility_driver_scores_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_driver_scores_pkey ON public.mobility_driver_scores USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_fare_quotes",
+    "name": "mobility_fare_quotes_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_fare_quotes_pkey ON public.mobility_fare_quotes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_job_offers",
+    "name": "mobility_job_offers_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_job_offers_pkey ON public.mobility_job_offers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_jobs",
+    "name": "mobility_jobs_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_jobs_pkey ON public.mobility_jobs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_pricing_snapshots",
+    "name": "mobility_pricing_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX mobility_pricing_snapshots_pkey ON public.mobility_pricing_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "moderation_events",
+    "name": "moderation_events_pkey",
+    "definition": "CREATE UNIQUE INDEX moderation_events_pkey ON public.moderation_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "module_health",
+    "name": "module_health_pkey",
+    "definition": "CREATE UNIQUE INDEX module_health_pkey ON public.module_health USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "newsletter_subscribers",
+    "name": "newsletter_subscribers_pkey",
+    "definition": "CREATE UNIQUE INDEX newsletter_subscribers_pkey ON public.newsletter_subscribers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_deliveries",
+    "name": "notification_deliveries_pkey",
+    "definition": "CREATE UNIQUE INDEX notification_deliveries_pkey ON public.notification_deliveries USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_preferences",
+    "name": "notification_preferences_pkey",
+    "definition": "CREATE UNIQUE INDEX notification_preferences_pkey ON public.notification_preferences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notification_templates",
+    "name": "notification_templates_pkey",
+    "definition": "CREATE UNIQUE INDEX notification_templates_pkey ON public.notification_templates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "notifications",
+    "name": "notifications_pkey",
+    "definition": "CREATE UNIQUE INDEX notifications_pkey ON public.notifications USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_audit",
+    "name": "onboarding_audit_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_audit_pkey ON public.onboarding_audit USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_canonical_records",
+    "name": "onboarding_canonical_records_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_canonical_records_pkey ON public.onboarding_canonical_records USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_import_runs",
+    "name": "onboarding_import_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_import_runs_pkey ON public.onboarding_import_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_recrawl_jobs",
+    "name": "onboarding_recrawl_jobs_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_recrawl_jobs_pkey ON public.onboarding_recrawl_jobs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_actions",
+    "name": "onboarding_review_actions_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_review_actions_pkey ON public.onboarding_review_actions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_queue",
+    "name": "onboarding_review_queue_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_review_queue_pkey ON public.onboarding_review_queue USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_shop_candidates",
+    "name": "onboarding_shop_candidates_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_shop_candidates_pkey ON public.onboarding_shop_candidates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_source_records",
+    "name": "onboarding_source_records_pkey",
+    "definition": "CREATE UNIQUE INDEX onboarding_source_records_pkey ON public.onboarding_source_records USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ops_live_metrics",
+    "name": "ops_live_metrics_pkey",
+    "definition": "CREATE UNIQUE INDEX ops_live_metrics_pkey ON public.ops_live_metrics USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ops_sla_events",
+    "name": "ops_sla_events_pkey",
+    "definition": "CREATE UNIQUE INDEX ops_sla_events_pkey ON public.ops_sla_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions",
+    "name": "orbit_call_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_call_sessions_pkey ON public.orbit_call_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions_v2",
+    "name": "orbit_call_sessions_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_call_sessions_v2_pkey ON public.orbit_call_sessions_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals",
+    "name": "orbit_call_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_call_signals_pkey ON public.orbit_call_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals_v2",
+    "name": "orbit_call_signals_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_call_signals_v2_pkey ON public.orbit_call_signals_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_contacts_v2",
+    "name": "idx_orbit_contacts_v2_owner",
+    "definition": "CREATE INDEX idx_orbit_contacts_v2_owner ON public.orbit_contacts_v2 USING btree (owner_user_id, created_at DESC)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_contacts_v2",
+    "name": "orbit_contacts_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_contacts_v2_pkey ON public.orbit_contacts_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_device_keys",
+    "name": "orbit_device_keys_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_device_keys_pkey ON public.orbit_device_keys USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "idx_ogm_group",
+    "definition": "CREATE INDEX idx_ogm_group ON public.orbit_group_members USING btree (group_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "idx_ogm_user",
+    "definition": "CREATE INDEX idx_ogm_user ON public.orbit_group_members USING btree (user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_group_id_user_id_key",
+    "definition": "CREATE UNIQUE INDEX orbit_group_members_group_id_user_id_key ON public.orbit_group_members USING btree (group_id, user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "orbit_group_members_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_group_members_pkey ON public.orbit_group_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "idx_ogmsg_group",
+    "definition": "CREATE INDEX idx_ogmsg_group ON public.orbit_group_messages USING btree (group_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "orbit_group_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_group_messages_pkey ON public.orbit_group_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_groups_pkey ON public.orbit_groups USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_identity_profiles",
+    "name": "orbit_identity_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_identity_profiles_pkey ON public.orbit_identity_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_launch_audits",
+    "name": "orbit_launch_audits_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_launch_audits_pkey ON public.orbit_launch_audits USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_media_open_logs",
+    "name": "orbit_media_open_logs_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_media_open_logs_pkey ON public.orbit_media_open_logs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "idx_orbit_profiles_v2_orbit_id",
+    "definition": "CREATE INDEX idx_orbit_profiles_v2_orbit_id ON public.orbit_profiles_v2 USING btree (orbit_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "orbit_profiles_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_profiles_v2_pkey ON public.orbit_profiles_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_telemetry_events",
+    "name": "orbit_telemetry_events_pkey",
+    "definition": "CREATE UNIQUE INDEX orbit_telemetry_events_pkey ON public.orbit_telemetry_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_items",
+    "name": "order_items_pkey",
+    "definition": "CREATE UNIQUE INDEX order_items_pkey ON public.order_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_payout_locks",
+    "name": "order_payout_locks_pkey",
+    "definition": "CREATE UNIQUE INDEX order_payout_locks_pkey ON public.order_payout_locks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "order_status_history",
+    "name": "order_status_history_pkey",
+    "definition": "CREATE UNIQUE INDEX order_status_history_pkey ON public.order_status_history USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orders",
+    "name": "orders_pkey",
+    "definition": "CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "org_members_pkey",
+    "definition": "CREATE UNIQUE INDEX org_members_pkey ON public.org_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "org_secrets",
+    "name": "org_secrets_pkey",
+    "definition": "CREATE UNIQUE INDEX org_secrets_pkey ON public.org_secrets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "idx_organizations_owner",
+    "definition": "CREATE INDEX idx_organizations_owner ON public.organizations USING btree (owner_id)"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "organizations_pkey",
+    "definition": "CREATE UNIQUE INDEX organizations_pkey ON public.organizations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orgs",
+    "name": "orgs_pkey",
+    "definition": "CREATE UNIQUE INDEX orgs_pkey ON public.orgs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "orgs_tenant_view",
+    "name": "orgs_tenant_view_pkey",
+    "definition": "CREATE UNIQUE INDEX orgs_tenant_view_pkey ON public.orgs_tenant_view USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ota_connections",
+    "name": "ota_connections_pkey",
+    "definition": "CREATE UNIQUE INDEX ota_connections_pkey ON public.ota_connections USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_private_financials",
+    "name": "owner_private_financials_pkey",
+    "definition": "CREATE UNIQUE INDEX owner_private_financials_pkey ON public.owner_private_financials USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles",
+    "name": "owner_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX owner_profiles_pkey ON public.owner_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles_safe",
+    "name": "owner_profiles_safe_pkey",
+    "definition": "CREATE UNIQUE INDEX owner_profiles_safe_pkey ON public.owner_profiles_safe USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "parcel_job_details",
+    "name": "parcel_job_details_pkey",
+    "definition": "CREATE UNIQUE INDEX parcel_job_details_pkey ON public.parcel_job_details USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_events",
+    "name": "payment_events_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_events_pkey ON public.payment_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_intents",
+    "name": "payment_intents_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_intents_pkey ON public.payment_intents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_method_links",
+    "name": "payment_method_links_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_method_links_pkey ON public.payment_method_links USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_notices",
+    "name": "payment_notices_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_notices_pkey ON public.payment_notices USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_provider_events",
+    "name": "payment_provider_events_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_provider_events_pkey ON public.payment_provider_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_requests",
+    "name": "payment_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_requests_pkey ON public.payment_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payment_sessions",
+    "name": "payment_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX payment_sessions_pkey ON public.payment_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payments",
+    "name": "payments_pkey",
+    "definition": "CREATE UNIQUE INDEX payments_pkey ON public.payments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payout_profiles",
+    "name": "payout_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX payout_profiles_pkey ON public.payout_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "payout_requests",
+    "name": "payout_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX payout_requests_pkey ON public.payout_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "permission_templates",
+    "name": "permission_templates_pkey",
+    "definition": "CREATE UNIQUE INDEX permission_templates_pkey ON public.permission_templates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "phone_otp_sessions",
+    "name": "phone_otp_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX phone_otp_sessions_pkey ON public.phone_otp_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_actions_log",
+    "name": "platform_actions_log_pkey",
+    "definition": "CREATE UNIQUE INDEX platform_actions_log_pkey ON public.platform_actions_log USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_health_scores",
+    "name": "platform_health_scores_pkey",
+    "definition": "CREATE UNIQUE INDEX platform_health_scores_pkey ON public.platform_health_scores USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_policy_rules",
+    "name": "platform_policy_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX platform_policy_rules_pkey ON public.platform_policy_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_recovery_runs",
+    "name": "platform_recovery_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX platform_recovery_runs_pkey ON public.platform_recovery_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "platform_settings",
+    "name": "platform_settings_pkey",
+    "definition": "CREATE UNIQUE INDEX platform_settings_pkey ON public.platform_settings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "pos_orders",
+    "name": "pos_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX pos_orders_pkey ON public.pos_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "pricing_rules",
+    "name": "pricing_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX pricing_rules_pkey ON public.pricing_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "products",
+    "name": "products_pkey",
+    "definition": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX profiles_pkey ON public.profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "properties",
+    "name": "properties_pkey",
+    "definition": "CREATE UNIQUE INDEX properties_pkey ON public.properties USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_blocked_dates",
+    "name": "property_blocked_dates_pkey",
+    "definition": "CREATE UNIQUE INDEX property_blocked_dates_pkey ON public.property_blocked_dates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_documents",
+    "name": "property_documents_pkey",
+    "definition": "CREATE UNIQUE INDEX property_documents_pkey ON public.property_documents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_listings_v2",
+    "name": "property_listings_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX property_listings_v2_pkey ON public.property_listings_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "property_units",
+    "name": "property_units_pkey",
+    "definition": "CREATE UNIQUE INDEX property_units_pkey ON public.property_units USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_discovered_merchants",
+    "name": "public_discovered_merchants_pkey",
+    "definition": "CREATE UNIQUE INDEX public_discovered_merchants_pkey ON public.public_discovered_merchants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_listings",
+    "name": "public_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX public_listings_pkey ON public.public_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_marketplace_listings",
+    "name": "public_marketplace_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX public_marketplace_listings_pkey ON public.public_marketplace_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "public_storefront_settings",
+    "name": "public_storefront_settings_pkey",
+    "definition": "CREATE UNIQUE INDEX public_storefront_settings_pkey ON public.public_storefront_settings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "push_tokens",
+    "name": "push_tokens_pkey",
+    "definition": "CREATE UNIQUE INDEX push_tokens_pkey ON public.push_tokens USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_order_targets",
+    "name": "qr_order_targets_pkey",
+    "definition": "CREATE UNIQUE INDEX qr_order_targets_pkey ON public.qr_order_targets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_payment_sessions",
+    "name": "qr_payment_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX qr_payment_sessions_pkey ON public.qr_payment_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "qr_targets",
+    "name": "qr_targets_pkey",
+    "definition": "CREATE UNIQUE INDEX qr_targets_pkey ON public.qr_targets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_opportunities",
+    "name": "radar_opportunities_pkey",
+    "definition": "CREATE UNIQUE INDEX radar_opportunities_pkey ON public.radar_opportunities USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_rules",
+    "name": "radar_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX radar_rules_pkey ON public.radar_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "radar_signals",
+    "name": "radar_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX radar_signals_pkey ON public.radar_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ranking_snapshots",
+    "name": "ranking_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX ranking_snapshots_pkey ON public.ranking_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_leads",
+    "name": "real_estate_leads_pkey",
+    "definition": "CREATE UNIQUE INDEX real_estate_leads_pkey ON public.real_estate_leads USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_listings",
+    "name": "real_estate_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX real_estate_listings_pkey ON public.real_estate_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "recommendation_signals",
+    "name": "recommendation_signals_pkey",
+    "definition": "CREATE UNIQUE INDEX recommendation_signals_pkey ON public.recommendation_signals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "recon_alerts",
+    "name": "recon_alerts_pkey",
+    "definition": "CREATE UNIQUE INDEX recon_alerts_pkey ON public.recon_alerts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "idx_referral_referrer",
+    "definition": "CREATE INDEX idx_referral_referrer ON public.referral_rewards USING btree (referrer_user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_rewards_pkey",
+    "definition": "CREATE UNIQUE INDEX referral_rewards_pkey ON public.referral_rewards USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "referrals",
+    "name": "referrals_pkey",
+    "definition": "CREATE UNIQUE INDEX referrals_pkey ON public.referrals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "refund_requests",
+    "name": "refund_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX refund_requests_pkey ON public.refund_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reminders",
+    "name": "reminders_pkey",
+    "definition": "CREATE UNIQUE INDEX reminders_pkey ON public.reminders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_calls",
+    "name": "rent_calls_pkey",
+    "definition": "CREATE UNIQUE INDEX rent_calls_pkey ON public.rent_calls USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_payments",
+    "name": "rent_payments_pkey",
+    "definition": "CREATE UNIQUE INDEX rent_payments_pkey ON public.rent_payments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rent_revisions",
+    "name": "rent_revisions_pkey",
+    "definition": "CREATE UNIQUE INDEX rent_revisions_pkey ON public.rent_revisions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reservations",
+    "name": "reservations_pkey",
+    "definition": "CREATE UNIQUE INDEX reservations_pkey ON public.reservations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "reviews",
+    "name": "reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX reviews_pkey ON public.reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ride_disputes",
+    "name": "ride_disputes_pkey",
+    "definition": "CREATE UNIQUE INDEX ride_disputes_pkey ON public.ride_disputes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "ride_events",
+    "name": "ride_events_pkey",
+    "definition": "CREATE UNIQUE INDEX ride_events_pkey ON public.ride_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rider_profiles",
+    "name": "rider_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX rider_profiles_pkey ON public.rider_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rides",
+    "name": "rides_pkey",
+    "definition": "CREATE UNIQUE INDEX rides_pkey ON public.rides USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_config",
+    "name": "rtc_config_pkey",
+    "definition": "CREATE UNIQUE INDEX rtc_config_pkey ON public.rtc_config USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_signaling_messages",
+    "name": "rtc_signaling_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX rtc_signaling_messages_pkey ON public.rtc_signaling_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_runs",
+    "name": "runtime_qa_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX runtime_qa_runs_pkey ON public.runtime_qa_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_scenarios",
+    "name": "runtime_qa_scenarios_pkey",
+    "definition": "CREATE UNIQUE INDEX runtime_qa_scenarios_pkey ON public.runtime_qa_scenarios USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_steps",
+    "name": "runtime_qa_steps_pkey",
+    "definition": "CREATE UNIQUE INDEX runtime_qa_steps_pkey ON public.runtime_qa_steps USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_watchdog",
+    "name": "runtime_qa_watchdog_pkey",
+    "definition": "CREATE UNIQUE INDEX runtime_qa_watchdog_pkey ON public.runtime_qa_watchdog USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_activities",
+    "name": "sales_ai_activities_pkey",
+    "definition": "CREATE UNIQUE INDEX sales_ai_activities_pkey ON public.sales_ai_activities USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_leads",
+    "name": "sales_ai_leads_pkey",
+    "definition": "CREATE UNIQUE INDEX sales_ai_leads_pkey ON public.sales_ai_leads USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_runs",
+    "name": "sales_ai_sequence_runs_pkey",
+    "definition": "CREATE UNIQUE INDEX sales_ai_sequence_runs_pkey ON public.sales_ai_sequence_runs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_steps",
+    "name": "sales_ai_sequence_steps_pkey",
+    "definition": "CREATE UNIQUE INDEX sales_ai_sequence_steps_pkey ON public.sales_ai_sequence_steps USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequences",
+    "name": "sales_ai_sequences_pkey",
+    "definition": "CREATE UNIQUE INDEX sales_ai_sequences_pkey ON public.sales_ai_sequences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_addresses",
+    "name": "saved_addresses_pkey",
+    "definition": "CREATE UNIQUE INDEX saved_addresses_pkey ON public.saved_addresses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_carts",
+    "name": "saved_carts_pkey",
+    "definition": "CREATE UNIQUE INDEX saved_carts_pkey ON public.saved_carts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_listings",
+    "name": "saved_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX saved_listings_pkey ON public.saved_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "saved_searches",
+    "name": "saved_searches_pkey",
+    "definition": "CREATE UNIQUE INDEX saved_searches_pkey ON public.saved_searches USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seasonal_bookings",
+    "name": "seasonal_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX seasonal_bookings_pkey ON public.seasonal_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "security_nonces",
+    "name": "security_nonces_pkey",
+    "definition": "CREATE UNIQUE INDEX security_nonces_pkey ON public.security_nonces USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "security_reviews",
+    "name": "security_reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX security_reviews_pkey ON public.security_reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchant_promos",
+    "name": "seed_merchant_promos_pkey",
+    "definition": "CREATE UNIQUE INDEX seed_merchant_promos_pkey ON public.seed_merchant_promos USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchants",
+    "name": "seed_merchants_pkey",
+    "definition": "CREATE UNIQUE INDEX seed_merchants_pkey ON public.seed_merchants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seed_products",
+    "name": "seed_products_pkey",
+    "definition": "CREATE UNIQUE INDEX seed_products_pkey ON public.seed_products USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "seller_kpi_snapshots",
+    "name": "seller_kpi_snapshots_pkey",
+    "definition": "CREATE UNIQUE INDEX seller_kpi_snapshots_pkey ON public.seller_kpi_snapshots USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_bookings",
+    "name": "service_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX service_bookings_pkey ON public.service_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_profiles",
+    "name": "service_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX service_profiles_pkey ON public.service_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "service_providers",
+    "name": "service_providers_pkey",
+    "definition": "CREATE UNIQUE INDEX service_providers_pkey ON public.service_providers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_ledger",
+    "name": "settlement_ledger_pkey",
+    "definition": "CREATE UNIQUE INDEX settlement_ledger_pkey ON public.settlement_ledger USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_records",
+    "name": "settlement_records_pkey",
+    "definition": "CREATE UNIQUE INDEX settlement_records_pkey ON public.settlement_records USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "share_links",
+    "name": "share_links_pkey",
+    "definition": "CREATE UNIQUE INDEX share_links_pkey ON public.share_links USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_follows",
+    "name": "shop_follows_pkey",
+    "definition": "CREATE UNIQUE INDEX shop_follows_pkey ON public.shop_follows USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_tables",
+    "name": "shop_tables_pkey",
+    "definition": "CREATE UNIQUE INDEX shop_tables_pkey ON public.shop_tables USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "shop_terminals",
+    "name": "shop_terminals_pkey",
+    "definition": "CREATE UNIQUE INDEX shop_terminals_pkey ON public.shop_terminals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "source_ingestion_queue",
+    "name": "source_ingestion_queue_pkey",
+    "definition": "CREATE UNIQUE INDEX source_ingestion_queue_pkey ON public.source_ingestion_queue USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stay_availability",
+    "name": "stay_availability_pkey",
+    "definition": "CREATE UNIQUE INDEX stay_availability_pkey ON public.stay_availability USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stay_bookings",
+    "name": "stay_bookings_pkey",
+    "definition": "CREATE UNIQUE INDEX stay_bookings_pkey ON public.stay_bookings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notification_routes",
+    "name": "stealth_notification_routes_pkey",
+    "definition": "CREATE UNIQUE INDEX stealth_notification_routes_pkey ON public.stealth_notification_routes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notifications",
+    "name": "stealth_notifications_pkey",
+    "definition": "CREATE UNIQUE INDEX stealth_notifications_pkey ON public.stealth_notifications USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storage_assets",
+    "name": "storage_assets_pkey",
+    "definition": "CREATE UNIQUE INDEX storage_assets_pkey ON public.storage_assets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_access_invites",
+    "name": "storefront_access_invites_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_access_invites_pkey ON public.storefront_access_invites USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_addresses",
+    "name": "storefront_addresses_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_addresses_pkey ON public.storefront_addresses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_clicks",
+    "name": "storefront_affiliate_clicks_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_affiliate_clicks_pkey ON public.storefront_affiliate_clicks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_conversions",
+    "name": "storefront_affiliate_conversions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_affiliate_conversions_pkey ON public.storefront_affiliate_conversions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_programs",
+    "name": "storefront_affiliate_programs_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_affiliate_programs_pkey ON public.storefront_affiliate_programs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliates",
+    "name": "storefront_affiliates_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_affiliates_pkey ON public.storefront_affiliates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ai_chats",
+    "name": "storefront_ai_chats_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_ai_chats_pkey ON public.storefront_ai_chats USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_daily",
+    "name": "storefront_analytics_daily_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_analytics_daily_pkey ON public.storefront_analytics_daily USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_events",
+    "name": "storefront_analytics_events_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_analytics_events_pkey ON public.storefront_analytics_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auction_bids",
+    "name": "storefront_auction_bids_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_auction_bids_pkey ON public.storefront_auction_bids USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auctions",
+    "name": "storefront_auctions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_auctions_pkey ON public.storefront_auctions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auto_notifications",
+    "name": "storefront_auto_notifications_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_auto_notifications_pkey ON public.storefront_auto_notifications USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_badges",
+    "name": "storefront_badges_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_badges_pkey ON public.storefront_badges USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundle_items",
+    "name": "storefront_bundle_items_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_bundle_items_pkey ON public.storefront_bundle_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundles",
+    "name": "storefront_bundles_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_bundles_pkey ON public.storefront_bundles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_cart_items",
+    "name": "storefront_cart_items_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_cart_items_pkey ON public.storefront_cart_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_carts",
+    "name": "storefront_carts_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_carts_pkey ON public.storefront_carts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_catalog_categories",
+    "name": "storefront_catalog_categories_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_catalog_categories_pkey ON public.storefront_catalog_categories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenge_progress",
+    "name": "storefront_challenge_progress_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_challenge_progress_pkey ON public.storefront_challenge_progress USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenges",
+    "name": "storefront_challenges_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_challenges_pkey ON public.storefront_challenges USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_comparisons",
+    "name": "storefront_comparisons_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_comparisons_pkey ON public.storefront_comparisons USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupon_usage",
+    "name": "storefront_coupon_usage_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_coupon_usage_pkey ON public.storefront_coupon_usage USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupons",
+    "name": "storefront_coupons_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_coupons_pkey ON public.storefront_coupons USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_crm_customers",
+    "name": "storefront_crm_customers_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_crm_customers_pkey ON public.storefront_crm_customers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_deal_subscribers",
+    "name": "storefront_deal_subscribers_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_deal_subscribers_pkey ON public.storefront_deal_subscribers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_products",
+    "name": "storefront_digital_products_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_digital_products_pkey ON public.storefront_digital_products USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_purchases",
+    "name": "storefront_digital_purchases_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_digital_purchases_pkey ON public.storefront_digital_purchases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_faq",
+    "name": "storefront_faq_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_faq_pkey ON public.storefront_faq USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_flash_sales",
+    "name": "storefront_flash_sales_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_flash_sales_pkey ON public.storefront_flash_sales USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_card_transactions",
+    "name": "storefront_gift_card_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_gift_card_transactions_pkey ON public.storefront_gift_card_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_cards",
+    "name": "storefront_gift_cards_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_gift_cards_pkey ON public.storefront_gift_cards USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_growth_metrics",
+    "name": "storefront_growth_metrics_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_growth_metrics_pkey ON public.storefront_growth_metrics USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_import_jobs",
+    "name": "storefront_import_jobs_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_import_jobs_pkey ON public.storefront_import_jobs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_influencer_collabs",
+    "name": "storefront_influencer_collabs_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_influencer_collabs_pkey ON public.storefront_influencer_collabs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_inventory_alerts",
+    "name": "storefront_inventory_alerts_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_inventory_alerts_pkey ON public.storefront_inventory_alerts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_invoices",
+    "name": "storefront_invoices_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_invoices_pkey ON public.storefront_invoices USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_leaderboard",
+    "name": "storefront_leaderboard_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_leaderboard_pkey ON public.storefront_leaderboard USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_chat",
+    "name": "storefront_live_chat_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_live_chat_pkey ON public.storefront_live_chat USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_sessions",
+    "name": "storefront_live_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_live_sessions_pkey ON public.storefront_live_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_history",
+    "name": "storefront_loyalty_history_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_history_pkey ON public.storefront_loyalty_history USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_members",
+    "name": "storefront_loyalty_members_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_members_pkey ON public.storefront_loyalty_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_points",
+    "name": "storefront_loyalty_points_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_points_pkey ON public.storefront_loyalty_points USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_programs",
+    "name": "storefront_loyalty_programs_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_programs_pkey ON public.storefront_loyalty_programs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_rewards",
+    "name": "storefront_loyalty_rewards_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_rewards_pkey ON public.storefront_loyalty_rewards USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_tiers",
+    "name": "storefront_loyalty_tiers_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_tiers_pkey ON public.storefront_loyalty_tiers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_transactions",
+    "name": "storefront_loyalty_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_loyalty_transactions_pkey ON public.storefront_loyalty_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_log",
+    "name": "storefront_notification_log_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_notification_log_pkey ON public.storefront_notification_log USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_preferences",
+    "name": "storefront_notification_preferences_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_notification_preferences_pkey ON public.storefront_notification_preferences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_order_items",
+    "name": "storefront_order_items_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_order_items_pkey ON public.storefront_order_items USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_orders",
+    "name": "storefront_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_orders_pkey ON public.storefront_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_listings",
+    "name": "storefront_p2p_listings_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_p2p_listings_pkey ON public.storefront_p2p_listings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_transactions",
+    "name": "storefront_p2p_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_p2p_transactions_pkey ON public.storefront_p2p_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_pages",
+    "name": "storefront_pages_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_pages_pkey ON public.storefront_pages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_product_questions",
+    "name": "storefront_product_questions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_product_questions_pkey ON public.storefront_product_questions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_products_pkey ON public.storefront_products USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_conversions",
+    "name": "storefront_referral_conversions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_referral_conversions_pkey ON public.storefront_referral_conversions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_links",
+    "name": "storefront_referral_links_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_referral_links_pkey ON public.storefront_referral_links USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_refund_policies",
+    "name": "storefront_refund_policies_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_refund_policies_pkey ON public.storefront_refund_policies USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_return_requests",
+    "name": "storefront_return_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_return_requests_pkey ON public.storefront_return_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_returns",
+    "name": "storefront_returns_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_returns_pkey ON public.storefront_returns USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_review_votes",
+    "name": "storefront_review_votes_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_review_votes_pkey ON public.storefront_review_votes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_reviews",
+    "name": "storefront_reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_reviews_pkey ON public.storefront_reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfq_quotes",
+    "name": "storefront_rfq_quotes_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_rfq_quotes_pkey ON public.storefront_rfq_quotes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfqs",
+    "name": "storefront_rfqs_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_rfqs_pkey ON public.storefront_rfqs USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_risk_flags",
+    "name": "storefront_risk_flags_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_risk_flags_pkey ON public.storefront_risk_flags USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipments",
+    "name": "storefront_shipments_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_shipments_pkey ON public.storefront_shipments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipping_zones",
+    "name": "storefront_shipping_zones_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_shipping_zones_pkey ON public.storefront_shipping_zones USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_comments",
+    "name": "storefront_social_comments_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_social_comments_pkey ON public.storefront_social_comments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_likes",
+    "name": "storefront_social_likes_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_social_likes_pkey ON public.storefront_social_likes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_posts",
+    "name": "storefront_social_posts_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_social_posts_pkey ON public.storefront_social_posts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_stock_movements",
+    "name": "storefront_stock_movements_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_stock_movements_pkey ON public.storefront_stock_movements USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_credits",
+    "name": "storefront_store_credits_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_store_credits_pkey ON public.storefront_store_credits USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_group_members",
+    "name": "storefront_store_group_members_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_store_group_members_pkey ON public.storefront_store_group_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_groups",
+    "name": "storefront_store_groups_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_store_groups_pkey ON public.storefront_store_groups USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_box_enrollments",
+    "name": "storefront_sub_box_enrollments_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_sub_box_enrollments_pkey ON public.storefront_sub_box_enrollments USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_boxes",
+    "name": "storefront_sub_boxes_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_sub_boxes_pkey ON public.storefront_sub_boxes USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_orders",
+    "name": "storefront_subscription_orders_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_subscription_orders_pkey ON public.storefront_subscription_orders USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_plans",
+    "name": "storefront_subscription_plans_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_subscription_plans_pkey ON public.storefront_subscription_plans USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions",
+    "name": "storefront_subscriptions_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_subscriptions_pkey ON public.storefront_subscriptions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions_v2",
+    "name": "storefront_subscriptions_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_subscriptions_v2_pkey ON public.storefront_subscriptions_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_messages",
+    "name": "storefront_support_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_support_messages_pkey ON public.storefront_support_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_tickets",
+    "name": "storefront_support_tickets_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_support_tickets_pkey ON public.storefront_support_tickets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_tax_rules",
+    "name": "storefront_tax_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_tax_rules_pkey ON public.storefront_tax_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ticket_messages",
+    "name": "storefront_ticket_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_ticket_messages_pkey ON public.storefront_ticket_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_translations",
+    "name": "storefront_translations_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_translations_pkey ON public.storefront_translations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_trust_scores",
+    "name": "storefront_trust_scores_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_trust_scores_pkey ON public.storefront_trust_scores USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_user_badges",
+    "name": "storefront_user_badges_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_user_badges_pkey ON public.storefront_user_badges USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendor_payouts",
+    "name": "storefront_vendor_payouts_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_vendor_payouts_pkey ON public.storefront_vendor_payouts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendors",
+    "name": "storefront_vendors_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_vendors_pkey ON public.storefront_vendors USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_stock",
+    "name": "storefront_warehouse_stock_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_warehouse_stock_pkey ON public.storefront_warehouse_stock USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_transfers",
+    "name": "storefront_warehouse_transfers_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_warehouse_transfers_pkey ON public.storefront_warehouse_transfers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouses",
+    "name": "storefront_warehouses_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_warehouses_pkey ON public.storefront_warehouses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist",
+    "name": "storefront_wishlist_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_wishlist_pkey ON public.storefront_wishlist USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist_shares",
+    "name": "storefront_wishlist_shares_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_wishlist_shares_pkey ON public.storefront_wishlist_shares USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlists",
+    "name": "storefront_wishlists_pkey",
+    "definition": "CREATE UNIQUE INDEX storefront_wishlists_pkey ON public.storefront_wishlists USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "subcategories",
+    "name": "subcategories_pkey",
+    "definition": "CREATE UNIQUE INDEX subcategories_pkey ON public.subcategories USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "subscriptions",
+    "name": "subscriptions_pkey",
+    "definition": "CREATE UNIQUE INDEX subscriptions_pkey ON public.subscriptions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "support_ticket_messages",
+    "name": "support_ticket_messages_pkey",
+    "definition": "CREATE UNIQUE INDEX support_ticket_messages_pkey ON public.support_ticket_messages USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "support_tickets",
+    "name": "support_tickets_pkey",
+    "definition": "CREATE UNIQUE INDEX support_tickets_pkey ON public.support_tickets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_events",
+    "name": "surge_pricing_events_pkey",
+    "definition": "CREATE UNIQUE INDEX surge_pricing_events_pkey ON public.surge_pricing_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_rules",
+    "name": "surge_pricing_rules_pkey",
+    "definition": "CREATE UNIQUE INDEX surge_pricing_rules_pkey ON public.surge_pricing_rules USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "system_feature_flags",
+    "name": "system_feature_flags_pkey",
+    "definition": "CREATE UNIQUE INDEX system_feature_flags_pkey ON public.system_feature_flags USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tasks",
+    "name": "tasks_pkey",
+    "definition": "CREATE UNIQUE INDEX tasks_pkey ON public.tasks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_aliases",
+    "name": "taxonomy_aliases_pkey",
+    "definition": "CREATE UNIQUE INDEX taxonomy_aliases_pkey ON public.taxonomy_aliases USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_assignments_core",
+    "name": "taxonomy_assignments_core_pkey",
+    "definition": "CREATE UNIQUE INDEX taxonomy_assignments_core_pkey ON public.taxonomy_assignments_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_gap_candidates",
+    "name": "taxonomy_gap_candidates_pkey",
+    "definition": "CREATE UNIQUE INDEX taxonomy_gap_candidates_pkey ON public.taxonomy_gap_candidates USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_nodes_core",
+    "name": "taxonomy_nodes_core_pkey",
+    "definition": "CREATE UNIQUE INDEX taxonomy_nodes_core_pkey ON public.taxonomy_nodes_core USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_tasks",
+    "name": "team_tasks_pkey",
+    "definition": "CREATE UNIQUE INDEX team_tasks_pkey ON public.team_tasks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspace_members",
+    "name": "team_workspace_members_pkey",
+    "definition": "CREATE UNIQUE INDEX team_workspace_members_pkey ON public.team_workspace_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspaces",
+    "name": "team_workspaces_pkey",
+    "definition": "CREATE UNIQUE INDEX team_workspaces_pkey ON public.team_workspaces USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_documents",
+    "name": "tenant_documents_pkey",
+    "definition": "CREATE UNIQUE INDEX tenant_documents_pkey ON public.tenant_documents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_invitations",
+    "name": "tenant_invitations_pkey",
+    "definition": "CREATE UNIQUE INDEX tenant_invitations_pkey ON public.tenant_invitations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_private_contacts",
+    "name": "tenant_private_contacts_pkey",
+    "definition": "CREATE UNIQUE INDEX tenant_private_contacts_pkey ON public.tenant_private_contacts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tenants",
+    "name": "tenants_pkey",
+    "definition": "CREATE UNIQUE INDEX tenants_pkey ON public.tenants USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "topup_requests",
+    "name": "topup_requests_pkey",
+    "definition": "CREATE UNIQUE INDEX topup_requests_pkey ON public.topup_requests USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_positions",
+    "name": "tracking_positions_pkey",
+    "definition": "CREATE UNIQUE INDEX tracking_positions_pkey ON public.tracking_positions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_sessions",
+    "name": "tracking_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX tracking_sessions_pkey ON public.tracking_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_intents",
+    "name": "transaction_intents_pkey",
+    "definition": "CREATE UNIQUE INDEX transaction_intents_pkey ON public.transaction_intents USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_journal",
+    "name": "transaction_journal_pkey",
+    "definition": "CREATE UNIQUE INDEX transaction_journal_pkey ON public.transaction_journal USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "trip_location_points",
+    "name": "trip_location_points_pkey",
+    "definition": "CREATE UNIQUE INDEX trip_location_points_pkey ON public.trip_location_points USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "unified_wallet_transactions",
+    "name": "unified_wallet_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX unified_wallet_transactions_pkey ON public.unified_wallet_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "universal_reputation_scores",
+    "name": "universal_reputation_scores_pkey",
+    "definition": "CREATE UNIQUE INDEX universal_reputation_scores_pkey ON public.universal_reputation_scores USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_active_address_context",
+    "name": "user_active_address_context_pkey",
+    "definition": "CREATE UNIQUE INDEX user_active_address_context_pkey ON public.user_active_address_context USING btree (user_id, context_type)"
+  },
+  {
+    "schema": "public",
+    "table": "user_addresses",
+    "name": "user_addresses_pkey",
+    "definition": "CREATE UNIQUE INDEX user_addresses_pkey ON public.user_addresses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_favorites",
+    "name": "user_favorites_pkey",
+    "definition": "CREATE UNIQUE INDEX user_favorites_pkey ON public.user_favorites USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_key_bundles",
+    "name": "user_key_bundles_pkey",
+    "definition": "CREATE UNIQUE INDEX user_key_bundles_pkey ON public.user_key_bundles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_kyc_profiles",
+    "name": "user_kyc_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX user_kyc_profiles_pkey ON public.user_kyc_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_notification_preferences",
+    "name": "user_notification_preferences_pkey",
+    "definition": "CREATE UNIQUE INDEX user_notification_preferences_pkey ON public.user_notification_preferences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_payment_preferences",
+    "name": "user_payment_preferences_pkey",
+    "definition": "CREATE UNIQUE INDEX user_payment_preferences_pkey ON public.user_payment_preferences USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_private_data",
+    "name": "user_private_data_pkey",
+    "definition": "CREATE UNIQUE INDEX user_private_data_pkey ON public.user_private_data USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_profiles",
+    "name": "user_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX user_profiles_pkey ON public.user_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_push_tokens",
+    "name": "user_push_tokens_pkey",
+    "definition": "CREATE UNIQUE INDEX user_push_tokens_pkey ON public.user_push_tokens USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_events",
+    "name": "user_radar_events_pkey",
+    "definition": "CREATE UNIQUE INDEX user_radar_events_pkey ON public.user_radar_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_profiles",
+    "name": "user_radar_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX user_radar_profiles_pkey ON public.user_radar_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_recommendations",
+    "name": "user_radar_recommendations_pkey",
+    "definition": "CREATE UNIQUE INDEX user_radar_recommendations_pkey ON public.user_radar_recommendations USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_sessions",
+    "name": "user_radar_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX user_radar_sessions_pkey ON public.user_radar_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_reports",
+    "name": "user_reports_pkey",
+    "definition": "CREATE UNIQUE INDEX user_reports_pkey ON public.user_reports USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_roles",
+    "name": "user_roles_pkey",
+    "definition": "CREATE UNIQUE INDEX user_roles_pkey ON public.user_roles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_saved_addresses",
+    "name": "user_saved_addresses_pkey",
+    "definition": "CREATE UNIQUE INDEX user_saved_addresses_pkey ON public.user_saved_addresses USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "user_sessions",
+    "name": "user_sessions_pkey",
+    "definition": "CREATE UNIQUE INDEX user_sessions_pkey ON public.user_sessions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "vault_files",
+    "name": "vault_files_pkey",
+    "definition": "CREATE UNIQUE INDEX vault_files_pkey ON public.vault_files USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "vendor_commissions",
+    "name": "vendor_commissions_pkey",
+    "definition": "CREATE UNIQUE INDEX vendor_commissions_pkey ON public.vendor_commissions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "verified_reviews",
+    "name": "verified_reviews_pkey",
+    "definition": "CREATE UNIQUE INDEX verified_reviews_pkey ON public.verified_reviews USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "verticals",
+    "name": "verticals_pkey",
+    "definition": "CREATE UNIQUE INDEX verticals_pkey ON public.verticals USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "visual_audit_reports",
+    "name": "visual_audit_reports_pkey",
+    "definition": "CREATE UNIQUE INDEX visual_audit_reports_pkey ON public.visual_audit_reports USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "wallet_accounts_one_active_per_owner_currency_idx",
+    "definition": "CREATE UNIQUE INDEX wallet_accounts_one_active_per_owner_currency_idx ON public.wallet_accounts USING btree (owner_user_id, currency) WHERE ((status = 'active'::text) AND (owner_user_id IS NOT NULL) AND (currency IS NOT NULL))"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "wallet_accounts_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_accounts_pkey ON public.wallet_accounts USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_balances",
+    "name": "wallet_balances_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_balances_pkey ON public.wallet_balances USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_credit_transactions",
+    "name": "wallet_credit_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_credit_transactions_pkey ON public.wallet_credit_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_ledger_entries",
+    "name": "wallet_ledger_entries_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_ledger_entries_pkey ON public.wallet_ledger_entries USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_limit_profiles",
+    "name": "wallet_limit_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_limit_profiles_pkey ON public.wallet_limit_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_order_splits",
+    "name": "wallet_order_splits_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_order_splits_pkey ON public.wallet_order_splits USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_pins",
+    "name": "wallet_pins_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_pins_pkey ON public.wallet_pins USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_security_events",
+    "name": "wallet_security_events_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_security_events_pkey ON public.wallet_security_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transaction_challenges",
+    "name": "wallet_transaction_challenges_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_transaction_challenges_pkey ON public.wallet_transaction_challenges USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transactions",
+    "name": "wallet_transactions_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_transactions_pkey ON public.wallet_transactions USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wallet_transfers_idempotency_key_key",
+    "definition": "CREATE UNIQUE INDEX wallet_transfers_idempotency_key_key ON public.wallet_transfers USING btree (idempotency_key)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wallet_transfers_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_transfers_pkey ON public.wallet_transfers USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_trusted_devices",
+    "name": "wallet_trusted_devices_pkey",
+    "definition": "CREATE UNIQUE INDEX wallet_trusted_devices_pkey ON public.wallet_trusted_devices USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets",
+    "name": "wallets_pkey",
+    "definition": "CREATE UNIQUE INDEX wallets_pkey ON public.wallets USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "idx_wallets_v2_user_id",
+    "definition": "CREATE INDEX idx_wallets_v2_user_id ON public.wallets_v2 USING btree (user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "wallets_v2_pkey",
+    "definition": "CREATE UNIQUE INDEX wallets_v2_pkey ON public.wallets_v2 USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "webhook_deliveries",
+    "name": "webhook_deliveries_pkey",
+    "definition": "CREATE UNIQUE INDEX webhook_deliveries_pkey ON public.webhook_deliveries USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "webhooks",
+    "name": "webhooks_pkey",
+    "definition": "CREATE UNIQUE INDEX webhooks_pkey ON public.webhooks USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_members",
+    "name": "workspace_members_pkey",
+    "definition": "CREATE UNIQUE INDEX workspace_members_pkey ON public.workspace_members USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_settings",
+    "name": "workspace_settings_pkey",
+    "definition": "CREATE UNIQUE INDEX workspace_settings_pkey ON public.workspace_settings USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "workspaces",
+    "name": "workspaces_pkey",
+    "definition": "CREATE UNIQUE INDEX workspaces_pkey ON public.workspaces USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zone_events",
+    "name": "idx_zone_events_active",
+    "definition": "CREATE INDEX idx_zone_events_active ON public.zone_events USING btree (is_active) WHERE (is_active = true)"
+  },
+  {
+    "schema": "public",
+    "table": "zone_events",
+    "name": "zone_events_pkey",
+    "definition": "CREATE UNIQUE INDEX zone_events_pkey ON public.zone_events USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zone_live_profiles",
+    "name": "zone_live_profiles_pkey",
+    "definition": "CREATE UNIQUE INDEX zone_live_profiles_pkey ON public.zone_live_profiles USING btree (id)"
+  },
+  {
+    "schema": "public",
+    "table": "zones",
+    "name": "zones_pkey",
+    "definition": "CREATE UNIQUE INDEX zones_pkey ON public.zones USING btree (id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "execution_locks_pkey",
+    "definition": "CREATE UNIQUE INDEX execution_locks_pkey ON system.execution_locks USING btree (lock_key)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "idx_execution_locks_expires_at",
+    "definition": "CREATE INDEX idx_execution_locks_expires_at ON system.execution_locks USING btree (expires_at)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "idx_execution_locks_owner_id",
+    "definition": "CREATE INDEX idx_execution_locks_owner_id ON system.execution_locks USING btree (owner_id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_idempotency_key_active_uniq",
+    "definition": "CREATE UNIQUE INDEX execution_tasks_idempotency_key_active_uniq ON system.execution_tasks USING btree (idempotency_key) WHERE ((idempotency_key IS NOT NULL) AND (status = ANY (ARRAY['pending_review'::system.execution_task_status, 'approved'::system.execution_task_status, 'queued'::system.execution_task_status, 'running'::system.execution_task_status, 'blocked'::system.execution_task_status, 'failed'::system.execution_task_status])))"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_pkey",
+    "definition": "CREATE UNIQUE INDEX execution_tasks_pkey ON system.execution_tasks USING btree (id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_correlation_id",
+    "definition": "CREATE INDEX idx_execution_tasks_correlation_id ON system.execution_tasks USING btree (correlation_id) WHERE (correlation_id IS NOT NULL)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_created_at",
+    "definition": "CREATE INDEX idx_execution_tasks_created_at ON system.execution_tasks USING btree (created_at DESC)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_domain",
+    "definition": "CREATE INDEX idx_execution_tasks_domain ON system.execution_tasks USING btree (domain)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_entity",
+    "definition": "CREATE INDEX idx_execution_tasks_entity ON system.execution_tasks USING btree (entity_type, entity_id) WHERE (entity_type IS NOT NULL)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_lock_key",
+    "definition": "CREATE INDEX idx_execution_tasks_lock_key ON system.execution_tasks USING btree (lock_key) WHERE (lock_key IS NOT NULL)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_parent",
+    "definition": "CREATE INDEX idx_execution_tasks_parent ON system.execution_tasks USING btree (parent_task_id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_risk_level",
+    "definition": "CREATE INDEX idx_execution_tasks_risk_level ON system.execution_tasks USING btree (risk_level)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_root_task_id",
+    "definition": "CREATE INDEX idx_execution_tasks_root_task_id ON system.execution_tasks USING btree (root_task_id)"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "idx_execution_tasks_status_active",
+    "definition": "CREATE INDEX idx_execution_tasks_status_active ON system.execution_tasks USING btree (status, created_at) WHERE (status = ANY (ARRAY['draft'::system.execution_task_status, 'pending_review'::system.execution_task_status, 'approved'::system.execution_task_status, 'queued'::system.execution_task_status, 'running'::system.execution_task_status, 'failed'::system.execution_task_status, 'blocked'::system.execution_task_status]))"
+  }
+]

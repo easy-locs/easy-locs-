@@ -1,0 +1,17 @@
+[
+  {
+    "schema": "public",
+    "name": "app_role",
+    "labels": "{admin,user,manager,owner,agent,viewer}"
+  },
+  {
+    "schema": "system",
+    "name": "execution_task_risk",
+    "labels": "{SAFE,MEDIUM,CRITICAL}"
+  },
+  {
+    "schema": "system",
+    "name": "execution_task_status",
+    "labels": "{draft,pending_review,approved,rejected,queued,running,succeeded,failed,blocked,rolled_back,cancelled}"
+  }
+]
