@@ -5,10 +5,13 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
@@ -16,6 +19,7 @@ import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -59,6 +63,8 @@ import {
   armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 <<<<<<< HEAD
@@ -111,6 +117,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     await assertNotKilled(sb);
@@ -127,6 +134,8 @@ Deno.serve(async (req) => {
 =======
 =======
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
     await assertNotKilled(sb);
 
     // Pre-check quotas/policy (canSpawn) up-front so policy violations
@@ -188,6 +197,7 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -222,6 +232,8 @@ Deno.serve(async (req) => {
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
