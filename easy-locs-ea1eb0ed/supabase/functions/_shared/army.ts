@@ -85,6 +85,7 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
   return jsonResponse(req, { error: "unauthorized" }, 401);
 }
 
+<<<<<<< HEAD
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call. Plain authenticated
@@ -97,6 +98,7 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   if (id.kind === "user" && id.supreme) return null;
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -135,6 +137,10 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 >>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
