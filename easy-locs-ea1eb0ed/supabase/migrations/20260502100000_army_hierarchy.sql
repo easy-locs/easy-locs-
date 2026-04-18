@@ -667,10 +667,6 @@ alter table army.incident_log     enable row level security;
 alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
 alter table army.queue_registry   enable row level security;
-<<<<<<< HEAD
-
-=======
->>>>>>> 26574a7567 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
@@ -689,10 +685,6 @@ begin
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
       'queue_messages','queue_registry','agent_roles','agent_policies'])
-<<<<<<< HEAD
-
-=======
->>>>>>> 26574a7567 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
