@@ -5,7 +5,7 @@ const BASE_URL = process.env.BASE_URL || "https://easy-locs.com";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: false,
+  forbidOnly: true,
   retries: 1,
   workers: 4,
   reporter: [
