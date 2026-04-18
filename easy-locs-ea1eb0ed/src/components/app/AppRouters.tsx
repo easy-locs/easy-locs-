@@ -2,27 +2,15 @@
  * AppRouters — Extracted route-level decision components from App.tsx.
  * Single responsibility: root-level routing logic (/, /home).
  */
-import { Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthSession } from "@/contexts/AuthContext";
 import SharedPageLoader from "@/components/brand/PageLoader";
 import Index from "@/pages/Index";
 import { Dashboard } from "@/app/app-route-registry";
+import { useProfileTimeout } from "@/hooks/useProfileTimeout";
 
 const PageLoader = ({ dark }: { dark?: boolean }) => <SharedPageLoader dark={dark} />;
-
-function useProfileTimeout(profileLoaded: boolean, userId: string | undefined, ms = 5000) {
-  const [timedOut, setTimedOut] = useState(false);
-  useEffect(() => {
-    setTimedOut(false);
-  }, [userId]);
-  useEffect(() => {
-    if (profileLoaded) return;
-    const t = setTimeout(() => setTimedOut(true), ms);
-    return () => clearTimeout(t);
-  }, [profileLoaded, ms]);
-  return profileLoaded || timedOut;
-}
 
 /**
  * Route "/" → Dashboard (authenticated) or Index (guest).
@@ -58,22 +46,8 @@ export function HomeRouter() {
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
 
-/** Route "/home" → Dashboard (authenticated) or Index (guest). Same gate semantics as `HomeRouter`. */
-export function MarketplaceHomeRouter() {
-  const { user, loading, profileLoaded, emailConfirmed, phoneVerified } = useAuthSession();
-  const ready = useProfileTimeout(profileLoaded, user?.id);
-  const location = useLocation();
-  if (loading) return <PageLoader dark={!user} />;
-  if (!user) return <Index />;
-  if (!ready) return <PageLoader />;
-  if (!emailConfirmed && !phoneVerified) {
-    return (
-      <Navigate
-        to="/verify-account"
-        replace
-        state={{ from: location, reason: "verification-required" }}
-      />
-    );
-  }
-  return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
-}
+/**
+ * Route "/home" → identical semantics to `HomeRouter`. Re-exported as the
+ * same component so the two routes can never drift in their gate logic.
+ */
+export const MarketplaceHomeRouter = HomeRouter;
