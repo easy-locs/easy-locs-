@@ -137,8 +137,6 @@ export async function requireSupreme(req: Request): Promise<Response | null> {
   return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
 }
 
-=======
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> ec7185642b (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 /** Allow service role OR any authenticated user. */
@@ -163,11 +161,14 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
 
->>>>>>> 1d3768c1a2 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 =======
 >>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6befb4644f (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> eb2660a6ac (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
