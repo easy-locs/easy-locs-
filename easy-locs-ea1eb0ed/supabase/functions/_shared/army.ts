@@ -41,6 +41,7 @@ export async function identifyCaller(req: Request): Promise<
   const { data: u, error } = await userClient.auth.getUser();
   if (error || !u?.user?.id) return { kind: "anonymous" };
 
+  // Probe known role tables (tolerant — different conventions in this repo).
   let supreme = false;
   try {
     const { data: roles } = await userClient
@@ -80,10 +81,11 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
   return jsonResponse(req, { error: "unauthorized" }, 401);
 }
 
-<<<<<<< HEAD
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
- * (cron / army-tick) and Supreme Commander may call.
+ * (cron / army-tick) and Supreme Commander may call. Plain authenticated
+ * users — even of the host app — are rejected because these endpoints
+ * progress the chain and write incidents on behalf of the system.
  */
 export async function identifyCaller(req: Request): Promise<
   | { kind: "service" }
@@ -138,6 +140,19 @@ export async function requireSupreme(req: Request): Promise<Response | null> {
   return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
 }
 
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> ec7185642b (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+/** Allow service role OR any authenticated user. */
+export async function requireAuthenticated(req: Request): Promise<Response | null> {
+  const id = await identifyCaller(req);
+  if (id.kind === "service" || id.kind === "user") return null;
+  return jsonResponse(req, { error: "unauthorized" }, 401);
+}
+
+=======
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call. Plain authenticated
@@ -152,20 +167,11 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 }
 
 =======
->>>>>>> 850bb97fd8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+>>>>>>> 1d3768c1a2 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 =======
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
->>>>>>> 6448e80554 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-=======
->>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-=======
-=======
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
->>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
->>>>>>> 9a77db1c58 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
