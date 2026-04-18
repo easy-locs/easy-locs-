@@ -1100,3 +1100,22 @@ Full audit in `docs/SUPERAPP_DEEP_AUDIT_2026.md`. 22 upgrade items implemented a
 - **Platform Bus Events**: `agent:chief_started`, `agent:chief_completed`, `agent:subtask_started`, `agent:subtask_completed`, `agent:status_changed` — registered in APP_EVENTS and ColonCanonicalEventMap
 - **DB Migration**: `supabase/migrations/20260416800000_agent_command_history.sql`
 - **Audit Logging**: Every command logged with user_id, interpreted_intent, agents_used, result_summary, detailed_log, correlation_id via the chief-agent Edge Function
+
+## Backend Health Endpoint SLO (`/api/health`)
+
+- **Endpoint**: `GET /api/health` (Vercel serverless function in `api/health.ts`).
+- **Purpose**: Real backend health probe for uptime monitors (Vercel/UptimeRobot/etc.) — distinguishes "site up but APIs dead" from "fully healthy".
+- **Response shape** (JSON):
+  - `status`: `"healthy" | "degraded" | "unhealthy"` (rolled up from the critical Supabase signal).
+  - `timestamp`: ISO-8601 string.
+  - `uptimeSec`, `region`, `commit`: process/runtime metadata (Vercel envs).
+  - `totalMs`: total probe latency.
+  - `checks.supabase`: Supabase REST/auth reachability (`/auth/v1/health`).
+  - `checks.health_check`: result of calling `supabase/functions/health-check`.
+  - `checks.integration_health_monitor`: result of calling `supabase/functions/integration-health-monitor`.
+  - `integrations`: flat `name -> status` map merged from both edge function payloads (plaid, livekit, meilisearch, news_apis, database, storage, scheduled_jobs, …).
+- **HTTP status**: `200` when healthy/degraded, `503` when `unhealthy` (Supabase unreachable). `HEAD` supported for lightweight probes.
+- **Auth**: anonymous. Edge function detail is enriched when `HEALTH_CHECK_SECRET` is set in Vercel env (Bearer); otherwise the public OK shape is used and reported as `ok`/`skipped` without degrading overall status.
+- **Caching**: `Cache-Control: no-store` — never cached at edge or browser.
+- **SLO target**: 99.9% monthly availability of HTTP 200; p95 latency < 1500ms.
+- **Env vars used**: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `HEALTH_CHECK_SECRET`, optional `SUPABASE_HEALTH_CHECK_URL`, `SUPABASE_INTEGRATION_HEALTH_URL`.
