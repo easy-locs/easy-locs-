@@ -159,7 +159,12 @@ export function initSentryBoot() {
         /rainviewer\.com/i,
         /open-meteo\.com/i,
       ],
-      tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
+      // NOTE: Do NOT include /\.supabase\.co/ here. Sentry browser tracing
+      // injects `sentry-trace` and `baggage` headers on matching outgoing
+      // fetches; Supabase Edge Functions do not list those headers in their
+      // CORS Access-Control-Allow-Headers, so the browser preflight fails
+      // and silently kills auth flows like send-otp / verify-otp.
+      tracePropagationTargets: ["localhost", /\.replit\.dev/],
     });
     Sentry.setTag("app.version", APP_VERSION);
     Sentry.setTag("boot.phase", "pre-mount");
@@ -340,7 +345,10 @@ export function initSentry() {
       /rainviewer\.com/i,
       /open-meteo\.com/i,
     ],
-    tracePropagationTargets: ["localhost", /\.supabase\.co/, /\.replit\.dev/],
+    // See note above: excluding /\.supabase\.co/ on purpose so Sentry does
+    // not inject `sentry-trace` / `baggage` headers that Edge Functions
+    // refuse via CORS.
+    tracePropagationTargets: ["localhost", /\.replit\.dev/],
   });
 
   Sentry.setTag("app.version", APP_VERSION);
