@@ -10,10 +10,11 @@ import type { AuditScanInput } from './agents/audit-agent';
 import type { ProposedTask } from './types';
 import type { RepairExecutor } from './agents/repair-agent';
 import { runEvolutionCycle, type CycleResult } from './pipeline';
-import { subscribe, getEvents, getSummary } from './monitoring';
-import { listProposals } from './approval';
-import { listEntries } from './registry';
+import { subscribe, getEvents, getSummary, hydrateEvents, buildPerformanceImpact } from './monitoring';
+import { listProposals, hydrateProposals } from './approval';
+import { listEntries, hydrateRegistry } from './registry';
 import { evolutionPersistence } from './persistence';
+import { setEvolutionConfig } from './config';
 
 const SEVERITY_MAP: Record<string, AuditScanInput['severity']> = {
   critical: 'critical',
@@ -131,6 +132,24 @@ let persistenceWired = false;
 export function wireEvolutionPersistence(): void {
   if (persistenceWired) return;
   persistenceWired = true;
+
+  // Hydrate in-memory stores from the last persisted snapshot so state
+  // survives reloads. Each hydrate*() is additive and dedup-safe.
+  try {
+    const proposals = evolutionPersistence.loadProposals();
+    const events = evolutionPersistence.loadEvents();
+    const registry = evolutionPersistence.loadRegistry();
+    const cfg = evolutionPersistence.loadConfigOverrides();
+    if (proposals.length) hydrateProposals(proposals);
+    if (events.length) hydrateEvents(events);
+    if (registry.length) hydrateRegistry(registry);
+    if (cfg && typeof cfg === 'object') {
+      try { setEvolutionConfig(cfg as Parameters<typeof setEvolutionConfig>[0]); } catch { /* ignore bad overrides */ }
+    }
+  } catch {
+    // hydration must never block boot
+  }
+
   // Snapshot on every event (cheap; small payloads).
   subscribe(() => {
     try {
@@ -141,6 +160,10 @@ export function wireEvolutionPersistence(): void {
       // never throw from monitoring path
     }
   });
+}
+
+export function getPerformanceImpactRows() {
+  return buildPerformanceImpact(listProposals());
 }
 
 export function getEvolutionDashboardSnapshot() {

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft, GitBranch, Play, Pause, ShieldCheck, ShieldAlert,
-  CheckCircle2, XCircle, Clock, Activity,
+  CheckCircle2, XCircle, Clock, Activity, TrendingUp, TrendingDown,
 } from "lucide-react";
 import {
   approve,
@@ -21,6 +21,7 @@ import {
   getEvolutionDashboardSnapshot,
   makeSafePatchExecutor,
   wireEvolutionPersistence,
+  getPerformanceImpactRows,
 } from "@/devos/evolution/bridge";
 import { makeRepairAgent } from "@/devos/evolution";
 
@@ -184,6 +185,52 @@ export default function EvolutionCenterPage() {
             </CardContent>
           </AppCard>
         </div>
+
+        <AppCard className="bg-gray-900 border-gray-800">
+          <CardHeader><CardTitle className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-cyan-400" />
+            Performance impact (before → after)
+          </CardTitle></CardHeader>
+          <CardContent>
+            {(() => {
+              const rows = getPerformanceImpactRows();
+              if (rows.length === 0) {
+                return <p className="text-gray-500 text-sm">No completed repairs with before/after metrics yet.</p>;
+              }
+              return (
+                <div className="space-y-2">
+                  {rows.slice(-10).reverse().map(row => (
+                    <div key={row.proposalId} className="p-3 rounded border border-gray-800 bg-gray-950">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-200 truncate">{row.intent}</span>
+                        {row.regressed ? (
+                          <Badge className="bg-red-950 text-red-300 flex items-center gap-1">
+                            <TrendingDown className="w-3 h-3" /> Regressed
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-emerald-950 text-emerald-300 flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" /> Improved
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs text-gray-400">
+                        {Object.keys(row.deltas).map(k => (
+                          <div key={k}>
+                            <span className="text-gray-500">{k}:</span>{" "}
+                            <span className="text-gray-300">{row.before[k] ?? 0} → {row.after[k] ?? 0}</span>{" "}
+                            <span className={row.deltas[k] > 0 ? "text-red-300" : row.deltas[k] < 0 ? "text-emerald-300" : "text-gray-500"}>
+                              ({row.deltas[k] > 0 ? "+" : ""}{row.deltas[k]})
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </CardContent>
+        </AppCard>
 
         <AppCard className="bg-gray-900 border-gray-800">
           <CardHeader><CardTitle>Recently completed / rolled-back</CardTitle></CardHeader>
