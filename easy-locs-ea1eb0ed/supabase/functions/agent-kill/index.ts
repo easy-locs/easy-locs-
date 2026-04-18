@@ -13,6 +13,8 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as Body;
     if (!body?.agent_id) return jsonResponse(req, { error: "agent_id required" }, 400);
     const sb = armyClient();
+<<<<<<< HEAD
+<<<<<<< HEAD
     const reason = body.reason ?? "manual";
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -33,11 +35,10 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
-      p_agent_id: body.agent_id, p_reason: reason,
+      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
 
     if (error) {
-      // Fallback to manual update if RPC fails or is missing (preserving Task #1018 logic)
       const { error: e1 } = await sb.schema("army").from("agent_instances")
         .update({ status: "terminated", terminated_at: new Date().toISOString() })
         .eq("id", body.agent_id);
