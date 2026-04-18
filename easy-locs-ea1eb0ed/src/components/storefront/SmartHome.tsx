@@ -465,7 +465,7 @@ export default function SmartHome() {
   const vm = useDashboardViewModel();
   const { user } = useAuth();
   const orbitProfile = useOrbitIdentity();
-  const { balance: walletBal } = useWalletBalance();
+  const { balance: walletBal, accountId: walletAccountId, loading: walletLoading } = useWalletBalance();
 
   const engineHealthEnabled = useDashboardCardEnabled("engineHealth");
   const featuredHotelsEnabled = useDashboardCardEnabled("featuredHotels");
@@ -493,11 +493,15 @@ export default function SmartHome() {
 
   const smartContext = useMemo(() => ({
     hasShop: false,
-    hasWallet: walletBal !== null && walletBal !== undefined,
+    // Distinguish "no wallet yet" from "still loading": only consider the user as
+    // having a wallet once the hook is no longer loading AND we resolved an
+    // accountId. Falling back to balance > 0 covers stores where accountId is
+    // populated lazily but the balance arrived first.
+    hasWallet: !walletLoading && (!!walletAccountId || (typeof walletBal === "number" && walletBal > 0)),
     hasProfile: !!user,
     profileComplete: !!(user?.user_metadata?.display_name && user?.user_metadata?.avatar_url),
     hasOrbit: !!orbitProfile?.orbitId,
-  }), [user, walletBal, orbitProfile?.orbitId]);
+  }), [user, walletBal, walletAccountId, walletLoading, orbitProfile?.orbitId]);
 
   const { suggestions, dismiss } = useSmartInsights(smartContext);
 
