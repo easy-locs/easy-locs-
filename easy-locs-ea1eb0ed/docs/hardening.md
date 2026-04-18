@@ -83,7 +83,8 @@ the cross-process / cross-region replay.
 | Flow | Guard |
 |---|---|
 | Agent runner | `flow-state-manager` (`src/lib/state-machines/`) + `SingleFlight` per agent id |
-| Edge function dispatcher | `withIdempotency` keyed by request id + RPC single-flight per `(operation, target)` |
+| Edge function dispatcher | `claimIdempotencyKey` + `finalizeIdempotencyKey` (success or failure) — replays return prior result, in-flight returns 202, failures release the claim for retry |
+| Client write paths | `withIdempotency` (auto-pairs RPC claim/finalize with `globalSingleFlight` so concurrent same-key callers in one process share one execution) |
 | Merge-conflict recovery | Existing canonical state machine + `claim_idempotency_key` per merge attempt |
 
 A killed worker mid-flow is detected by either the heartbeat (in
