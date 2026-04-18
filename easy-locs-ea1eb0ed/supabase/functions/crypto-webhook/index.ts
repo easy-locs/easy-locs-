@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-import { claimIdempotencyKey } from "../_shared/idempotency.ts";
+import { claimIdempotencyKey, finalizeIdempotencyKey } from "../_shared/idempotency.ts";
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[CRYPTO-WEBHOOK] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -108,9 +108,9 @@ Deno.serve(async (req) => {
     if (event.type === "charge:confirmed" || event.type === "charge:completed") {
       const dedupeKey = `${chargeId}_${event.type}`;
 
-      // Task #1004 — unified idempotency layer. Replays of the same
-      // (chargeId, event.type) within the TTL never re-credit a wallet
-      // or re-mark an order paid.
+      // Task #1004 — unified idempotency layer (claim + finalize).
+      // Replays within the TTL never re-credit a wallet or re-mark an
+      // order paid; failures release the claim so retries can proceed.
       const claim = await claimIdempotencyKey(
         supabase,
         "crypto-webhook",
@@ -119,13 +119,22 @@ Deno.serve(async (req) => {
         60 * 60 * 24 * 7, // 7d retention for payment dedup
       );
 
-      if (!claim.isNew) {
-        logStep("Duplicate webhook event, skipping", { chargeId, eventType: event.type });
-        return new Response(JSON.stringify({ status: "ok", deduplicated: true }), {
+      if (!claim.isNew && claim.status === "succeeded") {
+        logStep("Duplicate webhook event (replay), skipping", { chargeId, eventType: event.type });
+        return new Response(JSON.stringify({ status: "ok", deduplicated: true, replayed: true }), {
           status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      if (!claim.isNew && claim.status === "pending") {
+        logStep("In-flight webhook event, skipping", { chargeId, eventType: event.type });
+        return new Response(JSON.stringify({ status: "in_flight", deduplicated: true }), {
+          status: 202,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      try {
 
       // Best-effort secondary log in the existing audit table.
       await supabase.from("payment_provider_events").insert({
@@ -203,6 +212,15 @@ Deno.serve(async (req) => {
         read: false,
         metadata_json: { amount, currency, charge_id: chargeId },
       });
+
+        await finalizeIdempotencyKey(supabase, "crypto-webhook", dedupeKey, "succeeded", {
+          chargeId, eventType: event.type, userId, orderId, amount, currency,
+        });
+      } catch (innerErr) {
+        const innerMsg = innerErr instanceof Error ? innerErr.message : String(innerErr);
+        await finalizeIdempotencyKey(supabase, "crypto-webhook", dedupeKey, "failed", { error: innerMsg });
+        throw innerErr;
+      }
     }
 
     return new Response(JSON.stringify({ status: "ok" }), {
