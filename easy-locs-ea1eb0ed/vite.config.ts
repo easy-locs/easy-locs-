@@ -242,11 +242,30 @@ export default defineConfig(({ mode }) => ({
       manifest: false,
       workbox: {
         cacheId: `easylocs-${BUILD_VERSION}`,
-        globPatterns: ["**/*.{js,css,ico,png,svg,woff2}"],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // ⚠️ DO NOT precache hashed JS/CSS chunks. They are deleted by Vercel
+        // on each new deploy, so a stale SW with old chunks in its precache
+        // would serve them as 404 and freeze the app on the splash. Only
+        // precache the shell + icons; chunks come via NetworkFirst at runtime.
+        globPatterns: ["index.html", "manifest.json", "favicon*.{ico,png}", "pwa-*.png", "logo-icon.png"],
+        maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        navigateFallback: null,
+        skipWaiting: true,
+        clientsClaim: true,
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api\//, /^\/admin-router\//, /^\/assets\//, /\.[^/]+$/],
         runtimeCaching: [
+          {
+            // JS/CSS chunks: always go to network first. Falls back to cache
+            // only when offline, with a 3-second timeout to avoid stalling
+            // the app boot when the network is slow.
+            urlPattern: /\/assets\/.*\.(?:js|css)$/,
+            handler: "NetworkFirst",
+            options: {
+              cacheName: `assets-chunks-${BUILD_VERSION}`,
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 7 },
+            },
+          },
           {
             urlPattern: ({ request }: { request: Request }) => request.mode === "navigate",
             handler: "NetworkFirst",
