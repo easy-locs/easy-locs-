@@ -86,6 +86,10 @@ export function MeRoutes() {
       <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
       <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 
+      {/* Back-compat: external & legacy links to /profile resolve to canonical /me */}
+      <Route path="/profile" element={<Navigate to="/me" replace />} />
+      <Route path="/profile/:userId" element={<Navigate to="/me" replace />} />
+
     </>
   );
 }
