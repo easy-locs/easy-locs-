@@ -50,7 +50,6 @@ const App = () => (
   <CoreProviders>
     <Toaster />
     <Sonner />
-    <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
     {import.meta.env.DEV && (
       <Suspense fallback={null}><MissingIntegrationsBanner /></Suspense>
     )}
@@ -74,6 +73,15 @@ const App = () => (
               </TransitionRouter>
             </Suspense>
             <Suspense fallback={null}><MainBottomNav /></Suspense>
+            {/*
+              CookieConsentBanner MUST live inside AuthProvider so its
+              useAuth() hook reads the live session. When mounted outside
+              AuthProvider it received the default context (user: null) and
+              its bottom-nav offset always evaluated to 0px, which let the
+              banner overlap the mobile bottom nav and intercept tab clicks.
+              See scripts/check-build-invariants.cjs for the regression guard.
+            */}
+            <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
             <Suspense fallback={null}>
               <SmartInstallBanner />
               <FloatingCTAButton />
