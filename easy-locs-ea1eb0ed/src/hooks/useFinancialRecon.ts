@@ -28,7 +28,7 @@ export function useFinancialRecon() {
       .on("postgres_changes", { event: "*", schema: "public", table: "financial_reconciliation" }, () => load())
       .subscribe();
 
-    return () => { mounted = false; sub.unsubscribe(); };
+    return () => { mounted = false; void db.removeChannel(sub); };
   }, []);
 
   return { rows, loading };
