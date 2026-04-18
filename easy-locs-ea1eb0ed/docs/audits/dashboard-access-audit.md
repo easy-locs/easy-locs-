@@ -145,10 +145,13 @@ Causes contributives :
 ### `src/contexts/AuthContext.tsx`
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 `emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
 =======
 ### `src/contexts/AuthContext.tsx`
 
+=======
+>>>>>>> 0c2096e957 (Fix login issue for phone users and improve verification process)
 `emailVerified` accepte désormais deux signaux primaires (et un legacy) :
 >>>>>>> 3a6e2ecb33 (Task #1002 — Audit dashboard access and unblock phone-OTP users)
 
