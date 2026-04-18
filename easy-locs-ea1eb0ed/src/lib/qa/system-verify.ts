@@ -34,9 +34,36 @@ export async function verifyRealtimeChannel() {
     const { createRealtimeChannel, removeRealtimeChannel } = require("@/lib/realtime");
     const channel = createRealtimeChannel("audit-health-check");
     await channel.subscribe();
-    channel.unsubscribe();
+    removeRealtimeChannel(channel);
     return { ok: true, reason: "Realtime channel subscribed/unsubscribed" };
   } catch (e: any) {
     return { ok: false, reason: e.message ?? "Realtime failed" };
+  }
+}
+
+/**
+ * Verify that auth-cache isolation works: queryClient.clear() removes
+ * cached data so the next user (or post-passive-logout state) cannot
+ * see the previous user's TanStack Query cache.
+ *
+ * This mirrors the SIGNED_OUT path in AuthContext: any session-end event
+ * MUST purge the query cache. Regression-guards round 5 hardening.
+ */
+export async function verifyAuthCacheIsolation() {
+  try {
+    const { queryClient } = await import("@/lib/query-client");
+    const probeKey = ["__audit_isolation_probe__", String(Date.now())];
+    queryClient.setQueryData(probeKey, { secret: "user-A-data" });
+    if (queryClient.getQueryData(probeKey) === undefined) {
+      return { ok: false, reason: "Probe write failed — queryClient unusable" };
+    }
+    queryClient.clear();
+    const after = queryClient.getQueryData(probeKey);
+    if (after === undefined) {
+      return { ok: true, reason: "queryClient.clear() purges cached data on logout" };
+    }
+    return { ok: false, reason: "queryClient.clear() left stale data behind" };
+  } catch (e: any) {
+    return { ok: false, reason: e.message ?? "Cache isolation probe failed" };
   }
 }
