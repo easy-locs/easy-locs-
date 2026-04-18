@@ -5,7 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "cd easy-locs-ea1eb0ed && npm install && npm run build"
+    "build": "cd easy-locs-ea1eb0ed && npm install && npm run build",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:load:smoke": "k6 run tests/load/smoke.js",
+    "test:load:ramp": "k6 run tests/load/load.js",
+    "test:load:stress": "k6 run tests/load/stress.js",
+    "test:load:staged": "bash tests/load/run-staged.sh",
+    "qa:report": "node scripts/qa/build-report.mjs",
+    "qa:campaign": "npm run test:e2e && npm run test:load:staged && npm run qa:report"
   },
   "keywords": [],
   "author": "",
@@ -28,5 +36,8 @@
     "vite-plugin-compression": "^0.5.1",
     "vitest-axe": "^0.1.0",
     "web-vitals": "^5.2.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
   }
 }
