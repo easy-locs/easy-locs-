@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import {
   Shield, Activity, AlertTriangle, CheckCircle, Brain,
   Map, FileSearch, Wrench, Database, Rocket, ArrowRight,
-  Power, Clock, Terminal,
+  Power, Clock, Terminal, GitBranch,
 } from "lucide-react";
 import { proofRegistry } from "@/devos/observability/proof-registry";
 import { getDevOSStatus } from "@/devos/runtime/devos-runtime";
@@ -52,6 +52,7 @@ export default function DevOSDashboardPage() {
     { icon: Wrench, label: "Repair Center", desc: "Patches, validation, rollback", path: "/builder/repair" },
     { icon: Database, label: "Memory Center", desc: "Rules, incidents, proofs", path: "/builder/memory" },
     { icon: Rocket, label: "Deploy Center", desc: "Staging, production, health", path: "/builder/deploy" },
+    { icon: GitBranch, label: "Evolution Center", desc: "Controlled self-evolution (Level C)", path: "/builder/evolution" },
   ];
 
   const logLevelColor = {
