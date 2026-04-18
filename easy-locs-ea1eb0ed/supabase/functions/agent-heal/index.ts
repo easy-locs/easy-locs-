@@ -50,9 +50,6 @@ Deno.serve(async (req) => {
     });
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
-    if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
-    return jsonResponse(req, { ok: true, agent: result.agent });
->>>>>>> d4cdad69e0 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
