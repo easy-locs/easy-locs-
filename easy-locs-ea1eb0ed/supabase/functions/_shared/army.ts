@@ -101,6 +101,7 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 =======
@@ -112,6 +113,12 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 =======
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> d9a00b37af (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 7fe09eb77b (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
