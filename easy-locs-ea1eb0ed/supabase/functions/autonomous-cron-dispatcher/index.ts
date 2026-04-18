@@ -1,6 +1,8 @@
+// PUBLIC: Cron dispatcher invoked by pg_cron via pg_net — auth via requireServiceRole.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,7 +75,7 @@ const WORKFLOW_SCHEDULE_JOBS: WorkflowScheduleJob[] = [
   { workflowId: "wf_financial_reconciliation", schedule_seconds: 86400, tier: "medium" },
 ];
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("autonomous-cron-dispatcher", async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -279,4 +281,4 @@ Deno.serve(async (req) => {
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } }
   );
-});
+}, { maxRequests: 60, windowSeconds: 60 }));

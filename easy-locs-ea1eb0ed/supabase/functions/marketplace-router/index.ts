@@ -1,3 +1,4 @@
+// PUBLIC: Domain router — JWT + rate-limit via shared createDomainRouter middleware.
 import { createDomainRouter } from "../_shared/domain-router.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { buildCacheHeaders, generateETag, checkConditionalRequest } from "../_shared/cache-headers.ts";

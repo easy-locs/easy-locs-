@@ -1,3 +1,4 @@
+// PUBLIC: Public REST API — auth via API key (sha256 keyed against api_keys table) + withRateLimit per-IP.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";

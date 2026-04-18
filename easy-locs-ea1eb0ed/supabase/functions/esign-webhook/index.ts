@@ -1,4 +1,6 @@
+// PUBLIC: e-Sign provider webhook — auth via provider signature header.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +42,7 @@ async function verifyBoldSignSignature(req: Request, body: string): Promise<bool
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("esign-webhook", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -123,4 +125,4 @@ Deno.serve(async (req) => {
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
-});
+}, { maxRequests: 60, windowSeconds: 60 }));
