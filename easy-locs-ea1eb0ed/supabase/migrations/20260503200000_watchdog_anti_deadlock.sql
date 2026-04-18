@@ -548,6 +548,12 @@ BEGIN
     DELETE FROM system.execution_locks WHERE lock_key = v_row.lock_key;
   END IF;
 
+  -- Spec contract: retry-budget exhaustion ALWAYS lands on `failed`,
+  -- never `cancelled`. For non-running statuses we bridge through
+  -- `running` (a legal forward transition for queued/approved) so the
+  -- subsequent watchdog_fail_task() routes to `failed`. pending_review
+  -- is intentionally left as `cancelled` because it represents
+  -- human-in-the-loop work that the watchdog must not mark failed.
   IF COALESCE(v_row.attempt_count, 0) < COALESCE(v_row.max_attempts, 3) THEN
     -- Increment attempt_count BEFORE the requeue so the retry budget actually
     -- decays. Reset stage_started_at explicitly: the BEFORE UPDATE trigger
@@ -572,6 +578,17 @@ BEGIN
                          'max_attempts', COALESCE(v_row.max_attempts, 3))
     );
     RETURN 'requeued';
+  END IF;
+
+  -- Bridge non-running active statuses to `running` so the failure path
+  -- routes deterministically to `failed`. We bypass the transition matrix
+  -- on purpose here — this IS the safety compensation, and the prior
+  -- attempt_count check guarantees we will never loop.
+  IF v_row.status IN ('queued','approved') THEN
+    UPDATE system.execution_tasks
+       SET status     = 'running',
+           started_at = COALESCE(started_at, now())
+     WHERE id = p_task_id;
   END IF;
 
   PERFORM system.watchdog_fail_task(p_task_id, 'retry_budget_exhausted', p_reason, p_evidence);
@@ -804,7 +821,16 @@ $cron_wd$;
 -- ── 7. Grants ─────────────────────────────────────────────────────────────
 GRANT EXECUTE ON FUNCTION system.resolve_task_verb_defaults(TEXT)                                  TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION system.validate_task_dependencies(UUID, UUID[])                          TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION system.write_incident(TEXT, TEXT, TEXT, UUID, UUID, JSONB)               TO service_role;
+-- write_incident is granted to authenticated as well so the dispatcher's
+-- pre-insert dependency-rejection path (called from the app supabase
+-- client under an admin user JWT) can persist a structured audit row.
+-- The function is SECURITY DEFINER, so the actual INSERT into
+-- system.incident_log runs as the function owner; the auth role merely
+-- gates EXECUTE. incident_log itself is append-only (UPDATE/DELETE
+-- triggers raise insufficient_privilege), so the worst a malicious
+-- authenticated caller can do is add a row — the same surface they
+-- already have via hundreds of other audit-write paths.
+GRANT EXECUTE ON FUNCTION system.write_incident(TEXT, TEXT, TEXT, UUID, UUID, JSONB)               TO service_role, authenticated;
 GRANT EXECUTE ON FUNCTION system.scan_stuck_tasks(INT)                                             TO service_role, authenticated;
 GRANT EXECUTE ON FUNCTION system.watchdog_fail_task(UUID, TEXT, TEXT, JSONB)                       TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_recover_task(UUID, TEXT, JSONB)                          TO service_role;
