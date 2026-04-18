@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   const denied = await requireAuthenticated(req) ?? await requireServiceOrSupreme(req); if (denied) return denied;
   try {
+
     const body = (await req.json()) as Body;
     const sb = armyClient();
 
