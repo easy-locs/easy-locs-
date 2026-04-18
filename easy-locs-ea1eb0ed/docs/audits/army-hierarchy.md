@@ -56,6 +56,7 @@ Chief Orchestrator
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 
+<<<<<<< HEAD
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
@@ -95,6 +96,8 @@ Chief Orchestrator
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
