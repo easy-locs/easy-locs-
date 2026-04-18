@@ -334,8 +334,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       await ensureOrbitProfile({
         userId: user.id,
         email: user.email ?? null,
-        displayName: (user.user_metadata as any)?.display_name ?? (user.user_metadata as any)?.full_name ?? null,
-        avatarUrl: (user.user_metadata as any)?.avatar_url ?? null,
+        displayName: ((user.user_metadata as { display_name?: string; full_name?: string } | null)?.display_name)
+          ?? ((user.user_metadata as { display_name?: string; full_name?: string } | null)?.full_name)
+          ?? null,
+        avatarUrl: (user.user_metadata as { avatar_url?: string } | null)?.avatar_url ?? null,
       });
       const orgIds = await fetchOrgIdFast(user.id);
       const [profileData] = await Promise.all([fetchProfileCritical(user.id), fetchOrgDetails(orgIds)]);
@@ -401,8 +403,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           void ensureOrbitProfile({
             userId,
             email: nextSession.user.email ?? null,
-            displayName: (nextSession.user.user_metadata as any)?.display_name ?? (nextSession.user.user_metadata as any)?.full_name ?? null,
-            avatarUrl: (nextSession.user.user_metadata as any)?.avatar_url ?? null,
+            displayName: ((nextSession.user.user_metadata as { display_name?: string; full_name?: string } | null)?.display_name)
+              ?? ((nextSession.user.user_metadata as { display_name?: string; full_name?: string } | null)?.full_name)
+              ?? null,
+            avatarUrl: (nextSession.user.user_metadata as { avatar_url?: string } | null)?.avatar_url ?? null,
           }).catch(() => { bootstrapOrbitRef.current = null; });
         }
 
@@ -608,8 +612,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const hasPhone = !!u?.phone;
   const hasEmail = !!u?.email;
   const phoneConfirmed = !!u?.phone_confirmed_at;
-  const explicitPhoneSignup = (u?.user_metadata as { signup_method?: string } | null | undefined)?.signup_method === "phone";
-  const isPhoneUser = explicitPhoneSignup || phoneConfirmed || (hasPhone && !hasEmail);
+  const explicitPhoneSignup = u?.user_metadata?.signup_method === "phone";
+  // Tightened semantics: treat as phone-verified ONLY when Supabase has
+  // actually stamped `phone_confirmed_at`. The legacy fallback
+  // (`hasPhone && !hasEmail`) was permissive and could let unconfirmed
+  // phone signups bypass /verify-account; the explicit signup_method tag
+  // is still honored so historical accounts that completed verification
+  // before the field was stamped don't regress.
+  const isPhoneUser = phoneConfirmed || (explicitPhoneSignup && hasPhone);
   const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
 
   const signOut = useCallback(async () => {
