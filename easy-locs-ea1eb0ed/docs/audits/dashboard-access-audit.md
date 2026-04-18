@@ -144,7 +144,13 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
+<<<<<<< HEAD
 `emailVerified` accepte désormais quatre signaux (par ordre de priorité) :
+=======
+### `src/contexts/AuthContext.tsx`
+
+`emailVerified` accepte désormais deux signaux primaires (et un legacy) :
+>>>>>>> 3a6e2ecb33 (Task #1002 — Audit dashboard access and unblock phone-OTP users)
 
 - `user.email_confirmed_at` — signup email vérifié ;
 - `user.phone_confirmed_at` — **nouveau**, source canonique Supabase pour OTP téléphone (champ natif du type `User` de `@supabase/supabase-js`, aucun cast requis) ;
