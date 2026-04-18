@@ -85,22 +85,91 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call.
  */
+export async function identifyCaller(req: Request): Promise<
+  | { kind: "service" }
+  | { kind: "user"; userId: string; supreme: boolean }
+  | { kind: "anonymous" }
+> {
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (!authHeader.toLowerCase().startsWith("bearer ")) return { kind: "anonymous" };
+  const token = authHeader.slice(7).trim();
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (token && token === serviceKey) return { kind: "service" };
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? serviceKey;
+  const userClient = createClient(url, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false },
+  });
+  const { data: u, error } = await userClient.auth.getUser();
+  if (error || !u?.user?.id) return { kind: "anonymous" };
+
+  // Probe known role tables (tolerant — different conventions in this repo).
+  let supreme = false;
+  try {
+    const { data: roles } = await userClient
+      .from("user_roles" as never)
+      .select("role")
+      .eq("user_id", u.user.id);
+    if (Array.isArray(roles)) {
+      supreme = roles.some((r: { role?: string }) =>
+        ["super_admin", "supreme_commander", "admin"].includes((r.role ?? "")));
+    }
+  } catch (_) { /* table may not exist */ }
+  if (!supreme) {
+    try {
+      const { data: prof } = await userClient
+        .from("profiles" as never)
+        .select("is_super_admin")
+        .eq("id", u.user.id)
+        .maybeSingle();
+      if (prof && (prof as { is_super_admin?: boolean }).is_super_admin) supreme = true;
+    } catch (_) { /* column may not exist */ }
+  }
+  return { kind: "user", userId: u.user.id, supreme };
+}
+
+/** Allow service role OR authenticated Supreme Commander. Reject everything else. */
+export async function requireSupreme(req: Request): Promise<Response | null> {
+  const id = await identifyCaller(req);
+  if (id.kind === "service") return null;
+  if (id.kind === "user" && id.supreme) return null;
+  return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
+}
+
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> ec7185642b (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+/** Allow service role OR any authenticated user. */
+export async function requireAuthenticated(req: Request): Promise<Response | null> {
+  const id = await identifyCaller(req);
+  if (id.kind === "service" || id.kind === "user") return null;
+  return jsonResponse(req, { error: "unauthorized" }, 401);
+}
+
+=======
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+/**
+ * Strictest gate for internal pipeline endpoints. Only the service role
+ * (cron / army-tick) and Supreme Commander may call. Plain authenticated
+ * users — even of the host app — are rejected because these endpoints
+ * progress the chain and write incidents on behalf of the system.
+ */
 export async function requireServiceOrSupreme(req: Request): Promise<Response | null> {
   const id = await identifyCaller(req);
   if (id.kind === "service") return null;
   if (id.kind === "user" && id.supreme) return null;
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
->>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+
 =======
 =======
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
->>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+>>>>>>> 1d3768c1a2 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+=======
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
