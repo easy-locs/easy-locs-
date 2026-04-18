@@ -163,12 +163,11 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
 
-=======
-=======
->>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 >>>>>>> 1d3768c1a2 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 =======
 >>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6befb4644f (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
