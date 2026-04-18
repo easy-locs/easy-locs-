@@ -66,7 +66,7 @@ export function AdminRoutes() {
       {/* ══ Admin ══ */}
       <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/engines" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminEnginesDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/wiring-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWiringHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/wiring-health" element={<LegacyControlRedirect to="/admin/control/wiring" />} />
       <Route path="/admin/ops-dashboard" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminOpsDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/fraud-detection" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFraudDetectionPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/disputes" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDisputesPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -79,7 +79,7 @@ export function AdminRoutes() {
       <Route path="/admin/loyalty-redeem" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><LoyaltyRedeemPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/alerts" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminAlertCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/wallet-diagnostics" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminWalletDiagnosticsPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/execution-proof" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><ExecutionProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/execution-proof" element={<LegacyControlRedirect to="/admin/control/proof" />} />
       <Route path="/admin/review-queue" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminReviewQueuePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/growth-ops" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminGrowthOpsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/qr-generate" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><QrGeneratePage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -110,15 +110,15 @@ export function AdminRoutes() {
       <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/firecrawl-usage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFirecrawlUsagePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/watchdog" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminWatchdogPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/watchdog" element={<LegacyControlRedirect to="/admin/control/watchdog" />} />
       <Route path="/admin/map-errors" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapErrorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/merge-conflict-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMergeConflictRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/command-control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><CommandControlDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/command-control" element={<LegacyControlRedirect to="/admin/control" />} />
       <Route path="/admin/food-checkout" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><FoodOrderCheckoutPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/delivery-proof/:orderId" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeliveryProofPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/kyc" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminKycReviewPage /></FeatureErrorBoundary></ProtectedRoute>} />
-      <Route path="/admin/super-dashboard" element={<SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminSuperDashboardPage /></FeatureErrorBoundary></SuperAdminGate>} />
+      <Route path="/admin/super-dashboard" element={<LegacyControlRedirect to="/admin/control" />} />
       <Route path="/admin/dld-backfill" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDldBackfillPage /></FeatureErrorBoundary></ProtectedRoute>} />
       {/* ACP · /admin/control unified shell (#861).
           Sensitive sections (agents/runs/command/approvals/master) are wrapped
@@ -134,6 +134,12 @@ export function AdminRoutes() {
       <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      {/* Task #1031 — Supreme Admin Dashboard P0 sections. SuperAdminGate
+          is non-negotiable on every Phase 1 section. */}
+      <Route path="/admin/control/tasks" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/watchdog" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/proof" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/wiring" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ ACP Agent 3 (#863) · Legacy admin URL redirects → /admin/control/* ══
