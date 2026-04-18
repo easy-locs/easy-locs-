@@ -54,7 +54,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (loading) return <InlineSkeleton />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (!profileLoaded) return <InlineSkeleton />;
-  // Belt-and-suspenders for phone-OTP users: never bounce them to /verify-email.
+  // Belt-and-suspenders for phone-OTP users: never bounce them to verification.
   // AuthContext.isPhoneUser already handles this, but if for any reason a user
   // arrives here with a phone identity (or no email at all) we treat them as
   // verified rather than trapping them in a redirect loop.
@@ -65,7 +65,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     const phoneConfirmed = !!u?.phone_confirmed_at;
     const phoneOnly = phoneConfirmed || (hasPhone && !hasEmail);
     if (!phoneOnly) {
-      return <Navigate to="/verify-email" replace />;
+      // Unified verification flow — /verify-account handles BOTH email and
+      // phone cases and auto-routes verified users to /dashboard. The old
+      // /verify-email route now redirects here as well for back-compat.
+      return <Navigate to="/verify-account" replace />;
     }
   }
 
