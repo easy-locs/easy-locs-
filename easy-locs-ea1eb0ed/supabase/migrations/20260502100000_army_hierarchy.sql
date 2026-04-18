@@ -317,6 +317,7 @@ on conflict (name) do nothing;
 create table if not exists army.queue_messages (
   id              bigserial primary key,
   queue_name      text not null references army.queue_registry(name),
+
   payload         jsonb not null,
   visible_at      timestamptz not null default now(),
   locked_until    timestamptz,
@@ -340,6 +341,15 @@ begin
   end if;
 end $$;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+-- Seed the 6 canonical queues (logical only — table is shared)
+-- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
+=======
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+
+=======
+>>>>>>> fdd152f1ea (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
 -- ----------------------------------------------------------------------------
@@ -668,6 +678,7 @@ alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
 alter table army.queue_registry   enable row level security;
 
+
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
 create policy army_roles_read on army.agent_roles
@@ -685,6 +696,7 @@ begin
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
       'queue_messages','queue_registry','agent_roles','agent_policies'])
+
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
@@ -781,11 +793,21 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+=======
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+>>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+-- ----------------------------------------------------------------------------
+=======
+-- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+>>>>>>> 0ca258b8bd (Task #998 — Hierarchical agent army (Command Center + Supabase))
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
     -- TTL sweep + stuck-task detection
+
     perform cron.schedule(
       'army_ttl_sweep',
       '*/5 * * * *',
@@ -809,6 +831,48 @@ begin
       '* * * * *',
       $cron$ select army.run_tick(); $cron$
     );
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+
+<<<<<<< HEAD
+    -- Autonomous pipeline tick: drives the whole army every minute
+    -- without any human intervention. Calls the army-tick edge function
+    -- with the service-role key so the entire chain advances.
+    if exists (select 1 from pg_extension where extname = 'pg_net') then
+      begin
+        perform cron.schedule(
+<<<<<<< HEAD
+          'army_tick_dispatcher_v2',
+=======
+          'army_tick_dispatcher',
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+          '* * * * *',
+          format($cron$
+            select net.http_post(
+              url     := %L,
+              headers := jsonb_build_object('Content-Type','application/json',
+                                            'Authorization','Bearer ' || %L),
+              body    := '{}'::jsonb
+            );
+          $cron$,
+          coalesce(current_setting('app.supabase_url', true), '') || '/functions/v1/army-tick',
+          coalesce(current_setting('app.service_role_key', true), '')
+          )
+        );
+      exception when others then null;
+      end;
+    end if;
+=======
+    -- Autonomous tick — runs every minute. army.run_tick() validates
+    -- that supabase_url + service_role_key are present (and aborts
+    -- otherwise with a logged incident) so this schedule is safe to
+    -- create unconditionally.
+    perform cron.schedule(
+      'army_tick_dispatcher',
+      '* * * * *',
+      $cron$ select army.run_tick(); $cron$
+    );
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
