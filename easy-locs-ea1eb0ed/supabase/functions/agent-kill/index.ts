@@ -15,29 +15,27 @@ Deno.serve(async (req) => {
     const sb = armyClient();
     const reason = body.reason ?? "manual";
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
-      p_agent_id: body.agent_id, p_reason: reason,
+      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
-
-    if (error) {
-      // Fallback to manual update if RPC fails or is missing (preserving Task #1018 logic)
-      const { error: e1 } = await sb.schema("army").from("agent_instances")
-        .update({ status: "terminated", terminated_at: new Date().toISOString() })
-        .eq("id", body.agent_id);
-      if (e1) return jsonResponse(req, { error: e1.message }, 500);
-
-      const { error: e2 } = await sb.schema("army").from("execution_tasks")
-        .update({ status: "cancelled", error: "agent_killed", updated_at: new Date().toISOString() })
-        .eq("assigned_agent", body.agent_id)
-        .in("status", ["queued", "running", "planning"]);
-      if (e2) return jsonResponse(req, { error: e2.message }, 500);
-    }
-
+    if (error) return jsonResponse(req, { error: error.message }, 500);
+    return jsonResponse(req, { ok: true, result: data });
+    const reason = body.reason ?? "manual";
+    const { error: e1 } = await sb.schema("army").from("agent_instances")
+      .update({ status: "terminated", terminated_at: new Date().toISOString() })
+      .eq("id", body.agent_id);
+    if (e1) return jsonResponse(req, { error: e1.message }, 500);
+    const { error: e2 } = await sb.schema("army").from("execution_tasks")
+      .update({ status: "cancelled", error: "agent_killed", updated_at: new Date().toISOString() })
+      .eq("assigned_agent", body.agent_id)
+      .in("status", ["queued", "running", "planning"]);
+    if (e2) return jsonResponse(req, { error: e2.message }, 500);
     await logIncident(sb, {
       severity: "warn", kind: "kill", agentId: body.agent_id,
       role: "supreme_commander", message: `agent killed: ${reason}`,
     });
-
-    return jsonResponse(req, { ok: true, result: data });
+    return jsonResponse(req, { ok: true });
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
