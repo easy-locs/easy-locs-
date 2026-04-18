@@ -596,16 +596,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // (PhoneOTPFlow → verifyOtp). The legacy `signup_method === "phone"` metadata
   // flag is never written anywhere in the codebase, so relying on it alone left
   // every phone-only user permanently bouncing to /verify-email and never able
-  // to reach /dashboard. We accept any of:
+  // to reach /dashboard. We now accept either:
   //   - email_confirmed_at  → email signup verified
-  //   - phone_confirmed_at  → phone signup verified (Supabase native field)
-  //   - phone present + signup_method === "phone" (legacy fallback)
-  //   - phone present + no email at all (phone-only account, defensive)
-  const phoneUser = user?.phone ?? null;
-  const phoneConfirmedAt = (user as unknown as { phone_confirmed_at?: string | null } | null)?.phone_confirmed_at ?? null;
-  const isPhoneUser = !!phoneConfirmedAt
-    || !!(phoneUser && (user?.user_metadata as any)?.signup_method === "phone")
-    || !!(phoneUser && !user?.email);
+  //   - phone_confirmed_at  → phone signup verified (Supabase-native field on
+  //                            the User type; no cast required)
+  // The legacy metadata path is kept for backward compatibility only.
+  const isPhoneUser =
+    !!user?.phone_confirmed_at ||
+    !!(user?.phone && (user.user_metadata as { signup_method?: string } | null | undefined)?.signup_method === "phone");
   const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
 
   const signOut = useCallback(async () => {
