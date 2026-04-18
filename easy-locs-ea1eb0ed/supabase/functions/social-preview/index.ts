@@ -131,7 +131,7 @@ function htmlPage(meta: {
 function buildHeaders(): Headers {
   const h = new Headers();
   h.set("Access-Control-Allow-Origin", "*");
-  h.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version");
+  h.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent");
   h.set("Content-Type", "text/html; charset=utf-8");
   h.set("Cache-Control", "no-store, max-age=0, must-revalidate");
   h.set("Pragma", "no-cache");
@@ -148,7 +148,7 @@ function buildSocialResponse(req: Request, html: string, redirectUrl: string): R
 
   const redirectHeaders = new Headers();
   redirectHeaders.set("Access-Control-Allow-Origin", "*");
-  redirectHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type");
+  redirectHeaders.set("Access-Control-Allow-Headers", "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent");
   redirectHeaders.set("Location", redirectUrl);
   redirectHeaders.set("Cache-Control", "no-store, max-age=0, must-revalidate");
   redirectHeaders.set("Pragma", "no-cache");

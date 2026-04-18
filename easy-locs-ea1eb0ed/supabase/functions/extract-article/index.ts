@@ -12,7 +12,7 @@ import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-metrics-key",
+    "authorization, x-client-info, apikey, content-type, x-metrics-key, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
