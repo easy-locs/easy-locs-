@@ -194,11 +194,7 @@ describe("AI completion adapter — LB1 (#815)", () => {
     expect(res.success).toBe(false);
     if (!res.success) {
       expect(res.errorCode).toBe("QUOTA_EXCEEDED");
-<<<<<<< HEAD
       expect(res.errorMessage).toMatch(/Quota accounting failed/i);
-=======
-      expect(res.error).toMatch(/Quota accounting failed/i);
->>>>>>> 72ffe034d (LB1 #834 — Canonical pending_review lifecycle + orchestrator quota gate)
     }
   });
 
