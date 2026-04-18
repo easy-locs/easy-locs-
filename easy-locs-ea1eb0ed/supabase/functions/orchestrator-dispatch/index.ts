@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   const denied = (await requireAuthenticated(req)) ?? (await requireServiceOrSupreme(req)); if (denied) return denied;
   try {
+
     const body = (await req.json()) as Body;
     if (!body?.order_id) return jsonResponse(req, { error: "order_id required" }, 400);
 
