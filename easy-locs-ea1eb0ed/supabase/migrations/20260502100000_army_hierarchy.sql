@@ -781,6 +781,8 @@ $$;
 revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
+<<<<<<< HEAD
+<<<<<<< HEAD
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
 do $$
 begin
@@ -798,6 +800,8 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
+<<<<<<< HEAD
+<<<<<<< HEAD
 
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
@@ -808,6 +812,8 @@ begin
       '* * * * *',
       $cron$ select army.run_tick(); $cron$
     );
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
@@ -818,6 +824,11 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
+<<<<<<< HEAD
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   end if;
 exception when others then null;
 end $$;

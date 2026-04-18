@@ -62,6 +62,19 @@ Deno.serve(async (req) => {
       return jsonResponse(req, { ok: false, reason: check.reason });
     }
 
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+    const result = await spawnAgent(sb, {
+      roleCode: agent.role_code,
+      domain: agent.domain ?? "ops",
+      taskType: "respawn",
+      dedupKey: `heal:${body.agent_id}`,
+      parentId: agent.parent_id ?? undefined,
+      reason: `heal:${body.agent_id}`,
+      metadata: { healed_from: body.agent_id },
+<<<<<<< HEAD
+    });
+=======
     const result = await spawnAgent(sb, {
       roleCode: agent.role_code,
       domain: agent.domain ?? "ops",
@@ -71,8 +84,38 @@ Deno.serve(async (req) => {
       reason: `heal:${body.agent_id}`,
       metadata: { healed_from: body.agent_id },
     });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
+=======
+    const check = await canSpawn(sb, {
+      roleCode: agent.role_code, domain: agent.domain,
+      taskType: "respawn", dedupKey: `heal:${body.agent_id}`,
+    });
+    if (!check.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "quota_exceeded", agentId: body.agent_id,
+        role: agent.role_code, message: `heal blocked: ${check.reason}`,
+      });
+      return jsonResponse(req, { ok: false, reason: check.reason });
+    }
+
+    const ttl = new Date(Date.now() + 30 * 60_000).toISOString();
+    const { data: fresh, error } = await sb.schema("army")
+      .from("agent_instances").insert({
+        role_code: agent.role_code, domain: agent.domain,
+        parent_id: agent.parent_id, status: "active", ttl_at: ttl,
+        spawn_reason: `heal:${body.agent_id}`,
+        metadata: { healed_from: body.agent_id, dedup_key: `heal:${body.agent_id}` },
+      }).select().single();
+    if (error) return jsonResponse(req, { error: error.message }, 500);
+    return jsonResponse(req, { ok: true, agent: fresh });
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    });
+    if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
+    return jsonResponse(req, { ok: true, agent: result.agent });
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }

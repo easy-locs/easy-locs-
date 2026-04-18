@@ -3,6 +3,14 @@
 import {
   armyClient, jsonResponse, logIncident, logMessage, preflight,
   requireServiceOrSupreme,
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireAuthenticated,
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme,
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body {
