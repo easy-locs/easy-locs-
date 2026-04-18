@@ -1,0 +1,11 @@
+[
+  {
+    "tables": 621,
+    "views": 0,
+    "functions": 52,
+    "indexes": 615,
+    "policies": 694,
+    "triggers": 4,
+    "extensions": 6
+  }
+]

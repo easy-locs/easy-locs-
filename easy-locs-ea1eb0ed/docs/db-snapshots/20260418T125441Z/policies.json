@@ -1,0 +1,6942 @@
+[
+  {
+    "schema": "public",
+    "table": "abandoned_cart_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "accounting_entries",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "acquisition_outreach_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "activities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "activities_public",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "activity_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ad_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "address_search_cache",
+    "name": "Authenticated insert search cache",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "address_search_cache",
+    "name": "Public read search cache",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "address_search_cache",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "address_usage_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "admin_alerts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "agent_command_history",
+    "name": "super_admin_own_commands",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "((auth.uid() = user_id) AND has_role(auth.uid(), 'super_admin'::text))",
+    "with_check": "((auth.uid() = user_id) AND has_role(auth.uid(), 'super_admin'::text))"
+  },
+  {
+    "schema": "public",
+    "table": "ai_category_suggestions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_messages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_threads",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ai_chat_usage",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ai_decision_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ai_ops_suggestions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "aml_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "api_keys",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "app_notifications",
+    "name": "Users read own notifications",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "app_notifications",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "approval_actions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "approval_queues",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "audit_findings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "audit_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "audit_reports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "auto_discovered_merchants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "auto_repeat_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "automation_workflows",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "blocked_users",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "booking_commissions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "booking_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "booking_tasks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = buyer_user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((auth.uid() = buyer_user_id) OR (auth.uid() = owner_user_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "bookings",
+    "name": "bookings_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((auth.uid() = buyer_user_id) OR (auth.uid() = owner_user_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "bookings_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_analytics_daily",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_campaigns",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_clicks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_creatives",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_impressions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_leads",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_purchases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "boost_slots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "branches",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "brands",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_front_incidents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_actions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_issues",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_repair_watchdog",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "browser_telemetry_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "buildings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "business_compliance_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "business_videos",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "Auth users manage calls",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "call_logs_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(EXISTS ( SELECT 1\n   FROM orbit_profiles_v2 op\n  WHERE ((op.id = auth.uid()) AND ((call_logs.caller_orbit_id = op.orbit_id) OR (call_logs.caller_orbit_id = (auth.uid())::text)))))"
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "call_logs_read",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM orbit_profiles_v2 op\n  WHERE ((op.id = auth.uid()) AND ((call_logs.caller_orbit_id = op.orbit_id) OR (call_logs.receiver_orbit_id = op.orbit_id) OR (call_logs.caller_orbit_id = (auth.uid())::text) OR (call_logs.receiver_orbit_id = (auth.uid())::text)))))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "call_logs",
+    "name": "call_logs_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM orbit_profiles_v2 op\n  WHERE ((op.id = auth.uid()) AND ((call_logs.caller_orbit_id = op.orbit_id) OR (call_logs.receiver_orbit_id = op.orbit_id) OR (call_logs.caller_orbit_id = (auth.uid())::text) OR (call_logs.receiver_orbit_id = (auth.uid())::text)))))",
+    "with_check": "(EXISTS ( SELECT 1\n   FROM orbit_profiles_v2 op\n  WHERE ((op.id = auth.uid()) AND ((call_logs.caller_orbit_id = op.orbit_id) OR (call_logs.receiver_orbit_id = op.orbit_id) OR (call_logs.caller_orbit_id = (auth.uid())::text) OR (call_logs.receiver_orbit_id = (auth.uid())::text)))))"
+  },
+  {
+    "schema": "public",
+    "table": "call_participants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "call_transcripts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "candidates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_attribute_definitions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_categories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_families",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_place_viewports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "Authenticated update canonical places",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_places",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_subcategories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_synonyms",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_tags",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_taxonomy",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_unit_groups",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_units",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "canonical_verticals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_media",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_attributes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_product_tags",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_translations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "catalog_variants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "categories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "category_attributes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "category_cleanup_tasks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "category_fulfillment_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "category_subscriptions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "chat_attachments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "participant_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM conversation_participants_v2 cp\n  WHERE ((cp.conversation_id = chat_messages_v2.conversation_id) AND (cp.user_id = auth.uid()))))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "sender_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(sender_user_id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "chat_messages_v2",
+    "name": "sender_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(sender_user_id = auth.uid())",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "churn_risk_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "city_supply_balancer_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "claim_attempts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "classification_learning",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "collaboration_invitations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "commission_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "commission_splits",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "companies",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "competitor_price_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "compliance_cases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "concierge_bookings",
+    "name": "concierge_bookings_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "concierge_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "concierge_services_public",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "contact_clicks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "contact_reveals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "contacts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conv_part_v2_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conv_part_v2_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "conversation_participants_v2",
+    "name": "conv_part_v2_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "conversation_preferences",
+    "name": "owner_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(user_id = (auth.uid())::text)",
+    "with_check": "(user_id = (auth.uid())::text)"
+  },
+  {
+    "schema": "public",
+    "table": "conversation_threads",
+    "name": "Users read own threads",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "conversation_threads",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Auth users create conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Auth users read conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Auth users update conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Authenticated users create conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Participants read conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM jsonb_array_elements(conversations_v2.participants) p(value)\n  WHERE (((p.value ->> 'userId'::text))::uuid = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "conversations_v2",
+    "name": "Participants update conversations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(EXISTS ( SELECT 1\n   FROM jsonb_array_elements(conversations_v2.participants) p(value)\n  WHERE (((p.value ->> 'userId'::text))::uuid = auth.uid())))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_policies",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_asset_variants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_assets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_canonical_values",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_countries",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_currency_rates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_points",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_session_points",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_geo_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_identity_aliases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_locales",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_modules_registry",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_profile_visibility",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "core_timezones_catalog",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "coupons",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "cross_service_journeys",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "current_ranking_state",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "customer_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "customer_recommendations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "customer_relationships",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "deal_documents",
+    "name": "deal_documents_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = uploaded_by)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_documents",
+    "name": "deal_documents_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "deal_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "deal_offers",
+    "name": "deal_offers_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = offered_by)"
+  },
+  {
+    "schema": "public",
+    "table": "deal_offers",
+    "name": "deal_offers_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "deal_rooms",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "deal_timeline",
+    "name": "deal_timeline_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "deal_timeline",
+    "name": "deal_timeline_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "deals",
+    "name": "deals_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = buyer_user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "deals",
+    "name": "deals_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((auth.uid() = buyer_user_id) OR (auth.uid() = seller_user_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "deals",
+    "name": "deals_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((auth.uid() = buyer_user_id) OR (auth.uid() = seller_user_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "delivery_disputes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_missions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_offers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_pricing_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_proofs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_ratings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "delivery_vehicle_capabilities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "device_attestations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "device_fingerprints",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "dispatch_offers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "document_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "documents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_clusters",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_earnings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_locations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_metrics",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_mission_offers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_payouts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_positioning",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "driver_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "dunning_letters",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "email_queue",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "engine_registry",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "engine_reports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "engine_run_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "engine_supervisor",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "entities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "entity_ai_scores",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "entity_feedback_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "entity_pipeline_queue",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "entity_taxonomy_mapping",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "escrow_payments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "eta_projection_cache",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_connectors",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "exchange_quotes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "executive_kpi_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "expenses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "favorite_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "featured_shops",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "financial_reconciliation",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_edges",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_entities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "fraud_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "furniture_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "fx_rates_cache",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "geo_live_context",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "geo_live_zone_overlays",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_calls_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = caller_id)"
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_calls_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((auth.uid() = caller_id) OR (auth.uid() = callee_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "ghost_call_sessions",
+    "name": "ghost_calls_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "((auth.uid() = caller_id) OR (auth.uid() = callee_id))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "group_members",
+    "name": "Auth users manage group members",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "group_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "growth_city_pages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "growth_demand_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "growth_logs",
+    "name": "growth_logs_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "growth_logs",
+    "name": "growth_logs_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "guest_call_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "guest_checkout_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "guest_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_availability",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_bookings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_inventory_calendar",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rate_plans",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotel_rooms",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "hotels",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "import_batches",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "import_test_batches",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_assets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "imported_shop_raw",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "incident_case_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "incident_cases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "internal_config",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "interventions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_reports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "inventory_rooms",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "journey_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "jurisdiction_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "kyc_documents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "landlord_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "launch_gate_results",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "leases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "listing_coupons",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "listing_reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "listing_views",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "live_status_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_points",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "live_tracking_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "live_trackings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "live_translation_stream",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "local_services",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "log_export_jobs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "login_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_accounts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_ledger",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "loyalty_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_bookings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_branches_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_business_entities_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_categories_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalog_items_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_catalogs_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_driver_profiles_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_favorites_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_fleet_units_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_food_items_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_grocery_items_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_hotel_units_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_assets_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_option_groups_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_item_options_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_operating_hours_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_pharmacy_items_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_property_units_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_providers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_reviews_public",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_service_offers_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_services_public",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_storefronts_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "marketplace_travel_offers_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "media_assets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "media_upload_jobs_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "menu_categories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "menu_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_accounts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_activation_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_balances",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_coverage_areas",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_delivery_runtime",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_delivery_zones",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_field_overrides",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "Authenticated update merchant geo",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "Authenticated upsert merchant geo",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "Public read merchant geo",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "merchant_geo_context",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_import_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_menu_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_sources",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_onboarding_state",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_outreach_campaigns",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_override_history",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_private_contacts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_scrape_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_source_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_staff",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "merchant_visual_audit",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "message_translations",
+    "name": "auth_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "message_translations",
+    "name": "auth_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() IS NOT NULL)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "messages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "migration_conflicts_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "migration_entity_map_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "migration_jobs_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_ai_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_attempts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_dispatch_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_driver_scores",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_driver_stats",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_fare_quotes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_job_offers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_jobs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "mobility_pricing_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "moderation_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "module_health",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "newsletter_subscribers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "notification_deliveries",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "notification_preferences",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "notification_templates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "notifications",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_audit",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_canonical_records",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_import_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_recrawl_jobs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_actions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_review_queue",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_shop_candidates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "onboarding_source_records",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ops_live_metrics",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ops_sla_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_sessions_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_call_signals_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_contacts_v2",
+    "name": "owner_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(owner_user_id = auth.uid())",
+    "with_check": "(owner_user_id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_device_keys",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "ogm_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "DELETE",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "ogm_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_members",
+    "name": "ogm_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "ogmsg_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = sender_id)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "ogmsg_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_group_messages",
+    "name": "ogmsg_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = sender_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = created_by)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_groups",
+    "name": "orbit_groups_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = created_by)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_identity_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_launch_audits",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_media_open_logs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "Users manage own orbit profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "(id = auth.uid())",
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "auth_read_all_profiles",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() IS NOT NULL)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "users_insert_own_orbit_profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "users_select_own_orbit_profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(id = auth.uid())",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "orbit_profiles_v2",
+    "name": "users_update_own_orbit_profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(id = auth.uid())",
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_telemetry_events",
+    "name": "auth_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_user_settings_v2",
+    "name": "Users manage own settings",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orbit_user_settings_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "order_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "order_payout_locks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "order_status_history",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "Auth users manage org members",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "org_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "org_secrets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "Org owner full access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "(owner_id = auth.uid())",
+    "with_check": "(owner_id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "Public read organizations",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "organizations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orgs",
+    "name": "Auth users manage orgs",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orgs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "orgs_tenant_view",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ota_connections",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "owner_private_financials",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "owner_profiles_safe",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "parcel_job_details",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_intents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_method_links",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_nonces",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_notices",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_provider_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payment_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payout_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "payout_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "permission_templates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "phone_otp_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "platform_actions_log",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "platform_health_scores",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "platform_policy_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "platform_recovery_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "platform_settings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "pos_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "pricing_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "product_search_index",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "products",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Auth users read profiles",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Authenticated users read other profiles",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Service role full access profiles",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Users insert own profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Users read own profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(id = auth.uid())",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "Users update own profile",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "UPDATE",
+    "qual": "(id = auth.uid())",
+    "with_check": "(id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "properties",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "property_blocked_dates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "property_documents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "property_listings_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "property_units",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "public_discovered_merchants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "public_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "public_marketplace_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "public_storefront_settings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "push_tokens",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "qr_order_targets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "qr_payment_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "qr_targets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "radar_opportunities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "radar_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "radar_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ranking_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_leads",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "real_estate_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "recommendation_signals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "recon_alerts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = referrer_user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "referral_rewards",
+    "name": "referral_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = referrer_user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "referrals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "refund_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "reminders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rent_calls",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rent_payments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rent_revisions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "reservations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ride_disputes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "ride_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rider_presence",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rider_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rider_runtime_state",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rides",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_config",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "rtc_signaling_messages",
+    "name": "auth_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(auth.uid() IS NOT NULL)",
+    "with_check": "(auth.uid() IS NOT NULL)"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_scenarios",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_steps",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "runtime_qa_watchdog",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_activities",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_leads",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_runs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequence_steps",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "sales_ai_sequences",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "saved_addresses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "saved_carts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "saved_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "saved_searches",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "seasonal_bookings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "security_nonces",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "security_reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchant_promos",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "seed_merchants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "seed_products",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "seller_kpi_snapshots",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "service_bookings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "service_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "service_providers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_ledger",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "settlement_records",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "share_links",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "shop_follows",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "shop_tables",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "shop_terminals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "source_ingestion_queue",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "stay_availability",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "stay_bookings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notification_routes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "stealth_notifications",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storage_assets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_access_invites",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_addresses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_clicks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_conversions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliate_programs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_affiliates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ai_chats",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_daily",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_analytics_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auction_bids",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auctions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_auto_notifications",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_badges",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundle_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_bundles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_cart_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_carts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_catalog_categories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenge_progress",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_challenges",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_comparisons",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupon_usage",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_coupons",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_crm_customers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_deal_subscribers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_products",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_digital_purchases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_faq",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_flash_sales",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_card_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_gift_cards",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_growth_metrics",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_import_jobs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_influencer_collabs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_inventory_alerts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_invoices",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_leaderboard",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_chat",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_live_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_history",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_points",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_programs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_rewards",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_tiers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_loyalty_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_log",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_notification_preferences",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_order_items",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_listings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_p2p_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_pages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_product_questions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_delete",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "DELETE",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "storefront_products",
+    "name": "storefront_products_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_conversions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_referral_links",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_refund_policies",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_return_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_returns",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_review_votes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfq_quotes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_rfqs",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_risk_flags",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_shipping_zones",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_comments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_likes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_social_posts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_stock_movements",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_credits",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_group_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_store_groups",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_box_enrollments",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_sub_boxes",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_orders",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscription_plans",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_subscriptions_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_messages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_support_tickets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_tax_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_ticket_messages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_translations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_trust_scores",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_user_badges",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendor_payouts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_vendors",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_stock",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouse_transfers",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_warehouses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlist_shares",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "storefront_wishlists",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "subcategories",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "subscriptions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "support_ticket_messages",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "support_tickets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "surge_pricing_rules",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "system_feature_flags",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tasks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_aliases",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_assignments_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_gap_candidates",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "taxonomy_nodes_core",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "team_tasks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspace_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "team_workspaces",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_documents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_invitations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tenant_private_contacts",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tenants",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "topup_requests",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_positions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "tracking_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_intents",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "transaction_journal",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "trip_live_state",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "trip_location_points",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "unified_wallet_transactions",
+    "name": "participant_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(sender_id = (auth.uid())::text)"
+  },
+  {
+    "schema": "public",
+    "table": "unified_wallet_transactions",
+    "name": "participant_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "((sender_id = (auth.uid())::text) OR (recipient_id = (auth.uid())::text))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "universal_reputation_scores",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_active_address_context",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_addresses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_ai_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_favorites",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_key_bundles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_kyc_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_loyalty",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_notification_preferences",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_payment_preferences",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_presence",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_private_data",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_push_tokens",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_recommendations",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_radar_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_reports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_risk_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_roles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_saved_addresses",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_sessions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_subscriptions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_trust_graph",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "user_wallet_credits",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vault_files",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vendor_commissions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "verified_reviews",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "verticals",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "visual_audit_reports",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_food_deliveroo_dubai_quality",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_food_deliveroo_dubai_visibility",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_food_gate_failures",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_hotel_calendar_coverage",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_hotel_gate_failures",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_hotel_quality",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "vw_hotel_rate_plan_coverage",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "owner_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(owner_user_id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "owner_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(owner_user_id = auth.uid())",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallet_accounts",
+    "name": "owner_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(owner_user_id = auth.uid())",
+    "with_check": "(owner_user_id = auth.uid())"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_balances",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_balances_v2",
+    "name": "owner_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "ALL",
+    "qual": "(user_id = (auth.uid())::text)",
+    "with_check": "(user_id = (auth.uid())::text)"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_balances_v2",
+    "name": "owner_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(user_id = (auth.uid())::text)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallet_credit_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_ledger_entries",
+    "name": "owner_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(EXISTS ( SELECT 1\n   FROM wallet_accounts wa\n  WHERE (((wa.id)::text = wallet_ledger_entries.wallet_account_id) AND (wa.owner_user_id = auth.uid()))))",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallet_limit_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_order_splits",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_pins",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_security_events",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transaction_challenges",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transactions",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wt_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wt_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallet_transfers",
+    "name": "wt_update",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallet_trusted_devices",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallets",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "Users insert own wallet",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "(auth.uid() = user_id)"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "Users manage own wallet",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "Users read own wallet",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "Users update own wallet",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "UPDATE",
+    "qual": "(auth.uid() = user_id)",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "wallets_v2",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "webhook_deliveries",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "webhooks",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_members",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "workspace_settings",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "workspaces",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "zone_events",
+    "name": "zone_events_insert",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "INSERT",
+    "qual": null,
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "zone_events",
+    "name": "zone_events_select",
+    "permissive": "PERMISSIVE",
+    "roles": "{public}",
+    "cmd": "SELECT",
+    "qual": "true",
+    "with_check": null
+  },
+  {
+    "schema": "public",
+    "table": "zone_live_profiles",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "public",
+    "table": "zones",
+    "name": "auth_full_access",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "execution_locks_read_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "has_role(auth.uid(), 'admin'::app_role)",
+    "with_check": null
+  },
+  {
+    "schema": "system",
+    "table": "execution_locks",
+    "name": "execution_locks_service_role_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_read_admin",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "has_role(auth.uid(), 'admin'::app_role)",
+    "with_check": null
+  },
+  {
+    "schema": "system",
+    "table": "execution_tasks",
+    "name": "execution_tasks_service_role_all",
+    "permissive": "PERMISSIVE",
+    "roles": "{service_role}",
+    "cmd": "ALL",
+    "qual": "true",
+    "with_check": "true"
+  }
+]
