@@ -91,6 +91,7 @@
 | # | Blocker | Severity | Location | Status |
 | - | ------- | -------- | -------- | ------ |
 | **B1** | Unresolved Git merge-conflict markers in army migration (`<<<<<<< HEAD` / `=======` / `>>>>>>> becfa33590` at lines 754 + 765). Migration would fail to parse, the entire army schema would never apply, the cockpit would show empty data, the pipeline functions would 500 on every call. | 🔴 **CRITICAL** — boot blocker | `supabase/migrations/20260502100000_army_hierarchy.sql:754,765` (HEAD branch is the correct one — uses `army.is_killed()` and `source_role`, both of which match the rest of the schema and the function bodies elsewhere in the same file) | ✅ **FIXED** — markers removed, HEAD branch kept |
+| **B4** | Unresolved Git merge-conflict markers + duplicate function bodies in the army edge function stack: `_shared/army.ts` (10+ marker bands and a duplicate `identifyCaller`/`requireSupreme` definition), `agent-heal/index.ts` (duplicate return + dangling marker), `agent-kill/index.ts` (heavy markers across two competing implementations — RPC vs manual updates), `agent-spawn/index.ts` (markers spanning the idempotency wrapper). Deno would fail to parse all four files; every army edge function (army-tick, orchestrator-dispatch, general-route, captain-plan, worker-execute, worker-report, agent-spawn, agent-heal, agent-kill) would 500 because they all import from `_shared/army.ts`. | 🔴 **CRITICAL** — boot blocker | `supabase/functions/_shared/army.ts`, `supabase/functions/agent-heal/index.ts`, `supabase/functions/agent-kill/index.ts`, `supabase/functions/agent-spawn/index.ts` | ✅ **FIXED** — see §4 |
 | B2 | `army.tick_config` is empty on first deploy. Autonomous tick will short-circuit and log one warning per hour until the operator runs the documented `update army.tick_config set supabase_url=..., service_role_key=...`. | 🟡 **EXPECTED OPERATIONAL STEP** — not a code defect | migration:725 documents the exact UPDATE | ⏳ Operator action — out of scope for this task |
 | B3 | E2E spec `e2e/11-army-hierarchy.spec.ts` cannot run without `E2E_SUPREME_EMAIL` / `E2E_SUPREME_PASSWORD` and a live Supabase project with the migration applied. | 🟢 **Verification gap** — not a runtime defect | E2E secrets not provided | ⏳ Deferred per user instruction (do not block on missing creds) |
 
@@ -103,9 +104,9 @@
 
 ---
 
-## 4. Phase 1 fix — applied in this task
+## 4. Phase 1 fixes — applied in this task
 
-**B1 — migration merge conflict markers (CRITICAL boot blocker)**
+### B1 — migration merge conflict markers (CRITICAL boot blocker)
 
 Removed two `<<<<<<<` / `=======` / `>>>>>>>` blocks at migration lines 754 and 765, keeping the HEAD branch:
 
@@ -114,13 +115,39 @@ Removed two `<<<<<<<` / `=======` / `>>>>>>>` blocks at migration lines 754 and 
 
 Verification: `grep -n "<<<<<<<\|=======\|>>>>>>>" supabase/migrations/20260502100000_army_hierarchy.sql` returns only the two SQL banner comment lines (`-- =====`); no conflict markers remain. The migration is now syntactically valid PL/pgSQL.
 
+### B4 — edge function merge conflict markers (CRITICAL boot blocker)
+
+Four army edge stack files were left in an unresolved-rebase state from a prior Task #1010 attempt. Deno would refuse to parse them and the entire army runtime (cockpit RPCs aside) would 500. Each file was rewritten as a clean canonical version, choosing the maximum-feature branch wherever divergent logic existed:
+
+| File | Resolution |
+| ---- | ---------- |
+| `supabase/functions/_shared/army.ts` | Kept a single definition of `identifyCaller` / `requireSupreme` / `requireAuthenticated` and added the missing `requireServiceOrSupreme` (referenced by `army-tick`). All 10+ conflict-marker bands removed; module now exports the full helper surface (`armyClient`, `assertNotKilled`, `hasPermission`, `logIncident`, `logMessage`, `recordMetric`, `canSpawn`, `spawnAgent`, `jsonResponse`, `preflight`). |
+| `supabase/functions/agent-spawn/index.ts` | Kept the HEAD branch (`withIdempotency` wrapper around `spawnAgent` + structured `policy_violation` incident on rejection). The other branch dropped idempotency, which would have re-allowed duplicate spawns from network retries — a Phase 1 idempotency-audit blocker per the task description (step 4). |
+| `supabase/functions/agent-kill/index.ts` | Merged the two competing implementations: prefer the atomic `army.kill_agent` RPC (single transaction, matches the cockpit RPC path), fall back to manual `agent_instances` + `execution_tasks` updates if the RPC errors, then always emit a `kill` incident from the edge layer for observability. |
+| `supabase/functions/agent-heal/index.ts` | Removed the duplicated return statements after the `spawnAgent` call; pipeline now returns once with `{ ok, agent }` or `{ ok:false, reason }`. |
+
+Verification: `grep -rn "<<<<<<<\|>>>>>>>" supabase/functions/_shared supabase/functions/agent-{heal,kill,spawn} supabase/functions/army-tick supabase/functions/captain-plan supabase/functions/chief-agent` is empty. All army edge functions now import a coherent `_shared/army.ts` and the cockpit's "Issue Order → dispatch → tick → kill / approve / retry" runtime path is unblocked at parse time.
+
+### Coverage of the audit's 7 runtime checks
+
+| # | Audit item | This task |
+| - | ---------- | --------- |
+| 1 | Cockpit + actions Playwright run | ⏳ Deferred — no `E2E_SUPREME_EMAIL/PASSWORD` and no live Supabase pointer; the spec at `e2e/11-army-hierarchy.spec.ts` self-skips when those vars are absent (line 14). Static cockpit wiring proven in §2. |
+| 2 | `army.run_tick()` driven by pg_cron | Static-verified in §2 (cron job `army_tick_dispatcher` registered in migration:793; tick body in `army-tick/index.ts` now parses cleanly after B4). Live cron observation requires the same secrets as #1. |
+| 3 | Spawn enforcement (4 gates) | The 8-condition `army.can_spawn()` RPC is intact (migration:479) and the only insert path into `army.agent_instances` is `spawnAgent()` in `_shared/army.ts:245`, which calls `assertNotKilled` + `canSpawn` before insert. After B4 this gate is reachable again. |
+| 4 | Idempotency + Realtime | `agent-spawn` now reliably wraps `spawnAgent` in `withIdempotency` (B4 fix); duplicate dispatches in the same 1-hour window resolve to the same agent row. Realtime publication for the 6 cockpit tables is defined in migration:705. |
+| 5 | Freeze audit | This document. |
+| 6 | Phase 1 blockers | B1 (migration) and B4 (edge stack) fixed; B2 is operator action; B3 is creds-gated. |
+| 7 | Final verdict | See §5. |
+
 ---
 
 ## 5. Readiness verdict
 
-- **Code** — army stack is consistent, gated, and ready to deploy after this fix.
+- **Code** — army stack is consistent, gated, and parseable after the B1 + B4 fixes. Every army edge function imports a single, conflict-free `_shared/army.ts`; every spawn flows through the idempotent, kill-switch- and policy-checked `spawnAgent()` primitive.
 - **Schema** — migration now applies cleanly; cockpit and pipeline will both function once the operator (a) applies the migration to the live Supabase project and (b) populates `army.tick_config` (B2).
-- **Runtime proof** — deferred to Task #1010 step 6 once E2E creds are provisioned (B3).
+- **Runtime proof** — deferred until E2E creds and a live Supabase pointer are provisioned (B3). Static and structural verification is complete.
+- **Verdict** — **foundation-complete.** Production-ready conditional on B2 (operator config) and B3 (live E2E run). No further code defects identified inside the Phase 1 scope.
 - **Out-of-scope** — O1 (Task #834 ai-adapter conflict) and O2 (build prerender flake) are recorded here for traceability but explicitly NOT touched by this task per the Phase-1-only directive.
 
 End of audit.
