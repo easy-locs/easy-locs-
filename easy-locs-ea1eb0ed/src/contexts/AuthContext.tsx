@@ -594,21 +594,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Phone-OTP detection (defensive — never trap phone users on /verify-email).
   // A phone-OTP user is verified once Supabase has stamped `phone_confirmed_at`
-  // (PhoneOTPFlow → verifyOtp). The legacy `signup_method === "phone"` metadata
-  // flag is not consistently written across signup paths, so relying on it
-  // alone previously left phone users permanently bouncing to /verify-email
-  // and never reaching /dashboard. We now accept either:
-  //   - email_confirmed_at  → email signup verified (handled in emailVerified)
-  //   - phone_confirmed_at  → phone signup verified (Supabase-native field on
-  //                            the User type; no cast required)
-  //   - explicit signup_method === "phone" tag (legacy/compat path, set by
-  //                            Signup.tsx for callers that do tag it)
-  // We intentionally do NOT consider "phone present + no email" verified by
-  // itself — phone OTP must actually have happened (phone_confirmed_at set),
-  // to avoid weakening verification semantics.
-  const isPhoneUser =
-    !!user?.phone_confirmed_at ||
-    !!(user?.phone && (user.user_metadata as { signup_method?: string } | null | undefined)?.signup_method === "phone");
+  // (PhoneOTPFlow → verifyOtp). Historically the `signup_method === "phone"`
+  // metadata flag was not written by every signup path, so relying on it alone
+  // left phone-only users permanently bouncing to /verify-email. We accept any
+  // of:
+  //   - email_confirmed_at  → email signup verified (handled below in emailVerified)
+  //   - phone_confirmed_at  → phone signup verified (Supabase native field)
+  //   - explicit signup_method === "phone" tag (set by Signup.tsx — kept for
+  //     backward compatibility)
+  //   - user.phone present + user.email empty/null → phone-only account (defensive)
+  const u = user as any;
+  const hasPhone = !!u?.phone;
+  const hasEmail = !!u?.email;
+  const phoneConfirmed = !!u?.phone_confirmed_at;
+  const explicitPhoneSignup = (u?.user_metadata as { signup_method?: string } | null | undefined)?.signup_method === "phone";
+  const isPhoneUser = explicitPhoneSignup || phoneConfirmed || (hasPhone && !hasEmail);
   const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
 
   const signOut = useCallback(async () => {
