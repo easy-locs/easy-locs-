@@ -1,10 +1,12 @@
 // agent-spawn — THE ONLY public path to create a new agent.
 // Supreme-only at the edge layer. Funnels through the shared
-// `spawnAgent()` primitive which validates the 8 reproduction conditions.
+// `spawnAgent()` primitive which validates the 8 reproduction conditions
+// (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
-  armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
+
 
 interface Body {
   role_code: string;
@@ -26,6 +28,7 @@ Deno.serve(async (req) => {
       if (!b?.[k]) return jsonResponse(req, { error: `${k} required` }, 400);
     }
     const sb = armyClient();
+    await assertNotKilled(sb);
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
@@ -47,7 +50,13 @@ Deno.serve(async (req) => {
     );
 
     if (!result || !(result as { ok: boolean }).ok) {
-      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+      const reason = (result as { reason?: string })?.reason;
+      await logIncident(sb, {
+        severity: "warn", kind: "policy_violation", role: b.role_code,
+        message: `spawn rejected: ${reason}`,
+        context: { domain: b.domain, type: b.task_type, dedup_key: b.dedup_key, replayed },
+      });
+      return jsonResponse(req, { ok: false, reason, replayed }, 409);
     }
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
   } catch (e) {

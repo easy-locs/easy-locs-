@@ -3,8 +3,8 @@
 // into agent_instances are FORBIDDEN — all creation flows through
 // spawnAgent() (the same primitive used by agent-spawn).
 import {
-  armyClient, assertNotKilled, jsonResponse, preflight, requireSupreme,
-  spawnAgent,
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident,
+  preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 
 interface Body { agent_id: string; }
@@ -25,6 +25,19 @@ Deno.serve(async (req) => {
     await sb.schema("army").from("agent_instances")
       .update({ status: "terminated", terminated_at: new Date().toISOString() })
       .eq("id", body.agent_id);
+
+    // Check quotas before spawning
+    const check = await canSpawn(sb, {
+      roleCode: agent.role_code, domain: agent.domain,
+      taskType: "respawn", dedupKey: `heal:${body.agent_id}`,
+    });
+    if (!check.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "quota_exceeded", agentId: body.agent_id,
+        role: agent.role_code, message: `heal blocked: ${check.reason}`,
+      });
+      return jsonResponse(req, { ok: false, reason: check.reason });
+    }
 
     const result = await spawnAgent(sb, {
       roleCode: agent.role_code,
