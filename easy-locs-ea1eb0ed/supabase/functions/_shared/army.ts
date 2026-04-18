@@ -228,46 +228,4 @@ export async function canSpawn(
   if (error) return { ok: false, reason: error.message };
   return data as { ok: boolean; reason?: string };
 }
-
-/**
- * THE single spawn primitive. agent-spawn and agent-heal MUST funnel
- * through this; no other code path is allowed to insert into
- * army.agent_instances. Validates kill switch + the 8 reproduction
- * conditions before insert. TTL is mandatory (1..120 minutes).
- */
-export async function spawnAgent(
-  supabase: SupabaseClient,
-  args: {
-    roleCode: string;
-    domain: string;
-    taskType: string;
-    ttlMinutes?: number;
-    dedupKey?: string;
-    parentId?: string;
-    reason?: string;
-    metadata?: Record<string, unknown>;
-  },
-): Promise<{ ok: true; agent: Record<string, unknown> } | { ok: false; reason: string }> {
-  await assertNotKilled(supabase);
-  const check = await canSpawn(supabase, args);
-  if (!check.ok) {
-    await logIncident(supabase, {
-      severity: "warn", kind: "policy_violation", role: args.roleCode,
-      message: `spawn rejected: ${check.reason}`,
-      context: { domain: args.domain, type: args.taskType, dedup_key: args.dedupKey ?? null },
-    });
-    return { ok: false, reason: check.reason ?? "unknown" };
-  }
-  const ttl = new Date(
-    Date.now() + Math.min(Math.max(args.ttlMinutes ?? 15, 1), 120) * 60_000,
-  ).toISOString();
-  const { data, error } = await supabase.schema("army").from("agent_instances")
-    .insert({
-      role_code: args.roleCode, domain: args.domain,
-      parent_id: args.parentId ?? null,
-      status: "active", ttl_at: ttl, spawn_reason: args.reason ?? "spawn",
-      metadata: { ...(args.metadata ?? {}), dedup_key: args.dedupKey ?? null },
-    }).select().single();
-  if (error) return { ok: false, reason: error.message };
-  return { ok: true, agent: data };
 }
