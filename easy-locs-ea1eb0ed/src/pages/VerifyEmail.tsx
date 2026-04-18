@@ -18,9 +18,18 @@ const VerifyEmail = () => {
   const { t } = useI18n();
 
   useEffect(() => {
+    const isVerified = (u: { email_confirmed_at?: string | null; phone_confirmed_at?: string | null; phone?: string | null; email?: string | null } | null | undefined) => {
+      if (!u) return false;
+      if (u.email_confirmed_at) return true;
+      if (u.phone_confirmed_at) return true;
+      // Phone-only account with no email — nothing to verify here.
+      if (u.phone && !u.email) return true;
+      return false;
+    };
+
     const check = async () => {
       const { data: { user } } = await getUser();
-      if (user?.email_confirmed_at) {
+      if (isVerified(user as never)) {
         navigate("/dashboard", { replace: true });
       }
       if (user?.email) setEmail(user.email);
@@ -30,7 +39,7 @@ const VerifyEmail = () => {
     const { data: { subscription } } = onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED") {
         getUser().then(({ data: { user } }) => {
-          if (user?.email_confirmed_at) {
+          if (isVerified(user as never)) {
             navigate("/dashboard", { replace: true });
           }
         });
