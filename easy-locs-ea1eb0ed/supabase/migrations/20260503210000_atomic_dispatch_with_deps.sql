@@ -83,8 +83,8 @@ BEGIN
           -- approval-gated task can never run. Routing through `blocked`
           -- would violate the state machine.
           WHEN v_state = 'pending_review' THEN 'cancelled'
-          -- queued/approved/draft may go to `blocked` per matrix.
-          WHEN v_state IN ('draft','queued','approved') THEN 'blocked'
+          -- queued/approved/planning may go to `blocked` per matrix.
+          WHEN v_state IN ('queued','approved','planning') THEN 'blocked'
           -- running/compensating: force-cancel; orchestrator workers
           -- already check status before each step and will abort cleanly.
           ELSE 'cancelled'
@@ -92,7 +92,7 @@ BEGIN
 
         BEGIN
           UPDATE system.execution_tasks
-             SET status         = v_target::system.execution_task_status,
+             SET status         = v_target::system.task_status,
                  blocked_reason = 'dependency_rejected: ' || v_err
            WHERE id = p_task_id;
         EXCEPTION WHEN OTHERS THEN
@@ -102,7 +102,7 @@ BEGIN
           -- without raising, so the wrapper's contract holds.
           BEGIN
             UPDATE system.execution_tasks
-               SET status         = 'cancelled'::system.execution_task_status,
+               SET status         = 'cancelled'::system.task_status,
                    blocked_reason = 'dependency_rejected (forced): ' || v_err
              WHERE id = p_task_id;
           EXCEPTION WHEN OTHERS THEN

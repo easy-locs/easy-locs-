@@ -1,5 +1,11 @@
 // agent-kill — Terminates an agent + cancels its in-flight tasks.
 // Supreme-only: a killed agent is a destructive action.
+//
+// Prefers the atomic `army.kill_agent` RPC (which performs the agent
+// update, task cancellation, and incident logging in a single
+// transaction). If the RPC is unavailable or errors, falls back to
+// manual updates so the kill still completes. An additional incident
+// is always logged from the edge layer for observability.
 import {
   armyClient, jsonResponse, logIncident, preflight, requireSupreme,
 } from "../_shared/army.ts";
