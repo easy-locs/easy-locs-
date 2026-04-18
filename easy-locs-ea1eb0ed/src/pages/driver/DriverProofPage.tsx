@@ -36,13 +36,13 @@ export default function DriverProofPage() {
 
   if (submitted) {
     return (
-      <SubPageShell title="Delivery Proof" onBack={() => navigate("/driver/missions")} noContentPad>
+      <SubPageShell title="Delivery Proof" onBack={() => navigate("/driver/missions-board")} noContentPad>
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center space-y-4">
             <CheckCircle className="h-16 w-16 mx-auto" style={{ color: "hsl(142 70% 45%)" }} />
             <h2 className="text-xl font-bold text-foreground">Proof Submitted</h2>
             <p className="text-muted-foreground text-sm">Delivery confirmed successfully</p>
-            <button onClick={() => navigate("/driver/missions")} className="mt-4 rounded-xl bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold">
+            <button onClick={() => navigate("/driver/missions-board")} className="mt-4 rounded-xl bg-primary text-primary-foreground px-6 py-2.5 text-sm font-bold">
               Back to Missions
             </button>
           </div>
@@ -54,7 +54,7 @@ export default function DriverProofPage() {
   return (
     <SubPageShell
       title="Delivery Proof"
-      onBack={() => navigate("/driver/missions")}
+      onBack={() => navigate("/driver/missions-board")}
       contentClassName="space-y-4"
     >
       <div className="space-y-3">
