@@ -3,8 +3,11 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
@@ -12,6 +15,7 @@ import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 =======
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -51,6 +55,10 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+} from "../_shared/army.ts";
+import { withIdempotency } from "../_shared/idempotency.ts";
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 
 <<<<<<< HEAD
@@ -90,6 +98,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     await assertNotKilled(sb);
@@ -103,6 +112,25 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 >>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+    await assertNotKilled(sb);
+
+    // Pre-check quotas/policy (canSpawn) up-front so policy violations
+    // can be logged with full context before we ever take an
+    // idempotency claim.
+    const pre2 = await canSpawn(sb, {
+      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
+      dedupKey: b.dedup_key,
+    });
+    if (!pre2.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "policy_violation", role: b.role_code,
+        message: `spawn rejected: ${pre2.reason}`,
+        context: { domain: b.domain, type: b.task_type, dedup_key: b.dedup_key },
+      });
+      return jsonResponse(req, { ok: false, reason: pre2.reason }, 409);
+    }
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
@@ -127,10 +155,13 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -141,6 +172,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
     }
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+<<<<<<< HEAD
 =======
     const result = await spawnAgent(sb, {
       roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
@@ -168,6 +200,8 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 >>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
