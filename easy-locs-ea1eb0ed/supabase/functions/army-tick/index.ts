@@ -12,7 +12,7 @@
 // as incidents but never abort the tick.
 import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight,
-  requireServiceOrSupreme, ARMY_DOMAINS,
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
