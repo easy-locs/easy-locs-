@@ -4,7 +4,7 @@ import { arcjetProtect, shieldMiddleware, arcjetDenyResponse } from "../_shared/
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 function jsonResponse(data: Record<string, unknown>, status = 200) {

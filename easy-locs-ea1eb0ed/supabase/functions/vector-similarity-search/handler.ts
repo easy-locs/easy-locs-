@@ -16,7 +16,7 @@ export const MAX_QUERY_TEXT_LENGTH = 2000;
 
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
