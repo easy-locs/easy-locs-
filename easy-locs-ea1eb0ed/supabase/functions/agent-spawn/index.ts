@@ -16,7 +16,10 @@ import {
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
+<<<<<<< HEAD
 
+=======
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
 
 interface Body {
@@ -40,7 +43,10 @@ Deno.serve(async (req) => {
     }
     const sb = armyClient();
 <<<<<<< HEAD
+<<<<<<< HEAD
     await assertNotKilled(sb);
+=======
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
     // Pre-check quotas/policy (canSpawn) up-front so policy violations
     // can be logged with full context before we ever take an
@@ -78,6 +84,7 @@ Deno.serve(async (req) => {
     );
 
     if (!result || !(result as { ok: boolean }).ok) {
+<<<<<<< HEAD
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -96,6 +103,11 @@ Deno.serve(async (req) => {
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+    }
+    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
