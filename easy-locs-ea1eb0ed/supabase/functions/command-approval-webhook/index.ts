@@ -1,3 +1,4 @@
+// PUBLIC: Command-approval webhook — auth via signing secret + withRateLimit.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";

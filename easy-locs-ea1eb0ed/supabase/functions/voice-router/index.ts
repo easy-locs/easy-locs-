@@ -1,3 +1,4 @@
+// PUBLIC: Domain router — JWT + rate-limit via shared createDomainRouter middleware.
 import { EdgeRouter, proxyToFunction } from "../_shared/edge-function-consolidation.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { arcjetProtect, arcjetDenyResponse } from "../_shared/arcjet-protection.ts";

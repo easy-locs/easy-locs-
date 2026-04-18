@@ -1,3 +1,4 @@
+// PUBLIC: AI proxy — auth + rate-limit handled via shared withRateLimit + internal user check.
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";

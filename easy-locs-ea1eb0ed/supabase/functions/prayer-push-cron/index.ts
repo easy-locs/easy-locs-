@@ -1,8 +1,10 @@
+// PUBLIC: Prayer-time push cron — auth via requireServiceRole.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
 import {
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
   processPrayerCron,
 } from "../_shared/prayer-cron-helpers.ts";
 
@@ -12,7 +14,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
-Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
+Deno.serve(withRateLimit("prayer-push-cron", withEdgeLogging("prayer-push-cron", async (req, logger) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -100,4 +102,4 @@ Deno.serve(withEdgeLogging("prayer-push-cron", async (req, logger) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
     );
   }
-}));
+}, { maxRequests: 30, windowSeconds: 60 })));

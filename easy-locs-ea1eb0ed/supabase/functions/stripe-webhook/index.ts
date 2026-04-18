@@ -1,7 +1,9 @@
+// PUBLIC: Stripe webhook — auth via stripe.webhooks.constructEvent HMAC signature.
 import Stripe from "npm:stripe@17.7.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
@@ -146,7 +148,7 @@ function tpl(template: string, vars: Record<string, string | number>) {
   return Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), template);
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("stripe-webhook", async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -343,7 +345,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}, { maxRequests: 120, windowSeconds: 60 }));
 
 /* ── Post-payment automation: commission-split, notification, QR session close ── */
 async function runPostPaymentAutomation(supabase: any, pi: Stripe.PaymentIntent, meta: Record<string, string>) {

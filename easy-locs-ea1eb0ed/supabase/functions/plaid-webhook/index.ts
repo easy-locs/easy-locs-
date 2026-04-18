@@ -1,7 +1,9 @@
+// PUBLIC: Plaid webhook — auth via Plaid JWT (jose jwtVerify) on signed payload.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { importJWK, jwtVerify, decodeProtectedHeader } from "npm:jose@5.9.6";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -356,7 +358,7 @@ async function logWebhookEvent(
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("plaid-webhook", async (req) => {
   const qsCheck = rejectQuerySecrets(req, corsHeaders);
   if (qsCheck.rejected) return qsCheck.response!;
 
@@ -557,4 +559,4 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ error: msg }, 500);
   }
-});
+}, { maxRequests: 120, windowSeconds: 60 }));
