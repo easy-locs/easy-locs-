@@ -297,11 +297,26 @@ create index if not exists agent_metrics_role_idx on army.agent_metrics(role_cod
 create index if not exists agent_metrics_task_idx on army.agent_metrics(task_id);
 
 -- ----------------------------------------------------------------------------
--- 10. queues — FIFO tables (pgmq-compatible fallback)
+-- 10. queues — FIFO tables (pgmq-compatible fallback) + queue registry
 -- ----------------------------------------------------------------------------
+create table if not exists army.queue_registry (
+  name            text primary key,
+  description     text,
+  created_at      timestamptz not null default now()
+);
+
+insert into army.queue_registry(name, description) values
+  ('q_high_command', 'Supreme commander → chief orchestrator'),
+  ('q_product',      'General Product backlog'),
+  ('q_growth',       'General Growth backlog'),
+  ('q_ops',          'General Ops backlog'),
+  ('q_security',     'General QA/Security backlog'),
+  ('q_repair',       'Self-healing / agent recycling')
+on conflict (name) do nothing;
+
 create table if not exists army.queue_messages (
   id              bigserial primary key,
-  queue_name      text not null,
+  queue_name      text not null references army.queue_registry(name),
   payload         jsonb not null,
   visible_at      timestamptz not null default now(),
   locked_until    timestamptz,
@@ -313,8 +328,17 @@ create index if not exists queue_messages_q_idx
   on army.queue_messages(queue_name, visible_at)
   where locked_until is null or locked_until < now();
 
--- Seed the 6 canonical queues (logical only — table is shared)
--- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
+-- Best-effort pgmq provisioning (creates real pgmq queues if extension present).
+do $$
+declare q text;
+begin
+  if exists (select 1 from pg_extension where extname = 'pgmq') then
+    foreach q in array array['q_high_command','q_product','q_growth','q_ops','q_security','q_repair']
+    loop
+      begin perform pgmq.create(q); exception when others then null; end;
+    end loop;
+  end if;
+end $$;
 
 -- Seed the 6 canonical queues (logical only — table is shared)
 -- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
@@ -645,6 +669,7 @@ alter table army.agent_messages   enable row level security;
 alter table army.incident_log     enable row level security;
 alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
+alter table army.queue_registry   enable row level security;
 
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
@@ -662,7 +687,7 @@ begin
   for t in select unnest(array[
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
-      'queue_messages','agent_roles','agent_policies'])
+      'queue_messages','queue_registry','agent_roles','agent_policies'])
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
@@ -763,6 +788,7 @@ grant execute on function army.run_tick() to service_role;
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
+    -- TTL sweep + stuck-task detection
     perform cron.schedule(
       'army_ttl_sweep',
       '*/5 * * * *',
@@ -776,6 +802,7 @@ begin
       $cron$
     );
 <<<<<<< HEAD
+<<<<<<< HEAD
 
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
@@ -786,6 +813,8 @@ begin
       '* * * * *',
       $cron$ select army.run_tick(); $cron$
     );
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     -- Autonomous pipeline tick: drives the whole army every minute
     -- without any human intervention. Calls the army-tick edge function
@@ -793,7 +822,11 @@ begin
     if exists (select 1 from pg_extension where extname = 'pg_net') then
       begin
         perform cron.schedule(
+<<<<<<< HEAD
           'army_tick_dispatcher_v2',
+=======
+          'army_tick_dispatcher',
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
           '* * * * *',
           format($cron$
             select net.http_post(
@@ -892,8 +925,11 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
+<<<<<<< HEAD
 =======
 >>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   end if;
 exception when others then null;
 end $$;
