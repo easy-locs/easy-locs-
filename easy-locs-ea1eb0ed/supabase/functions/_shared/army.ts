@@ -137,16 +137,6 @@ export async function requireSupreme(req: Request): Promise<Response | null> {
   return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
 }
 
-=======
-/** Allow service role OR any authenticated user. */
-export async function requireAuthenticated(req: Request): Promise<Response | null> {
-  const id = await identifyCaller(req);
-  if (id.kind === "service" || id.kind === "user") return null;
-  return jsonResponse(req, { error: "unauthorized" }, 401);
-}
-
-=======
->>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call. Plain authenticated
@@ -160,7 +150,6 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
 
->>>>>>> eb2660a6ac (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 878fbaa58a (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -169,6 +158,10 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 >>>>>>> 5d35bf2156 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 850bb97fd8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 6448e80554 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
