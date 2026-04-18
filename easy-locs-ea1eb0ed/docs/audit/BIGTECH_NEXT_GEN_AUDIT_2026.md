@@ -314,4 +314,28 @@ supplémentaire pour s'appliquer : ils ciblent du code partagé
 guest/auth dont la chaîne d'exécution est invariante par rapport à
 l'état d'authentification.
 
+---
+
+## Annexe — Round 9 (continued hardening + UX friction)
+
+**Defect classes addressed (race conditions on async setState):**
+
+| # | Fichier | Diagnostic | Correctif minimal |
+|---|---------|------------|-------------------|
+| 1 | `src/components/communication-hub/QRContactCard.tsx` (L74-110) | `QRCodeLib.toCanvas(...).then(canvas => setQrDataUrl(...))` sans cancelled-guard ; si l'utilisateur ferme le panel ou navigue avant la résolution de la promise, `setQrDataUrl` s'exécute sur composant démonté → React warning + memory hold. | Ajout flag `let cancelled = false` + early-return dans le `.then` + cleanup `return () => { cancelled = true; }`. |
+| 2 | `src/pages/Login.tsx` (L112) | `isPlatformAuthenticatorAvailable().then(setBiometricLoginAvailable)` sans guard ; si l'utilisateur quitte /login pendant l'await (probe WebAuthn lente), setState hors mount. | Même pattern : flag cancelled + cleanup. |
+
+**UX friction addressed (double-click / silent action):**
+
+| # | Fichier | Diagnostic | Correctif minimal |
+|---|---------|------------|-------------------|
+| 3 | `src/components/rental/RentalPropertyDetailView.tsx` (L262) | Bouton "assign tenant" → `await onAssignTenant()` sans état pending ; double-clic crée 2 assignations identiques côté server. | Ajout state `assigningId`, garde re-entrante au début du handler, `disabled={assigningId !== null}`, classes `disabled:opacity-50 disabled:cursor-not-allowed`. Pattern réutilisable. |
+
+**Runtime probe added (Track 4):**
+
+- `verifyNavigationStability` (`src/lib/qa/system-verify.ts`) : pousse N entrées identiques via `history.pushState`, vérifie que `history.length` croît exactement de N (détecte coalescing/replace stealth qui sont les symptômes des boucles de redirect même quand l'URL visible reste stable). Wired dans `auditRouteConfigChecks` à severity `warning` (impact 8).
+- Total probes maintenant : 5 critical + 1 navigation = 6 actifs sur `/admin/system-verify`.
+
+**Verdict global Round 9 :** scope tenu (3 minimal diffs + 1 probe), build vert (2390 chunks), defect class race-condition-on-unmount désormais documentée + ouverte aux contributeurs comme pattern reproductible. Pas de feature ajoutée, pas de redesign, pas de refactor large.
+
 *Fin du rapport. Pour toute mise à jour, ouvrir une tâche et référencer ce fichier.*

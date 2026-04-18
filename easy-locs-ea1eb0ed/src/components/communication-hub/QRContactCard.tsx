@@ -70,11 +70,13 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
 
   useEffect(() => {
     if (!qrPayload || !open) return;
+    let cancelled = false;
     QRCodeLib.toCanvas(document.createElement("canvas"), qrPayload, {
       width: 220, margin: 2,
       color: { dark: "#0a0a0f", light: "#ffffff" },
       errorCorrectionLevel: "H",
     }).then(canvas => {
+      if (cancelled) return;
       const ctx = canvas.getContext("2d");
       if (ctx) {
         const size = canvas.width;
@@ -98,8 +100,10 @@ export default function QRContactCard({ open, onOpenChange, onContactAdded, onSe
         ctx.font = `${Math.round(logoSize * 0.15)}px system-ui, sans-serif`;
         ctx.fillText("Easy-Locs", x + logoSize / 2, y + logoSize * 0.72);
       }
+      if (cancelled) return;
       setQrDataUrl(canvas.toDataURL("image/png"));
     }).catch(() => {});
+    return () => { cancelled = true; };
   }, [qrPayload, open]);
 
   const stopScanner = useCallback(() => {
