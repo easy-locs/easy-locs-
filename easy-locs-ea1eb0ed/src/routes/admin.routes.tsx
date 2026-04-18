@@ -39,7 +39,7 @@ const {
   AdminKycReviewPage, AdminLabHubPage, AdminMapErrorDashboardPage, AdminMergeConflictRecoveryPage, AdminMarketplaceOpsPage,
   AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminAgentRunsPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
   AdminNotificationLabPage, AdminNotificationOpsPage, AdminOpsDashboardPage, AdminOrderWatchPage,
-  AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage,
+  AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage, AdminWatchdogPage,
   AdminQualityOpsPage, AdminRealtimeControlPage, AdminRefundQueuePage, AdminReleaseHistoryPage,
   AdminRetentionOpsPage, AdminReviewQueuePage, AdminSecurityLabPage, AdminSeedToolsPage,
   AdminShopImportPage, AdminShopQualityPage, AdminSourceAuditPage, AdminSuperDashboardPage,
@@ -108,6 +108,7 @@ export function AdminRoutes() {
       <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/firecrawl-usage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFirecrawlUsagePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/watchdog" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminWatchdogPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/map-errors" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapErrorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/merge-conflict-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMergeConflictRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
