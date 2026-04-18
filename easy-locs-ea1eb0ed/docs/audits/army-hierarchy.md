@@ -89,6 +89,7 @@ Chief Orchestrator
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
+
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
 the boundary, then `assertNotKilled()` and `hasPermission()` before any
 write. `agent-spawn` and `agent-heal` are the only callers allowed to
