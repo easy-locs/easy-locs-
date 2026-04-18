@@ -23,6 +23,11 @@ const CRON_JOBS: CronJob[] = [
   { name: "email-queue-process", function_name: "email-queue-process", schedule_seconds: 120, tier: "high" },
   { name: "dlq-processor", function_name: "dlq-processor", schedule_seconds: 120, tier: "high" },
   { name: "watchdog-ping", function_name: "watchdog-ping", schedule_seconds: 60, body: { include_agent_watchdog: true }, tier: "critical" },
+  // Task #1016 — agent task queue watchdog. Detects stalled execution_tasks
+  // (deadline exceeded / heartbeat stale), auto-fails tasks past the stall
+  // threshold, and releases dependent edges whose upstream task has reached
+  // a terminal state. All actions are recorded in `system.agent_incident_log`.
+  { name: "agent-watchdog", function_name: "agent-watchdog", schedule_seconds: 60, tier: "critical" },
   { name: "job-queue-worker", function_name: "job-queue-worker", schedule_seconds: 60, body: { batch_size: 50 }, tier: "high" },
   { name: "cache-manager-refresh", function_name: "cache-manager", schedule_seconds: 300, body: { action: "refresh_all" }, tier: "medium" },
   { name: "health-check", function_name: "health-check", schedule_seconds: 300, tier: "high" },
