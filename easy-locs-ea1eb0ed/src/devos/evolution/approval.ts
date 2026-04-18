@@ -14,6 +14,17 @@ export function listProposals(filter?: { status?: ProposedTask['status'] }): Pro
   return filter?.status ? all.filter(p => p.status === filter.status) : all;
 }
 
+export function hydrateProposals(items: ProposedTask[]): number {
+  let n = 0;
+  for (const t of items) {
+    if (!t || typeof t.id !== 'string') continue;
+    if (proposals.has(t.id)) continue;
+    proposals.set(t.id, t);
+    n += 1;
+  }
+  return n;
+}
+
 export function recordSuggested(task: ProposedTask): ProposedTask {
   proposals.set(task.id, task);
   emit({
