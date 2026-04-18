@@ -1,3 +1,5 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
 // agent-spawn — THE ONLY public path to create a new agent.
 // Supreme-only at the edge layer. Funnels through the shared
 <<<<<<< HEAD
@@ -38,6 +40,25 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
+=======
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+>>>>>>> 2eca078a18 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+
+=======
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+} from "../_shared/army.ts";
+import { withIdempotency } from "../_shared/idempotency.ts";
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+
+>>>>>>> 48a041c00a (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> 66d403e569 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 interface Body {
   role_code: string;
   domain: string;
