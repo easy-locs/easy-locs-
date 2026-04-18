@@ -278,9 +278,14 @@ const Login = () => {
     void checkSession();
 
     const { data: { subscription } } = onAuthStateChange(async (event, nextSession) => {
-      if (event === "SIGNED_IN" && nextSession?.user) {
+      // Honor BOTH SIGNED_IN (fresh login) and INITIAL_SESSION (restore on
+      // page load) so an already-authenticated user landing on /login is
+      // never stranded — even if the explicit getSession() probe above
+      // timed out under degraded network conditions.
+      const isResumeEvent = event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED";
+      if (isResumeEvent && nextSession?.user) {
         const eventTraceId = crypto.randomUUID();
-        authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: "auth_state_change" });
+        authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: `auth_state_change:${event}` });
         await redirectAfterLogin(eventTraceId, nextSession.user.id);
       }
     });

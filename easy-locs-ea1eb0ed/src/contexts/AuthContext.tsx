@@ -38,7 +38,18 @@ interface AuthSessionContextType {
   session: Session | null;
   loading: boolean;
   profileLoaded: boolean;
+  /**
+   * True when the user is verified by EITHER email or phone. Kept under the
+   * historical name `emailVerified` for backward compatibility — every
+   * existing consumer treats this as the single "is the user allowed past
+   * the verification gate?" boolean. Prefer `phoneVerified` /
+   * `emailConfirmed` below for explicit checks.
+   */
   emailVerified: boolean;
+  /** True when Supabase has stamped `email_confirmed_at` on the user. */
+  emailConfirmed: boolean;
+  /** True when the user is verified via phone (phone_confirmed_at or explicit signup_method=phone). */
+  phoneVerified: boolean;
 }
 
 interface AuthProfileContextType {
@@ -69,6 +80,8 @@ const AuthSessionContext = createContext<AuthSessionContextType>({
   loading: true,
   profileLoaded: false,
   emailVerified: false,
+  emailConfirmed: false,
+  phoneVerified: false,
 });
 
 const AuthProfileContext = createContext<AuthProfileContextType>({
@@ -629,7 +642,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // is still honored so historical accounts that completed verification
   // before the field was stamped don't regress.
   const isPhoneUser = phoneConfirmed || (explicitPhoneSignup && hasPhone);
-  const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
+  const emailConfirmed = !!user?.email_confirmed_at;
+  const phoneVerified = isPhoneUser;
+  // `emailVerified` retains its historical meaning: "user is verified by
+  // ANY supported channel". This is what every existing route guard reads.
+  const emailVerified = emailConfirmed || phoneVerified;
 
   const signOut = useCallback(async () => {
     teardownSession();
@@ -667,7 +684,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     profileLoaded,
     emailVerified,
-  }), [user, session, loading, profileLoaded, emailVerified]);
+    emailConfirmed,
+    phoneVerified,
+  }), [user, session, loading, profileLoaded, emailVerified, emailConfirmed, phoneVerified]);
 
   const profileValue = useMemo(() => ({
     orgId,
