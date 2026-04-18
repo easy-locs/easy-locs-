@@ -10,7 +10,30 @@ import { useI18n } from "@/lib/i18n";
 import SEOHead from "@/components/SEOHead";
 import { useUiEngine } from "@/hooks/useUiEngine";
 
-type Channel = "email" | "phone" | "verified" | "loading";
+type Channel = "email" | "phone" | "verified" | "loading" | "error";
+
+/**
+ * Narrow view of the Supabase user object used by the verification gate.
+ * Avoids `any` so callers can't accidentally read unknown metadata.
+ */
+type AuthUserView = {
+  email?: string | null;
+  phone?: string | null;
+  email_confirmed_at?: string | null;
+  phone_confirmed_at?: string | null;
+  user_metadata?: { signup_method?: string | null } | null;
+};
+
+const GET_USER_TIMEOUT_MS = 5_000;
+
+function getUserWithTimeout() {
+  return Promise.race([
+    getUser(),
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`getUser timed out (${GET_USER_TIMEOUT_MS}ms)`)), GET_USER_TIMEOUT_MS)
+    ),
+  ]) as ReturnType<typeof getUser>;
+}
 
 const VerifyAccount = () => {
   const [resending, setResending] = useState(false);
@@ -23,25 +46,30 @@ const VerifyAccount = () => {
 
   useUiEngine("verifyaccount");
 
-  const evaluate = (user: any) => {
-    if (!user) {
+  const evaluate = (rawUser: AuthUserView | null) => {
+    if (!rawUser) {
       // No session (e.g., visitor opened an old verification email after
       // signing out). Don't trap them on an infinite spinner — bounce to
       // /login so they can sign in again.
       navigate("/login", { replace: true });
       return;
     }
+    const user = rawUser;
     const hasEmail = !!user.email;
     const hasPhone = !!user.phone;
     const emailConfirmed = !!user.email_confirmed_at;
     const phoneConfirmed = !!user.phone_confirmed_at;
-    const explicitPhoneSignup = (user.user_metadata as any)?.signup_method === "phone";
+    const explicitPhoneSignup = user.user_metadata?.signup_method === "phone";
 
     if (user.email) setEmail(user.email);
     if (user.phone) setPhone(user.phone);
 
-    // Phone-only or phone-verified → considered verified, route to dashboard.
-    if (phoneConfirmed || explicitPhoneSignup || (hasPhone && !hasEmail)) {
+    // Phone-verified → route to dashboard. Tightened to require either an
+    // actual `phone_confirmed_at` stamp from Supabase or the explicit
+    // `signup_method=phone` metadata tag set by our own signup pipeline.
+    // The previous fallback `(hasPhone && !hasEmail)` was overly permissive
+    // and could let an unverified phone signup slip past the gate.
+    if (phoneConfirmed || explicitPhoneSignup) {
       setChannel("verified");
       navigate("/dashboard", { replace: true });
       return;
@@ -59,12 +87,22 @@ const VerifyAccount = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data: { user } } = await getUser();
-      if (!cancelled) evaluate(user);
+      try {
+        const { data: { user } } = await getUserWithTimeout();
+        if (!cancelled) evaluate(user as AuthUserView | null);
+      } catch (err) {
+        console.warn("[VerifyAccount] getUser failed/timed out:", err);
+        if (!cancelled) setChannel("error");
+      }
     })();
     const { data: { subscription } } = onAuthStateChange((event) => {
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "TOKEN_REFRESHED") {
-        getUser().then(({ data: { user } }) => { if (!cancelled) evaluate(user); });
+        getUserWithTimeout()
+          .then(({ data: { user } }) => { if (!cancelled) evaluate(user as AuthUserView | null); })
+          .catch((err) => {
+            console.warn("[VerifyAccount] getUser refresh failed:", err);
+            if (!cancelled) setChannel("error");
+          });
       }
     });
     return () => { cancelled = true; subscription.unsubscribe(); };
@@ -92,6 +130,41 @@ const VerifyAccount = () => {
       <SubPageShell noContentPad className="bg-hero flex items-center justify-center p-4">
         <SEOHead title="Verify Account — Easy-Locs" description="Verify your account." noindex />
         <Loader2 className="h-8 w-8 animate-spin text-accent" />
+      </SubPageShell>
+    );
+  }
+
+  if (channel === "error") {
+    // getUser timed out or threw — surface an actionable fallback instead of
+    // an indefinite spinner. The user can sign in again or hit dashboard
+    // directly (the dashboard's own ProtectedRoute will re-evaluate session
+    // state once the call recovers).
+    return (
+      <SubPageShell noContentPad className="bg-hero flex items-center justify-center p-4">
+        <SEOHead title="Verify Account — Easy-Locs" description="Verify your account." noindex />
+        <div className="bg-card rounded-2xl shadow-card-hover p-8 max-w-md w-full text-center border border-border/50">
+          <h1 className="text-xl font-bold text-foreground mb-2">
+            {t("auth.verify.error_title") || "We couldn't reach the server"}
+          </h1>
+          <p className="text-muted-foreground text-sm mb-6">
+            {t("auth.verify.error_desc") || "Your verification status could not be loaded. Please sign in again or try once more."}
+          </p>
+          <div className="flex gap-2 justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-xl border border-border bg-background text-foreground hover:bg-muted transition-all"
+            >
+              <RefreshCw className="h-4 w-4" />
+              {t("common.retry") || "Try again"}
+            </button>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 text-sm font-medium px-5 py-2.5 rounded-xl bg-accent text-accent-foreground hover:opacity-90 transition-all"
+            >
+              {t("auth.verify.sign_in_again") || "Sign in again"}
+            </Link>
+          </div>
+        </div>
       </SubPageShell>
     );
   }

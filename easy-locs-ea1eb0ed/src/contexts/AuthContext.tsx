@@ -38,7 +38,18 @@ interface AuthSessionContextType {
   session: Session | null;
   loading: boolean;
   profileLoaded: boolean;
+  /**
+   * True when the user is verified by EITHER email or phone. Kept under the
+   * historical name `emailVerified` for backward compatibility — every
+   * existing consumer treats this as the single "is the user allowed past
+   * the verification gate?" boolean. Prefer `phoneVerified` /
+   * `emailConfirmed` below for explicit checks.
+   */
   emailVerified: boolean;
+  /** True when Supabase has stamped `email_confirmed_at` on the user. */
+  emailConfirmed: boolean;
+  /** True when the user is verified via phone (phone_confirmed_at or explicit signup_method=phone). */
+  phoneVerified: boolean;
 }
 
 interface AuthProfileContextType {
@@ -69,6 +80,8 @@ const AuthSessionContext = createContext<AuthSessionContextType>({
   loading: true,
   profileLoaded: false,
   emailVerified: false,
+  emailConfirmed: false,
+  phoneVerified: false,
 });
 
 const AuthProfileContext = createContext<AuthProfileContextType>({
@@ -622,13 +635,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const hasEmail = !!u?.email;
   const phoneConfirmed = !!u?.phone_confirmed_at;
   const explicitPhoneSignup = u?.user_metadata?.signup_method === "phone";
-  // Tightened semantics: treat as phone-verified ONLY when Supabase has
-  // actually stamped `phone_confirmed_at`. The legacy fallback
-  // (`hasPhone && !hasEmail`) was permissive and could let unconfirmed
-  // phone signups bypass /verify-account; the explicit signup_method tag
-  // is still honored so historical accounts that completed verification
-  // before the field was stamped don't regress.
-  const isPhoneUser = phoneConfirmed || (explicitPhoneSignup && hasPhone);
+  // Accept any of: Supabase-stamped phone_confirmed_at, explicit
+  // signup_method === "phone" tag (historical accounts), or phone-only
+  // account (phone present + no email) as a defensive fallback so
+  // phone-OTP users are never trapped on /verify-email.
+  const isPhoneUser = phoneConfirmed || explicitPhoneSignup || (hasPhone && !hasEmail);
   const emailVerified = !!user?.email_confirmed_at || isPhoneUser;
 
   const signOut = useCallback(async () => {
@@ -667,7 +678,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     loading,
     profileLoaded,
     emailVerified,
-  }), [user, session, loading, profileLoaded, emailVerified]);
+    emailConfirmed,
+    phoneVerified,
+  }), [user, session, loading, profileLoaded, emailVerified, emailConfirmed, phoneVerified]);
 
   const profileValue = useMemo(() => ({
     orgId,

@@ -47,29 +47,31 @@ function InlineSkeleton() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, profileLoaded } = useAuthSession();
+  const { user, loading, emailConfirmed, phoneVerified, profileLoaded } = useAuthSession();
   const { subscription } = useAuthProfile();
   const location = useLocation();
 
   if (loading) return <InlineSkeleton />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (!profileLoaded) return <InlineSkeleton />;
-  // Belt-and-suspenders for phone-OTP users: never bounce them to verification.
-  // AuthContext.isPhoneUser already handles this, but if for any reason a user
-  // arrives here with a phone identity (or no email at all) we treat them as
-  // verified rather than trapping them in a redirect loop.
-  if (!emailVerified) {
-    const u = user as any;
-    const hasPhone = !!u?.phone;
-    const hasEmail = !!u?.email;
-    const phoneConfirmed = !!u?.phone_confirmed_at;
-    const phoneOnly = phoneConfirmed || (hasPhone && !hasEmail);
-    if (!phoneOnly) {
-      // Unified verification flow — /verify-account handles BOTH email and
-      // phone cases and auto-routes verified users to /dashboard. The old
-      // /verify-email route now redirects here as well for back-compat.
-      return <Navigate to="/verify-account" replace />;
-    }
+
+  // Verification gate — explicit, channel-by-channel.
+  //
+  //   isVerified  ⇔  the user has cleared EITHER channel they signed up with.
+  //
+  // We check email and phone separately (rather than the legacy combined
+  // `emailVerified` boolean) so it is impossible to bounce a phone-verified
+  // user to /verify-account simply because they happen to have an email
+  // string on the user record. Both `emailConfirmed` and `phoneVerified`
+  // come from confirmed signals only (`email_confirmed_at`,
+  // `phone_confirmed_at`, or the explicit `signup_method=phone` metadata
+  // tag set by our own signup pipeline) — there is intentionally no
+  // permissive identity-only fallback here.
+  if (!emailConfirmed && !phoneVerified) {
+    // Unified verification flow — /verify-account handles BOTH email and
+    // phone cases and auto-routes verified users to /dashboard. The old
+    // /verify-email route now redirects here as well for back-compat.
+    return <Navigate to="/verify-account" replace />;
   }
 
   const isAdminRoute = location.pathname.startsWith("/admin");
