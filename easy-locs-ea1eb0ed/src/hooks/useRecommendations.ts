@@ -46,11 +46,30 @@ function extractItemIdFromRoute(pathname: string): string | null {
   return null;
 }
 
+// Module-level stable empty array. Using the destructure default
+// `favorites = []` produced a fresh array reference on every render, which
+// then entered `useCallback(refresh, [..., favorites, ...])` as a changed
+// dependency. That regenerated `refresh` every render, which made the
+// `useEffect(() => refresh(), [refresh])` below re-fire every render,
+// which called `setLoading(true)` and re-rendered, looping forever and
+// emitting a flood of "Maximum update depth exceeded" warnings. See
+// scripts/check-build-invariants.cjs for the regression guard.
+const EMPTY_FAVORITES: readonly string[] = Object.freeze([]);
+
 export function useRecommendations(options: UseRecommendationsOptions = {}) {
-  const { userId, favorites = [], location, limit = 6, usePgvector = true } = options;
+  const { userId, limit = 6, usePgvector = true } = options;
+  const favorites = options.favorites ?? (EMPTY_FAVORITES as readonly string[]);
+  const location = options.location;
   const { pathname } = useLocation();
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>(() => getRecommendations().slice(0, limit));
   const [loading, setLoading] = useState(false);
+
+  // Primitive-string dep keys keep `refresh` referentially stable even
+  // when callers pass fresh inline arrays/objects on each render. React
+  // compares deps with Object.is — equal strings short-circuit cleanly,
+  // equal arrays/objects do not.
+  const favoritesKey = favorites.length === 0 ? "" : favorites.join("|");
+  const locationKey = location ? `${location.lat},${location.lng}` : "";
 
   useEffect(() => {
     if (!routeHistory.includes(pathname)) {
@@ -70,7 +89,7 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
       const ctx = {
         userId,
         recentRoutes: [...routeHistory],
-        favorites,
+        favorites: favorites as string[],
         location,
         timeOfDay: getTimeOfDay(),
       };
@@ -85,7 +104,8 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [userId, favorites, location, limit, usePgvector]);
+     
+  }, [userId, favoritesKey, locationKey, limit, usePgvector]);
 
   const trackInteraction = useCallback(
     (itemId: string, type: "view" | "click" | "purchase" | "favorite" | "review") => {
