@@ -84,18 +84,72 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call.
  */
-export async function requireServiceOrSupreme(req: Request): Promise<Response | null> {
+export async function identifyCaller(req: Request): Promise<
+  | { kind: "service" }
+  | { kind: "user"; userId: string; supreme: boolean }
+  | { kind: "anonymous" }
+> {
+  const authHeader = req.headers.get("authorization") ?? "";
+  if (!authHeader.toLowerCase().startsWith("bearer ")) return { kind: "anonymous" };
+  const token = authHeader.slice(7).trim();
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  if (token && token === serviceKey) return { kind: "service" };
+
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? serviceKey;
+  const userClient = createClient(url, anonKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false },
+  });
+  const { data: u, error } = await userClient.auth.getUser();
+  if (error || !u?.user?.id) return { kind: "anonymous" };
+
+  // Probe known role tables (tolerant — different conventions in this repo).
+  let supreme = false;
+  try {
+    const { data: roles } = await userClient
+      .from("user_roles" as never)
+      .select("role")
+      .eq("user_id", u.user.id);
+    if (Array.isArray(roles)) {
+      supreme = roles.some((r: { role?: string }) =>
+        ["super_admin", "supreme_commander", "admin"].includes((r.role ?? "")));
+    }
+  } catch (_) { /* table may not exist */ }
+  if (!supreme) {
+    try {
+      const { data: prof } = await userClient
+        .from("profiles" as never)
+        .select("is_super_admin")
+        .eq("id", u.user.id)
+        .maybeSingle();
+      if (prof && (prof as { is_super_admin?: boolean }).is_super_admin) supreme = true;
+    } catch (_) { /* column may not exist */ }
+  }
+  return { kind: "user", userId: u.user.id, supreme };
+}
+
+/** Allow service role OR authenticated Supreme Commander. Reject everything else. */
+export async function requireSupreme(req: Request): Promise<Response | null> {
   const id = await identifyCaller(req);
   if (id.kind === "service") return null;
   if (id.kind === "user" && id.supreme) return null;
-  return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
+  return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
 }
 
 =======
->>>>>>> d40ef887c7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
 >>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> ec7185642b (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+/** Allow service role OR any authenticated user. */
+export async function requireAuthenticated(req: Request): Promise<Response | null> {
+  const id = await identifyCaller(req);
+  if (id.kind === "service" || id.kind === "user") return null;
+  return jsonResponse(req, { error: "unauthorized" }, 401);
+}
+
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> d4cdad69e0 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -233,4 +287,46 @@ export async function canSpawn(
   if (error) return { ok: false, reason: error.message };
   return data as { ok: boolean; reason?: string };
 }
+
+/**
+ * THE single spawn primitive. agent-spawn and agent-heal MUST funnel
+ * through this; no other code path is allowed to insert into
+ * army.agent_instances. Validates kill switch + the 8 reproduction
+ * conditions before insert. TTL is mandatory (1..120 minutes).
+ */
+export async function spawnAgent(
+  supabase: SupabaseClient,
+  args: {
+    roleCode: string;
+    domain: string;
+    taskType: string;
+    ttlMinutes?: number;
+    dedupKey?: string;
+    parentId?: string;
+    reason?: string;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<{ ok: true; agent: Record<string, unknown> } | { ok: false; reason: string }> {
+  await assertNotKilled(supabase);
+  const check = await canSpawn(supabase, args);
+  if (!check.ok) {
+    await logIncident(supabase, {
+      severity: "warn", kind: "policy_violation", role: args.roleCode,
+      message: `spawn rejected: ${check.reason}`,
+      context: { domain: args.domain, type: args.taskType, dedup_key: args.dedupKey ?? null },
+    });
+    return { ok: false, reason: check.reason ?? "unknown" };
+  }
+  const ttl = new Date(
+    Date.now() + Math.min(Math.max(args.ttlMinutes ?? 15, 1), 120) * 60_000,
+  ).toISOString();
+  const { data, error } = await supabase.schema("army").from("agent_instances")
+    .insert({
+      role_code: args.roleCode, domain: args.domain,
+      parent_id: args.parentId ?? null,
+      status: "active", ttl_at: ttl, spawn_reason: args.reason ?? "spawn",
+      metadata: { ...(args.metadata ?? {}), dedup_key: args.dedupKey ?? null },
+    }).select().single();
+  if (error) return { ok: false, reason: error.message };
+  return { ok: true, agent: data };
 }
