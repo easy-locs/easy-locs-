@@ -16,6 +16,7 @@ Deno.serve(async (req) => {
     const reason = body.reason ?? "manual";
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     // Task #998 uses an RPC for atomicity; Task #1018 uses individual updates + logIncident.
@@ -26,6 +27,8 @@ Deno.serve(async (req) => {
     // I will combine them such that we use the RPC for the state change but keep the extra logging/checks.
 
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
