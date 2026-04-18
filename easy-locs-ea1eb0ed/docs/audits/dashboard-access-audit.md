@@ -144,6 +144,8 @@ Causes contributives :
 
 ### `src/contexts/AuthContext.tsx`
 
+### `src/contexts/AuthContext.tsx`
+
 `emailVerified` accepte désormais deux signaux primaires (et un legacy) :
 
 - `user.email_confirmed_at` — signup email vérifié ;
