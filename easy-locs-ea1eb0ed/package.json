@@ -20,6 +20,7 @@
     "check:pillar-routes": "npx tsx scripts/check-pillar-routes.ts",
     "check:route-uniqueness": "npx tsx scripts/check-route-uniqueness.ts",
     "check:import-aliases": "npx tsx scripts/check-import-aliases.ts",
+    "check:page-orphans": "npx tsx scripts/check-page-orphans.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
