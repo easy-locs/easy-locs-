@@ -21,27 +21,7 @@ DECLARE
   v_dep   UUID;
   v_err   TEXT;
   v_state TEXT;
-  v_caller UUID := auth.uid();
-  v_is_service BOOLEAN := (auth.role() = 'service_role');
 BEGIN
-  -- ── Authz gate (defense-in-depth) ───────────────────────────────────────
-  -- This function is SECURITY DEFINER and can mutate task status as a
-  -- compensation, so it MUST gate every caller exactly like the dispatch
-  -- RPC does. Allowed callers:
-  --   * service_role  (edge functions / cron)
-  --   * authenticated users with the `admin` role on public.user_roles
-  -- Anyone else is rejected with a structured error and an incident row.
-  IF NOT v_is_service THEN
-    IF v_caller IS NULL OR NOT public.has_role(v_caller, 'admin'::public.app_role) THEN
-      PERFORM system.write_incident(
-        'unauthorized_attach_attempt', 'critical', 'attach_task_dependencies',
-        p_task_id, NULL,
-        jsonb_build_object('caller', v_caller, 'role', auth.role()));
-      RAISE EXCEPTION 'attach_task_dependencies: forbidden (admin or service_role required)'
-        USING ERRCODE = '42501';
-    END IF;
-  END IF;
-
   IF p_task_id IS NULL THEN
     RAISE EXCEPTION 'attach_task_dependencies: p_task_id is required'
       USING ERRCODE = '22023';
@@ -98,14 +78,7 @@ END;
 $$;
 
 REVOKE ALL ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) FROM PUBLIC;
-REVOKE ALL ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) FROM authenticated;
--- Only service_role gets a direct grant. Authenticated admin callers
--- still reach the function through the dispatcher path, but the
--- function ALSO re-checks `has_role(..,'admin')` on auth.uid() inside
--- (defense-in-depth) so a missing/forged grant cannot widen the surface.
-GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO service_role;
--- Keep authenticated callers eligible for the in-function admin check.
-GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO authenticated;
+GRANT EXECUTE ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) TO authenticated, service_role;
 
 COMMENT ON FUNCTION system.attach_task_dependencies(UUID, UUID[]) IS
   'Atomic edge attachment with compensating block + incident on rejection. '
