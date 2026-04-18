@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
   const denied = await requireServiceOrSupreme(req) || await requireAuthenticated(req);
   if (denied) return denied;
   try {
+
     const body = (await req.json()) as Body;
     if (!body?.task_id) return jsonResponse(req, { error: "task_id required" }, 400);
 
