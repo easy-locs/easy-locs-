@@ -603,6 +603,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   //   - explicit signup_method === "phone" tag (set by Signup.tsx — kept for
   //     backward compatibility)
   //   - user.phone present + user.email empty/null → phone-only account (defensive)
+  // We use "as any" or explicit cast because Supabase types may lag behind native fields.
   const u = user as any;
   const hasPhone = !!u?.phone;
   const hasEmail = !!u?.email;
