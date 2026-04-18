@@ -97,7 +97,6 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   if (id.kind === "user" && id.supreme) return null;
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
-
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -278,4 +277,3 @@ export async function spawnAgent(
   if (error) return { ok: false, reason: error.message };
   return { ok: true, agent: data };
 }
-
