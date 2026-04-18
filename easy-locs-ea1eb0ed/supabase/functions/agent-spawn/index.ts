@@ -38,6 +38,7 @@ import { withIdempotency } from "../_shared/idempotency.ts";
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
+
 interface Body {
   role_code: string;
   domain: string;
