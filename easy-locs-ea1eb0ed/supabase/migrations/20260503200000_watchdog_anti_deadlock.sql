@@ -866,8 +866,45 @@ GRANT EXECUTE ON FUNCTION system.validate_task_dependencies(UUID, UUID[])       
 GRANT EXECUTE ON FUNCTION system.write_incident(TEXT, TEXT, TEXT, UUID, UUID, JSONB)               TO service_role, authenticated;
 -- scan_stuck_tasks exposes operational task metadata (status, attempt
 -- counts, evidence). Restricted to service_role; UI/admin paths must
--- read through the curated `v_watchdog_stuck` view (admin-gated by RLS).
+-- go through the admin-gated wrapper `system.admin_preview_stuck_tasks`.
 GRANT EXECUTE ON FUNCTION system.scan_stuck_tasks(INT)                                             TO service_role;
+
+-- ── Admin wrapper for the watchdog UI ────────────────────────────────────
+-- Browser-side admin pages cannot call scan_stuck_tasks directly because
+-- it is service-only. This SECURITY DEFINER wrapper enforces an explicit
+-- admin gate (public.has_role(auth.uid(),'admin') OR service_role) and
+-- then delegates to scan_stuck_tasks under the function owner's privileges.
+CREATE OR REPLACE FUNCTION system.admin_preview_stuck_tasks(p_limit INT DEFAULT 50)
+RETURNS TABLE(
+  task_id        UUID,
+  task_type      TEXT,
+  domain         TEXT,
+  status         system.execution_task_status,
+  attempt_count  INTEGER,
+  max_attempts   INTEGER,
+  rule           TEXT,
+  evidence       JSONB
+)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, system
+AS $$
+DECLARE
+  v_caller     UUID    := auth.uid();
+  v_role       TEXT    := auth.role();
+  v_is_service BOOLEAN := (v_role = 'service_role');
+  v_is_admin   BOOLEAN := (v_caller IS NOT NULL
+                           AND public.has_role(v_caller, 'admin'::public.app_role));
+BEGIN
+  IF NOT v_is_service AND NOT v_is_admin THEN
+    RAISE EXCEPTION 'admin_preview_stuck_tasks: forbidden (admin or service_role required)'
+      USING ERRCODE = '42501';
+  END IF;
+  RETURN QUERY SELECT * FROM system.scan_stuck_tasks(GREATEST(1, LEAST(p_limit, 500)));
+END;
+$$;
+REVOKE ALL ON FUNCTION system.admin_preview_stuck_tasks(INT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION system.admin_preview_stuck_tasks(INT)                                    TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_fail_task(UUID, TEXT, TEXT, JSONB)                       TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_recover_task(UUID, TEXT, JSONB)                          TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_tick(INT)                                                TO service_role;
