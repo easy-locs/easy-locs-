@@ -53,6 +53,35 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
+// "Big tech" stuck-app failsafe: if 12 seconds after boot the user is still
+// on the splash OR has been bounced into a known redirect-loop URL with no
+// route content rendered, hard-redirect to /emergency.html?stuck=1 so they
+// always have a working escape hatch. This catches:
+//   - Auth hydration deadlocks (profileLoaded never flips)
+//   - Phone-OTP /verify-email redirect loops (now also fixed at the root)
+//   - JS chunk 404s after a Vercel redeploy with stale Service Worker
+//   - Any future boot-path regression we have not yet imagined
+// The ?stuck=1 param tells emergency.html to auto-purge SW + caches and
+// surface a "We rescued you" banner with the reason.
+if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
+  const STUCK_DEADLINE_MS = 12000;
+  setTimeout(() => {
+    try {
+      if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;
+      const root = document.getElementById("root");
+      const stillOnSplash = !!root?.querySelector("#app-loading");
+      const empty = !root || root.children.length === 0;
+      if (!stillOnSplash && !empty) return; // real route rendered, all good
+      const reason = stillOnSplash ? "splash_timeout" : "empty_root";
+      console.error(`[BOOT_STUCK] redirecting to emergency.html (reason=${reason})`);
+      const path = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.replace(`/emergency.html?stuck=1&reason=${reason}&from=${path}`);
+    } catch {
+      window.location.replace("/emergency.html?stuck=1");
+    }
+  }, STUCK_DEADLINE_MS);
+}
+
 // Time-to-first-render watchdog: if the splash hasn't dismissed (i.e. the
 // first React commit hasn't happened) within the budget, fire a Sentry
 // warning so we detect silent boot stalls in production.
