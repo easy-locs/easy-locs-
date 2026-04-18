@@ -1403,7 +1403,7 @@ export function prerenderPlugin(): Plugin {
           mkdirCache.add(dir);
         };
 
-        const CONCURRENCY = 32;
+        const CONCURRENCY = Math.max(1, Number(process.env.PRERENDER_CONCURRENCY) || 32);
         let cursor = 0;
         const workers = Array.from({ length: CONCURRENCY }, async () => {
           while (true) {
