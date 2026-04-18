@@ -297,26 +297,11 @@ create index if not exists agent_metrics_role_idx on army.agent_metrics(role_cod
 create index if not exists agent_metrics_task_idx on army.agent_metrics(task_id);
 
 -- ----------------------------------------------------------------------------
--- 10. queues — FIFO tables (pgmq-compatible fallback) + queue registry
+-- 10. queues — FIFO tables (pgmq-compatible fallback)
 -- ----------------------------------------------------------------------------
-create table if not exists army.queue_registry (
-  name            text primary key,
-  description     text,
-  created_at      timestamptz not null default now()
-);
-
-insert into army.queue_registry(name, description) values
-  ('q_high_command', 'Supreme commander → chief orchestrator'),
-  ('q_product',      'General Product backlog'),
-  ('q_growth',       'General Growth backlog'),
-  ('q_ops',          'General Ops backlog'),
-  ('q_security',     'General QA/Security backlog'),
-  ('q_repair',       'Self-healing / agent recycling')
-on conflict (name) do nothing;
-
 create table if not exists army.queue_messages (
   id              bigserial primary key,
-  queue_name      text not null references army.queue_registry(name),
+  queue_name      text not null,
   payload         jsonb not null,
   visible_at      timestamptz not null default now(),
   locked_until    timestamptz,
@@ -328,17 +313,8 @@ create index if not exists queue_messages_q_idx
   on army.queue_messages(queue_name, visible_at)
   where locked_until is null or locked_until < now();
 
--- Best-effort pgmq provisioning (creates real pgmq queues if extension present).
-do $$
-declare q text;
-begin
-  if exists (select 1 from pg_extension where extname = 'pgmq') then
-    foreach q in array array['q_high_command','q_product','q_growth','q_ops','q_security','q_repair']
-    loop
-      begin perform pgmq.create(q); exception when others then null; end;
-    end loop;
-  end if;
-end $$;
+-- Seed the 6 canonical queues (logical only — table is shared)
+-- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
 
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
@@ -666,7 +642,6 @@ alter table army.agent_messages   enable row level security;
 alter table army.incident_log     enable row level security;
 alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
-alter table army.queue_registry   enable row level security;
 
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
@@ -684,7 +659,7 @@ begin
   for t in select unnest(array[
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
-      'queue_messages','queue_registry','agent_roles','agent_policies'])
+      'queue_messages','agent_roles','agent_policies'])
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
@@ -715,77 +690,11 @@ begin
 end $$;
 
 -- ----------------------------------------------------------------------------
--- 16. Tick configuration + autonomous dispatcher
+-- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
 -- ----------------------------------------------------------------------------
--- Single-row config table holding the URL+key the cron uses to reach
--- the `army-tick` edge function. Lives in the army schema so it is
--- covered by the supreme-only RLS policies above. Operator must run
--- once after first deploy:
---
---   update army.tick_config
---      set supabase_url = 'https://<ref>.supabase.co',
---          service_role_key = '<service-role-jwt>'
---    where id = 1;
---
--- Until that happens, army.run_tick() short-circuits and writes a
--- single incident_log entry per hour so the gap is visible in the
--- cockpit. No URL/key is ever stored in the migration itself.
-create table if not exists army.tick_config (
-  id                smallint primary key default 1 check (id = 1),
-  supabase_url      text,
-  service_role_key  text,
-  last_run_at       timestamptz,
-  last_warned_at    timestamptz,
-  updated_at        timestamptz not null default now()
-);
-insert into army.tick_config(id) values (1) on conflict (id) do nothing;
-alter table army.tick_config enable row level security;
-drop policy if exists army_tick_config_supreme on army.tick_config;
-create policy army_tick_config_supreme on army.tick_config
-  for all to authenticated using (army.current_is_supreme()) with check (army.current_is_supreme());
-
--- run_tick: invoked by pg_cron every minute. Validates non-empty
--- config, then calls the army-tick edge function via pg_net.
-create or replace function army.run_tick() returns void
-language plpgsql security definer set search_path = army, public as $$
-declare
-  cfg army.tick_config%rowtype;
-begin
-  if (select is_killed from army.system_flags where id = 1) then
-    return;
-  end if;
-  select * into cfg from army.tick_config where id = 1;
-  if cfg.supabase_url is null or length(cfg.supabase_url) = 0
-     or cfg.service_role_key is null or length(cfg.service_role_key) = 0 then
-    if cfg.last_warned_at is null or cfg.last_warned_at < now() - interval '1 hour' then
-      insert into army.incident_log(severity, kind, role, message, context)
-      values ('warn','tick_config_missing','supreme_commander',
-              'army.tick_config not set — autonomous tick disabled',
-              jsonb_build_object('hint','update army.tick_config set supabase_url=..., service_role_key=...'));
-      update army.tick_config set last_warned_at = now() where id = 1;
-    end if;
-    return;
-  end if;
-  if not exists (select 1 from pg_extension where extname = 'pg_net') then
-    return;
-  end if;
-  perform net.http_post(
-    url     := cfg.supabase_url || '/functions/v1/army-tick',
-    headers := jsonb_build_object('Content-Type','application/json',
-                                  'Authorization','Bearer ' || cfg.service_role_key),
-    body    := '{}'::jsonb
-  );
-  update army.tick_config set last_run_at = now() where id = 1;
-end;
-$$;
-revoke all on function army.run_tick() from public;
-grant execute on function army.run_tick() to service_role;
-
--- pg_cron jobs (best-effort: skip if pg_cron unavailable)
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
-    -- TTL sweep + stuck-task detection
     perform cron.schedule(
       'army_ttl_sweep',
       '*/5 * * * *',
@@ -796,26 +705,6 @@ begin
         update army.execution_tasks
            set status = 'failed', error = 'stuck_timeout', updated_at = now()
          where status = 'running' and started_at < now() - interval '20 minutes';
-      $cron$
-    );
-
-    -- Autonomous tick — runs every minute. army.run_tick() validates
-    -- that supabase_url + service_role_key are present (and aborts
-    -- otherwise with a logged incident) so this schedule is safe to
-    -- create unconditionally.
-    perform cron.schedule(
-      'army_tick_dispatcher',
-      '* * * * *',
-      $cron$ select army.run_tick(); $cron$
-    );
-
-    -- Drain helper: empty the queue table for any orphaned/old messages
-    perform cron.schedule(
-      'army_queue_drain',
-      '*/10 * * * *',
-      $cron$
-        delete from army.queue_messages
-         where created_at < now() - interval '1 day';
       $cron$
     );
   end if;

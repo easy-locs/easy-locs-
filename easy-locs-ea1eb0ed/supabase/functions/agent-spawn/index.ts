@@ -1,8 +1,8 @@
-// agent-spawn — THE ONLY public path to create a new agent.
-// Supreme-only at the edge layer. Funnels through the shared
-// `spawnAgent()` primitive which validates the 8 reproduction conditions.
+// agent-spawn — THE ONLY path to create a new agent. Validates the 8
+// reproduction conditions (kill switch, role, domain, type, quota, budget,
+// backlog, dedup) before inserting in agent_instances. TTL is mandatory.
 import {
-  armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight,
 } from "../_shared/army.ts";
 
 interface Body {
@@ -18,20 +18,39 @@ interface Body {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = await requireSupreme(req); if (denied) return denied;
   try {
     const b = (await req.json()) as Body;
     for (const k of ["role_code", "domain", "task_type"] as const) {
       if (!b?.[k]) return jsonResponse(req, { error: `${k} required` }, 400);
     }
     const sb = armyClient();
-    const result = await spawnAgent(sb, {
-      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
-      ttlMinutes: b.ttl_minutes, dedupKey: b.dedup_key,
-      parentId: b.parent_id, reason: b.reason, metadata: b.metadata,
+    await assertNotKilled(sb);
+
+    const check = await canSpawn(sb, {
+      roleCode: b.role_code, domain: b.domain,
+      taskType: b.task_type, dedupKey: b.dedup_key,
     });
-    if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
-    return jsonResponse(req, { ok: true, agent: result.agent });
+    if (!check.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "policy_violation", role: b.role_code,
+        message: `spawn rejected: ${check.reason}`,
+        context: { domain: b.domain, type: b.task_type, dedup_key: b.dedup_key },
+      });
+      return jsonResponse(req, { ok: false, reason: check.reason }, 409);
+    }
+
+    const ttlMinutes = Math.min(Math.max(b.ttl_minutes ?? 15, 1), 120);
+    const ttl = new Date(Date.now() + ttlMinutes * 60_000).toISOString();
+
+    const { data, error } = await sb.schema("army").from("agent_instances")
+      .insert({
+        role_code: b.role_code, domain: b.domain, parent_id: b.parent_id ?? null,
+        status: "active", ttl_at: ttl,
+        spawn_reason: b.reason ?? "spawn",
+        metadata: { ...(b.metadata ?? {}), dedup_key: b.dedup_key ?? null },
+      }).select().single();
+    if (error) return jsonResponse(req, { error: error.message }, 500);
+    return jsonResponse(req, { ok: true, agent: data });
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
