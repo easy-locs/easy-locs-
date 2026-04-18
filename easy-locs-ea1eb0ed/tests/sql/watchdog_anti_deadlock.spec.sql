@@ -281,4 +281,49 @@ BEGIN;
   -- contract we care about (no duplicate incident rows for the same id).
 ROLLBACK;
 
+-- ──────────────────────────────────────────────────────────────────────────
+-- Test 11: attach_task_dependencies compensation honours the transition
+--          matrix for `pending_review` tasks. Dependency-attach failure
+--          must NOT raise out of the wrapper and the task must end up in
+--          a deterministic non-runnable state with an incident logged.
+BEGIN;
+  -- Build a pending_review task and force a dep-attach failure by
+  -- pointing at a non-existent upstream id (FK violation triggers the
+  -- EXCEPTION arm of attach_task_dependencies).
+  WITH t AS (
+    INSERT INTO system.execution_tasks (
+      type, domain, status, risk_level, payload, requested_by
+    ) VALUES (
+      'noop.test', 'tests', 'pending_review'::system.execution_task_status,
+      'HIGH', '{}'::jsonb, 'sql_spec'
+    ) RETURNING id
+  )
+  SELECT id AS tid FROM t \gset
+
+  SELECT system.attach_task_dependencies(
+    :'tid'::uuid,
+    ARRAY['00000000-0000-0000-0000-0000000000ff'::uuid]
+  ) AS res \gset
+
+  DO $$
+  DECLARE v_status TEXT; v_reason TEXT; v_incident INT;
+  BEGIN
+    SELECT status::text, blocked_reason
+      INTO v_status, v_reason
+      FROM system.execution_tasks WHERE id = :'tid'::uuid;
+    IF v_status NOT IN ('cancelled','blocked','failed') THEN
+      RAISE EXCEPTION 'compensation left pending_review task in non-terminal state: %', v_status;
+    END IF;
+    IF v_reason IS NULL OR v_reason !~ 'dependency_rejected' THEN
+      RAISE EXCEPTION 'compensation reason missing or wrong: %', v_reason;
+    END IF;
+    SELECT count(*)::int INTO v_incident
+      FROM system.incident_log
+     WHERE related_task_id = :'tid'::uuid AND kind = 'dependency_rejected';
+    IF v_incident = 0 THEN
+      RAISE EXCEPTION 'no dependency_rejected incident written';
+    END IF;
+  END $$;
+ROLLBACK;
+
 \echo all watchdog_anti_deadlock SQL spec tests passed

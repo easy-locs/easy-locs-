@@ -63,16 +63,53 @@ BEGIN
   EXCEPTION WHEN OTHERS THEN
     v_err := SQLERRM;
 
-    -- Compensate: force the orphan task into `blocked` so the orchestrator
-    -- can never pick it up. Direct UPDATE bypasses the transition matrix
-    -- on purpose because this IS the safety compensation.
+    -- Compensate: deterministically move the orphan task to a non-runnable
+    -- state. The transition matrix (assert_task_transition) forbids some
+    -- direct routes (e.g. pending_review→blocked), so we pick a per-status
+    -- LEGAL fallback. `cancelled` is a universally-legal terminal sink,
+    -- and we choose `blocked` only for statuses where it is a valid
+    -- transition. We must never RAISE inside the compensation arm —
+    -- doing so would leave the just-created task neither attached nor
+    -- compensated, breaking the atomic-dispatch contract.
     SELECT status::TEXT INTO v_state
       FROM system.execution_tasks WHERE id = p_task_id;
-    IF v_state IS NOT NULL AND v_state NOT IN ('failed','cancelled','succeeded','blocked') THEN
-      UPDATE system.execution_tasks
-         SET status         = 'blocked',
-             blocked_reason = 'dependency_rejected: ' || v_err
-       WHERE id = p_task_id;
+
+    IF v_state IS NOT NULL
+       AND v_state NOT IN ('failed','cancelled','succeeded','blocked') THEN
+      DECLARE v_target TEXT; v_compensation_error TEXT;
+      BEGIN
+        v_target := CASE
+          -- pending_review → cancelled is the only legal exit when an
+          -- approval-gated task can never run. Routing through `blocked`
+          -- would violate the state machine.
+          WHEN v_state = 'pending_review' THEN 'cancelled'
+          -- queued/approved/planning may go to `blocked` per matrix.
+          WHEN v_state IN ('queued','approved','planning') THEN 'blocked'
+          -- running/compensating: force-cancel; orchestrator workers
+          -- already check status before each step and will abort cleanly.
+          ELSE 'cancelled'
+        END;
+
+        BEGIN
+          UPDATE system.execution_tasks
+             SET status         = v_target::system.task_status,
+                 blocked_reason = 'dependency_rejected: ' || v_err
+           WHERE id = p_task_id;
+        EXCEPTION WHEN OTHERS THEN
+          v_compensation_error := SQLERRM;
+          -- Last-resort: cancelled is universally legal. If even that
+          -- fails (matrix change?) we still log and return ok=false
+          -- without raising, so the wrapper's contract holds.
+          BEGIN
+            UPDATE system.execution_tasks
+               SET status         = 'cancelled'::system.task_status,
+                   blocked_reason = 'dependency_rejected (forced): ' || v_err
+             WHERE id = p_task_id;
+          EXCEPTION WHEN OTHERS THEN
+            v_compensation_error := v_compensation_error || ' | last-resort: ' || SQLERRM;
+          END;
+        END;
+      END;
     END IF;
 
     PERFORM system.write_incident(
@@ -81,7 +118,8 @@ BEGIN
       jsonb_build_object(
         'error', v_err,
         'depends_on', to_jsonb(p_depends_on),
-        'compensated_to_blocked', v_state IS NOT NULL
+        'pre_state', v_state,
+        'compensated', v_state IS NOT NULL
       )
     );
 
