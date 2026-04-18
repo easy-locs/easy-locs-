@@ -146,6 +146,12 @@ DECLARE
   v_dep_status system.execution_task_status;
   v_creates_cycle BOOLEAN;
 BEGIN
+  -- Note on incident logging: this trigger RAISES to abort the offending
+  -- INSERT, which rolls back the surrounding transaction. Writing an
+  -- incident here would be rolled back too. Persistent incident rows for
+  -- dependency rejections are therefore written by the caller
+  -- (`system.dispatch_execution_task_with_deps` and the TS dispatcher) in a
+  -- separate transaction once they observe the abort.
   IF NEW.task_id = NEW.depends_on_task_id THEN
     RAISE EXCEPTION 'task_dependencies: self_dependency forbidden (task=%)', NEW.task_id
       USING ERRCODE = '23514';
