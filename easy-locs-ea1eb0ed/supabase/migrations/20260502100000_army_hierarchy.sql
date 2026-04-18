@@ -724,7 +724,7 @@ begin
 end $$;
 
 -- ----------------------------------------------------------------------------
--- 16. pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- 16. Tick configuration + autonomous dispatcher
 -- ----------------------------------------------------------------------------
 -- Single-row config table holding the URL+key the cron uses to reach
 -- the `army-tick` edge function. Lives in the army schema so it is
@@ -831,6 +831,7 @@ begin
 =======
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
+<<<<<<< HEAD
     -- Autonomous pipeline tick: drives the whole army every minute
     -- without any human intervention. Calls the army-tick edge function
     -- with the service-role key so the entire chain advances.
@@ -858,6 +859,17 @@ begin
       exception when others then null;
       end;
     end if;
+=======
+    -- Autonomous tick — runs every minute. army.run_tick() validates
+    -- that supabase_url + service_role_key are present (and aborts
+    -- otherwise with a logged incident) so this schedule is safe to
+    -- create unconditionally.
+    perform cron.schedule(
+      'army_tick_dispatcher',
+      '* * * * *',
+      $cron$ select army.run_tick(); $cron$
+    );
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     -- Drain helper: empty the queue table for any orphaned/old messages
     perform cron.schedule(
