@@ -46,6 +46,7 @@ const {
   AdminSupportOpsPage, AdminSupportSlaPage, AdminSystemHealthPage, AdminUiEnginePage,
   AdminUserLookupPage, AdminWalletDiagnosticsPage, AdminWiringHealthPage, ArchitectureMapPage,
   AuditCenterPage, CommandCenterPage, CommandControlDashboard, DeliveryProofPage, DeployCenterPage,
+  EvolutionCenterPage,
   DevOSDashboardPage, DeveloperPortalDocs, DriverLivePage, EngineControlRoomPage, ExecutionProofPage,
   FinancialReconPage, FoodOrderCheckoutPage, LoyaltyRedeemPage, MemoryCenterPage, MenuAdminPage,
   QrGeneratePage, RepairCenterPage, StatementDashboardPage, SupportInboxPage,
@@ -60,6 +61,7 @@ export function AdminRoutes() {
       <Route path="/builder/repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RepairCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/builder/memory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MemoryCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/builder/deploy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeployCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/builder/evolution" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EvolutionCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ Admin ══ */}
       <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
