@@ -417,6 +417,7 @@ export const AuditCenterPage = safeLazy(() => import("@/pages/builder/AuditCente
 export const RepairCenterPage = safeLazy(() => import("@/pages/builder/RepairCenterPage"), "RepairCenterPage");
 export const MemoryCenterPage = safeLazy(() => import("@/pages/builder/MemoryCenterPage"), "MemoryCenterPage");
 export const DeployCenterPage = safeLazy(() => import("@/pages/builder/DeployCenterPage"), "DeployCenterPage");
+export const EvolutionCenterPage = safeLazy(() => import("@/pages/builder/EvolutionCenterPage"), "EvolutionCenterPage");
 
 // ═══════════════════════════════════════════════════════════════════
 //  ADMIN PANEL — Canonical pages only
@@ -469,6 +470,7 @@ export const AdminAgentRunsPage = safeLazy(() => import("@/pages/admin/AdminAgen
 export const AdminSupportSlaPage = safeLazy(() => import("@/pages/admin/AdminSupportSlaPage"), "AdminSupportSlaPage");
 export const AdminRefundQueuePage = safeLazy(() => import("@/pages/admin/AdminRefundQueuePage"), "AdminRefundQueuePage");
 export const AdminPlatformHealthPage = safeLazy(() => import("@/pages/admin/AdminPlatformHealthPage"), "AdminPlatformHealthPage");
+export const AdminWatchdogPage = safeLazy(() => import("@/pages/admin/AdminWatchdogPage"), "AdminWatchdogPage");
 export const AdminMasterControlPage = safeLazy(() => import("@/pages/admin/AdminMasterControlPage"), "AdminMasterControlPage");
 export const AdminControlRoomPage = safeLazy(() => import("@/pages/admin/AdminControlRoomPage"), "AdminControlRoomPage");
 export const AdminControlShellPage = safeLazy(() => import("@/pages/admin/AdminControlShellPage"), "AdminControlShellPage");

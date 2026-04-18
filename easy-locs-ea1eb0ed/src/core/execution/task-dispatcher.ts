@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logEngineRun } from "@/lib/engines/engine-logger";
 import { classifyTaskType, type RiskLevel } from "./risk-classification";
 import { validationEngine } from "./validation-engine";
+import { validateTaskDependencies } from "./watchdog";
 import type {
   DispatchFailureClass,
   DispatchResult,
@@ -21,6 +22,19 @@ import type {
   ExecutionTaskRow,
   ExecutionTaskStatus,
 } from "./types";
+
+interface SystemRpcClient {
+  rpc: (
+    fn: string,
+    args: Record<string, unknown>,
+  ) => Promise<{ data: unknown; error: { message: string } | null }>;
+  from: (table: string) => {
+    insert: (rows: Record<string, unknown>[]) => Promise<{ error: { message: string } | null }>;
+    update: (patch: Record<string, unknown>) => {
+      eq: (col: string, val: string) => Promise<{ error: { message: string } | null }>;
+    };
+  };
+}
 
 export class TaskDispatcher {
   /**
@@ -30,6 +44,32 @@ export class TaskDispatcher {
   async dispatch(request: DispatchTaskRequest): Promise<DispatchResult> {
     const riskLevel: RiskLevel = classifyTaskType(request.type);
     const validation = validationEngine.validate({ request, riskLevel });
+
+    // ── Pre-insert dependency validation (task #1017) ─────────────────────
+    // When the caller declares explicit upstream dependencies, run the SQL
+    // topology check BEFORE we persist anything so we can reject with a
+    // structured reason and never create a partially-wired row. The DB
+    // trigger on `system.task_dependencies` re-runs the same check at the
+    // boundary as defense-in-depth.
+    const dependsOn = (request.dependsOn ?? []).filter((d) => typeof d === "string" && d.length > 0);
+    if (dependsOn.length > 0) {
+      // Use a probe UUID that does NOT yet exist; validate_task_dependencies
+      // only inspects the proposed edges + upstream states.
+      const probeId = crypto.randomUUID();
+      const depCheck = await validateTaskDependencies(probeId, dependsOn);
+      if (!depCheck.ok) {
+        return {
+          ok: false,
+          task: null,
+          riskLevel,
+          validation,
+          error:
+            depCheck.error ??
+            `dependency_validation_failed: reason=${depCheck.reason} offending=${depCheck.offendingId}`,
+          failureClass: "validation_failed",
+        };
+      }
+    }
 
     // v2 status model (task #750): blocked rows are recorded for audit;
     // approval-gated rows enter pending_review (the dispatch RPC overrides
@@ -77,12 +117,7 @@ export class TaskDispatcher {
         // PostgREST's `rpc` is an instance method that depends on `this`.
         // Detaching it (`const r = client.rpc; r(...)`) loses binding and
         // throws at runtime. Always invoke it as a method.
-        const systemClient = supabase.schema("system") as unknown as {
-          rpc: (
-            fn: string,
-            args: Record<string, unknown>,
-          ) => Promise<{ data: unknown; error: { message: string } | null }>;
-        };
+        const systemClient = supabase.schema("system") as unknown as SystemRpcClient;
         const { data, error } = await systemClient.rpc(
           "dispatch_execution_task",
           {
@@ -122,6 +157,58 @@ export class TaskDispatcher {
           failureClass = "insert_failed";
           throw new Error("execution_tasks dispatch RPC returned no row");
         }
+
+        // ── Post-insert: persist watchdog contract fields & dep edges ────
+        // The dispatch RPC doesn't accept these v3 fields yet (its signature
+        // is locked across many call-sites), so we patch them in the same
+        // engine_run for atomic observability. The DB trigger on
+        // `task_dependencies` enforces DAG/cycle/state safety as a backstop.
+        const watchdogPatch: Record<string, unknown> = {};
+        if (typeof request.maxDurationMs === "number" && request.maxDurationMs > 0) {
+          watchdogPatch.max_duration_ms = request.maxDurationMs;
+        }
+        if (typeof request.stuckThresholdMs === "number" && request.stuckThresholdMs > 0) {
+          watchdogPatch.stuck_threshold_ms = request.stuckThresholdMs;
+        }
+        if (Object.keys(watchdogPatch).length > 0 && insertedRow.id) {
+          const { error: patchErr } = await systemClient
+            .from("execution_tasks")
+            .update(watchdogPatch)
+            .eq("id", insertedRow.id);
+          if (patchErr) {
+            // Non-fatal: defaults from `task_verb_defaults` still apply.
+            // Surfaced via failure_class so the dashboard sees the partial.
+            dbError = `watchdog_contract_patch_failed: ${patchErr.message}`;
+          }
+        }
+        if (dependsOn.length > 0 && insertedRow.id && !validation.blocked) {
+          // Atomic: the SQL wrapper attaches all edges inside a savepoint
+          // and, on rejection, compensates by marking the just-inserted
+          // task `blocked` + writes an immutable incident_log row in the
+          // same transaction. Guarantees no orphan task ever runs without
+          // its declared dependencies (closes the dispatch-vs-edges race).
+          const { data: attachData, error: attachErr } = await systemClient.rpc(
+            "attach_task_dependencies",
+            { p_task_id: insertedRow.id, p_depends_on: dependsOn },
+          );
+          if (attachErr) {
+            dbError = `attach_task_dependencies_failed: ${attachErr.message}`;
+            failureClass = "validation_failed";
+            throw new Error(dbError);
+          }
+          const attachRow = (Array.isArray(attachData) ? attachData[0] : attachData) as
+            | { ok?: boolean; error?: string }
+            | null;
+          if (attachRow && attachRow.ok === false) {
+            // The SQL wrapper already wrote an incident and forced the
+            // task to `blocked`. Surface a structured failure to callers.
+            insertedRow = { ...insertedRow, status: "blocked" } as ExecutionTaskRow;
+            dbError = `dependency_rejected: ${attachRow.error ?? "unknown"}`;
+            failureClass = "validation_failed";
+            throw new Error(dbError);
+          }
+        }
+
         if (validation.blocked) {
           failureClass = "validation_failed";
         } else if (insertedRow.status === "blocked") {

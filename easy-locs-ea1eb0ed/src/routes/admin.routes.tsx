@@ -39,13 +39,14 @@ const {
   AdminKycReviewPage, AdminLabHubPage, AdminMapErrorDashboardPage, AdminMergeConflictRecoveryPage, AdminMarketplaceOpsPage,
   AdminMasterControlPage, AdminApprovalsPage, AdminAgentsPage, AdminAgentRunsPage, AdminMerchantApprovalQueuePage, AdminMerchantHealthPage,
   AdminNotificationLabPage, AdminNotificationOpsPage, AdminOpsDashboardPage, AdminOrderWatchPage,
-  AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage,
+  AdminPaymentsOpsPage, AdminPerformanceLabPage, AdminPipelinePage, AdminPlatformHealthPage, AdminWatchdogPage,
   AdminQualityOpsPage, AdminRealtimeControlPage, AdminRefundQueuePage, AdminReleaseHistoryPage,
   AdminRetentionOpsPage, AdminReviewQueuePage, AdminSecurityLabPage, AdminSeedToolsPage,
   AdminShopImportPage, AdminShopQualityPage, AdminSourceAuditPage, AdminSuperDashboardPage,
   AdminSupportOpsPage, AdminSupportSlaPage, AdminSystemHealthPage, AdminUiEnginePage,
   AdminUserLookupPage, AdminWalletDiagnosticsPage, AdminWiringHealthPage, ArchitectureMapPage,
   AuditCenterPage, CommandCenterPage, CommandControlDashboard, DeliveryProofPage, DeployCenterPage,
+  EvolutionCenterPage,
   DevOSDashboardPage, DeveloperPortalDocs, DriverLivePage, EngineControlRoomPage, ExecutionProofPage,
   FinancialReconPage, FoodOrderCheckoutPage, LoyaltyRedeemPage, MemoryCenterPage, MenuAdminPage,
   QrGeneratePage, RepairCenterPage, StatementDashboardPage, SupportInboxPage,
@@ -60,6 +61,7 @@ export function AdminRoutes() {
       <Route path="/builder/repair" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><RepairCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/builder/memory" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><MemoryCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/builder/deploy" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><DeployCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/builder/evolution" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><EvolutionCenterPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ Admin ══ */}
       <Route path="/admin" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDashboard /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -108,6 +110,7 @@ export function AdminRoutes() {
       <Route path="/admin/system-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminSystemHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/firecrawl-usage" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminFirecrawlUsagePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/platform-health" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminPlatformHealthPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/watchdog" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminWatchdogPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/map-errors" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMapErrorDashboardPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/merge-conflict-recovery" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminMergeConflictRecoveryPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/admin/data-quality" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminDataQualityPage /></FeatureErrorBoundary></ProtectedRoute>} />
