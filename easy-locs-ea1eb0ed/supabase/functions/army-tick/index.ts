@@ -21,6 +21,7 @@ import {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -55,6 +56,9 @@ import {
 =======
   requireServiceOrSupreme, ARMY_DOMAINS,
 >>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
@@ -76,6 +80,7 @@ async function call(name: string, body: unknown): Promise<unknown> {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -127,6 +132,11 @@ Deno.serve(async (req) => {
 =======
   const denied = await requireServiceOrSupreme(req); if (denied) return denied;
 >>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const deniedService = await requireServiceOrSupreme(req);
+  const deniedAuth = await requireAuthenticated(req);
+  if (deniedService && deniedAuth) return deniedService;
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   try {
     const sb = armyClient();
     await assertNotKilled(sb);
