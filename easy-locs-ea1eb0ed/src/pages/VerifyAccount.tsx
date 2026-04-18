@@ -24,7 +24,13 @@ const VerifyAccount = () => {
   useUiEngine("verifyaccount");
 
   const evaluate = (user: any) => {
-    if (!user) { setChannel("loading"); return; }
+    if (!user) {
+      // No session (e.g., visitor opened an old verification email after
+      // signing out). Don't trap them on an infinite spinner — bounce to
+      // /login so they can sign in again.
+      navigate("/login", { replace: true });
+      return;
+    }
     const hasEmail = !!user.email;
     const hasPhone = !!user.phone;
     const emailConfirmed = !!user.email_confirmed_at;
