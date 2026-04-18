@@ -1,21 +1,4 @@
 import "./polyfills";
-if (typeof window !== "undefined" && import.meta.env.DEV) {
-  const _origErr = console.error.bind(console);
-  let _captured = 0;
-  console.error = (...args: unknown[]) => {
-    try {
-      const msg = args.map(a => typeof a === "string" ? a : (a as Error)?.message ?? "").join(" ");
-      if (_captured < 2 && /Maximum update depth exceeded/.test(msg)) {
-        _captured++;
-        const stk = new Error("[LOOP_TRACE]").stack || "";
-        _origErr("[LOOP_TRACE_DUMP]", stk);
-        const componentStack = args.find(a => (a as { componentStack?: string })?.componentStack);
-        if (componentStack) _origErr("[LOOP_COMPONENT_STACK]", (componentStack as { componentStack?: string }).componentStack);
-      }
-    } catch {}
-    _origErr(...(args as []));
-  };
-}
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
