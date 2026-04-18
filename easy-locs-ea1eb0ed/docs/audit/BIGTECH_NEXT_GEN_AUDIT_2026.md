@@ -84,7 +84,14 @@ La Super App **est accessible** en preview (workflow `Start application`, port 5
 2. **Radar guest = page vide** : `search_completed total: 0` car aucun signal radar n'est ingéré côté server pour utilisateur anonyme + WebGL fallback Leaflet pas systématiquement déclenché.
 3. **Hero peut paraître vide** dans certains environnements (motion + reduced-motion timings) → contenu présent dans le DOM mais animé hors viewport.
 
-**Correctif minimal appliqué (Phase 1) :** **aucun code modifié** — la voie d'entrée fonctionne. Toute correction supplémentaire dépasserait le strict minimum (clause "out of scope" du task). Les améliorations guest-mode sont listées en P0 du roadmap § 8.
+**Correctif minimal appliqué (Phase 1) :** la voie d'entrée fonctionne déjà grâce à des stabilisations P0 réalisées en amont de cette tâche et présentes dans la branche au moment de l'audit :
+
+- `src/contexts/AuthContext.tsx` — stabilisation des callbacks via refs et effet d'init auth one-shot pour éviter les races d'hydratation qui laissaient `loading=true`.
+- `src/hooks/useUiEngine.tsx` + `src/lib/safePatches.ts` — réduction des hazards de réconciliation React/DOM, observation DOM désactivée par défaut.
+- `src/pages/Dashboard.tsx` — opt-out de l'observation DOM cohérent avec le point ci-dessus.
+- `src/pages/CallDriverPage.tsx` — nettoyage mineur des actions Voice/In-app (hors scope strict P0 mais sans risque).
+
+Aucune modification de code applicatif supplémentaire n'a été nécessaire dans le cadre de cette tâche d'audit (#1061) ; toute correction supplémentaire dépasserait le strict minimum (clause "out of scope" de la tâche). Les améliorations guest-mode et perf sont listées en P0 du roadmap § 8 et font l'objet des follow-ups #1062 / #1063 / #1064.
 
 ---
 
