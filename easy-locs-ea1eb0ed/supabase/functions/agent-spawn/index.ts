@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 // agent-spawn — THE ONLY public path to create a new agent.
 // Supreme-only at the edge layer. Funnels through the shared
 <<<<<<< HEAD
@@ -73,6 +74,13 @@ import {
 import {
   armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight,
 >>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+// agent-spawn — THE ONLY public path to create a new agent.
+// Supreme-only at the edge layer. Funnels through the shared
+// `spawnAgent()` primitive which validates the 8 reproduction conditions.
+import {
+  armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 <<<<<<< HEAD
@@ -115,6 +123,7 @@ interface Body {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+  const denied = await requireSupreme(req); if (denied) return denied;
   try {
     const b = (await req.json()) as Body;
     for (const k of ["role_code", "domain", "task_type"] as const) {
