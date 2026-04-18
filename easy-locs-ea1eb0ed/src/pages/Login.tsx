@@ -160,7 +160,15 @@ const Login = () => {
     try {
       authLog("LOGIN_SUPABASE_REQUEST_STARTED", { traceId, attempt: 0 });
       const reqStart = Date.now();
-      const { data, error } = await signInWithPassword(email, password);
+      // Hard cap so a hung request can never leave the user staring at a
+      // spinner forever — the user sees a clear error within 12s.
+      const SIGN_IN_TIMEOUT_MS = 12_000;
+      const { data, error } = await Promise.race([
+        signInWithPassword(email, password),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`signInWithPassword timed out (${SIGN_IN_TIMEOUT_MS}ms)`)), SIGN_IN_TIMEOUT_MS)
+        ),
+      ]) as Awaited<ReturnType<typeof signInWithPassword>>;
       const durationMs = Date.now() - reqStart;
 
       if (error) {
@@ -245,7 +253,22 @@ const Login = () => {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await getSession();
+      // Bound this probe so a slow Supabase response can't silently delay the
+      // auto-redirect of an already-logged-in user landing on /login.
+      const SESSION_PROBE_TIMEOUT_MS = 4_000;
+      let result: Awaited<ReturnType<typeof getSession>> | null = null;
+      try {
+        result = await Promise.race([
+          getSession(),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("getSession timed out")), SESSION_PROBE_TIMEOUT_MS)
+          ),
+        ]) as Awaited<ReturnType<typeof getSession>>;
+      } catch (err) {
+        console.warn("[Login] initial session probe failed:", err);
+        return;
+      }
+      const session = result?.data?.session;
       if (session?.user) {
         const resumeTraceId = crypto.randomUUID();
         authLog("LOGIN_SESSION_DETECTED", { traceId: resumeTraceId, userId: session.user.id, source: "existing_session" });
@@ -255,9 +278,14 @@ const Login = () => {
     void checkSession();
 
     const { data: { subscription } } = onAuthStateChange(async (event, nextSession) => {
-      if (event === "SIGNED_IN" && nextSession?.user) {
+      // Honor BOTH SIGNED_IN (fresh login) and INITIAL_SESSION (restore on
+      // page load) so an already-authenticated user landing on /login is
+      // never stranded — even if the explicit getSession() probe above
+      // timed out under degraded network conditions.
+      const isResumeEvent = event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED";
+      if (isResumeEvent && nextSession?.user) {
         const eventTraceId = crypto.randomUUID();
-        authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: "auth_state_change" });
+        authLog("LOGIN_SESSION_DETECTED", { traceId: eventTraceId, userId: nextSession.user.id, source: `auth_state_change:${event}` });
         await redirectAfterLogin(eventTraceId, nextSession.user.id);
       }
     });
