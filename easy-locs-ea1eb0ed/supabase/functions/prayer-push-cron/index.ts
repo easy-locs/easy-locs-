@@ -3,8 +3,8 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-import {
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
+import {
   processPrayerCron,
 } from "../_shared/prayer-cron-helpers.ts";
 
