@@ -111,14 +111,6 @@ function StatBadge({ icon: Icon, value, suffix, label, delay, reduced }: {
   );
 }
 
-const wordVariant = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: 0.3 + i * 0.08, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] },
-  }),
-};
 
 const Hero = () => {
   const { t } = useI18n();
@@ -126,7 +118,6 @@ const Hero = () => {
 
   const headline = t("landing.hero.intent_consumer") || "One platform. Everything around you.";
   const subheadline = t("landing.hero.intent_consumer_sub") || "Order, ride, send, pay — zero fees for you.";
-  const words = headline.split(" ");
 
   return (
     <section
@@ -171,22 +162,11 @@ const Hero = () => {
           className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-[1.1] text-[hsl(210_20%_97%)]"
           itemProp="description"
         >
-          {reduced ? headline : words.map((word, i) => (
-            <motion.span
-              key={i}
-              custom={i}
-              variants={wordVariant}
-              initial="hidden"
-              animate="visible"
-              className="inline-block mr-[0.3em]"
-            >
-              {word}
-            </motion.span>
-          ))}
+          {headline}
         </h1>
 
         <motion.p
-          initial={reduced ? false : { opacity: 0, y: 10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={reduced ? { duration: 0 } : { delay: 0.7, duration: 0.5 }}
           className="text-base sm:text-lg max-w-md mx-auto leading-relaxed text-muted-foreground"
@@ -195,7 +175,7 @@ const Hero = () => {
         </motion.p>
 
         <motion.div
-          initial={reduced ? false : { opacity: 0, y: 10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={reduced ? { duration: 0 } : { delay: 0.9, duration: 0.5 }}
           className="w-full max-w-lg mx-auto"
@@ -204,7 +184,7 @@ const Hero = () => {
         </motion.div>
 
         <motion.div
-          initial={reduced ? false : { opacity: 0, y: 10 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={reduced ? { duration: 0 } : { delay: 1.0, duration: 0.5 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2"
@@ -227,7 +207,7 @@ const Hero = () => {
         </motion.div>
 
         <motion.div
-          initial={reduced ? false : { opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={reduced ? { duration: 0 } : { delay: 1.3, duration: 0.6 }}
           className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 pt-4"
