@@ -288,7 +288,11 @@ export const agentsRepo = {
     const { data, error } = await domainDb.system
       .from("execution_tasks")
       .select(
+<<<<<<< HEAD
         "id, type, status, risk_level, cost_usd, latency_ms, error_code, blocked_reason, created_at, completed_at, payload, execution_result, pr_url, external_run_url, runner",
+=======
+        "id, type, status, risk_level, cost_usd, latency_ms, error_code, blocked_reason, created_at, completed_at, payload, execution_result",
+>>>>>>> cfab847cc (Task #851 — Retire the legacy `result` / `error` columns on system.execution_tasks)
       )
       .eq("agent_id", agentId)
       .order("created_at", { ascending: false })
