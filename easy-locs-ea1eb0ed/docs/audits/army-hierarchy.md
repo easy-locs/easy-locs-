@@ -46,57 +46,19 @@ Chief Orchestrator
 - Views: `v_general_state`, `v_army_dashboard` (cockpit feeds).
 
 ### Edge functions
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
->>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-| Function | Edge auth | Role | Purpose |
-| --- | --- | --- | --- |
-| `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
-| `orchestrator-dispatch` | authenticated | Chief | Order → tasks |
-| `general-route` | authenticated | General | Pick tasks → captain |
-| `captain-plan` | authenticated | Captain | Build worker plan |
-| `worker-execute` | authenticated | Worker | Execute a single mission |
-| `worker-report` | authenticated | Worker | Roll up to order |
-| `incident-escalate` | authenticated | any | Promote to general / Supreme |
-| `agent-spawn` | **Supreme** | privileged | **Sole** agent creation path (calls `spawnAgent()`) |
-| `agent-heal` | **Supreme** | privileged | Recycle a crashed agent (calls `spawnAgent()`) |
-| `agent-kill` | **Supreme** | Supreme | Terminate agent + cancel its in-flight tasks |
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-| Function | Edge auth | Purpose |
+| Function | Role | Purpose |
 | --- | --- | --- |
-| `army-tick` | authenticated | Cron-driven dispatcher: walks every stage of the pipeline once |
-| `orchestrator-dispatch` | authenticated | Order → tasks |
-| `general-route` | authenticated | Pick tasks → captain |
-| `captain-plan` | authenticated | Build worker plan |
-| `worker-execute` | authenticated | Execute a single mission |
-| `worker-report` | authenticated | Roll up to order |
-| `incident-escalate` | authenticated | Promote to general / Supreme |
-| `agent-spawn` | **Supreme** | **Sole** agent creation path (calls `spawnAgent()`) |
-| `agent-heal` | **Supreme** | Recycle a crashed agent (calls `spawnAgent()`) |
-| `agent-kill` | **Supreme** | Terminate agent + cancel its in-flight tasks |
->>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-<<<<<<< HEAD
-=======
->>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
->>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+| `orchestrator-dispatch` | Chief | Order → tasks |
+| `general-route` | General | Pick tasks → captain |
+| `captain-plan` | Captain | Build worker plan |
+| `worker-execute` | Worker | Execute a single mission |
+| `worker-report` | Worker | Roll up to order |
+| `incident-escalate` | any | Promote to general / Supreme |
+| `agent-spawn` | privileged | **Sole** agent creation path |
+| `agent-kill` | Supreme | Terminate agent + cancel tasks |
+| `agent-heal` | privileged | Recycle a crashed agent |
 
-Every function calls `requireAuthenticated()` or `requireSupreme()` at
-the boundary, then `assertNotKilled()` and `hasPermission()` before any
-write. `agent-spawn` and `agent-heal` are the only callers allowed to
-create agent instances — both go through the shared `spawnAgent()`
-primitive. The autonomous `army-tick` is invoked once per minute by
-`pg_cron` (when `pg_net` + `pg_cron` are present), so a single order
-issued from the cockpit travels the entire chain without any further
-manual call.
+Every function calls `assertNotKilled()` first and `hasPermission()` second.
 
 ### Reproduction (8 conditions, RPC `army.can_spawn`)
 1. Kill switch off.
