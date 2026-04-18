@@ -181,12 +181,40 @@ function checkEdgeFunctionsAcceptTraceHeaders() {
   }
 }
 
+function checkCookieBannerInsideAuthProvider() {
+  const file = "src/App.tsx";
+  const txt = read(file);
+  if (txt == null) return;
+  const bannerIdx = txt.indexOf("CookieConsentBannerLazy />");
+  const providerOpen = txt.indexOf("<AuthProvider>");
+  const providerClose = txt.indexOf("</AuthProvider>");
+  if (bannerIdx === -1 || providerOpen === -1 || providerClose === -1) {
+    fail(
+      `${file}: expected to find <CookieConsentBannerLazy />, <AuthProvider>, and </AuthProvider>. ` +
+        `Cookie banner placement is regression-prone — keep all three present.`,
+    );
+    return;
+  }
+  if (bannerIdx < providerOpen || bannerIdx > providerClose) {
+    fail(
+      `${file}: <CookieConsentBannerLazy /> must be rendered INSIDE <AuthProvider>…</AuthProvider>. ` +
+        `When mounted outside, useAuth() returns the default context (user: null), so the banner's ` +
+        `bottom-nav offset always evaluates to 0px and the banner overlaps the mobile bottom nav, ` +
+        `intercepting tab clicks. (Recurrent regression — the offset fix only works when the hook ` +
+        `actually sees the live session.)`,
+    );
+  } else {
+    console.log("[invariants] OK: CookieConsentBannerLazy is inside AuthProvider");
+  }
+}
+
 checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
 checkNoDuplicateProfileLoadTimeout();
 checkNoDuplicateCronAlertThresholdsCard();
 checkSharedCorsHelperHasTraceHeaders();
 checkEdgeFunctionsAcceptTraceHeaders();
+checkCookieBannerInsideAuthProvider();
 
 if (failures > 0) {
   console.error(`\n[invariants] ${failures} invariant(s) failed — refusing to build.`);
