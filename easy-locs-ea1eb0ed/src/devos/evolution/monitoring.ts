@@ -48,6 +48,21 @@ export function clearEventsForTests(): void {
   eventCounter = 0;
 }
 
+export function hydrateEvents(items: PipelineEvent[]): number {
+  let n = 0;
+  const seen = new Set(events.map(e => e.id));
+  for (const e of items) {
+    if (!e || typeof e.id !== 'string' || seen.has(e.id)) continue;
+    events.push(e);
+    seen.add(e.id);
+    n += 1;
+  }
+  if (events.length > MAX_EVENTS) {
+    events.splice(0, events.length - MAX_EVENTS);
+  }
+  return n;
+}
+
 export interface MonitoringSummary {
   totalEvents: number;
   proposalsSuggested: number;
