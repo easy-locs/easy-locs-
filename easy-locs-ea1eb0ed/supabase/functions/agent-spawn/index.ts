@@ -7,10 +7,9 @@
 // double-clicks from the cockpit, queue redelivery) cannot create
 // duplicate agents within the dedup window.
 import {
-  armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
-
 
 interface Body {
   role_code: string;
@@ -33,6 +32,22 @@ Deno.serve(async (req) => {
     }
     const sb = armyClient();
     await assertNotKilled(sb);
+
+    // Pre-check quotas/policy (canSpawn) up-front so policy violations
+    // can be logged with full context before we ever take an
+    // idempotency claim.
+    const pre2 = await canSpawn(sb, {
+      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
+      dedupKey: b.dedup_key,
+    });
+    if (!pre2.ok) {
+      await logIncident(sb, {
+        severity: "warn", kind: "policy_violation", role: b.role_code,
+        message: `spawn rejected: ${pre2.reason}`,
+        context: { domain: b.domain, type: b.task_type, dedup_key: b.dedup_key },
+      });
+      return jsonResponse(req, { ok: false, reason: pre2.reason }, 409);
+    }
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
