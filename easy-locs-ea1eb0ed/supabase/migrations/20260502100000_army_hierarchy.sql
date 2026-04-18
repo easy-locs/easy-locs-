@@ -317,7 +317,6 @@ on conflict (name) do nothing;
 create table if not exists army.queue_messages (
   id              bigserial primary key,
   queue_name      text not null references army.queue_registry(name),
-
   payload         jsonb not null,
   visible_at      timestamptz not null default now(),
   locked_until    timestamptz,
@@ -342,11 +341,14 @@ begin
 end $$;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 -- Seed the 6 canonical queues (logical only — table is shared)
 -- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
 =======
 >>>>>>> 36012f7de8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
+=======
+>>>>>>> fdd152f1ea (Task #998 — Hierarchical agent army (Command Center + Supabase))
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
 -- ----------------------------------------------------------------------------
@@ -674,7 +676,10 @@ alter table army.incident_log     enable row level security;
 alter table army.agent_metrics    enable row level security;
 alter table army.queue_messages   enable row level security;
 alter table army.queue_registry   enable row level security;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 26574a7567 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 -- Read access: any authenticated user reads roles/policies (governance is public).
 drop policy if exists army_roles_read on army.agent_roles;
@@ -693,7 +698,10 @@ begin
       'system_flags','agent_instances','command_orders','execution_tasks',
       'task_approvals','agent_messages','incident_log','agent_metrics',
       'queue_messages','queue_registry','agent_roles','agent_policies'])
+<<<<<<< HEAD
 
+=======
+>>>>>>> 26574a7567 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   loop
     pname := 'army_' || t || '_supreme';
     execute format('drop policy if exists %I on army.%I', pname, t);
@@ -800,7 +808,6 @@ do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
     -- TTL sweep + stuck-task detection
-
     perform cron.schedule(
       'army_ttl_sweep',
       '*/5 * * * *',
@@ -856,7 +863,6 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
-
   end if;
 exception when others then null;
 end $$;
