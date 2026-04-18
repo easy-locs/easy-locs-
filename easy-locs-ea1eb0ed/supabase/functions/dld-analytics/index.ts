@@ -99,7 +99,7 @@ function mapRowToTransaction(r: Record<string, unknown>) {
 serve(async (req) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-endpoint, x-params",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-endpoint, x-params, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
   };
 
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
