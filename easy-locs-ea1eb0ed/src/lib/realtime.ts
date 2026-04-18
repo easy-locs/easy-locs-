@@ -135,9 +135,16 @@ export function createRealtimeChannel(name: string, opts?: any) {
       if (ch) return ch.subscribe(callback);
       return this;
     },
+    /**
+     * Safe alias for removeRealtimeChannel(this). Prefer calling
+     * removeRealtimeChannel(channel) directly for clarity, but if a caller
+     * uses .unsubscribe() (legacy / Supabase-channel parity) we still perform
+     * the FULL teardown — supabase.removeChannel + pendingChannels delete +
+     * cross-tab unsubscribe — so the entire "leak via .unsubscribe()" defect
+     * class is structurally impossible. Round 7 regression guard.
+     */
     unsubscribe() {
-      const ch = ownedChannels.get(name);
-      if (ch) return ch.unsubscribe();
+      removeRealtimeChannel(this);
       return Promise.resolve("ok");
     },
   };

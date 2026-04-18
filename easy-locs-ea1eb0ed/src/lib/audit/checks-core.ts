@@ -1,9 +1,10 @@
-import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile } from "@/lib/qa/system-verify";
+import { verifyAuthSession, verifyRealtimeChannel, verifyCurrentUserProfile, verifyAuthCacheIsolation } from "@/lib/qa/system-verify";
 import { verifyRlsBasicAccess } from "@/lib/qa/rls-checks";
 
 export async function auditAuthChecks() {
   const auth = await verifyAuthSession();
   const profile = await verifyCurrentUserProfile();
+  const isolation = await verifyAuthCacheIsolation();
 
   return [
     {
@@ -27,6 +28,17 @@ export async function auditAuthChecks() {
       expected: "profile exists",
       actual: profile.reason,
       hint: profile.ok ? "" : "Recheck signup trigger or user_profiles seed path",
+    },
+    {
+      ok: isolation.ok,
+      key: "auth.cache_isolation",
+      group: "auth",
+      severity: isolation.ok ? "info" : "critical",
+      impact: isolation.ok ? 0 : 18,
+      title: isolation.ok ? "Auth cache isolation enforced" : "Auth cache leaks across users",
+      expected: "queryClient cleared on logout",
+      actual: isolation.reason,
+      hint: isolation.ok ? "" : "Ensure SIGNED_OUT handler in AuthContext calls queryClient.clear()",
     },
   ];
 }

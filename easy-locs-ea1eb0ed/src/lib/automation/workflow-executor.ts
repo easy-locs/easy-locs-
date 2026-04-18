@@ -598,7 +598,7 @@ function subscribeToScheduleTriggers(
           console.warn("[workflow-executor] Realtime subscription error — scheduled workflows will not trigger automatically");
         }
       });
-    onCleanup(() => { void channel.unsubscribe(); });
+    onCleanup(() => { void db.removeChannel(channel); });
   } catch (e) {
     console.warn("[workflow-executor] Could not set up Realtime schedule subscription:", e);
   }
