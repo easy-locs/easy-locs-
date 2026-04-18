@@ -2,7 +2,54 @@
 <<<<<<< HEAD
 // agent-spawn — THE ONLY public path to create a new agent.
 // Supreme-only at the edge layer. Funnels through the shared
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+// `spawnAgent()` primitive which validates the 8 reproduction conditions
+// (kill switch, role, domain, type, quota, budget, backlog, dedup).
+import {
+<<<<<<< HEAD
+  armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+=======
+  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> d9a00b37af (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+// `spawnAgent()` primitive which validates the 8 reproduction conditions.
+import {
+  armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> ccf03abaaf (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 5e6802dc5a (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> d9a00b37af (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> 855136def8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 import {
@@ -85,11 +132,19 @@ Deno.serve(async (req) => {
     );
 
     if (!result || !(result as { ok: boolean }).ok) {
-      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
-    }
-    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
 >>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 =======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -100,6 +155,49 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
     }
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    const result = await spawnAgent(sb, {
+      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
+      ttlMinutes: b.ttl_minutes, dedupKey: b.dedup_key,
+      parentId: b.parent_id, reason: b.reason, metadata: b.metadata,
+    });
+    if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
+    return jsonResponse(req, { ok: true, agent: result.agent });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+=======
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+    }
+    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+    }
+    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 2b3f449d46 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);

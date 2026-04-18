@@ -37,9 +37,33 @@ Deno.serve(async (req) => {
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
-    if (error) return jsonResponse(req, { error: error.message }, 500);
+
+    if (error) {
+      const { error: e1 } = await sb.schema("army").from("agent_instances")
+        .update({ status: "terminated", terminated_at: new Date().toISOString() })
+        .eq("id", body.agent_id);
+      if (e1) return jsonResponse(req, { error: e1.message }, 500);
+
+      const { error: e2 } = await sb.schema("army").from("execution_tasks")
+        .update({ status: "cancelled", error: "agent_killed", updated_at: new Date().toISOString() })
+        .eq("assigned_agent", body.agent_id)
+        .in("status", ["queued", "running", "planning"]);
+      if (e2) return jsonResponse(req, { error: e2.message }, 500);
+    }
+
+<<<<<<< HEAD
+    await logIncident(sb, {
+      severity: "warn", kind: "kill", agentId: body.agent_id,
+      role: "supreme_commander", message: `agent killed: ${reason}`,
+    });
+
     return jsonResponse(req, { ok: true, result: data });
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+=======
     const reason = body.reason ?? "manual";
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { error: e1 } = await sb.schema("army").from("agent_instances")
       .update({ status: "terminated", terminated_at: new Date().toISOString() })
       .eq("id", body.agent_id);
@@ -49,11 +73,46 @@ Deno.serve(async (req) => {
       .eq("assigned_agent", body.agent_id)
       .in("status", ["queued", "running", "planning"]);
     if (e2) return jsonResponse(req, { error: e2.message }, 500);
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+    await logIncident(sb, {
+      severity: "warn", kind: "kill", agentId: body.agent_id,
+      role: "supreme_commander", message: `agent killed: ${reason}`,
+    });
+<<<<<<< HEAD
+<<<<<<< HEAD
+    return jsonResponse(req, { ok: true });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+    return jsonResponse(req, { ok: true, result: data });
+>>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    return jsonResponse(req, { ok: true });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    const { data, error } = await sb.schema("army").rpc("kill_agent", {
+      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
+    });
+    if (error) return jsonResponse(req, { error: error.message }, 500);
+    return jsonResponse(req, { ok: true, result: data });
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
     await logIncident(sb, {
       severity: "warn", kind: "kill", agentId: body.agent_id,
       role: "supreme_commander", message: `agent killed: ${reason}`,
     });
     return jsonResponse(req, { ok: true });
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {

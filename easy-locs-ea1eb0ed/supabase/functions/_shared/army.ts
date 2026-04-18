@@ -110,6 +110,65 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
   if (id.kind === "user" && id.supreme) return null;
   return jsonResponse(req, { error: "forbidden_internal_pipeline" }, 403);
 }
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> ccf03abaaf (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 4d29739051 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> d9a00b37af (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> 855136def8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+<<<<<<< HEAD
+>>>>>>> 7fe09eb77b (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 855136def8 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> afb959b7f2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 5e11b2f4b5 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> 0ca258b8bd (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
