@@ -1,0 +1,50 @@
+{
+  "snapshot_at": "2026-04-18T12:54:41.971Z",
+  "files": {
+    "meta": {
+      "rows": 1
+    },
+    "schemas": {
+      "rows": 13
+    },
+    "extensions": {
+      "rows": 6
+    },
+    "tables": {
+      "rows": 621
+    },
+    "columns": {
+      "rows": 8203
+    },
+    "constraints": {
+      "rows": 614
+    },
+    "indexes": {
+      "rows": 615
+    },
+    "policies": {
+      "rows": 694
+    },
+    "functions": {
+      "rows": 52
+    },
+    "triggers": {
+      "rows": 4
+    },
+    "sequences": {
+      "rows": 0
+    },
+    "views": {
+      "rows": 0
+    },
+    "enums": {
+      "rows": 3
+    },
+    "grants": {
+      "rows": 17356
+    },
+    "counts": {
+      "rows": 1
+    }
+  }
+}
