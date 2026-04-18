@@ -14,12 +14,15 @@ Deno.serve(async (req) => {
     if (!body?.agent_id) return jsonResponse(req, { error: "agent_id required" }, 400);
     const sb = armyClient();
     const reason = body.reason ?? "manual";
+
+    // Prefer the atomic RPC (Task #998); fall back to manual updates if
+    // the RPC is unavailable (preserves Task #1018 behavior). Either
+    // way, the kill is recorded via logIncident.
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
 
     if (error) {
-      // Fallback to manual update if RPC fails or is missing (preserving Task #1018 logic)
       const { error: e1 } = await sb.schema("army").from("agent_instances")
         .update({ status: "terminated", terminated_at: new Date().toISOString() })
         .eq("id", body.agent_id);
