@@ -224,7 +224,7 @@ export default function AdminMergeConflictRecoveryPage() {
 
             <CronAlertThresholdsCard />
 
-            <CronAlertThresholdsCard />
+            <RecentAlertLogCard query={alertLogQuery} />
 
             <Card>
               <CardHeader>
@@ -988,5 +988,112 @@ function Metric({ title, value }: { title: string; value: string }) {
       </p>
       <p className="text-2xl font-bold mt-1 tabular-nums">{value}</p>
     </div>
+  );
+}
+
+interface RecentAlertLogCardProps {
+  query: {
+    data: MergeConflictRecoveryAlertLogEntry[] | undefined;
+    isLoading: boolean;
+    error: unknown;
+  };
+}
+
+function alertStatusVariant(
+  status: string,
+): "default" | "secondary" | "destructive" | "outline" {
+  switch (status) {
+    case "sent":
+      return "default";
+    case "throttled":
+      return "secondary";
+    case "flood_suppressed":
+      return "outline";
+    case "failed":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
+
+function alertSeverityVariant(
+  severity: string,
+): "default" | "secondary" | "destructive" | "outline" {
+  switch (severity) {
+    case "critical":
+    case "high":
+      return "destructive";
+    case "warning":
+    case "medium":
+      return "secondary";
+    default:
+      return "outline";
+  }
+}
+
+function RecentAlertLogCard({ query }: RecentAlertLogCardProps) {
+  const entries = query.data ?? [];
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <Bell className="h-4 w-4 text-muted-foreground" />
+          Recent merge-conflict alerts
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        {query.isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : query.error ? (
+          <div className="px-6 py-4 text-sm text-destructive flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+            <span>
+              Failed to load alert log: {(query.error as Error).message}
+            </span>
+          </div>
+        ) : entries.length === 0 ? (
+          <p className="px-6 py-8 text-sm text-muted-foreground text-center">
+            No merge-conflict alert events recorded yet.
+          </p>
+        ) : (
+          <ul className="divide-y">
+            {entries.map((entry) => (
+              <li
+                key={entry.id}
+                className="px-4 py-3 flex items-center justify-between gap-4"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    <code className="font-mono truncate">{entry.alertType}</code>
+                    <Badge
+                      variant={alertSeverityVariant(entry.severity)}
+                      className="text-[10px]"
+                    >
+                      {entry.severity}
+                    </Badge>
+                    <Badge
+                      variant={alertStatusVariant(entry.status)}
+                      className="text-[10px]"
+                    >
+                      {entry.status}
+                    </Badge>
+                  </div>
+                  {entry.title && entry.title !== entry.alertType && (
+                    <div className="mt-1 text-xs text-muted-foreground truncate">
+                      {entry.title}
+                    </div>
+                  )}
+                </div>
+                <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
+                  {new Date(entry.createdAt).toLocaleString()}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </CardContent>
+    </Card>
   );
 }
