@@ -91,10 +91,81 @@ function checkNoDuplicateCronAlertThresholdsCard() {
   }
 }
 
+function checkEdgeFunctionsAcceptTraceHeaders() {
+  const traceHeaders = [
+    "x-trace-id",
+    "x-span-id",
+    "x-parent-span-id",
+    "x-request-id",
+    "traceparent",
+  ];
+  const root = path.join(ROOT, "supabase", "functions");
+  if (!fs.existsSync(root)) {
+    console.log("[invariants] SKIP: supabase/functions not present");
+    return;
+  }
+
+  const offenders = [];
+
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!/\.(ts|js)$/.test(entry.name)) continue;
+      const txt = fs.readFileSync(full, "utf8");
+      if (!txt.includes("Access-Control-Allow-Headers")) continue;
+      const lines = txt.split("\n");
+      for (let i = 0; i < lines.length; i++) {
+        if (!/Access-Control-Allow-Headers/.test(lines[i])) continue;
+        // Look for the value literal on this line or the next 2.
+        const block = lines.slice(i, i + 3).join(" ");
+        const valueMatch = block.match(
+          /Access-Control-Allow-Headers["']?\s*[:,]\s*\n?\s*["'`]([^"'`]+)["'`]/,
+        );
+        if (!valueMatch) continue;
+        const value = valueMatch[1].toLowerCase();
+        // Only enforce on Supabase-style allow-lists (those that already
+        // include the standard client headers). Skip unrelated allow-lists
+        // such as proxy passthroughs that intentionally allow `*` or only
+        // a single non-Supabase header.
+        if (!/authorization|apikey|content-type/.test(value)) continue;
+        const missing = traceHeaders.filter((h) => !value.includes(h));
+        if (missing.length > 0) {
+          offenders.push({
+            file: path.relative(ROOT, full),
+            line: i + 1,
+            missing,
+          });
+        }
+      }
+    }
+  }
+
+  walk(root);
+
+  if (offenders.length > 0) {
+    for (const off of offenders) {
+      fail(
+        `${off.file}:${off.line} — Access-Control-Allow-Headers is missing trace headers: ${off.missing.join(", ")}. ` +
+          `Use \`getCorsHeaders\` from \`supabase/functions/_shared/cors.ts\` or append the trace headers to your hardcoded allow-list. ` +
+          `(Preflight will block the frontend's traced fetch — see Task #1030.)`,
+      );
+    }
+  } else {
+    console.log(
+      "[invariants] OK: every edge function CORS allow-list accepts trace headers",
+    );
+  }
+}
+
 checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
 checkNoDuplicateProfileLoadTimeout();
 checkNoDuplicateCronAlertThresholdsCard();
+checkEdgeFunctionsAcceptTraceHeaders();
 
 if (failures > 0) {
   console.error(`\n[invariants] ${failures} invariant(s) failed — refusing to build.`);

@@ -7,7 +7,7 @@ const logStep = (step: string, details?: unknown) =>
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cc-webhook-signature",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-cc-webhook-signature, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 async function verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
