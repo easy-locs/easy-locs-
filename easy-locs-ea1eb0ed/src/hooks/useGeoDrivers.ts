@@ -113,7 +113,7 @@ export function useGeoDrivers(userLat?: number | null, userLng?: number | null) 
     const interval = setInterval(fetchDrivers, 30_000);
 
     return () => {
-      ch.unsubscribe();
+      removeRealtimeChannel(ch);
       channelRef.current = null;
       clearInterval(interval);
     };
