@@ -158,6 +158,13 @@ export function AdminRoutes() {
           Note (#863): /admin/command-center is intentionally NOT defined as a
           real route here — it is registered below as a legacy redirect into
           /admin/control/command. */}
+      <Route path="/admin/control" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
+      <Route path="/admin/control/agents" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/runs" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/command" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/approvals" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
+      <Route path="/admin/control/:section" element={<ProtectedRoute><FeatureErrorBoundary featureName="Admin"><AdminControlShellPage /></FeatureErrorBoundary></ProtectedRoute>} />
 
       {/* ══ ACP Agent 3 (#863) · Legacy admin URL redirects → /admin/control/* ══
           Old URLs (bookmarks, external links, in-app navigation) keep working
