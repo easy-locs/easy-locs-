@@ -36,7 +36,6 @@ interface RpcClient {
 function rpcClient(): RpcClient {
   return db as unknown as RpcClient;
 }
-
 export interface IdempotencyOptions {
   namespace: string;
   key: string;
