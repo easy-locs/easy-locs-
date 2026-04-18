@@ -80,6 +80,7 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
   return jsonResponse(req, { error: "unauthorized" }, 401);
 }
 
+<<<<<<< HEAD
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call.
