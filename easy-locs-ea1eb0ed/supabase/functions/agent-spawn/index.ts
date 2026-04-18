@@ -3,8 +3,12 @@
 =======
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
+//
+// Wrapped in `withIdempotency` so duplicate dispatches (network retries,
+// double-clicks from the cockpit, queue redelivery) cannot create
+// duplicate agents within the dedup window.
 import {
-  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
+  armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
@@ -49,7 +53,7 @@ Deno.serve(async (req) => {
         ttlMinutes: b.ttl_minutes, dedupKey: b.dedup_key,
         parentId: b.parent_id, reason: b.reason, metadata: b.metadata,
       }),
-      60 * 60, // 1h TTL — agent dedup window
+      60 * 60,
     );
 
     if (!result || !(result as { ok: boolean }).ok) {

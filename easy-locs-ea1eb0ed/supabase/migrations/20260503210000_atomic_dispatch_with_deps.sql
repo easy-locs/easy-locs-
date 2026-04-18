@@ -83,7 +83,7 @@ BEGIN
           -- approval-gated task can never run. Routing through `blocked`
           -- would violate the state machine.
           WHEN v_state = 'pending_review' THEN 'cancelled'
-          -- queued/approved/draft may go to `blocked` per matrix.
+          -- draft/queued/approved may go to `blocked` per state-machine matrix.
           WHEN v_state IN ('draft','queued','approved') THEN 'blocked'
           -- running/compensating: force-cancel; orchestrator workers
           -- already check status before each step and will abort cleanly.

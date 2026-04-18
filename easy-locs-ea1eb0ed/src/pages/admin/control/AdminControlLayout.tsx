@@ -23,13 +23,21 @@ import ApprovalsSection from "./sections/ApprovalsSection";
 import AutonomySection from "./sections/AutonomySection";
 import EnginesSection from "./sections/EnginesSection";
 import MasterSection from "./sections/MasterSection";
+import TasksSection from "./sections/TasksSection";
+import WatchdogSection from "./sections/WatchdogSection";
+import RuntimeProofSection from "./sections/RuntimeProofSection";
+import WiringMapSection from "./sections/WiringMapSection";
 
 const SECTION_COMPONENTS: Record<ControlSectionId, () => JSX.Element> = {
   overview: OverviewSection,
+  tasks: TasksSection,
   agents: AgentsSection,
+  approvals: ApprovalsSection,
+  watchdog: WatchdogSection,
+  proof: RuntimeProofSection,
+  wiring: WiringMapSection,
   runs: RunsSection,
   command: CommandSection,
-  approvals: ApprovalsSection,
   autonomy: AutonomySection,
   engines: EnginesSection,
   master: MasterSection,

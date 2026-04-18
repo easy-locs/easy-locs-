@@ -123,7 +123,12 @@ export async function previewStuckTasks(limit = 50): Promise<{
   rows: StuckCandidate[];
   error?: string;
 }> {
-  const { data, error } = await client().rpc("scan_stuck_tasks", {
+  // Browser code MUST go through the admin-gated wrapper. The raw
+  // `scan_stuck_tasks` RPC is service-role only (it surfaces operational
+  // task metadata) — calling it from an authenticated user JWT returns
+  // 42501. `admin_preview_stuck_tasks` is SECURITY DEFINER + checks
+  // public.has_role(auth.uid(),'admin') in its body before delegating.
+  const { data, error } = await client().rpc("admin_preview_stuck_tasks", {
     p_limit: Math.min(Math.max(1, Math.floor(limit)), 500),
   });
   if (error) return { rows: [], error: error.message };
