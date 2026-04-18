@@ -191,7 +191,7 @@ L'environnement de cette tâche n'a pas de credentials Supabase ni de session li
 
 1. Ouvrir `/login`, mode téléphone (par défaut).
 2. Saisir un numéro et l'OTP reçu.
-3. Vérifier que l'URL atterrit sur `/dashboard` et **pas** `/verify-email`.
+3. Vérifier que l'URL atterrit sur `/dashboard` and **pas** `/verify-email`.
 4. Vérifier dans la console réseau qu'aucune redirection 30x/SPA ne reboucle.
 5. Vérifier en SQL côté Supabase :
    ```sql
