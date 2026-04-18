@@ -100,7 +100,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     // Unified verification flow — /verify-account handles BOTH email and
     // phone cases and auto-routes verified users to /dashboard. The old
     // /verify-email route now redirects here as well for back-compat.
-    return <Navigate to="/verify-account" replace />;
+    //
+    // Carry `from` + an explicit `reason` so the redirect is no longer
+    // silent: any debugging (and the destination page) can see *why* the
+    // user was bounced (task #1049 acceptance: "no silent redirect away
+    // from /dashboard").
+    return (
+      <Navigate
+        to="/verify-account"
+        replace
+        state={{ from: location, reason: "verification-required" }}
+      />
+    );
   }
 
   const isAdminRoute = location.pathname.startsWith("/admin");
