@@ -14,6 +14,7 @@ Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   const denied = await requireServiceOrSupreme(req); if (denied) return denied;
   try {
+
     const body = (await req.json()) as Body;
     if (!body?.message) return jsonResponse(req, { error: "message required" }, 400);
 
