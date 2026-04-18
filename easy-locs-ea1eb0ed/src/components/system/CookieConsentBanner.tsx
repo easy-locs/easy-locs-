@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Shield, ChevronDown, ChevronUp } from "lucide-react";
 import {
   hasConsented,
@@ -7,6 +8,8 @@ import {
   setConsent,
   type CookieCategory,
 } from "@/lib/consent/cookie-consent";
+import { useAuth } from "@/contexts/AuthContext";
+import { shouldHideBottomNav } from "@/config/navigation";
 
 const GOLD = "hsl(var(--accent))";
 const NAVY = "hsl(228 28% 7%)";
@@ -16,6 +19,17 @@ export default function CookieConsentBanner() {
   const [expanded, setExpanded] = useState(false);
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
+  const { user } = useAuth();
+  const { pathname } = useLocation();
+  // The mobile bottom nav is fixed at bottom:0 and only renders when a user
+  // is signed in and the route does not opt out. Without this offset the
+  // cookie banner (z-index 99999) covers the bottom nav and traps the user
+  // until they accept/reject. Push the banner above the nav when both are
+  // visible.
+  const bottomNavVisible = !!user && !shouldHideBottomNav(pathname);
+  const bottomOffset = bottomNavVisible
+    ? "calc(56px + env(safe-area-inset-bottom, 0px))"
+    : "0px";
 
   useEffect(() => {
     if (!hasConsented()) {
@@ -45,7 +59,7 @@ export default function CookieConsentBanner() {
     <div
       style={{
         position: "fixed",
-        bottom: 0,
+        bottom: bottomOffset,
         left: 0,
         right: 0,
         zIndex: 99999,

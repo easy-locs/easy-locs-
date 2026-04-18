@@ -181,12 +181,72 @@ function checkEdgeFunctionsAcceptTraceHeaders() {
   }
 }
 
+function checkCookieBannerInsideAuthProvider() {
+  const file = "src/App.tsx";
+  const txt = read(file);
+  if (txt == null) return;
+  const bannerIdx = txt.indexOf("CookieConsentBannerLazy />");
+  const providerOpen = txt.indexOf("<AuthProvider>");
+  const providerClose = txt.indexOf("</AuthProvider>");
+  if (bannerIdx === -1 || providerOpen === -1 || providerClose === -1) {
+    fail(
+      `${file}: expected to find <CookieConsentBannerLazy />, <AuthProvider>, and </AuthProvider>. ` +
+        `Cookie banner placement is regression-prone — keep all three present.`,
+    );
+    return;
+  }
+  if (bannerIdx < providerOpen || bannerIdx > providerClose) {
+    fail(
+      `${file}: <CookieConsentBannerLazy /> must be rendered INSIDE <AuthProvider>…</AuthProvider>. ` +
+        `When mounted outside, useAuth() returns the default context (user: null), so the banner's ` +
+        `bottom-nav offset always evaluates to 0px and the banner overlaps the mobile bottom nav, ` +
+        `intercepting tab clicks. (Recurrent regression — the offset fix only works when the hook ` +
+        `actually sees the live session.)`,
+    );
+  } else {
+    console.log("[invariants] OK: CookieConsentBannerLazy is inside AuthProvider");
+  }
+}
+
+function checkUseRecommendationsStableDeps() {
+  const file = "src/hooks/useRecommendations.ts";
+  const txt = read(file);
+  if (txt == null) return;
+  // Inline destructure defaults like `favorites = []` allocate a fresh
+  // array on every render. When that array enters the dep list of the
+  // useCallback that drives the `useEffect(() => refresh(), [refresh])`
+  // below, React regenerates `refresh` every render, which re-fires the
+  // effect, which calls setState, which re-renders — an unbounded loop
+  // that floods the console with "Maximum update depth exceeded".
+  // Use a module-level frozen sentinel and primitive-string dep keys
+  // instead. (Recurrent regression — see addendum 7.)
+  const destructureLine = txt.match(/const\s*\{[^}]*\}\s*=\s*options\s*;/);
+  if (destructureLine && /favorites\s*=\s*\[\s*\]/.test(destructureLine[0])) {
+    fail(
+      `${file}: \`favorites = []\` default-parameter destructure detected. ` +
+        `Use the module-level \`EMPTY_FAVORITES\` sentinel and primitive-string ` +
+        `dep keys (favoritesKey, locationKey) instead — the inline \`[]\` is a ` +
+        `new array each render and creates an infinite re-render loop through ` +
+        `the useCallback/useEffect chain in this file.`,
+    );
+  } else if (txt.includes("EMPTY_FAVORITES") && txt.includes("favoritesKey")) {
+    console.log("[invariants] OK: useRecommendations uses stable dep keys");
+  } else {
+    fail(
+      `${file}: missing the EMPTY_FAVORITES / favoritesKey stabilisation pattern. ` +
+        `Restore the regression-safe shape — see addendum 7.`,
+    );
+  }
+}
+
 checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
 checkNoDuplicateProfileLoadTimeout();
 checkNoDuplicateCronAlertThresholdsCard();
 checkSharedCorsHelperHasTraceHeaders();
 checkEdgeFunctionsAcceptTraceHeaders();
+checkCookieBannerInsideAuthProvider();
+checkUseRecommendationsStableDeps();
 
 if (failures > 0) {
   console.error(`\n[invariants] ${failures} invariant(s) failed — refusing to build.`);

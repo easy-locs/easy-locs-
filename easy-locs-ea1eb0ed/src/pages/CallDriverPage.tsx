@@ -25,13 +25,7 @@ export default function CallDriverPage() {
           </p>
 
           <div className="flex gap-3 w-full">
-            <Button variant="outline" className="flex-1 rounded-xl">
-              Voice
-            </Button>
-            <Button className="flex-1 rounded-xl">
-              In-app
-            </Button>
-            <Button variant="destructive" className="flex-1 rounded-xl">
+            <Button variant="destructive" className="flex-1 rounded-xl" onClick={() => navigate(-1)}>
               End
             </Button>
           </div>

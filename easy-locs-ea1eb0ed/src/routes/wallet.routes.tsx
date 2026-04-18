@@ -20,6 +20,7 @@ export function WalletRoutes() {
     <>
       <Route path="/wallet" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><Suspense fallback={<PillarSkeleton pillar="wallet" />}><WalletHubPage /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/wallet/hub" element={<Navigate to="/wallet" replace />} />
+      <Route path="/wallet/security" element={<Navigate to="/settings/wallet" replace />} />
       <Route path="/wallet/top-up" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTopUpPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/wallet/transfer" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletTransferPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/wallet/request" element={<ProtectedRoute><FeatureErrorBoundary featureName="Wallet"><WalletRequestPage /></FeatureErrorBoundary></ProtectedRoute>} />
