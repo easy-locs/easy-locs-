@@ -64,12 +64,6 @@ import {
 import { createGithubRevertClientFromEnv } from "../_shared/execution/rollback/github-client.ts";
 // LC1 (#871) — code.edit primitive used by Level-C build agents.
 import { bootstrapCodeEditAdapter } from "../_shared/execution/adapters/code/bootstrap.ts";
-// L7 P4 (#928) — content + contacts adapter families. Gated by
-// `agent.content.enabled` / `agent.contacts.enabled` feature flags; when
-// the flags are off, registration is a no-op and legacy direct-write
-// paths remain active.
-import { bootstrapContentAdapters } from "../_shared/execution/adapters/content/bootstrap.ts";
-import { bootstrapContactsAdapters } from "../_shared/execution/adapters/contacts/bootstrap.ts";
 import { PostgresLockService } from "../_shared/execution/lock-service.ts";
 import { PostgresIdempotencyService } from "../_shared/execution/idempotency-service.ts";
 import {
