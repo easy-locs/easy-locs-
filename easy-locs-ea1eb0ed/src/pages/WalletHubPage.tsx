@@ -132,6 +132,7 @@ export default function WalletHubPage() {
   const walletCreateRetries = useRef(0);
   const MAX_WALLET_CREATE_RETRIES = 2;
   const [walletCreateFailed, setWalletCreateFailed] = useState(false);
+  const recoveryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createDefaultWallet = useCallback(async () => {
     if (!user?.id || walletCreateAttempted.current) return;
     if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) {
@@ -144,6 +145,7 @@ export default function WalletHubPage() {
       await createWalletAccount({ ownerUserId: user.id, ownerType: "user", currency: getWalletDefaultCurrency(userCountry), accountType: "fiat" });
       toast.success(t("wallet.walletCreated"));
       setWalletCreateFailed(false);
+      walletCreateRetries.current = 0;
     } catch (err: unknown) {
       walletCreateAttempted.current = false;
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -154,9 +156,27 @@ export default function WalletHubPage() {
         : tSafe(t, "wallet.walletCreateError", "Unable to create wallet"));
       if (walletCreateRetries.current >= MAX_WALLET_CREATE_RETRIES) {
         setWalletCreateFailed(true);
+        // Schedule one auto-recovery attempt after a back-off so transient
+        // RLS / network blips don't leave the user stuck on "Setup Failed".
+        if (recoveryTimerRef.current) clearTimeout(recoveryTimerRef.current);
+        recoveryTimerRef.current = setTimeout(() => {
+          walletCreateRetries.current = 0;
+          walletCreateAttempted.current = false;
+          setWalletCreateFailed(false);
+          void createDefaultWallet();
+        }, 8000);
       }
     }
   }, [user?.id, t, userCountry]);
+
+  useEffect(() => {
+    return () => {
+      if (recoveryTimerRef.current) {
+        clearTimeout(recoveryTimerRef.current);
+        recoveryTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!loading && rows.length === 0 && user?.id && profileLoaded) createDefaultWallet();
