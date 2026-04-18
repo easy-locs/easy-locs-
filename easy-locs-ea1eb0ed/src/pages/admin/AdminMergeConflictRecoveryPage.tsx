@@ -921,7 +921,6 @@ function CronAlertThresholdsCard() {
   );
 }
 
-
 interface ThresholdFieldProps {
   id: string;
   label: string;
