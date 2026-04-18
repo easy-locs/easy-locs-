@@ -1,5 +1,0 @@
-easy-locs-ea1eb0ed/src/components/admin/BrowserRepairWatchdogPanel.tsx
-easy-locs-ea1eb0ed/src/components/cards/CardCommerce.tsx
-easy-locs-ea1eb0ed/src/components/cards/CardIdentity.tsx
-easy-locs-ea1eb0ed/src/components/map/MapLoadingSkeleton.tsx
-easy-locs-ea1eb0ed/src/components/orbit/you/YouSectionBlock.tsx
