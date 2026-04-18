@@ -47,24 +47,32 @@ function InlineSkeleton() {
 }
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading, emailVerified, profileLoaded } = useAuthSession();
+  const { user, loading, emailConfirmed, phoneVerified, profileLoaded } = useAuthSession();
   const { subscription } = useAuthProfile();
   const location = useLocation();
 
   if (loading) return <InlineSkeleton />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (!profileLoaded) return <InlineSkeleton />;
-  // Belt-and-suspenders for phone-OTP users: never bounce them to verification.
-  // AuthContext.isPhoneUser already handles this, but if for any reason a user
-  // arrives here with a phone identity (or no email at all) we treat them as
-  // verified rather than trapping them in a redirect loop.
-  if (!emailVerified) {
-    const u = user as any;
-    const hasPhone = !!u?.phone;
-    const hasEmail = !!u?.email;
-    const phoneConfirmed = !!u?.phone_confirmed_at;
-    const phoneOnly = phoneConfirmed || (hasPhone && !hasEmail);
-    if (!phoneOnly) {
+
+  // Verification gate — explicit, channel-by-channel.
+  //
+  //   isVerified  ⇔  the user has cleared EITHER channel they signed up with.
+  //
+  // We check email and phone separately (rather than the legacy combined
+  // `emailVerified` boolean) so it is impossible to bounce a phone-verified
+  // user to /verify-account simply because they happen to have an email
+  // string on the user record. We also keep a defensive fallback for
+  // accounts that arrived before Supabase began stamping
+  // `phone_confirmed_at` — those are recognized via the `signup_method`
+  // metadata tag (already folded into `phoneVerified`) or, last-resort,
+  // a phone identity with no email at all.
+  if (!emailConfirmed && !phoneVerified) {
+    const u = user as { phone?: string | null; email?: string | null; phone_confirmed_at?: string | null };
+    const hasPhoneIdentity = !!u?.phone;
+    const hasEmailIdentity = !!u?.email;
+    const isPhoneOnlyAccount = hasPhoneIdentity && !hasEmailIdentity;
+    if (!isPhoneOnlyAccount) {
       // Unified verification flow — /verify-account handles BOTH email and
       // phone cases and auto-routes verified users to /dashboard. The old
       // /verify-email route now redirects here as well for back-compat.

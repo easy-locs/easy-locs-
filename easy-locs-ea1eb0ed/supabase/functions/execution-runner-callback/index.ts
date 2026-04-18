@@ -25,7 +25,7 @@ import { handlePreMergeDriftRequest } from "../_shared/execution/drift-detector.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-runner-token",
+    "authorization, x-client-info, apikey, content-type, x-runner-token, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 type RunnerStatus = "RUNNING" | "SUCCESS" | "FAILED" | "PRE_MERGE";
