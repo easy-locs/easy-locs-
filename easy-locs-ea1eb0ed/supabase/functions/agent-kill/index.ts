@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
       role: "supreme_commander", message: `agent killed: ${reason}`,
     });
 
-    return jsonResponse(req, { ok: true, result: data ?? null });
+    return jsonResponse(req, { ok: true, result: data });
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
