@@ -76,7 +76,6 @@ export const NAV_TABS_CONFIG: NavTab[] = [
 export const HIDE_NAV_PREFIXES = [
   "/login", "/signup", "/forgot-password", "/reset-password",
   "/verify-email", "/onboarding", "/auth/",
-  "/orbit",
   "/checkout",
   "/pay/",
   "/order/",
@@ -87,6 +86,32 @@ export const HIDE_NAV_PREFIXES = [
   "/property/payment",
   "/property/confirmation",
 ];
+
+/**
+ * Task #988 — Orbit pillar landing + sub-sections must keep the bottom nav
+ * visible (otherwise users entering Orbit from the bottom nav are trapped
+ * with no way back to the other 4 pillars). The nav should only hide
+ * inside an actual conversation thread (/orbit/<conversationId>).
+ */
+const ORBIT_VISIBLE_PATHS = new Set([
+  "/orbit",
+  "/orbit/contacts",
+  "/orbit/add",
+  "/orbit/identity",
+  "/orbit/support",
+]);
+
+export function shouldHideBottomNav(pathname: string): boolean {
+  // Normalize trailing slash so "/orbit" and "/orbit/" behave identically.
+  const p = pathname.length > 1 && pathname.endsWith("/")
+    ? pathname.slice(0, -1)
+    : pathname;
+  if (HIDE_NAV_PREFIXES.some((prefix) => p.startsWith(prefix))) return true;
+  if (p.startsWith("/orbit")) {
+    return !ORBIT_VISIBLE_PATHS.has(p);
+  }
+  return false;
+}
 
 export const NAV_TABS = {
   dashboard: "/",
