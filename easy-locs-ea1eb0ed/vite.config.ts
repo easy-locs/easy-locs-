@@ -249,8 +249,6 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ["index.html", "manifest.json", "favicon*.{ico,png}", "pwa-*.png", "logo-icon.png"],
         maximumFileSizeToCacheInBytes: 2 * 1024 * 1024,
         cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/admin-router\//, /^\/assets\//, /\.[^/]+$/],
         runtimeCaching: [
