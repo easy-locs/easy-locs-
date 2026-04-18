@@ -17,7 +17,7 @@ export const NAV_TABS_CONFIG: NavTab[] = [
   {
     key: "dashboard",
     label: "Dashboard",
-    path: "/",
+    path: "/dashboard",
     icon: LayoutDashboard,
     match: (p) => p === "/" || p === "/home" || p === "/dashboard",
   },
