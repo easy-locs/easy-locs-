@@ -4,7 +4,12 @@ import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
 import "./index.css";
 import { APP_VERSION } from "@/lib/version-check";
-import { initSentryBoot, captureBootCrash, reportTimeToFirstRender } from "@/lib/analytics/sentry";
+import {
+  initSentryBoot,
+  captureBootCrash,
+  reportTimeToFirstRender,
+  flushSentryBoot,
+} from "@/lib/analytics/sentry-boot-shim";
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
 import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
@@ -178,7 +183,7 @@ try {
 // Stage 1: Critical path (immediate after render, < 2s budget)
 requestIdleCallback(() => {
   Promise.all([
-    import("@/lib/analytics/sentry").then(m => m.initSentry()),
+    flushSentryBoot(),
     import("@/lib/auto-heal").then(m => m.installGlobalHealer()),
   ]).catch(() => {});
 }, { timeout: 2000 });
