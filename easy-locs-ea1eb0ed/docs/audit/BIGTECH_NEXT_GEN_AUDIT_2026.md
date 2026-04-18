@@ -257,7 +257,6 @@ Aucune modification de code applicatif supplémentaire n'a été nécessaire dan
 
 ---
 
-<<<<<<< HEAD
 ## Annexe — Closeout runtime #1061 (post-fix verdict)
 
 L'utilisateur a rejeté la conclusion initiale "aucun blocker dur" et a exigé une
