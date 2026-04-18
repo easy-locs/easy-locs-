@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
-      p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
+      p_agent_id: body.agent_id, p_reason: reason,
     });
     if (error) return jsonResponse(req, { error: error.message }, 500);
     return jsonResponse(req, { ok: true, result: data });
