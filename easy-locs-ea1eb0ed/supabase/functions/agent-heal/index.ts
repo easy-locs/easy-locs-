@@ -50,16 +50,6 @@ Deno.serve(async (req) => {
     });
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
-=======
-    const result = await spawnAgent(sb, {
-      roleCode: agent.role_code,
-      domain: agent.domain ?? "ops",
-      taskType: "respawn",
-      dedupKey: `heal:${body.agent_id}`,
-      parentId: agent.parent_id ?? undefined,
-      reason: `heal:${body.agent_id}`,
-      metadata: { healed_from: body.agent_id },
-    });
     if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
     return jsonResponse(req, { ok: true, agent: result.agent });
 >>>>>>> d4cdad69e0 (Task #998 — Hierarchical agent army (Command Center + Supabase))
