@@ -428,70 +428,162 @@ export function evaluateMergeConflictRecoveryAlerts(
   return alerts;
 }
 
+// ── Operator-tunable cron alert thresholds (task #981) ───────────────────────
+
 /**
- * Per-file conflict counts inside a sliding time window. Used by the
- * dashboard's spike-detection panel to decide whether a single file
- * path is being storm-hit (e.g. two agents racing on the same file).
- *
- * Pure projection — caller decides the window size and the alert
- * threshold so the same primitive can drive both UI proximity bars
- * and threshold-crossing alerts.
+ * Bounds enforced by the `public.merge_conflict_alert_thresholds`
+ * CHECK constraints. The pure normalizer below clamps operator-supplied
+ * values to these so the UI cannot ever submit a value the DB would
+ * reject. Mirrors the bounds in the migration that creates the table.
  */
-export function summarizeFileBurstsWithinWindow(
-  events: MergeConflictRecoveryEvent[],
-  windowMs: number,
-  now: number = Date.now(),
-): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
-  const cutoff = now - windowMs;
-  const counts = new Map<string, { count: number; lastAt: string }>();
-  for (const e of events) {
-    const t = Date.parse(e.at);
-    if (!Number.isFinite(t) || t < cutoff) continue;
-    for (const f of e.files) {
-      const cur = counts.get(f);
-      if (!cur) {
-        counts.set(f, { count: 1, lastAt: e.at });
-      } else {
-        cur.count += 1;
-        if (e.at > cur.lastAt) cur.lastAt = e.at;
-      }
-    }
-  }
-  return Array.from(counts.entries())
-    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
-    .sort((a, b) => b.count - a.count);
+export const MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS = {
+  dailyEventThresholdMin: 0,
+  dailyEventThresholdMax: 10_000,
+  totalEventsThresholdMin: 0,
+  totalEventsThresholdMax: 100_000,
+  topFileMinEventsMin: 0,
+  topFileMinEventsMax: 10_000,
+  topFileDominanceRatioMin: 0,
+  topFileDominanceRatioMax: 1,
+} as const;
+
+export interface MergeConflictRecoveryAlertThresholdsRecord {
+  readonly thresholds: MergeConflictRecoveryAlertThresholds;
+  readonly updatedAt: string | null;
+}
+
+const MCR_ALERT_THRESHOLDS_TABLE = "merge_conflict_alert_thresholds";
+const MCR_ALERT_THRESHOLDS_SINGLETON_ID = "default";
+
+function clampInt(raw: unknown, min: number, max: number, fallback: number): number {
+  if (raw === undefined || raw === null) return fallback;
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  const floored = Math.floor(n);
+  if (floored < min) return min;
+  if (floored > max) return max;
+  return floored;
+}
+
+function clampRatio(raw: unknown, min: number, max: number, fallback: number): number {
+  if (raw === undefined || raw === null) return fallback;
+  const n = typeof raw === "number" ? raw : Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  if (n < min) return min;
+  if (n > max) return max;
+  return n;
 }
 
 /**
- * Per-file conflict counts inside a sliding time window. Used by the
- * dashboard's spike-detection panel to decide whether a single file
- * path is being storm-hit (e.g. two agents racing on the same file).
- *
- * Pure projection — caller decides the window size and the alert
- * threshold so the same primitive can drive both UI proximity bars
- * and threshold-crossing alerts.
+ * Pure normalizer — single source of truth for clamping operator-supplied
+ * threshold values into the bounds the DB enforces. Treats `0` as a valid
+ * "disable this alert family" signal (does NOT coerce to default).
+ * Falls back to defaults only on null/undefined/NaN/non-numeric input.
  */
-export function summarizeFileBurstsWithinWindow(
-  events: MergeConflictRecoveryEvent[],
-  windowMs: number,
-  now: number = Date.now(),
-): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
-  const cutoff = now - windowMs;
-  const counts = new Map<string, { count: number; lastAt: string }>();
-  for (const e of events) {
-    const t = Date.parse(e.at);
-    if (!Number.isFinite(t) || t < cutoff) continue;
-    for (const f of e.files) {
-      const cur = counts.get(f);
-      if (!cur) {
-        counts.set(f, { count: 1, lastAt: e.at });
-      } else {
-        cur.count += 1;
-        if (e.at > cur.lastAt) cur.lastAt = e.at;
-      }
-    }
+export function normalizeMergeConflictRecoveryAlertThresholds(
+  raw: Partial<MergeConflictRecoveryAlertThresholds> | null | undefined,
+): MergeConflictRecoveryAlertThresholds {
+  const b = MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS;
+  const d = DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS;
+  if (raw === null || raw === undefined) return d;
+  return {
+    dailyEventThreshold: clampInt(
+      raw.dailyEventThreshold,
+      b.dailyEventThresholdMin,
+      b.dailyEventThresholdMax,
+      d.dailyEventThreshold,
+    ),
+    totalEventsThreshold: clampInt(
+      raw.totalEventsThreshold,
+      b.totalEventsThresholdMin,
+      b.totalEventsThresholdMax,
+      d.totalEventsThreshold,
+    ),
+    topFileMinEvents: clampInt(
+      raw.topFileMinEvents,
+      b.topFileMinEventsMin,
+      b.topFileMinEventsMax,
+      d.topFileMinEvents,
+    ),
+    topFileDominanceRatio: clampRatio(
+      raw.topFileDominanceRatio,
+      b.topFileDominanceRatioMin,
+      b.topFileDominanceRatioMax,
+      d.topFileDominanceRatio,
+    ),
+  };
+}
+
+interface RawThresholdsRow {
+  readonly daily_event_threshold?: number | string | null;
+  readonly total_events_threshold?: number | string | null;
+  readonly top_file_min_events?: number | string | null;
+  readonly top_file_dominance_ratio?: number | string | null;
+  readonly updated_at?: string | null;
+}
+
+function rowToThresholds(
+  row: RawThresholdsRow | null | undefined,
+): MergeConflictRecoveryAlertThresholds {
+  if (!row) return DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS;
+  return normalizeMergeConflictRecoveryAlertThresholds({
+    dailyEventThreshold: row.daily_event_threshold as number | undefined,
+    totalEventsThreshold: row.total_events_threshold as number | undefined,
+    topFileMinEvents: row.top_file_min_events as number | undefined,
+    topFileDominanceRatio: row.top_file_dominance_ratio as number | undefined,
+  });
+}
+
+export async function loadMergeConflictRecoveryAlertThresholds(): Promise<
+  MergeConflictRecoveryAlertThresholdsRecord
+> {
+  const { data, error } = await db
+    .from(MCR_ALERT_THRESHOLDS_TABLE)
+    .select(
+      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
+    )
+    .eq("id", MCR_ALERT_THRESHOLDS_SINGLETON_ID)
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `loadMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
+    );
   }
-  return Array.from(counts.entries())
-    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
-    .sort((a, b) => b.count - a.count);
+  const row = (data ?? null) as RawThresholdsRow | null;
+  return {
+    thresholds: rowToThresholds(row),
+    updatedAt: row?.updated_at ?? null,
+  };
+}
+
+export async function saveMergeConflictRecoveryAlertThresholds(
+  next: MergeConflictRecoveryAlertThresholds,
+): Promise<MergeConflictRecoveryAlertThresholdsRecord> {
+  const clamped = normalizeMergeConflictRecoveryAlertThresholds(next);
+  const { data, error } = await db
+    .from(MCR_ALERT_THRESHOLDS_TABLE)
+    .upsert(
+      {
+        id: MCR_ALERT_THRESHOLDS_SINGLETON_ID,
+        daily_event_threshold: clamped.dailyEventThreshold,
+        total_events_threshold: clamped.totalEventsThreshold,
+        top_file_min_events: clamped.topFileMinEvents,
+        top_file_dominance_ratio: clamped.topFileDominanceRatio,
+      },
+      { onConflict: "id" },
+    )
+    .select(
+      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
+    )
+    .maybeSingle();
+  if (error) {
+    throw new Error(
+      `saveMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
+    );
+  }
+  const row = (data ?? null) as RawThresholdsRow | null;
+  return {
+    thresholds: rowToThresholds(row) ?? clamped,
+    updatedAt: row?.updated_at ?? null,
+  };
 }
