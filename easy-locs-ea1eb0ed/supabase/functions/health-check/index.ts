@@ -60,13 +60,20 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const routerCheck = requireRouterOrigin(req);
-  if (!routerCheck.allowed) return routerCheck.response!;
   const monitorSecret = Deno.env.get("HEALTH_CHECK_SECRET") ?? "";
   const authHeader = req.headers.get("authorization") ?? "";
   const isAuthenticated = monitorSecret
     ? authHeader === `Bearer ${monitorSecret}`
     : false;
+
+  // A valid monitor probe (Bearer HEALTH_CHECK_SECRET) bypasses the
+  // router-origin guard so external uptime monitors (e.g. Vercel `/api/health`)
+  // can reach this function with a single dedicated secret instead of also
+  // needing EDGE_ROUTER_SECRET or the service role key.
+  if (!isAuthenticated) {
+    const routerCheck = requireRouterOrigin(req);
+    if (!routerCheck.allowed) return routerCheck.response!;
+  }
 
   const url = new URL(req.url);
   const serviceParam = url.searchParams.get("service");

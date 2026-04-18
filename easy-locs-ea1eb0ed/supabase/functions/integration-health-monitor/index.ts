@@ -31,10 +31,21 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
     return new Response(null, { headers: corsHeaders });
   }
 
-  const routerCheck = requireRouterOrigin(req);
-  if (!routerCheck.allowed) return routerCheck.response!;
-  const authCheck = requireServiceRole(req);
-  if (!authCheck.authorized) return authCheck.response!;
+  // Dedicated monitor bypass: a properly configured external uptime probe
+  // (e.g. Vercel `/api/health`) can present `Authorization: Bearer ${HEALTH_CHECK_SECRET}`
+  // and skip both the router-origin and service-role guards. This is the
+  // recommended path for monitoring — the secret is single-purpose and rotates
+  // independently from the service role key.
+  const monitorSecret = Deno.env.get("HEALTH_CHECK_SECRET") ?? "";
+  const incomingAuth = req.headers.get("authorization") ?? "";
+  const isMonitorProbe = !!monitorSecret && incomingAuth === `Bearer ${monitorSecret}`;
+
+  if (!isMonitorProbe) {
+    const routerCheck = requireRouterOrigin(req);
+    if (!routerCheck.allowed) return routerCheck.response!;
+    const authCheck = requireServiceRole(req);
+    if (!authCheck.authorized) return authCheck.response!;
+  }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
