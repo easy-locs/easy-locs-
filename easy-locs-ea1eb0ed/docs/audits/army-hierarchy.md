@@ -46,7 +46,18 @@ Chief Orchestrator
 - Views: `v_general_state`, `v_army_dashboard` (cockpit feeds).
 
 ### Edge functions
-
+| Function | Edge auth | Role | Purpose |
+| --- | --- | --- | --- |
+| `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
+| `orchestrator-dispatch` | authenticated | Chief | Order → tasks |
+| `general-route` | authenticated | General | Pick tasks → captain |
+| `captain-plan` | authenticated | Captain | Build worker plan |
+| `worker-execute` | authenticated | Worker | Execute a single mission |
+| `worker-report` | authenticated | Worker | Roll up to order |
+| `incident-escalate` | authenticated | any | Promote to general / Supreme |
+| `agent-spawn` | **Supreme** | privileged | **Sole** agent creation path (calls `spawnAgent()`) |
+| `agent-heal` | **Supreme** | privileged | Recycle a crashed agent (calls `spawnAgent()`) |
+| `agent-kill` | **Supreme** | Supreme | Terminate agent + cancel its in-flight tasks |
 
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
 the boundary, then `assertNotKilled()` and `hasPermission()` before any
