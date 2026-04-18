@@ -2,7 +2,6 @@
 // critical) all the way up to the Supreme Commander via the incident_log.
 import {
   armyClient, jsonResponse, logIncident, logMessage, preflight,
-  requireServiceOrSupreme,
 } from "../_shared/army.ts";
 
 interface Body {
@@ -12,7 +11,6 @@ interface Body {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
   try {
 
     const body = (await req.json()) as Body;
