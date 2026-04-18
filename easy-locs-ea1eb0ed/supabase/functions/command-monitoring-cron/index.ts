@@ -1,6 +1,8 @@
+// PUBLIC: Monitoring cron — auth via x-internal-secret / requireRouterOrigin.
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -496,7 +498,7 @@ async function runLevel2Analyses(db: Db): Promise<CheckResult[]> {
   return findings;
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("command-monitoring-cron", async (req) => {
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
@@ -627,4 +629,4 @@ Deno.serve(async (req) => {
     findings_count: allFindings.length,
     inserted_count: inserted.length,
   }), { status: 200, headers: { "Content-Type": "application/json" } });
-});
+}, { maxRequests: 60, windowSeconds: 60 }));

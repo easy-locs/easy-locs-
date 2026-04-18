@@ -1,3 +1,4 @@
+// PUBLIC: Dispatch webhook — auth via provider signature + withRateLimit.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";

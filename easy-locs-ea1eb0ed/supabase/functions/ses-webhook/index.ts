@@ -1,6 +1,8 @@
+// PUBLIC: AWS SNS/SES webhook — auth via X.509 signature verification of SNS message.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { X509Certificate } from "npm:@peculiar/x509@1.11.0";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
+import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -168,7 +170,7 @@ async function verifySnsSignature(msg: SnsMessage): Promise<boolean> {
   }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(withRateLimit("ses-webhook", async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -323,4 +325,4 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
     );
   }
-});
+}, { maxRequests: 120, windowSeconds: 60 }));

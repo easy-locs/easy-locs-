@@ -1,3 +1,4 @@
+// PUBLIC: SendGrid Inbound Parse — auth via SENDGRID_INBOUND_SECRET + withRateLimit.
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 /**
  * Inbound Email Webhook — receives emails from SendGrid Inbound Parse

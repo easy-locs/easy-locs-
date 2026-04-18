@@ -1,3 +1,4 @@
+// PUBLIC: Inbound email — auth via SENDGRID_INBOUND_SECRET (constant-time) + withRateLimit.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // LB1 Track 1 (#841) — AI parsing of inbound command emails goes through the
 // platform agent registry via `parseEmailWithAI` (extracted to ./parser.ts).
