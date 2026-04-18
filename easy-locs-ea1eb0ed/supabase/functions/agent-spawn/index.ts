@@ -1,6 +1,5 @@
 // agent-spawn — THE ONLY public path to create a new agent.
 // Supreme-only at the edge layer. Funnels through the shared
-=======
 // `spawnAgent()` primitive which validates the 8 reproduction conditions
 // (kill switch, role, domain, type, quota, budget, backlog, dedup).
 //
@@ -11,9 +10,6 @@ import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
->>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
-
-
 
 
 
@@ -60,11 +56,6 @@ Deno.serve(async (req) => {
     );
 
     if (!result || !(result as { ok: boolean }).ok) {
-      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
-    }
-    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
->>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
-=======
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -74,7 +65,6 @@ Deno.serve(async (req) => {
       return jsonResponse(req, { ok: false, reason, replayed }, 409);
     }
     return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
->>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
