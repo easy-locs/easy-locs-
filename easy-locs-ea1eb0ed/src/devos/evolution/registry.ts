@@ -124,6 +124,17 @@ export function listEntries(): RegistryEntry[] {
   return Array.from(entries.values());
 }
 
+export function hydrateRegistry(items: RegistryEntry[]): number {
+  let n = 0;
+  for (const e of items) {
+    if (!e || typeof e.id !== 'string') continue;
+    if (entries.has(e.id)) continue;
+    entries.set(e.id, e);
+    n += 1;
+  }
+  return n;
+}
+
 export function countActive(): number {
   let n = 0;
   for (const e of entries.values()) {
