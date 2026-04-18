@@ -91,14 +91,34 @@ function checkNoDuplicateCronAlertThresholdsCard() {
   }
 }
 
+const REQUIRED_TRACE_HEADERS = [
+  "x-trace-id",
+  "x-span-id",
+  "x-parent-span-id",
+  "x-request-id",
+  "traceparent",
+];
+
+function checkSharedCorsHelperHasTraceHeaders() {
+  const file = "supabase/functions/_shared/cors.ts";
+  const txt = read(`easy-locs-ea1eb0ed/${file}`) ?? read(file);
+  if (txt == null) {
+    console.log("[invariants] SKIP: shared cors helper not present");
+    return;
+  }
+  const missing = REQUIRED_TRACE_HEADERS.filter((h) => !txt.includes(`"${h}"`));
+  if (missing.length > 0) {
+    fail(
+      `${file}: shared CORS helper is missing trace headers in TRACE_HEADER_NAMES: ${missing.join(", ")}. ` +
+        `This is the single source of truth — every edge function depends on it (Task #1030).`,
+    );
+  } else {
+    console.log("[invariants] OK: shared CORS helper exports all trace headers");
+  }
+}
+
 function checkEdgeFunctionsAcceptTraceHeaders() {
-  const traceHeaders = [
-    "x-trace-id",
-    "x-span-id",
-    "x-parent-span-id",
-    "x-request-id",
-    "traceparent",
-  ];
+  const traceHeaders = REQUIRED_TRACE_HEADERS;
   const root = path.join(ROOT, "supabase", "functions");
   if (!fs.existsSync(root)) {
     console.log("[invariants] SKIP: supabase/functions not present");
@@ -165,6 +185,7 @@ checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
 checkNoDuplicateProfileLoadTimeout();
 checkNoDuplicateCronAlertThresholdsCard();
+checkSharedCorsHelperHasTraceHeaders();
 checkEdgeFunctionsAcceptTraceHeaders();
 
 if (failures > 0) {
