@@ -45,17 +45,15 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
-      # 4. Critical E2E smoke (subset of Playwright suite)
+      # 4. Critical E2E smoke (subset of Playwright suite) — BLOCKING.
       - name: Install Playwright (chromium only)
         run: npx playwright install --with-deps chromium
-        continue-on-error: true
 
       - name: Critical E2E smoke
         run: npx playwright test --project=chromium-desktop --grep "@smoke"
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-        continue-on-error: true
 
       # 5. Dependency audit (high + critical only fail the build)
       - name: Dependency audit (high+)
@@ -63,16 +61,18 @@ jobs:
 
       # 6. Structural checks — duplicate routes / orphan pages /
       #    broken @/ imports (Task #1004 hardening contract).
-      # Route uniqueness has known pre-existing duplicates tracked
-      # separately; surfaced as a soft gate for visibility until cleanup
-      # lands. Flip continue-on-error to false once the duplicate
-      # backlog is empty.
-      - name: No duplicate routes (advisory)
+      # All structural gates are BLOCKING. Pre-existing regressions are
+      # captured in baseline files (route-uniqueness-baseline.txt,
+      # import-aliases-baseline.txt, page-orphans-baseline.txt) so the
+      # gates fail only on NEW occurrences.
+      - name: No NEW duplicate routes (baseline-enforced)
         run: npm run check:route-uniqueness
-        continue-on-error: true
 
       - name: Pillar route ownership
         run: npm run check:pillar-routes
 
       - name: No NEW broken @/ imports (baseline-enforced)
         run: npm run check:import-aliases
+
+      - name: No NEW orphan pages (baseline-enforced)
+        run: npm run check:page-orphans

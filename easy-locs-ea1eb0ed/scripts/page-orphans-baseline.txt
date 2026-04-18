@@ -1,0 +1,10 @@
+# page-orphans-baseline — Task #1004.
+# Each line is a path under src/pages/ that is currently not
+# referenced from anywhere else in src/. Resolve the orphan (wire
+# it into a route or delete it) and remove from this file.
+src/pages/__tests__/ArticleBody.test.tsx
+src/pages/admin/__tests__/AdminApprovalsPage.test.tsx
+src/pages/admin/control/overview/GlobalKillSwitch.tsx
+src/pages/admin/control/runs/syntax.tsx
+src/pages/admin/control/sections.ts
+src/pages/admin/control/useControlHotkeys.ts
