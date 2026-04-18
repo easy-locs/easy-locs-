@@ -4,19 +4,22 @@
  * stamps onto `system.execution_tasks.payload` whenever a hard
  * overlap is detected and the loop auto-replans (task #940).
  *
- * The audit shape (see
- * `supabase/functions/_shared/execution/builders/merge-conflict-recovery.ts`):
- *   {
- *     kind: "merge_conflict_recovery",
- *     at: ISO8601 string,
- *     builder_task_id: string,
- *     severity: "hard" | "soft" | "none",
- *     overlaps: number,           // count of overlap entries
- *     files: string[],            // unique conflicting paths
- *     reason: "hard_overlap:<n>",
- *   }
+ * The projection logic (`normalizeAudit`,
+ * `projectMergeConflictRecoverySummary`) lives in the runtime-agnostic
+ * shared module under `supabase/functions/_shared/` so this file and
+ * the `admin-merge-conflict-recovery` edge function cannot drift
+ * (task #979). This file owns the React/Supabase data-access layer and
+ * the alert evaluator.
  */
-import { db, domainDb } from "@/services/db";
+import { domainDb } from "@/services/db";
+import {
+  MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
+  type MergeConflictRecoveryAudit,
+  type MergeConflictRecoveryEvent,
+  type MergeConflictRecoverySummary,
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+} from "../../supabase/functions/_shared/merge-conflict-recovery-projection.ts";
 
 // ── Recent merge-conflict alert log (task #982) ──────────────────────────
 //
@@ -90,12 +93,6 @@ export interface MergeConflictRecoveryAudit {
   readonly reason: string;
 }
 
-export interface MergeConflictRecoveryEvent extends MergeConflictRecoveryAudit {
-  /** Source row id — same as `builder_task_id` but kept for clarity. */
-  readonly task_id: string;
-}
-
-const LOOKBACK_DAYS = 14;
 const PAGE_SIZE = 500;
 /** Hard ceiling so a runaway scan can never hang the page. Reached only
  *  if more than 50 000 builder tasks recorded recovery in 14 days. */
@@ -115,7 +112,9 @@ const MAX_PAGES = 100;
 export async function fetchMergeConflictRecoveryEvents(): Promise<
   MergeConflictRecoveryEvent[]
 > {
-  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
+  const since = new Date(
+    Date.now() - MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS * 24 * 60 * 60 * 1000,
+  );
   const sinceIso = since.toISOString();
 
   const events: MergeConflictRecoveryEvent[] = [];
