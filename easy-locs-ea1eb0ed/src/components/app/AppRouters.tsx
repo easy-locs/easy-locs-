@@ -35,13 +35,21 @@ export function HomeRouter() {
   if (!user) return <Index />;
   if (!ready) return <PageLoader />;
   if (!emailConfirmed && !phoneVerified) {
-    return (
-      <Navigate
-        to="/verify-account"
-        replace
-        state={{ from: location, reason: "verification-required" }}
-      />
-    );
+    // Mirror the defensive fallback in ProtectedRoute (task #1002 + #1025):
+    // legacy phone-only accounts created before Supabase began stamping
+    // `phone_confirmed_at` are recognized by having a phone identity and
+    // no email — let them through so `/` and `/dashboard` gate identically.
+    const u = user as { phone?: string | null; email?: string | null };
+    const isPhoneOnlyAccount = !!u?.phone && !u?.email;
+    if (!isPhoneOnlyAccount) {
+      return (
+        <Navigate
+          to="/verify-account"
+          replace
+          state={{ from: location, reason: "verification-required" }}
+        />
+      );
+    }
   }
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
