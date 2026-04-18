@@ -884,7 +884,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 576,
+          "line": 577,
           "method": "POST",
           "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Accounting entries properties ── exp"
         },
@@ -1064,7 +1064,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 856,
+          "line": 850,
           "method": "POST",
           "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ═══ BYPASS REMOVAL — NEW CANONICAL ME"
         },
@@ -1145,7 +1145,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 97,
+          "line": 98,
           "method": "POST",
           "snippet": "functions.invoke(\"create-connect-account\", { body: { org_id: orgId } }); if (error) throw error; return data; } export async function f"
         }
@@ -1789,7 +1789,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 16,
+          "line": 17,
           "method": "POST",
           "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } export async function updateOrderDeliveryJob(orderI"
         },
@@ -1802,7 +1802,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 534,
+          "line": 535,
           "method": "POST",
           "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Storefront orders ── export async function up"
         },
@@ -1879,13 +1879,7 @@
       },
       "mismatches": [
         {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:56",
-          "detail": "caller uses POST but handler accepts GET,OPTIONS",
-          "fn": "dld-analytics",
-          "kind": "method"
-        },
-        {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:64",
+          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:65",
           "detail": "caller uses POST but handler accepts GET,OPTIONS",
           "fn": "dld-analytics",
           "kind": "method"
@@ -2443,7 +2437,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 110,
+          "line": 111,
           "method": "POST",
           "snippet": "functions.invoke(\"generate-pdf\", { body }); if (error) throw error; return data; } // ── Reminders ── export async function fetchRemind"
         }
@@ -2689,7 +2683,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 336,
+          "line": 337,
           "method": "POST",
           "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } // ── Accounting entries ── export async function"
         }
@@ -2967,7 +2961,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 380,
+          "line": 381,
           "method": "POST",
           "snippet": "functions.invoke(\"notify-booking\", { body: { booking_request_id: bookingRequestId } }); } // ── Local services ── export async function fet"
         }
@@ -3985,7 +3979,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 175,
+          "line": 176,
           "method": "POST",
           "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; if (data?.error) throw new Error(data"
         },
@@ -4002,7 +3996,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 38,
+          "line": 36,
           "method": "POST",
           "snippet": "functions.invoke(\"rent-payment\", { body: { rent_call_id: rentCallId, payment_method: paymentMethod, mode: \"checkout\" }, }); if (erro"
         }
@@ -4486,7 +4480,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 171,
+          "line": 168,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject: `Order Confirmed #${orderId.slice(0, 8).toUpperCase()}`, html }, });"
         },
@@ -4516,7 +4510,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 101,
+          "line": 102,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `🚫 Réservation annulée — ${res.check_in} → ${r"
         },
@@ -4533,7 +4527,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 137,
+          "line": 138,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `📅 Dates modifiées — ${newCheckIn} → ${newChec"
         },
@@ -4546,7 +4540,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 35,
+          "line": 36,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }).catch(() => {}); } export async function insertDocAuditLog(orgId: string, userId: string, metadata"
         },
@@ -4559,7 +4553,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 34,
+          "line": 35,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); } // ── Signature ── export async function uploadSignature(path: string, blob: Blob) { const {"
         },
@@ -4576,7 +4570,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 53,
+          "line": 54,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body: { to: data.email, subject, html } }).catch(() => {}); } }"
         },
@@ -4593,7 +4587,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 61,
+          "line": 60,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body: { to: orgEmail, subject: `💬 Message from ${guestName}`, html: `<div style=\"fon"
         },
@@ -4606,7 +4600,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 72,
+          "line": 73,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Inventory rooms/items for report ── export async function fetch"
         },
@@ -4636,7 +4630,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 109,
+          "line": 110,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── App Notifications ─── export async function ins"
         },
@@ -4649,7 +4643,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 330,
+          "line": 331,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Lease workflow edge function ── export async function invokeLea"
         },
@@ -4675,7 +4669,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 71,
+          "line": 72,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; if (data && data.success === false) throw new Error(data?.error || \"Se"
         },
@@ -4688,7 +4682,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 94,
+          "line": 91,
           "method": "POST",
           "snippet": "functions.invoke(\"send-email\", { body }); } // ── Reviews ── export async function fetchTenantInfo(userId: string) { const { data } = awa"
         }
@@ -4767,7 +4761,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 519,
+          "line": 513,
           "method": "POST",
           "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"marketplace_notification\", recipient_email: recipientEmai"
         }
@@ -5078,7 +5072,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 103,
+          "line": 104,
           "method": "POST",
           "snippet": "functions.invoke(\"stripe-connect-login\", { body: { org_id: orgId } }); if (error) throw error; return data; } // ── MFA ── export async"
         }
@@ -5176,7 +5170,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 64,
+          "line": 65,
           "method": "POST",
           "snippet": "functions.invoke(\"sync-ical\", { body: { ical_url: conn.linked_properties?.[0]?.ical_url || \"\", property_id: conn.linked_prop"
         },
@@ -5189,7 +5183,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 364,
+          "line": 365,
           "method": "POST",
           "snippet": "functions.invoke(\"sync-ical\", { body }); if (error) throw error; return data; }"
         },
@@ -5202,7 +5196,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 68,
+          "line": 69,
           "method": "POST",
           "snippet": "functions.invoke(\"sync-ical\", { body }); if (error) throw error; return data; }"
         }
@@ -5341,7 +5335,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 41,
+          "line": 49,
           "method": "POST",
           "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } export async function fetchOrgMembership(userId: st"
         },
@@ -5354,7 +5348,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 323,
+          "line": 324,
           "method": "POST",
           "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } // ── Send email (for lease workflow / seasonal) ──"
         }
@@ -5435,7 +5429,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 159,
+          "line": 155,
           "method": "POST",
           "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); return data?.translated ??"
         }
@@ -5521,10 +5515,7 @@
         "hasIndex": true,
         "manifestAuth": "jwt",
         "manifestRateLimit": false,
-        "methods": [
-          "OPTIONS",
-          "POST"
-        ],
+        "methods": null,
         "name": "vector-similarity-search",
         "requiresJsonBody": false
       },
@@ -5817,7 +5808,7 @@
           "hasBody": false,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 31,
+          "line": 32,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-authentication-challenge\"); if (error) throw error; return data; } export async function verifyAuthenticatio"
         }
@@ -5846,7 +5837,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 38,
+          "line": 39,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-authentication-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferTo"
         }
@@ -5936,7 +5927,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 58,
+          "line": 59,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-login-challenge\", { body: identifier, }); if (error) throw error; return data; } export async function"
         }
@@ -5969,7 +5960,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 67,
+          "line": 68,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-login-verify\", { body: { userId, credential: { id: credential.id, rawId: arrayBuf"
         }
@@ -5999,7 +5990,7 @@
           "hasBody": false,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 4,
+          "line": 5,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-registration-challenge\"); if (error) throw error; return data; } export async function verifyRegistration(cr"
         }
@@ -6029,7 +6020,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 11,
+          "line": 12,
           "method": "POST",
           "snippet": "functions.invoke(\"webauthn-registration-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferToBa"
         }
@@ -6050,7 +6041,12 @@
     }
   ],
   "orphanedFunctions": [
+    "admin-merge-conflict-recovery",
     "admin-router",
+    "agent-heal",
+    "agent-kill",
+    "agent-spawn",
+    "agent-watchdog",
     "ai-content-enrichment",
     "ai-entity-enrichment",
     "ai-eval-runner",
@@ -6059,6 +6055,7 @@
     "ai-recommendations",
     "ai-router",
     "alert-dispatcher",
+    "army-tick",
     "auth-callback",
     "auto-onboarding-cron",
     "auto-source-scrape",
@@ -6067,6 +6064,7 @@
     "backup-storage",
     "booking-lifecycle",
     "booking-router",
+    "captain-plan",
     "cleanup-expired-media",
     "cleanup-expired-messages",
     "cleanup-integration-health-logs",
@@ -6105,12 +6103,14 @@
     "gateway-webhook-ingest",
     "gdpr-deletion-processor",
     "gdpr-router",
+    "general-route",
     "generate-embeddings",
     "generate-rent-receipt",
     "generate-seo",
     "goal-create",
     "goal-planner",
     "identity-router",
+    "incident-escalate",
     "infra-router",
     "inngest-handler",
     "integration-health-cron",
@@ -6123,12 +6123,14 @@
     "master-runtime-qa-engine",
     "media-processor",
     "media-router",
+    "merge-conflict-recovery-alerts-cron",
     "mobile-money-webhook",
     "mux-upload",
     "notification-router",
     "omega-server-loop",
     "ops-ai-chat",
     "orbit-router",
+    "orchestrator-dispatch",
     "order-manage",
     "payment-notification",
     "pipeline-worker",
@@ -6169,19 +6171,22 @@
     "voice-processing",
     "voice-router",
     "wallet-router",
+    "watchdog-loop",
     "watchdog-ping",
-    "webauthn-router"
+    "webauthn-router",
+    "worker-execute",
+    "worker-report"
   ],
   "totals": {
     "callSites": 257,
     "contractCoverage": "28/117 (23.9%)",
     "declaredContracts": 28,
-    "functionsOnDisk": 238,
-    "methodMismatches": 2,
+    "functionsOnDisk": 252,
+    "methodMismatches": 1,
     "missingAuthHeaderMismatches": 0,
     "missingBodyMismatches": 0,
     "missingFieldMismatches": 0,
-    "orphanedEdgeFunctions": 121,
+    "orphanedEdgeFunctions": 135,
     "orphanedFrontendCalls": 0,
     "undeclaredResponseFieldWarnings": 0,
     "unhandledErrorsWarnings": 0,
