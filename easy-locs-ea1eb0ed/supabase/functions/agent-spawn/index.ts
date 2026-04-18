@@ -26,12 +26,17 @@ import {
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 =======
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
 
+=======
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
+=======
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
 interface Body {
   role_code: string;
@@ -57,6 +62,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     await assertNotKilled(sb);
@@ -65,6 +71,11 @@ Deno.serve(async (req) => {
 =======
     await assertNotKilled(sb);
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    await assertNotKilled(sb);
+=======
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 
     // Task #1004 — idempotency guard. If the caller supplies a
     // dedup_key, two replays of the same spawn request never produce
@@ -88,8 +99,11 @@ Deno.serve(async (req) => {
     if (!result || !(result as { ok: boolean }).ok) {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
       const reason = (result as { reason?: string })?.reason;
       await logIncident(sb, {
         severity: "warn", kind: "policy_violation", role: b.role_code,
@@ -110,6 +124,7 @@ Deno.serve(async (req) => {
     return jsonResponse(req, { ok: true, agent: result.agent });
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
       return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
 =======
@@ -119,6 +134,13 @@ Deno.serve(async (req) => {
 >>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+    }
+    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
+>>>>>>> 64673b09b4 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+>>>>>>> 941db787bd (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
