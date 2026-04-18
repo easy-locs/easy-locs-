@@ -122,6 +122,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     await assertNotKilled(sb);
@@ -238,6 +239,8 @@ Deno.serve(async (req) => {
 >>>>>>> af04142e78 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> be042ec81d (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
+=======
+>>>>>>> 2b3f449d46 (Task #1004 — Hardening: duplicate guards, orchestration stability, CI enforcement)
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
