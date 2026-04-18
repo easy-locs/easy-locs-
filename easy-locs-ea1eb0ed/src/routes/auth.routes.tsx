@@ -5,7 +5,7 @@ import * as Pages from "@/app/app-route-registry";
 
 const {
   AuthCallbackPage, AuthDiagnosticPage, ForgotPassword, Install, Login, Onboarding, ResetPassword,
-  Signup, VerifyEmail,
+  Signup, VerifyEmail, VerifyAccount,
 } = Pages;
 
 export function AuthRoutes() {
@@ -15,7 +15,9 @@ export function AuthRoutes() {
       <Route path="/signup" element={<FeatureErrorBoundary featureName="Auth"><Signup /></FeatureErrorBoundary>} />
       <Route path="/forgot-password" element={<FeatureErrorBoundary featureName="Auth"><ForgotPassword /></FeatureErrorBoundary>} />
       <Route path="/reset-password" element={<FeatureErrorBoundary featureName="Auth"><ResetPassword /></FeatureErrorBoundary>} />
-      <Route path="/verify-email" element={<FeatureErrorBoundary featureName="Auth"><VerifyEmail /></FeatureErrorBoundary>} />
+      <Route path="/verify-account" element={<FeatureErrorBoundary featureName="Auth"><VerifyAccount /></FeatureErrorBoundary>} />
+      {/* /verify-email kept for back-compat (links in old transactional emails). It now renders the unified VerifyAccount page which auto-routes phone users to /dashboard instead of trapping them. */}
+      <Route path="/verify-email" element={<FeatureErrorBoundary featureName="Auth"><VerifyAccount /></FeatureErrorBoundary>} />
       <Route path="/auth/callback" element={<FeatureErrorBoundary featureName="Auth"><AuthCallbackPage /></FeatureErrorBoundary>} />
       <Route path="/auth/diagnostic" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><AuthDiagnosticPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><FeatureErrorBoundary featureName="Auth"><Onboarding /></FeatureErrorBoundary></ProtectedRoute>} />

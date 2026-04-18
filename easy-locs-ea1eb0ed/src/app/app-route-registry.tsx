@@ -50,6 +50,7 @@ export const Signup = safeLazy(() => import("@/pages/Signup"), "Signup");
 export const ForgotPassword = safeLazy(() => import("@/pages/ForgotPassword"), "ForgotPassword");
 export const ResetPassword = safeLazy(() => import("@/pages/ResetPassword"), "ResetPassword");
 export const VerifyEmail = safeLazy(() => import("@/pages/VerifyEmail"), "VerifyEmail");
+export const VerifyAccount = safeLazy(() => import("@/pages/VerifyAccount"), "VerifyAccount");
 export const Onboarding = safeLazy(() => import("@/pages/Onboarding"), "Onboarding");
 export const AuthCallbackPage = safeLazy(() => import("@/pages/AuthCallbackPage"), "AuthCallbackPage");
 export const AuthDiagnosticPage = safeLazy(() => import("@/pages/AuthDiagnosticPage"), "AuthDiagnosticPage");
