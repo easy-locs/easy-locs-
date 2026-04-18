@@ -117,6 +117,28 @@ export interface DispatchTaskRequest {
   approvalPolicy?: ApprovalPolicy;
   requiresApproval?: boolean;
   retryPolicy?: Record<string, unknown>;
+
+  // ── Watchdog / anti-deadlock contract (task #1017) ──────────────────────
+  /**
+   * Explicit upstream task IDs this task depends on. The dispatcher MUST
+   * call `validateTaskDependencies` (see `core/execution/watchdog.ts`)
+   * before persisting the task, and reject with the structured reason if
+   * any edge would create a cycle, point at an unknown task, or point at
+   * a task in a non-acceptable state. The same DAG invariant is enforced
+   * at the DB boundary by the `task_dependencies_enforce_dag` trigger.
+   */
+  dependsOn?: string[];
+  /**
+   * Per-task end-to-end max duration (ms). When omitted, defaults are
+   * resolved from `system.task_verb_defaults` at insert time.
+   */
+  maxDurationMs?: number;
+  /**
+   * Per-stage stuck threshold (ms). Used by the watchdog to detect
+   * heartbeat / no-progress stalls. When omitted, defaults are resolved
+   * from `system.task_verb_defaults` at insert time.
+   */
+  stuckThresholdMs?: number;
 }
 
 export interface DispatchResult {
