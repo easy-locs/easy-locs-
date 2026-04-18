@@ -41,6 +41,7 @@ export async function identifyCaller(req: Request): Promise<
   const { data: u, error } = await userClient.auth.getUser();
   if (error || !u?.user?.id) return { kind: "anonymous" };
 
+  // Probe known role tables (tolerant — different conventions in this repo).
   let supreme = false;
   try {
     const { data: roles } = await userClient
@@ -82,7 +83,9 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
 
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
- * (cron / army-tick) and Supreme Commander may call.
+ * (cron / army-tick) and Supreme Commander may call. Plain authenticated
+ * users — even of the host app — are rejected because these endpoints
+ * progress the chain and write incidents on behalf of the system.
  */
 export async function identifyCaller(req: Request): Promise<
   | { kind: "service" }
