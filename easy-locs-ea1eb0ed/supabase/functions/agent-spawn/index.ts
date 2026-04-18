@@ -1,8 +1,8 @@
-// agent-spawn — THE ONLY path to create a new agent. Validates the 8
-// reproduction conditions (kill switch, role, domain, type, quota, budget,
-// backlog, dedup) before inserting in agent_instances. TTL is mandatory.
+// agent-spawn — THE ONLY public path to create a new agent.
+// Supreme-only at the edge layer. Funnels through the shared
+// `spawnAgent()` primitive which validates the 8 reproduction conditions.
 import {
-  armyClient, assertNotKilled, canSpawn, jsonResponse, logIncident, preflight,
+  armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
 import { withIdempotency } from "../_shared/idempotency.ts";
 
@@ -22,6 +22,7 @@ interface Body {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+  const denied = await requireSupreme(req); if (denied) return denied;
   try {
     const b = (await req.json()) as Body;
     for (const k of ["role_code", "domain", "task_type"] as const) {
