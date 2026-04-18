@@ -17,6 +17,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     // Task #998 uses an RPC for atomicity; Task #1018 uses individual updates + logIncident.
@@ -29,6 +30,8 @@ Deno.serve(async (req) => {
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
@@ -64,12 +67,16 @@ Deno.serve(async (req) => {
       .eq("assigned_agent", body.agent_id)
       .in("status", ["queued", "running", "planning"]);
     if (e2) return jsonResponse(req, { error: e2.message }, 500);
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     await logIncident(sb, {
       severity: "warn", kind: "kill", agentId: body.agent_id,
       role: "supreme_commander", message: `agent killed: ${reason}`,
     });
+<<<<<<< HEAD
 <<<<<<< HEAD
     return jsonResponse(req, { ok: true });
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
@@ -77,6 +84,10 @@ Deno.serve(async (req) => {
 
     return jsonResponse(req, { ok: true, result: data });
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+    return jsonResponse(req, { ok: true });
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
