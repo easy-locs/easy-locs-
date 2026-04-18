@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-import { claimIdempotencyKey } from "../_shared/idempotency.ts";
+import { claimIdempotencyKey, finalizeIdempotencyKey } from "../_shared/idempotency.ts";
 
 const DEFAULT_EXPIRY_DAYS = 90;
 const MIN_EXPIRY_DAYS = 1;
@@ -38,22 +38,44 @@ Deno.serve(async (req: Request) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db = createClient(supabaseUrl, serviceKey);
 
-    // Task #1004 — idempotency. A re-triggered cron run within the
-    // same UTC day is a no-op (one expiry sweep per day per window).
+    // Task #1004 — idempotency (claim + finalize). A re-triggered cron
+    // within the same UTC day either replays the prior result (if it
+    // succeeded) or, if a previous run is still pending, returns 202.
+    // Failures release the claim so the next cron tick can retry.
     const today = new Date().toISOString().slice(0, 10);
+    const idemKey = `${today}:${expiryDays}d`;
     const claim = await claimIdempotencyKey(
       db,
       "referral-expire",
-      `${today}:${expiryDays}d`,
+      idemKey,
       { today, expiryDays },
       60 * 60 * 23, // ~1 day TTL
     );
-    if (!claim.isNew) {
+    if (!claim.isNew && claim.status === "succeeded") {
       return new Response(
-        JSON.stringify({ status: "ok", deduplicated: true, replayed: claim.result }),
+        JSON.stringify({ status: "ok", deduplicated: true, replayed: true, prior: claim.result }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    if (!claim.isNew && claim.status === "pending") {
+      return new Response(
+        JSON.stringify({ status: "in_flight", deduplicated: true }),
+        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let __idemFinalized = false;
+    const __finalizeOk = async (result: unknown) => {
+      if (__idemFinalized) return;
+      __idemFinalized = true;
+      await finalizeIdempotencyKey(db, "referral-expire", idemKey, "succeeded", result);
+    };
+    const __finalizeFail = async (err: unknown) => {
+      if (__idemFinalized) return;
+      __idemFinalized = true;
+      const m = err instanceof Error ? err.message : String(err);
+      await finalizeIdempotencyKey(db, "referral-expire", idemKey, "failed", { error: m });
+    };
 
     const cutoffDate = new Date(Date.now() - expiryDays * 86400000).toISOString();
 
@@ -65,6 +87,7 @@ Deno.serve(async (req: Request) => {
 
     if (queryErr) {
       console.error("[expire-pending-referrals] Query failed:", queryErr.message);
+      await __finalizeFail(new Error(queryErr.message));
       return new Response(
         JSON.stringify({ error: "Failed to query pending redemptions" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -72,8 +95,10 @@ Deno.serve(async (req: Request) => {
     }
 
     if (!staleRedemptions || staleRedemptions.length === 0) {
+      const empty = { expired: 0, decremented: 0, message: "No stale pending redemptions found" };
+      await __finalizeOk(empty);
       return new Response(
-        JSON.stringify({ expired: 0, decremented: 0, message: "No stale pending redemptions found" }),
+        JSON.stringify(empty),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -88,6 +113,7 @@ Deno.serve(async (req: Request) => {
 
     if (updateErr) {
       console.error("[expire-pending-referrals] Status update failed:", updateErr.message);
+      await __finalizeFail(new Error(updateErr.message));
       return new Response(
         JSON.stringify({ error: "Failed to expire redemptions" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -207,19 +233,22 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    const summary = {
+      expired: netExpired,
+      decremented,
+      reverted: revertedCount,
+      expiry_days: expiryDays,
+      codes_affected: Object.keys(codeCountMap).length,
+      owners_notified: netExpired > 0 ? "dispatched" : "none",
+    };
+    await __finalizeOk(summary);
     return new Response(
-      JSON.stringify({
-        expired: netExpired,
-        decremented,
-        reverted: revertedCount,
-        expiry_days: expiryDays,
-        codes_affected: Object.keys(codeCountMap).length,
-        owners_notified: netExpired > 0 ? "dispatched" : "none",
-      }),
+      JSON.stringify(summary),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e) {
     console.error("[expire-pending-referrals] Error:", e);
+    try { await __finalizeFail(e); } catch { /* swallow */ }
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

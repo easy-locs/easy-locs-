@@ -31,7 +31,7 @@ export function HomeRouter() {
   if (loading) return <PageLoader dark={!user} />;
   if (!user) return <Index />;
   if (!ready) return <PageLoader />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!emailVerified) return <Navigate to="/verify-account" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
 
@@ -42,6 +42,6 @@ export function MarketplaceHomeRouter() {
   if (loading) return <PageLoader dark={!user} />;
   if (!user) return <Index />;
   if (!ready) return <PageLoader />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  if (!emailVerified) return <Navigate to="/verify-account" replace />;
   return <Suspense fallback={<PageLoader />}><Dashboard /></Suspense>;
 }
