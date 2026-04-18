@@ -19,6 +19,10 @@ const VerifyEmail = () => {
   const { t } = useI18n();
 
   useEffect(() => {
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> c999f1a7c3 (Fix login issue for phone users and improve verification process)
     // A user is considered verified for the purpose of leaving this screen if
     // Supabase has stamped either of its native confirmation timestamps. We
     // intentionally do NOT consider a phone-only account verified by absence

@@ -14,6 +14,10 @@ export function armyClient(): SupabaseClient {
   );
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 /**
 =======
  * Resolve the caller's identity from the Authorization header.
@@ -86,6 +90,14 @@ export async function requireAuthenticated(req: Request): Promise<Response | nul
   return jsonResponse(req, { error: "unauthorized" }, 401);
 }
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
 /**
  * Strictest gate for internal pipeline endpoints. Only the service role
  * (cron / army-tick) and Supreme Commander may call. Plain authenticated
