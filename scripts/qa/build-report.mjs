@@ -133,8 +133,25 @@ function main() {
     load: readJson(resolve(ROOT, 'test-results/k6-load-summary.json')),
     stress: readJson(resolve(ROOT, 'test-results/k6-stress-summary.json')),
   };
+  const probe = readJson(resolve(ROOT, 'test-results/guest-probe.json'));
 
   const { bugs, weak } = collectPlaywrightFindings(pw);
+  if (probe?.findings) {
+    for (const f of probe.findings) {
+      if (f.pageErrors?.length || f.consoleErrors?.length || f.httpErrors?.length || /error/i.test(f.navStatus)) {
+        bugs.push({
+          route: f.route,
+          role: 'guest',
+          severity: f.pageErrors?.length ? 'S2' : 'S3',
+          repro: `guest-probe ${f.route}`,
+          hypothesis: (f.pageErrors?.[0] || f.consoleErrors?.[0] || f.httpErrors?.[0] || f.navStatus),
+          artifacts: 'test-results/guest-probe.json',
+        });
+      } else if (f.durationMs > 5000) {
+        weak.push({ route: f.route, role: 'guest', symptom: 'slow load', durationMs: f.durationMs, retries: 0 });
+      }
+    }
+  }
   const perf = collectK6Findings(k6);
   const fixes = rankFixes(bugs, weak, perf);
 
@@ -143,6 +160,35 @@ function main() {
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   lines.push('');
+
+  // Run context preamble — what actually executed
+  const ctx = [];
+  if (pw?.stats) {
+    const s = pw.stats;
+    const total = (s.expected || 0) + (s.unexpected || 0) + (s.skipped || 0) + (s.flaky || 0);
+    ctx.push(`- **Playwright**: ${total} tests, ${s.expected || 0} passed, ${s.unexpected || 0} failed, ${s.skipped || 0} skipped, ${s.flaky || 0} flaky (duration ${(s.duration / 1000).toFixed(1)}s).`);
+    if (s.skipped > 0) {
+      ctx.push(`  - ⚠️ ${s.skipped} tests skipped — most likely missing QA_* credentials. See \`docs/qa/how-to-run.md\` for the env-var matrix.`);
+    }
+  }
+  if (probe?.findings) {
+    const total = probe.findings.length;
+    const errored = probe.findings.filter((f) => f.pageErrors?.length || f.consoleErrors?.length || f.httpErrors?.length).length;
+    ctx.push(`- **Guest probe**: ${total} routes walked headless against \`${probe.baseUrl}\`, ${errored} had console/page/HTTP errors.`);
+  }
+  for (const [stage, summary] of Object.entries(k6)) {
+    if (!summary || summary.__error) continue;
+    const dur = summary.metrics?.http_req_duration?.values || {};
+    const reqs = summary.metrics?.http_reqs?.values?.count ?? '?';
+    const runMs = summary.state?.testRunDurationMs ?? 0;
+    ctx.push(`- **k6 ${stage}**: ${reqs} requests over ${(runMs / 1000).toFixed(0)}s, p95 ${dur['p(95)']?.toFixed?.(1) ?? '—'} ms.`);
+  }
+  if (ctx.length > 0) {
+    lines.push('## Run context');
+    lines.push('');
+    lines.push(...ctx);
+    lines.push('');
+  }
   if (!pw && !k6.smoke && !k6.load && !k6.stress) {
     lines.push('> ⚠️ No Playwright or k6 result files were found in `test-results/`.');
     lines.push('> Run `npm run qa:campaign` (see `docs/qa/how-to-run.md`) and re-run');
