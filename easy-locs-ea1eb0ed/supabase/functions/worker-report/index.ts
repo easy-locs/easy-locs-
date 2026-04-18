@@ -2,13 +2,14 @@
 // When all child tasks of an order are terminal, marks the order completed
 // (or failed if any failed/rejected).
 import {
-  armyClient, jsonResponse, logMessage, preflight,
+  armyClient, jsonResponse, logMessage, preflight, requireAuthenticated,
 } from "../_shared/army.ts";
 
 interface Body { task_id?: string; order_id?: string; }
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+  const denied = await requireAuthenticated(req); if (denied) return denied;
   try {
 
     const body = (await req.json()) as Body;
