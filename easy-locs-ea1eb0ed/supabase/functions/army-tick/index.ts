@@ -19,6 +19,7 @@ import {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
@@ -47,6 +48,9 @@ import {
 >>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
@@ -68,6 +72,7 @@ async function call(name: string, body: unknown): Promise<unknown> {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -111,6 +116,9 @@ Deno.serve(async (req) => {
 >>>>>>> 13293be6f7 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const denied = await requireAuthenticated(req); if (denied) return denied;
+>>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
     const sb = armyClient();
     await assertNotKilled(sb);
