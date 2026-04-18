@@ -8,10 +8,11 @@
  * `projectMergeConflictRecoverySummary`) lives in the runtime-agnostic
  * shared module under `supabase/functions/_shared/` so this file and
  * the `admin-merge-conflict-recovery` edge function cannot drift
- * (task #979). This file owns the React/Supabase data-access layer and
- * the alert evaluator.
+ * (task #979). This file owns the React/Supabase data-access layer,
+ * the recent-alert log query, the persisted spike-detection threshold,
+ * and the pure alert evaluator.
  */
-import { domainDb } from "@/services/db";
+import { db, domainDb } from "@/services/db";
 import {
   MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
   type MergeConflictRecoveryAudit,
@@ -20,6 +21,17 @@ import {
   normalizeAudit,
   projectMergeConflictRecoverySummary,
 } from "../../supabase/functions/_shared/merge-conflict-recovery-projection.ts";
+
+export {
+  MERGE_CONFLICT_RECOVERY_LOOKBACK_DAYS,
+  normalizeAudit,
+  projectMergeConflictRecoverySummary,
+};
+export type {
+  MergeConflictRecoveryAudit,
+  MergeConflictRecoveryEvent,
+  MergeConflictRecoverySummary,
+};
 
 // ── Recent merge-conflict alert log (task #982) ──────────────────────────
 //
@@ -81,16 +93,6 @@ export async function fetchMergeConflictRecoveryAlertLog(
     channelTarget: r.channel_target,
     createdAt: r.created_at,
   }));
-}
-
-export interface MergeConflictRecoveryAudit {
-  readonly kind: "merge_conflict_recovery";
-  readonly at: string;
-  readonly builder_task_id: string;
-  readonly severity: "hard" | "soft" | "none";
-  readonly overlaps: number;
-  readonly files: string[];
-  readonly reason: string;
 }
 
 const PAGE_SIZE = 500;
@@ -157,91 +159,6 @@ export async function fetchMergeConflictRecoveryEvents(): Promise<
   }
   events.sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
   return events;
-}
-
-function normalizeAudit(
-  raw: unknown,
-  rowId: string,
-): MergeConflictRecoveryEvent | null {
-  if (!raw || typeof raw !== "object") return null;
-  const r = raw as Record<string, unknown>;
-  if (r.kind !== "merge_conflict_recovery") return null;
-  const at = typeof r.at === "string" ? r.at : null;
-  if (!at) return null;
-  const builder_task_id = typeof r.builder_task_id === "string"
-    ? r.builder_task_id
-    : rowId;
-  const severity = (r.severity === "hard" || r.severity === "soft" ||
-      r.severity === "none")
-    ? r.severity
-    : "hard";
-  const overlaps = typeof r.overlaps === "number" ? r.overlaps : 0;
-  const files = Array.isArray(r.files)
-    ? r.files.filter((f): f is string => typeof f === "string")
-    : [];
-  const reason = typeof r.reason === "string"
-    ? r.reason
-    : `hard_overlap:${overlaps}`;
-  return {
-    kind: "merge_conflict_recovery",
-    task_id: rowId,
-    builder_task_id,
-    at,
-    severity,
-    overlaps,
-    files,
-    reason,
-  };
-}
-
-export interface MergeConflictRecoverySummary {
-  readonly events: MergeConflictRecoveryEvent[];
-  readonly totalEvents: number;
-  readonly affectedTasks: number;
-  /** Counts per UTC day for the last 14 days, oldest → newest. */
-  readonly perDay: ReadonlyArray<{ day: string; count: number }>;
-  /** Top 5 most-conflicting file paths (descending). */
-  readonly topFiles: ReadonlyArray<{ file: string; count: number }>;
-}
-
-/** Pure projection so the page stays a thin shell. */
-export function projectMergeConflictRecoverySummary(
-  events: MergeConflictRecoveryEvent[],
-): MergeConflictRecoverySummary {
-  const perDayMap = new Map<string, number>();
-  // Seed the last 14 days so empty days still render.
-  const today = new Date();
-  for (let i = LOOKBACK_DAYS - 1; i >= 0; i--) {
-    const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
-    perDayMap.set(d.toISOString().slice(0, 10), 0);
-  }
-  const fileCounts = new Map<string, number>();
-  const taskIds = new Set<string>();
-  for (const e of events) {
-    const day = e.at.slice(0, 10);
-    if (perDayMap.has(day)) {
-      perDayMap.set(day, (perDayMap.get(day) ?? 0) + 1);
-    }
-    taskIds.add(e.builder_task_id);
-    for (const f of e.files) {
-      fileCounts.set(f, (fileCounts.get(f) ?? 0) + 1);
-    }
-  }
-  const perDay = Array.from(perDayMap.entries()).map(([day, count]) => ({
-    day,
-    count,
-  }));
-  const topFiles = Array.from(fileCounts.entries())
-    .map(([file, count]) => ({ file, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-  return {
-    events,
-    totalEvents: events.length,
-    affectedTasks: taskIds.size,
-    perDay,
-    topFiles,
-  };
 }
 
 // ── Spike-detection threshold (shared across operators) ───────────────────
@@ -364,28 +281,19 @@ export function summarizeFileBurstsWithinWindow(
     .sort((a, b) => b.count - a.count);
 }
 
-// ── Cron alert thresholds (tasks #973 + #981) ────────────────────────────
-//
-// The scheduled `merge-conflict-recovery-alerts-cron` (task #973)
-// evaluates four operator-tunable thresholds. They used to come only
-// from edge-function env vars, which forced a redeploy to change. Task
-// #981 persists them in `public.merge_conflict_alert_thresholds` so
-// operators can tune the cron from the recovery dashboard. The cron
-// reads the table first and only falls back to env vars when the row
-// is missing.
+// ── Threshold-based alerting (task #973) ──────────────────────────────────
 
 /**
- * Operator-tunable thresholds for the merge-conflict spike alert
- * evaluator. Each field can be set to 0 to disable that alert family.
+ * Operator-tunable thresholds for merge-conflict spike alerts.
  *
- * - `dailyEventThreshold` — fire when ANY single day in the 14-day
- *   window has at least this many recovery events.
- * - `totalEventsThreshold` — fire when the rolling 14-day total reaches
- *   this value.
+ * - `dailyEventThreshold` — fire when ANY single day in the 14-day window
+ *   has at least this many recovery events. Default 10.
+ * - `totalEventsThreshold` — fire when the 14-day total reaches this
+ *   value. Default 30.
  * - `topFileMinEvents` — minimum event count for the #1 top file before
- *   it is considered for the dominance alert.
- * - `topFileDominanceRatio` — fraction (0–1) of `totalEvents` the #1
- *   top file must reach for the dominance alert.
+ *   it is even considered for the dominance alert. Default 5.
+ * - `topFileDominanceRatio` — fraction of `totalEvents` the #1 top file
+ *   must reach for the dominance alert. Default 0.5 (50%).
  */
 export interface MergeConflictRecoveryAlertThresholds {
   readonly dailyEventThreshold: number;
@@ -416,12 +324,10 @@ export interface MergeConflictRecoveryAlert {
 }
 
 /**
- * Pure evaluator: turns a projection summary + thresholds into a list
- * of alerts. Mirrors the algebra inlined in the
- * `merge-conflict-recovery-alerts-cron` edge function so the cron and
- * the dashboard agree on what counts as a spike.
+ * Pure evaluator: turns a projection summary + thresholds into a list of
+ * alerts. No I/O, no clock — easy to unit-test exhaustively.
  *
- * Alerts fire independently — the same summary may produce 0..3 alerts.
+ * Alerts fire independently. The same summary may produce 0..3 alerts.
  */
 export function evaluateMergeConflictRecoveryAlerts(
   summary: MergeConflictRecoverySummary,
@@ -430,6 +336,7 @@ export function evaluateMergeConflictRecoveryAlerts(
 ): MergeConflictRecoveryAlert[] {
   const alerts: MergeConflictRecoveryAlert[] = [];
 
+  // 1) Daily spike — pick the worst day at-or-above the threshold.
   if (thresholds.dailyEventThreshold > 0) {
     let worst: { day: string; count: number } | null = null;
     for (const d of summary.perDay) {
@@ -455,6 +362,7 @@ export function evaluateMergeConflictRecoveryAlerts(
     }
   }
 
+  // 2) Total spike — 14-day total at-or-above the threshold.
   if (
     thresholds.totalEventsThreshold > 0 &&
     summary.totalEvents >= thresholds.totalEventsThreshold
@@ -477,6 +385,8 @@ export function evaluateMergeConflictRecoveryAlerts(
     });
   }
 
+  // 3) File dominance — one path is responsible for too many of the
+  //    events. Skip cleanly when there are no events at all.
   if (
     summary.totalEvents > 0 &&
     thresholds.topFileMinEvents > 0 &&
@@ -515,146 +425,36 @@ export function evaluateMergeConflictRecoveryAlerts(
   return alerts;
 }
 
-/** Bounds enforced both client-side (UI) and in the DB CHECK constraints. */
-export const MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS = {
-  dailyEventThresholdMin: 0,
-  dailyEventThresholdMax: 100_000,
-  totalEventsThresholdMin: 0,
-  totalEventsThresholdMax: 1_000_000,
-  topFileMinEventsMin: 0,
-  topFileMinEventsMax: 100_000,
-  topFileDominanceRatioMin: 0,
-  topFileDominanceRatioMax: 1,
-} as const;
-
-interface MergeConflictAlertThresholdsRow {
-  daily_event_threshold: number;
-  total_events_threshold: number;
-  top_file_min_events: number;
-  top_file_dominance_ratio: number | string;
-  updated_at?: string | null;
-}
-
-function clampInt(
-  raw: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, Math.floor(n)));
-}
-
-function clampRatio(
-  raw: unknown,
-  min: number,
-  max: number,
-  fallback: number,
-): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.min(max, Math.max(min, n));
-}
-
-/** Pure normalizer — exported so tests can pin the contract without a DB. */
-export function normalizeMergeConflictRecoveryAlertThresholds(
-  raw: Partial<MergeConflictRecoveryAlertThresholds> | null | undefined,
-): MergeConflictRecoveryAlertThresholds {
-  const b = MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLD_BOUNDS;
-  const d = DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS;
-  return {
-    dailyEventThreshold: clampInt(
-      raw?.dailyEventThreshold,
-      b.dailyEventThresholdMin,
-      b.dailyEventThresholdMax,
-      d.dailyEventThreshold,
-    ),
-    totalEventsThreshold: clampInt(
-      raw?.totalEventsThreshold,
-      b.totalEventsThresholdMin,
-      b.totalEventsThresholdMax,
-      d.totalEventsThreshold,
-    ),
-    topFileMinEvents: clampInt(
-      raw?.topFileMinEvents,
-      b.topFileMinEventsMin,
-      b.topFileMinEventsMax,
-      d.topFileMinEvents,
-    ),
-    topFileDominanceRatio: clampRatio(
-      raw?.topFileDominanceRatio,
-      b.topFileDominanceRatioMin,
-      b.topFileDominanceRatioMax,
-      d.topFileDominanceRatio,
-    ),
-  };
-}
-
-function rowToThresholds(
-  row: MergeConflictAlertThresholdsRow | null | undefined,
-): MergeConflictRecoveryAlertThresholds {
-  if (!row) return { ...DEFAULT_MERGE_CONFLICT_RECOVERY_ALERT_THRESHOLDS };
-  return normalizeMergeConflictRecoveryAlertThresholds({
-    dailyEventThreshold: row.daily_event_threshold,
-    totalEventsThreshold: row.total_events_threshold,
-    topFileMinEvents: row.top_file_min_events,
-    topFileDominanceRatio: Number(row.top_file_dominance_ratio),
-  });
-}
-
-export interface MergeConflictRecoveryAlertThresholdsRecord {
-  readonly thresholds: MergeConflictRecoveryAlertThresholds;
-  readonly updatedAt: string | null;
-}
-
-export async function loadMergeConflictRecoveryAlertThresholds(): Promise<
-  MergeConflictRecoveryAlertThresholdsRecord
-> {
-  const { data, error } = await db
-    .from("merge_conflict_alert_thresholds")
-    .select(
-      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
-    )
-    .eq("id", true)
-    .maybeSingle();
-  if (error) {
-    throw new Error(
-      `loadMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
-    );
+/**
+ * Per-file conflict counts inside a sliding time window. Used by the
+ * dashboard's spike-detection panel to decide whether a single file
+ * path is being storm-hit (e.g. two agents racing on the same file).
+ *
+ * Pure projection — caller decides the window size and the alert
+ * threshold so the same primitive can drive both UI proximity bars
+ * and threshold-crossing alerts.
+ */
+export function summarizeFileBurstsWithinWindow(
+  events: MergeConflictRecoveryEvent[],
+  windowMs: number,
+  now: number = Date.now(),
+): ReadonlyArray<{ file: string; count: number; lastAt: string }> {
+  const cutoff = now - windowMs;
+  const counts = new Map<string, { count: number; lastAt: string }>();
+  for (const e of events) {
+    const t = Date.parse(e.at);
+    if (!Number.isFinite(t) || t < cutoff) continue;
+    for (const f of e.files) {
+      const cur = counts.get(f);
+      if (!cur) {
+        counts.set(f, { count: 1, lastAt: e.at });
+      } else {
+        cur.count += 1;
+        if (e.at > cur.lastAt) cur.lastAt = e.at;
+      }
+    }
   }
-  const row = (data ?? null) as MergeConflictAlertThresholdsRow | null;
-  return {
-    thresholds: rowToThresholds(row),
-    updatedAt: row?.updated_at ?? null,
-  };
-}
-
-export async function saveMergeConflictRecoveryAlertThresholds(
-  next: MergeConflictRecoveryAlertThresholds,
-): Promise<MergeConflictRecoveryAlertThresholdsRecord> {
-  const clamped = normalizeMergeConflictRecoveryAlertThresholds(next);
-  const { data, error } = await db
-    .from("merge_conflict_alert_thresholds")
-    .update({
-      daily_event_threshold: clamped.dailyEventThreshold,
-      total_events_threshold: clamped.totalEventsThreshold,
-      top_file_min_events: clamped.topFileMinEvents,
-      top_file_dominance_ratio: clamped.topFileDominanceRatio,
-    })
-    .eq("id", true)
-    .select(
-      "daily_event_threshold, total_events_threshold, top_file_min_events, top_file_dominance_ratio, updated_at",
-    )
-    .maybeSingle();
-  if (error) {
-    throw new Error(
-      `saveMergeConflictRecoveryAlertThresholds failed: ${error.message}`,
-    );
-  }
-  const row = (data ?? null) as MergeConflictAlertThresholdsRow | null;
-  return {
-    thresholds: rowToThresholds(row),
-    updatedAt: row?.updated_at ?? null,
-  };
+  return Array.from(counts.entries())
+    .map(([file, v]) => ({ file, count: v.count, lastAt: v.lastAt }))
+    .sort((a, b) => b.count - a.count);
 }
