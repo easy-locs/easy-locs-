@@ -22,6 +22,7 @@ Deno.serve(async (req) => {
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
     // Task #998 uses an RPC for atomicity; Task #1018 uses individual updates + logIncident.
@@ -37,14 +38,19 @@ Deno.serve(async (req) => {
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
+=======
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
     // Prefer the atomic RPC (Task #998); fall back to manual updates if
     // the RPC is unavailable (preserves Task #1018 behavior). Either
     // way, the kill is recorded via logIncident.
 <<<<<<< HEAD
+<<<<<<< HEAD
 >>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 697e731456 (Task #1010 — clean stale conflict markers in 6 supabase edge function files (post-rebase))
+=======
+>>>>>>> c83a5ff207 (Task #998 — Hierarchical agent army (Command Center + Supabase))
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: body.reason ?? "manual",
     });
