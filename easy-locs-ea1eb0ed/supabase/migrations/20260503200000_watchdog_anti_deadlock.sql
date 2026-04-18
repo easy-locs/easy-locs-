@@ -372,7 +372,9 @@ AS $$
            ) AS evidence
       FROM active a
      WHERE a.max_duration_ms IS NOT NULL
-       AND COALESCE(a.started_at, a.created_at) + (a.max_duration_ms || ' milliseconds')::interval < now()
+       AND a.status = 'running'                  -- only running tasks can transition to `failed`
+       AND a.started_at IS NOT NULL
+       AND a.started_at + (a.max_duration_ms || ' milliseconds')::interval < now()
   ),
   -- 2. Running tasks with no recent heartbeat
   no_heartbeat AS (
@@ -520,8 +522,15 @@ BEGIN
   END IF;
 
   IF COALESCE(v_row.attempt_count, 0) < COALESCE(v_row.max_attempts, 3) THEN
+    -- Increment attempt_count BEFORE the requeue so the retry budget actually
+    -- decays. Reset stage_started_at explicitly: the BEFORE UPDATE trigger
+    -- only resets it on a status change, but recovery from `queued`→`queued`
+    -- would otherwise leave the timer behind and re-trigger the same stuck
+    -- rule next tick (infinite-recovery loop).
     UPDATE system.execution_tasks
        SET status              = 'queued',
+           attempt_count       = COALESCE(attempt_count, 0) + 1,
+           stage_started_at    = now(),
            lock_key            = NULL,
            locked_by           = NULL,
            last_heartbeat_at   = NULL,
@@ -532,7 +541,8 @@ BEGIN
       p_task_id, NULL,
       jsonb_build_object('reason', p_reason, 'evidence', p_evidence,
                          'previous_status', v_row.status,
-                         'attempt_count', v_row.attempt_count)
+                         'attempt_count', COALESCE(v_row.attempt_count, 0) + 1,
+                         'max_attempts', COALESCE(v_row.max_attempts, 3))
     );
     RETURN 'requeued';
   END IF;
