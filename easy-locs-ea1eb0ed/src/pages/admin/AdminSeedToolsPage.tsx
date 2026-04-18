@@ -67,19 +67,6 @@ export default function AdminSeedToolsPage() {
           {running ? "Running..." : "Create 3 Sample Pizza Stores"}
         </button>
 
-        <button
-          onClick={() => navigate("/admin/bulk-merchant-import")}
-          className="w-full rounded-2xl bg-card border border-border/20 px-4 py-3 text-sm font-bold text-left text-foreground active:scale-[0.98] transition-transform"
-        >
-          Open Bulk Merchant Import
-        </button>
-
-        <button
-          onClick={() => navigate("/admin/merchant-autofill")}
-          className="w-full rounded-2xl bg-card border border-border/20 px-4 py-3 text-sm font-bold text-left text-foreground active:scale-[0.98] transition-transform"
-        >
-          Open Merchant Autofill
-        </button>
       </div>
     </SubPageShell>
   );

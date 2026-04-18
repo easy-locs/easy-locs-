@@ -106,7 +106,7 @@ function getActiveVertical(activeLayers: RadarLayer[]): RadarVertical | undefine
 }
 
 export default function HyperRadarPage() {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();

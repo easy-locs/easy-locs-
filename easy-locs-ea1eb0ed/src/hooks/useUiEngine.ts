@@ -21,7 +21,12 @@ export function useUiEngine(optionsOrLabel: UseUiEngineOptions | string = {}) {
     enabled = true,
     autoRun = true,
     delayMs = 500,
-    observeDom = true,
+    // Default off: a live MutationObserver re-firing the engine on every DOM
+    // change creates feedback loops with React's reconciler (the engine mutates
+    // styles → MO fires → engine runs → MO fires …) and was implicated in
+    // "Failed to execute removeChild on Node" crashes during route transitions.
+    // Callers that explicitly need live observation can opt back in.
+    observeDom = false,
   } = options;
 
   const location = useLocation();
