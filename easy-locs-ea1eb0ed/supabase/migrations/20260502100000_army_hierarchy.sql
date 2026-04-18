@@ -937,7 +937,6 @@ begin
          where created_at < now() - interval '1 day';
       $cron$
     );
-
   end if;
 exception when others then null;
 end $$;
