@@ -62,22 +62,16 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // We check email and phone separately (rather than the legacy combined
   // `emailVerified` boolean) so it is impossible to bounce a phone-verified
   // user to /verify-account simply because they happen to have an email
-  // string on the user record. We also keep a defensive fallback for
-  // accounts that arrived before Supabase began stamping
-  // `phone_confirmed_at` — those are recognized via the `signup_method`
-  // metadata tag (already folded into `phoneVerified`) or, last-resort,
-  // a phone identity with no email at all.
+  // string on the user record. Both `emailConfirmed` and `phoneVerified`
+  // come from confirmed signals only (`email_confirmed_at`,
+  // `phone_confirmed_at`, or the explicit `signup_method=phone` metadata
+  // tag set by our own signup pipeline) — there is intentionally no
+  // permissive identity-only fallback here.
   if (!emailConfirmed && !phoneVerified) {
-    const u = user as { phone?: string | null; email?: string | null; phone_confirmed_at?: string | null };
-    const hasPhoneIdentity = !!u?.phone;
-    const hasEmailIdentity = !!u?.email;
-    const isPhoneOnlyAccount = hasPhoneIdentity && !hasEmailIdentity;
-    if (!isPhoneOnlyAccount) {
-      // Unified verification flow — /verify-account handles BOTH email and
-      // phone cases and auto-routes verified users to /dashboard. The old
-      // /verify-email route now redirects here as well for back-compat.
-      return <Navigate to="/verify-account" replace />;
-    }
+    // Unified verification flow — /verify-account handles BOTH email and
+    // phone cases and auto-routes verified users to /dashboard. The old
+    // /verify-email route now redirects here as well for back-compat.
+    return <Navigate to="/verify-account" replace />;
   }
 
   const isAdminRoute = location.pathname.startsWith("/admin");
