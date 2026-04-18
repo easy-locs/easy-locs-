@@ -128,11 +128,22 @@ CREATE INDEX IF NOT EXISTS idx_task_dependencies_depends_on
 -- States that satisfy a "dependency is approved or post-approval" check.
 -- A task may depend ONLY on tasks already in one of these states. Defined
 -- before the DAG trigger because the trigger's body invokes it.
+-- A dependency is acceptable as soon as it has been approved (i.e. has
+-- left the `draft`/`pending_review`/`rejected` pre-approval gates). Any
+-- post-approval lifecycle state — including terminal failure states —
+-- is allowed; the dispatcher decides separately whether a downstream
+-- task should run when its upstream is `failed`/`cancelled`/`blocked`.
+-- Restricting this check to “runnable / succeeded only” caused valid
+-- dependency declarations to be rejected by the trigger.
 CREATE OR REPLACE FUNCTION system.dependency_state_is_acceptable(s system.execution_task_status)
 RETURNS BOOLEAN
 LANGUAGE sql IMMUTABLE
 AS $$
-  SELECT s IN ('approved','queued','running','succeeded','rolling_back','rolled_back')
+  SELECT s IN (
+    'approved','queued','running',
+    'succeeded','failed','cancelled','blocked',
+    'rolling_back','rolled_back','rollback_failed'
+  )
 $$;
 
 -- Defense-in-depth: enforce the DAG invariant at the database boundary so a
@@ -847,17 +858,16 @@ $cron_wd$;
 -- ── 7. Grants ─────────────────────────────────────────────────────────────
 GRANT EXECUTE ON FUNCTION system.resolve_task_verb_defaults(TEXT)                                  TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION system.validate_task_dependencies(UUID, UUID[])                          TO authenticated, service_role;
--- write_incident is granted to authenticated as well so the dispatcher's
--- pre-insert dependency-rejection path (called from the app supabase
--- client under an admin user JWT) can persist a structured audit row.
--- The function is SECURITY DEFINER, so the actual INSERT into
--- system.incident_log runs as the function owner; the auth role merely
--- gates EXECUTE. incident_log itself is append-only (UPDATE/DELETE
--- triggers raise insufficient_privilege), so the worst a malicious
--- authenticated caller can do is add a row — the same surface they
--- already have via hundreds of other audit-write paths.
+-- write_incident: EXECUTE granted to authenticated AND the function body
+-- itself enforces (service_role OR public.has_role(auth.uid(),'admin'))
+-- and force-rewrites the actor field for admin callers. Non-admin
+-- authenticated callers are rejected with 42501 inside the body, so the
+-- broader EXECUTE grant cannot be used to spoof audit rows.
 GRANT EXECUTE ON FUNCTION system.write_incident(TEXT, TEXT, TEXT, UUID, UUID, JSONB)               TO service_role, authenticated;
-GRANT EXECUTE ON FUNCTION system.scan_stuck_tasks(INT)                                             TO service_role, authenticated;
+-- scan_stuck_tasks exposes operational task metadata (status, attempt
+-- counts, evidence). Restricted to service_role; UI/admin paths must
+-- read through the curated `v_watchdog_stuck` view (admin-gated by RLS).
+GRANT EXECUTE ON FUNCTION system.scan_stuck_tasks(INT)                                             TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_fail_task(UUID, TEXT, TEXT, JSONB)                       TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_recover_task(UUID, TEXT, JSONB)                          TO service_role;
 GRANT EXECUTE ON FUNCTION system.watchdog_tick(INT)                                                TO service_role;
