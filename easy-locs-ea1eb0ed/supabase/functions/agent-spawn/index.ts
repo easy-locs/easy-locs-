@@ -4,6 +4,7 @@
 import {
   armyClient, jsonResponse, preflight, requireSupreme, spawnAgent,
 } from "../_shared/army.ts";
+import { withIdempotency } from "../_shared/idempotency.ts";
 
 interface Body {
   role_code: string;
@@ -25,13 +26,30 @@ Deno.serve(async (req) => {
       if (!b?.[k]) return jsonResponse(req, { error: `${k} required` }, 400);
     }
     const sb = armyClient();
-    const result = await spawnAgent(sb, {
-      roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
-      ttlMinutes: b.ttl_minutes, dedupKey: b.dedup_key,
-      parentId: b.parent_id, reason: b.reason, metadata: b.metadata,
-    });
-    if (!result.ok) return jsonResponse(req, { ok: false, reason: result.reason }, 409);
-    return jsonResponse(req, { ok: true, agent: result.agent });
+
+    // Task #1004 — idempotency guard. If the caller supplies a
+    // dedup_key, two replays of the same spawn request never produce
+    // two agents.
+    const idempKey = b.dedup_key
+      ?? `${b.role_code}:${b.domain}:${b.task_type}:${b.parent_id ?? "root"}`;
+
+    const { result, replayed } = await withIdempotency(
+      sb,
+      "agent-spawn",
+      idempKey,
+      b,
+      async () => spawnAgent(sb, {
+        roleCode: b.role_code, domain: b.domain, taskType: b.task_type,
+        ttlMinutes: b.ttl_minutes, dedupKey: b.dedup_key,
+        parentId: b.parent_id, reason: b.reason, metadata: b.metadata,
+      }),
+      60 * 60, // 1h TTL — agent dedup window
+    );
+
+    if (!result || !(result as { ok: boolean }).ok) {
+      return jsonResponse(req, { ok: false, reason: (result as { reason?: string })?.reason, replayed }, 409);
+    }
+    return jsonResponse(req, { ok: true, agent: (result as { agent: unknown }).agent, replayed });
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
