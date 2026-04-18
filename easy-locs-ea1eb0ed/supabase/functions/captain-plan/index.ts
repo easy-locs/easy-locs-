@@ -3,15 +3,22 @@
 // automatically (via DB trigger).
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logMessage,
+<<<<<<< HEAD
   preflight, requireAuthenticated, requireServiceOrSupreme,
+=======
+  preflight,
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body { task_id: string; }
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+<<<<<<< HEAD
   const denied = await requireServiceOrSupreme(req) || await requireAuthenticated(req);
   if (denied) return denied;
+=======
+>>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
 
     const body = (await req.json()) as Body;
