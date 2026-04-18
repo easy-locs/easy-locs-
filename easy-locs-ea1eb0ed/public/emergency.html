@@ -29,6 +29,11 @@
 <body>
 <h1>🛟 Easy-Locs — Emergency Control Panel</h1>
 <p class="sub">Page statique inkillable. Aucun JavaScript de l'app n'est requis. Si tu vois cette page, le serveur est joignable.</p>
+<div id="rescue-banner" style="display:none;background:#7f1d1d;border:1px solid #991b1b;border-radius:10px;padding:14px 16px;margin-bottom:18px;color:#fee2e2">
+  <strong style="color:#fff">⚠️ App bloquée détectée</strong>
+  <div id="rescue-detail" style="font-size:.85rem;margin-top:6px;opacity:.9"></div>
+  <div style="font-size:.85rem;margin-top:8px">→ Service Workers, caches et stockages ont été <strong>purgés automatiquement</strong>. Tu peux maintenant retourner à l'app via les liens ci-dessous.</div>
+</div>
 
 <div class="card">
   <div class="row"><span class="k">Hôte</span><span class="v" id="host">—</span></div>
@@ -64,6 +69,30 @@
 
 <script>
 (function(){
+  // ?stuck=1 from main.tsx watchdog → auto-purge SW+caches+storage and show banner.
+  try {
+    var qs = new URLSearchParams(location.search);
+    if (qs.get('stuck') === '1') {
+      var reason = qs.get('reason') || 'unknown';
+      var from = qs.get('from') || '';
+      var banner = document.getElementById('rescue-banner');
+      var detail = document.getElementById('rescue-detail');
+      if (banner) banner.style.display = 'block';
+      if (detail) detail.textContent = 'Source: ' + (from || 'inconnue') + ' — Cause: ' + reason;
+      // Auto-purge silently — no confirm dialog (user is already stuck).
+      var jobs = [];
+      if ('serviceWorker' in navigator) {
+        jobs.push(navigator.serviceWorker.getRegistrations().then(function(rs){return Promise.all(rs.map(function(r){return r.unregister().catch(function(){})}))}).catch(function(){}));
+      }
+      if (window.caches) {
+        jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k).catch(function(){})}))}).catch(function(){}));
+      }
+      try { localStorage.removeItem('__el_boot_retry_v1'); } catch(e){}
+      try { sessionStorage.removeItem('__el_boot_retry_v1'); } catch(e){}
+      Promise.all(jobs).then(function(){ console.log('[emergency] auto-purge complete after ?stuck=1'); });
+    }
+  } catch(e) {}
+
   document.getElementById('host').textContent = location.host;
   document.getElementById('url').textContent = location.href;
   document.getElementById('now').textContent = new Date().toISOString();

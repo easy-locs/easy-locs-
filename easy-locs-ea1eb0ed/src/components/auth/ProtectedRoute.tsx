@@ -54,7 +54,20 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (loading) return <InlineSkeleton />;
   if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
   if (!profileLoaded) return <InlineSkeleton />;
-  if (!emailVerified) return <Navigate to="/verify-email" replace />;
+  // Belt-and-suspenders for phone-OTP users: never bounce them to /verify-email.
+  // AuthContext.isPhoneUser already handles this, but if for any reason a user
+  // arrives here with a phone identity (or no email at all) we treat them as
+  // verified rather than trapping them in a redirect loop.
+  if (!emailVerified) {
+    const u = user as any;
+    const hasPhone = !!u?.phone;
+    const hasEmail = !!u?.email;
+    const phoneConfirmed = !!u?.phone_confirmed_at;
+    const phoneOnly = phoneConfirmed || (hasPhone && !hasEmail);
+    if (!phoneOnly) {
+      return <Navigate to="/verify-email" replace />;
+    }
+  }
 
   const isAdminRoute = location.pathname.startsWith("/admin");
   const isBuilderRoute = location.pathname.startsWith("/builder");
