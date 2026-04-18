@@ -37,7 +37,6 @@ Deno.serve(async (req) => {
     });
 
     if (error) {
-      // Fallback to manual update if RPC fails or is missing (preserving Task #1018 logic)
       const { error: e1 } = await sb.schema("army").from("agent_instances")
         .update({ status: "terminated", terminated_at: new Date().toISOString() })
         .eq("id", body.agent_id);
