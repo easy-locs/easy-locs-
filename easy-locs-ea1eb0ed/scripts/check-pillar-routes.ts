@@ -44,6 +44,12 @@ const PILLAR_CONFIGS: Record<string, PillarConfig> = {
       "/forgot-password",
       "/reset-password",
       "/verify-email",
+      // Unified verification page introduced in Task #1025: handles BOTH
+      // email and phone verification and is the canonical destination
+      // /verify-email also redirects to. Lives at the bare /verify-account
+      // path (rather than /auth/verify-account) for back-compat with
+      // existing transactional emails and shared links.
+      "/verify-account",
       "/onboarding",
       "/install",
     ],
