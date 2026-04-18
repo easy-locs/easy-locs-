@@ -34,7 +34,7 @@ const DashboardLoader = () => (
 );
 
 const Dashboard = () => {
-  useUiEngine({ enabled: true, autoRun: true, observeDom: true });
+  useUiEngine({ enabled: true, autoRun: true, observeDom: false });
   const { t } = useI18n();
   return (
     <DashboardLayout>
