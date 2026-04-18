@@ -137,7 +137,6 @@ export async function requireSupreme(req: Request): Promise<Response | null> {
   return jsonResponse(req, { error: "forbidden_supreme_required" }, 403);
 }
 
->>>>>>> ec7185642b (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 /** Allow service role OR any authenticated user. */
 export async function requireAuthenticated(req: Request): Promise<Response | null> {
@@ -162,13 +161,15 @@ export async function requireServiceOrSupreme(req: Request): Promise<Response | 
 }
 
 =======
->>>>>>> 6befb4644f (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
 =======
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 >>>>>>> eb2660a6ac (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 878fbaa58a (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+=======
+>>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+>>>>>>> 5d35bf2156 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 export function jsonResponse(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
