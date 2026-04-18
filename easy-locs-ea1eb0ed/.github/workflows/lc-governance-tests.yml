@@ -32,6 +32,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Task #991 — guard against duplicated <Route path="..."> declarations
+      # sneaking back in across src/routes/*.routes.tsx. Cheap to run and
+      # gives a clear, targeted error before the heavier vitest suite runs.
+      - name: Check route uniqueness
+        run: npm run check:route-uniqueness
+
       # The full vitest suite (`npm test`) includes the LC1..LC9 governance
       # gates. A red test here BLOCKS the merge — see LC9 (#879) for the
       # contract documented in replit.md ("Level-C governance allow-list").
