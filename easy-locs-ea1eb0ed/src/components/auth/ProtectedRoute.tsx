@@ -91,16 +91,39 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   // We check email and phone separately (rather than the legacy combined
   // `emailVerified` boolean) so it is impossible to bounce a phone-verified
   // user to /verify-account simply because they happen to have an email
-  // string on the user record. Both `emailConfirmed` and `phoneVerified`
-  // come from confirmed signals only (`email_confirmed_at`,
-  // `phone_confirmed_at`, or the explicit `signup_method=phone` metadata
-  // tag set by our own signup pipeline) — there is intentionally no
-  // permissive identity-only fallback here.
+  // string on the user record. We also keep a defensive fallback for
+  // accounts that arrived before Supabase began stamping
+  // `phone_confirmed_at` — those are recognized via the `signup_method`
+  // metadata tag (already folded into `phoneVerified`) or, last-resort,
+  // a phone identity with no email at all (task #1002 + #1025).
   if (!emailConfirmed && !phoneVerified) {
-    // Unified verification flow — /verify-account handles BOTH email and
-    // phone cases and auto-routes verified users to /dashboard. The old
-    // /verify-email route now redirects here as well for back-compat.
-    return <Navigate to="/verify-account" replace />;
+    // Defensive fallback for legacy phone-only accounts that arrived
+    // before Supabase began stamping `phone_confirmed_at` and never had
+    // `signup_method=phone` written either (task #1002 + #1025). Such
+    // accounts are recognized by having a phone identity and no email at
+    // all — let them through so they aren't trapped in the verification
+    // loop. Every other unverified user goes through /verify-account.
+    const u = user as { phone?: string | null; email?: string | null; phone_confirmed_at?: string | null };
+    const hasPhoneIdentity = !!u?.phone;
+    const hasEmailIdentity = !!u?.email;
+    const isPhoneOnlyAccount = hasPhoneIdentity && !hasEmailIdentity;
+    if (!isPhoneOnlyAccount) {
+      // Unified verification flow — /verify-account handles BOTH email and
+      // phone cases and auto-routes verified users to /dashboard. The old
+      // /verify-email route now redirects here as well for back-compat.
+      //
+      // Carry `from` + an explicit `reason` so the redirect is no longer
+      // silent: any debugging (and the destination page) can see *why*
+      // the user was bounced (task #1049 acceptance: "no silent redirect
+      // away from /dashboard").
+      return (
+        <Navigate
+          to="/verify-account"
+          replace
+          state={{ from: location, reason: "verification-required" }}
+        />
+      );
+    }
   }
 
   const isAdminRoute = location.pathname.startsWith("/admin");
