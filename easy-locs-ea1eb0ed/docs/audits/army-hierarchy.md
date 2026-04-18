@@ -47,7 +47,14 @@ Chief Orchestrator
 
 ### Edge functions
 
-Every function calls `assertNotKilled()` first and `hasPermission()` second.
+Every function calls `requireAuthenticated()` or `requireSupreme()` at
+the boundary, then `assertNotKilled()` and `hasPermission()` before any
+write. `agent-spawn` and `agent-heal` are the only callers allowed to
+create agent instances — both go through the shared `spawnAgent()`
+primitive. The autonomous `army-tick` is invoked once per minute by
+`pg_cron` (when `pg_net` + `pg_cron` are present), so a single order
+issued from the cockpit travels the entire chain without any further
+manual call.
 
 ### Reproduction (8 conditions, RPC `army.can_spawn`)
 1. Kill switch off.

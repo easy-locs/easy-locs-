@@ -3,13 +3,14 @@
 // automatically (via DB trigger).
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logMessage,
-  preflight,
+  preflight, requireAuthenticated,
 } from "../_shared/army.ts";
 
 interface Body { task_id: string; }
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
+  const denied = await requireAuthenticated(req); if (denied) return denied;
   try {
 
     const body = (await req.json()) as Body;
