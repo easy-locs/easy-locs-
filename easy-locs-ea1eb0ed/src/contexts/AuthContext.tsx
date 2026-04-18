@@ -592,6 +592,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => clearInterval(interval);
   }, []);
 
+  // Phone-OTP detection (defensive — never trap phone users on /verify-email).
   // A phone-OTP user is verified once Supabase has stamped `phone_confirmed_at`
   // (PhoneOTPFlow → verifyOtp). The legacy `signup_method === "phone"` metadata
   // flag is not consistently written across signup paths, so relying on it
