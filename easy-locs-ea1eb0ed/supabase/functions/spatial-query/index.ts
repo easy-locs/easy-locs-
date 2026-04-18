@@ -5,7 +5,7 @@ import { withEdgeLogging } from "../_shared/with-logging.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 const ALLOWED_ENTITY_TYPES = new Set([

@@ -6,7 +6,7 @@ const logStep = (step: string, details?: unknown) =>
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, verif-hash",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, verif-hash, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 Deno.serve(withEdgeLogging("mobile-money-webhook", async (req, logger) => {

@@ -9,7 +9,7 @@ import { verifyHmacSha256, constantTimeEqual } from "../_shared/webhook-signatur
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-signature, x-webhook-secret",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-signature, x-webhook-secret, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
