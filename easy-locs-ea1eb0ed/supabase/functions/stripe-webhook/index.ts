@@ -4,7 +4,7 @@ import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
 };
 
 const webhookLogger = createEdgeLogger("stripe-webhook");
