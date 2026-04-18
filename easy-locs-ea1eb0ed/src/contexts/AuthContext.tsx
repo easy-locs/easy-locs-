@@ -602,6 +602,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         logAudit({ action: "user_logout" });
         void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
         clearReferralCaches();
+        queryClient.clear();
       }
       // Drop any cached role/admin lookup so the next render reflects the
       // new session immediately (sign-in, sign-out, token refresh, user swap).
@@ -678,6 +679,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signOut().catch((err) => {
       structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
     });
+    // Drop the previous user's TanStack Query cache so the next user (or the
+    // anonymous session that follows) cannot briefly see stale data hydrated
+    // from the prior session (orders, wallet balance, profile, etc.).
+    queryClient.clear();
     setUser(null);
     setSession(null);
     setOrgId(null);
