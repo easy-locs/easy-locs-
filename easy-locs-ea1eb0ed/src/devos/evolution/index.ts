@@ -32,6 +32,7 @@ export {
   countActive,
   makeContentHash,
   makeProposalId,
+  hydrateRegistry,
 } from './registry';
 
 export {
@@ -50,6 +51,7 @@ export {
   buildPerformanceImpact,
   isPaused,
   getRejectionStreak,
+  hydrateEvents,
 } from './monitoring';
 
 export {
@@ -64,6 +66,7 @@ export {
   markFailed,
   markRolledBack,
   recordSuggested,
+  hydrateProposals,
 } from './approval';
 
 export { auditAgent } from './agents/audit-agent';
