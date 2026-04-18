@@ -1,1 +1,723 @@
-[]
+[
+  {
+    "date": "2026-04-18T03:00:37Z",
+    "commit": "f711051818",
+    "branch": "production",
+    "trigger": "manual-prod-baseline",
+    "total": 324,
+    "passed": 20,
+    "failed": 141,
+    "flaky": 0,
+    "skipped": 163,
+    "durationMs": 1477355,
+    "passRate": 6.17,
+    "flakyTests": [],
+    "failedTests": [
+      {
+        "file": "01-login.spec.ts",
+        "title": "renders login heading and three mode tabs (Phone, Password, OTP)",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "Password tab reveals email and password inputs with correct attributes",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "typing credentials binds values to email and password fields",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "invalid credentials show error toast and remain on login page",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "empty email field prevents form submission via HTML validation",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "empty password field prevents form submission via HTML validation",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "submit button disables or shows spinner during authentication attempt",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "'Create Account' link navigates to signup page",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "forgot password link navigates to forgot-password page",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "Phone tab shows tel input for phone number entry",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "OTP tab shows email input and verification flow",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "renders login heading and three mode tabs (Phone, Password, OTP)",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "Password tab reveals email and password inputs with correct attributes",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "typing credentials binds values to email and password fields",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "invalid credentials show error toast and remain on login page",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "empty email field prevents form submission via HTML validation",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "empty password field prevents form submission via HTML validation",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "submit button disables or shows spinner during authentication attempt",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "'Create Account' link navigates to signup page",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "forgot password link navigates to forgot-password page",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "Phone tab shows tel input for phone number entry",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "01-login.spec.ts",
+        "title": "OTP tab shows email input and verification flow",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "renders Phone and Email mode tabs",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "clicking Email tab reveals name, email, password fields with required attribute",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "typed values bind to name, email, and password fields",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "submitting with weak password (no uppercase/digit) shows destructive toast",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "login link navigates to /login with h1 visible",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "Phone tab renders phone number input for signup",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "empty name prevents signup form from submitting",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "empty email prevents signup form from submitting",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "submit button shows loading or disabled state after clicking",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "signup form with valid strong password submits and shows response",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "switching between Phone and Email tabs changes visible form fields",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "renders Phone and Email mode tabs",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "clicking Email tab reveals name, email, password fields with required attribute",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "typed values bind to name, email, and password fields",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "submitting with weak password (no uppercase/digit) shows destructive toast",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "login link navigates to /login with h1 visible",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "Phone tab renders phone number input for signup",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "empty name prevents signup form from submitting",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "empty email prevents signup form from submitting",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "submit button shows loading or disabled state after clicking",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "signup form with valid strong password submits and shows response",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "02-signup.spec.ts",
+        "title": "switching between Phone and Email tabs changes visible form fields",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "03-navigation-pillars.spec.ts",
+        "title": "landing page has a <nav> element",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "03-navigation-pillars.spec.ts",
+        "title": "landing page navbar has ThemeSwitcher button with aria-label",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "03-navigation-pillars.spec.ts",
+        "title": "landing page has a <nav> element",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "03-navigation-pillars.spec.ts",
+        "title": "landing page navbar has ThemeSwitcher button with aria-label",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "marketplace renders seeded property listing cards",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "seeded listing title is visible in marketplace",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "clicking a listing navigates to detail page with property heading",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail displays seeded price with currency",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail displays images or media gallery",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail has Book/Reserve or Contact action button",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "full journey: marketplace → listing detail → click Book → booking UI appears",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "marketplace renders seeded property listing cards",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "seeded listing title is visible in marketplace",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "clicking a listing navigates to detail page with property heading",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail displays seeded price with currency",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail displays images or media gallery",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "property detail has Book/Reserve or Contact action button",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "08-booking.spec.ts",
+        "title": "full journey: marketplace → listing detail → click Book → booking UI appears",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "renders explore page with content sections",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "radar search input accepts typed query and retains value",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace page loads property listings (seeded)",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace search input filters listings using seeded city",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace filter controls open and contain options",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "search results navigate to property detail with content",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "renders explore page with content sections",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "radar search input accepts typed query and retains value",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace page loads property listings (seeded)",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace search input filters listings using seeded city",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "marketplace filter controls open and contain options",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "11-search.spec.ts",
+        "title": "search results navigate to property detail with content",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "12-notifications.spec.ts",
+        "title": "notifications page has visible heading or title",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "12-notifications.spec.ts",
+        "title": "notifications page has visible heading or title",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "13-pwa-install.spec.ts",
+        "title": "document has theme-color meta tag with value",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "13-pwa-install.spec.ts",
+        "title": "document has theme-color meta tag with value",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "14-language-switch.spec.ts",
+        "title": "login form labels render with translated text from i18n",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "14-language-switch.spec.ts",
+        "title": "signup email mode renders 3 form labels with translated text",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "14-language-switch.spec.ts",
+        "title": "login form labels render with translated text from i18n",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "14-language-switch.spec.ts",
+        "title": "signup email mode renders 3 form labels with translated text",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "ThemeSwitcher dropdown opens with Light, Dark, System options",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "selecting Dark sets class='dark' on <html>",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "selecting Light sets class='light' on <html>",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "Orbit Accent options (Gold, Blue) are shown in dropdown",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "ThemeSwitcher dropdown opens with Light, Dark, System options",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "selecting Dark sets class='dark' on <html>",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "selecting Light sets class='light' on <html>",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "15-dark-mode.spec.ts",
+        "title": "Orbit Accent options (Gold, Blue) are shown in dropdown",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at mobile",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at mobile",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at mobile",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at mobile",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at mobile",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at mobile",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at mobile",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at mobile",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at mobile",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at mobile",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at tablet",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at tablet",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at tablet",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at tablet",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at tablet",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at tablet",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at tablet",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at tablet",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at tablet",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at tablet",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at desktop",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at desktop",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at desktop",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at desktop",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at desktop",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage renders without visual regression at desktop",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login renders without visual regression at desktop",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "signup renders without visual regression at desktop",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "explore renders without visual regression at desktop",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace renders without visual regression at desktop",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage has visible content at mobile viewport",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage has visible navigation at desktop viewport",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login page renders form at all viewports without overflow",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace page renders cards at tablet viewport",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage has visible content at mobile viewport",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "homepage has visible navigation at desktop viewport",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "login page renders form at all viewports without overflow",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "16-visual-regression.spec.ts",
+        "title": "marketplace page renders cards at tablet viewport",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "17-cross-pillar-wallet-booking.spec.ts",
+        "title": "booking:completed triggers wallet:deduct on platform bus",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "17-cross-pillar-wallet-booking.spec.ts",
+        "title": "wallet balance cache invalidated after booking:completed",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "17-cross-pillar-wallet-booking.spec.ts",
+        "title": "booking:completed triggers wallet:deduct on platform bus",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "17-cross-pillar-wallet-booking.spec.ts",
+        "title": "wallet balance cache invalidated after booking:completed",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "18-cross-pillar-orbit-radar.spec.ts",
+        "title": "orbit:thread_created invalidates radar-listings cache",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "18-cross-pillar-orbit-radar.spec.ts",
+        "title": "radar:location_shared emits tracking:started via bridge",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "18-cross-pillar-orbit-radar.spec.ts",
+        "title": "orbit:thread_created invalidates radar-listings cache",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "18-cross-pillar-orbit-radar.spec.ts",
+        "title": "radar:location_shared emits tracking:started via bridge",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "19-cross-pillar-legacy-events.spec.ts",
+        "title": "ORDER_CONFIRMED legacy event triggers order:confirmed on bus",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "19-cross-pillar-legacy-events.spec.ts",
+        "title": "PAYMENT_SUCCESS legacy event triggers wallet:payment_success",
+        "project": "chromium-desktop"
+      },
+      {
+        "file": "19-cross-pillar-legacy-events.spec.ts",
+        "title": "ORDER_CONFIRMED legacy event triggers order:confirmed on bus",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "19-cross-pillar-legacy-events.spec.ts",
+        "title": "PAYMENT_SUCCESS legacy event triggers wallet:payment_success",
+        "project": "chromium-mobile"
+      },
+      {
+        "file": "20-service-worker-cache-swap.spec.ts",
+        "title": "fresh deploy replaces old SW caches and renders new build on first reload",
+        "project": "chromium-desktop"
+      }
+    ]
+  }
+]
