@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { NAV_TABS_CONFIG, HIDE_NAV_PREFIXES } from "@/config/navigation";
+import { NAV_TABS_CONFIG, shouldHideBottomNav } from "@/config/navigation";
 import { tc } from "@/lib/i18n-canonical";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { onModuleEnter, onModuleLeave } from "@/engines/core/module-intelligence";
@@ -41,7 +41,7 @@ function MainBottomNav() {
   }, [pathname]);
 
   if (!user) return null;
-  if (HIDE_NAV_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+  if (shouldHideBottomNav(pathname)) return null;
 
   return (
     <nav

@@ -20,7 +20,7 @@ import { executeStep, executeStepSync, type StepContext } from "./step-runner";
 import { runInputLayer } from "./input";
 import { runGeoLayer, runGeoLayerWithNominatim } from "./geo";
 import { runTaxonomyLayer, runTaxonomyLayerWithLLM } from "./taxonomy";
-import { runMediaLayer } from "./media";
+import { runMediaLayer, downloadAndHostImages as dlHostBatch } from "./media";
 import { runQualityLayer } from "./quality";
 import { runGovernanceLayer } from "./governance";
 import { buildAuditTrace } from "./output/output.audit_trace.build";
@@ -174,8 +174,6 @@ export async function runPipeline(rawParams: {
     // Step 8: Media layer — download, host & optimize (async, soft-fail)
     const mediaStep = await executeStep(`media.layer[${i}]`, { photoCount: canonical.photos.length }, softCtx("media", 8), async () => {
       const mediaResult = await runMediaLayer(canonical.photos, canonical.entityId);
-
-      const { downloadAndHostImages: dlHostBatch } = await import("./media/media.download.service");
 
       const menuUrls: string[] = [];
       const menuIndexes: { idx: number; field: string }[] = [];
