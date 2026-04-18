@@ -105,6 +105,8 @@ There is **no semantic duplication** — each markdown has a distinct, non-overl
 ## 3. Data Duplicates (Supabase)
 
 > Read-only audit only. No DDL or DML in this task.
+>
+> **Row counts:** the agent environment for Task #1032 does not have direct read credentials to the production Supabase project (only `SUPABASE_ACCESS_TOKEN` for the management API and `SUPABASE_DB_PASSWORD` for migrations are exposed). Live row-count queries should be run from a privileged dev session against the prod read replica with the snippets in §3.6 below; the recommendations in §3.1–3.5 stand regardless of the exact magnitudes because the structural duplication is what determines the consolidation plan.
 
 ### 3.1 Profiles family
 
@@ -138,7 +140,39 @@ Code references both `org_members` and `organization_members`, and both `orgs` a
 
 `src/repositories/` contains four tenant repos: `tenant.repository.ts`, `tenant-docs.repository.ts`, `tenant-portal.repository.ts`, `tenant-requests.repository.ts`. These are **distinct concerns** (entity, documents, portal session, requests) and not duplicates — keep as-is.
 
-### 3.5 Migrations
+### 3.6 Row-count queries to run from a privileged session
+
+Run the following from a privileged (read-only) Supabase SQL session and paste the results into Tasks #126/#224/#227 as input data. They were intentionally **not** executed in this task because Task #1032 has no direct DB credentials.
+
+```sql
+-- 3.1 profiles family
+SELECT 'identity.profiles' AS t, count(*) FROM identity.profiles
+UNION ALL SELECT 'public.user_profiles', count(*) FROM public.user_profiles
+UNION ALL SELECT 'orbit.orbit_profiles_v2', count(*) FROM orbit.orbit_profiles_v2;
+
+-- Overlap between identity.profiles and public.user_profiles
+SELECT count(*) AS shared_user_ids
+FROM identity.profiles ip
+JOIN public.user_profiles up ON up.user_id = ip.id;
+
+-- 3.2 listings family
+SELECT listing_type, count(*)
+FROM public.listings
+GROUP BY listing_type
+ORDER BY count(*) DESC;
+
+SELECT 'public.listings' AS t, count(*) FROM public.listings
+UNION ALL SELECT 'public.real_estate_listings',
+  COALESCE((SELECT count(*) FROM public.real_estate_listings), 0);
+
+-- 3.3 members / org tables
+SELECT 'public.org_members' AS t, count(*) FROM public.org_members
+UNION ALL SELECT 'public.organization_members', count(*) FROM public.organization_members
+UNION ALL SELECT 'public.orgs', count(*) FROM public.orgs
+UNION ALL SELECT 'public.organizations', count(*) FROM public.organizations;
+```
+
+### 3.7 Migrations
 
 **Severity: LOW (operational, not data integrity).**
 
