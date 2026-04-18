@@ -2,7 +2,7 @@
 // Refuses awaiting_approval / killed / forbidden tasks.
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logIncident,
-  logMessage, preflight, recordMetric, requireAuthenticated,
+  logMessage, preflight, recordMetric, requireServiceOrSupreme,
 } from "../_shared/army.ts";
 
 interface Body { task_id: string; agent_id?: string; }
@@ -14,7 +14,7 @@ const FORBIDDEN_TYPES = new Set([
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = await requireAuthenticated(req); if (denied) return denied;
+  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
   const t0 = Date.now();
   try {
 
