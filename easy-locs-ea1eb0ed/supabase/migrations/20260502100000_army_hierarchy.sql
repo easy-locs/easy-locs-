@@ -798,6 +798,7 @@ begin
          where status = 'running' and started_at < now() - interval '20 minutes';
       $cron$
     );
+
     -- Autonomous tick — runs every minute. army.run_tick() validates
     -- that supabase_url + service_role_key are present (and aborts
     -- otherwise with a logged incident) so this schedule is safe to
