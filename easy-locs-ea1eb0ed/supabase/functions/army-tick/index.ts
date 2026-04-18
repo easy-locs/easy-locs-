@@ -13,10 +13,14 @@
 import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight,
 <<<<<<< HEAD
+<<<<<<< HEAD
   requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
 =======
   requireAuthenticated, ARMY_DOMAINS,
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+>>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
@@ -39,12 +43,18 @@ async function call(name: string, body: unknown): Promise<unknown> {
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
 <<<<<<< HEAD
+<<<<<<< HEAD
   const deniedService = await requireServiceOrSupreme(req);
   const deniedAuth = await requireAuthenticated(req);
   if (deniedService && deniedAuth) return deniedService;
 =======
   const denied = await requireAuthenticated(req); if (denied) return denied;
 >>>>>>> edfa248623 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+  const deniedService = await requireServiceOrSupreme(req);
+  const deniedAuth = await requireAuthenticated(req);
+  if (deniedService && deniedAuth) return deniedService;
+>>>>>>> 9ab8d89529 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
     const sb = armyClient();
     await assertNotKilled(sb);
