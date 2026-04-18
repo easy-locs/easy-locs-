@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-import { claimIdempotencyKey } from "../_shared/idempotency.ts";
+import { claimIdempotencyKey, finalizeIdempotencyKey } from "../_shared/idempotency.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -146,22 +146,34 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
 
     logger.info("dispatch_started", { userId: user_id, event_type, priority, channels: payload.channels });
 
-    if (payload.dedupe_key) {
-      // Task #1004 — unified idempotency layer. Replays of the same
-      // (user, event_type, dedupe_key) within the TTL never produce a
-      // second notification, even if the prior in_app row was cleared.
+    // Task #1004 — unified idempotency layer (claim + finalize).
+    // Replays of the same (user, event_type, dedupe_key) within the TTL
+    // return the prior result instead of re-executing.
+    const idemNamespace = "notification-dispatcher";
+    const idemKey = payload.dedupe_key
+      ? `${user_id}:${event_type}:${payload.dedupe_key}`
+      : null;
+
+    if (idemKey) {
       const claim = await claimIdempotencyKey(
         supabase,
-        "notification-dispatcher",
-        `${user_id}:${event_type}:${payload.dedupe_key}`,
+        idemNamespace,
+        idemKey,
         { user_id, event_type, dedupe_key: payload.dedupe_key },
         60 * 60 * 24, // 24h TTL
       );
-      if (!claim.isNew) {
-        logger.info("deduplicated", { dedupe_key: payload.dedupe_key });
+      if (!claim.isNew && claim.status === "succeeded") {
+        logger.info("deduplicated_replay", { dedupe_key: payload.dedupe_key });
         return new Response(
-          JSON.stringify({ status: "deduplicated", dedupe_key: payload.dedupe_key }),
+          JSON.stringify({ status: "deduplicated", replayed: true, prior: claim.result }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!claim.isNew && claim.status === "pending") {
+        logger.info("deduplicated_inflight", { dedupe_key: payload.dedupe_key });
+        return new Response(
+          JSON.stringify({ status: "in_flight", dedupe_key: payload.dedupe_key }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 }
         );
       }
     }
@@ -390,18 +402,38 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
       channels: Object.keys(results),
     });
 
+    const responseBody = {
+      status: "dispatched",
+      channels: results,
+      success_count: successCount,
+      fail_count: failCount,
+    };
+
+    if (idemKey) {
+      await finalizeIdempotencyKey(supabase, idemNamespace, idemKey, "succeeded", responseBody);
+    }
+
     return new Response(
-      JSON.stringify({
-        status: "dispatched",
-        channels: results,
-        success_count: successCount,
-        fail_count: failCount,
-      }),
+      JSON.stringify(responseBody),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     logger.error("dispatch_error", { error: e as Error });
+    // Best-effort: release the idempotency claim on failure so retries
+    // can proceed (instead of stranding the key in `pending` for 24h).
+    try {
+      const payloadForFail: DispatchPayload | null = await req.clone().json().catch(() => null);
+      if (payloadForFail?.dedupe_key && payloadForFail.user_id && payloadForFail.event_type) {
+        await finalizeIdempotencyKey(
+          supabase,
+          "notification-dispatcher",
+          `${payloadForFail.user_id}:${payloadForFail.event_type}:${payloadForFail.dedupe_key}`,
+          "failed",
+          { error: msg },
+        );
+      }
+    } catch { /* never let cleanup mask the original error */ }
     return new Response(
       JSON.stringify({ error: msg }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
