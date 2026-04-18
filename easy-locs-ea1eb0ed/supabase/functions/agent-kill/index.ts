@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
     const sb = armyClient();
     const reason = body.reason ?? "manual";
 
+<<<<<<< HEAD
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
@@ -44,6 +45,11 @@ Deno.serve(async (req) => {
     });
 
     return jsonResponse(req, { ok: true, result: data });
+=======
+    // Prefer the atomic RPC (Task #998); fall back to manual updates if
+    // the RPC is unavailable (preserves Task #1018 behavior). Either
+    // way, the kill is recorded via logIncident.
+>>>>>>> d9df6004e2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   } catch (e) {
     return jsonResponse(req, { error: (e as Error).message }, 500);
   }
