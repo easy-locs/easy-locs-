@@ -110,6 +110,24 @@ const Login = () => {
     isPlatformAuthenticatorAvailable().then(setBiometricLoginAvailable);
   }, []);
 
+  // Friendly notice when ProtectedRoute bounced an unauthenticated user
+  // here. Read-once + clear so it never fires twice. (#1069 deep audit:
+  // "no silent redirects, no hidden friction").
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("el_login_reason");
+      if (!raw) return;
+      sessionStorage.removeItem("el_login_reason");
+      const parsed = JSON.parse(raw) as { reason?: string };
+      if (parsed?.reason === "auth-required") {
+        toast({
+          title: t("auth.signin_required_title") || "Please sign in to continue",
+          description: t("auth.signin_required_desc") || "We'll bring you right back to where you were.",
+        });
+      }
+    } catch { /* malformed payload — ignore */ }
+  }, [toast, t]);
+
   useEffect(() => {
     if (!authProviders.loading && !authProviders.phone && mode === "phone") {
       setMode("password");

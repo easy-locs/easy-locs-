@@ -54,7 +54,18 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const ready = useProfileTimeout(profileLoaded, user?.id);
 
   if (loading) return <InlineSkeleton />;
-  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (!user) {
+    // Surface *why* we are sending them to /login. The Login page reads
+    // this flag once and shows a friendly toast — eliminates the silent
+    // redirect that previously felt like a dead-end (task #1069 deep audit).
+    try {
+      sessionStorage.setItem(
+        "el_login_reason",
+        JSON.stringify({ reason: "auth-required", from: location.pathname + location.search }),
+      );
+    } catch { /* storage disabled — toast simply won't fire */ }
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
   if (!ready) return <InlineSkeleton />;
 
   // Verification gate — explicit, channel-by-channel.

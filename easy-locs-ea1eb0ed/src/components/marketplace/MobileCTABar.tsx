@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Phone, Send, Mail, Share2 } from "lucide-react";
 import WhatsAppIcon from "@/components/ui/WhatsAppIcon";
@@ -19,6 +20,7 @@ interface MobileCTABarProps {
 
 export default function MobileCTABar({ phone, whatsapp, telegram, email, listingTitle, listingUrl, listingPrice, onBook, priceLine }: MobileCTABarProps) {
   const { t } = useI18n();
+  const navigate = useNavigate();
 
   const ctx: ListingContext = {
     title: listingTitle,
@@ -64,7 +66,7 @@ export default function MobileCTABar({ phone, whatsapp, telegram, email, listing
             <Button size="icon" variant="outline" className="h-11 w-11" onClick={async () => {
               const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
               const path = await navigateToOrbitThread({ targetEmail: email, targetName: "Provider" });
-              if (path) window.location.href = path;
+              if (path) navigate(path);
             }}>
               <Phone className="h-4 w-4" />
             </Button>

@@ -4,6 +4,7 @@
  * Actions are fully wired: Go There, Order Here, Explore Nearby.
  */
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Navigation, ShoppingBag, Car,
@@ -261,7 +262,7 @@ export function MapPlaceCard({
                       "radar",
                     );
                     // Navigate to merchant storefront
-                    window.location.href = `/s/${m.slug}`;
+                    navigate(`/s/${m.slug}`);
                   }}
                   className="w-full flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-muted/40 transition-colors text-left"
                 >

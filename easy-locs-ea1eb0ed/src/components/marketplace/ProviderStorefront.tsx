@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { fetchPublicProviders, fetchPublicServices, fetchProviderReviews, insertBooking } from "@/repositories/marketplace.repository";
 import { AppCard, CardContent } from "@/components/ui/AppCard";
@@ -233,7 +233,7 @@ export default function ProviderStorefront() {
                   <Button size="sm" variant="outline" onClick={async () => {
                     const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
                     const path = await navigateToOrbitThread({ targetEmail: provider.email, targetName: provider.display_name || "Provider" });
-                    if (path) window.location.href = path;
+                    if (path) navigate(path);
                   }}>
                     <MessageCircle className="h-4 w-4 mr-1.5" /> Message
                   </Button>
@@ -242,7 +242,7 @@ export default function ProviderStorefront() {
                   <Button size="sm" variant="outline" onClick={async () => {
                     const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
                     const path = await navigateToOrbitThread({ targetEmail: provider.email, targetName: provider.display_name || "Provider" });
-                    if (path) window.location.href = path;
+                    if (path) navigate(path);
                   }}>
                     <Phone className="h-4 w-4 mr-1.5" /> {t("mp.call_free") || "Call"}
                   </Button>

@@ -291,7 +291,7 @@ const ListingContactButtons = ({
                 trackClick("message", trackOpts);
                 const { navigateToOrbitThread } = await import("@/lib/orbit/navigate-to-thread");
                 const path = await navigateToOrbitThread({ targetEmail: contactEmail, targetName: providerName || "Provider" });
-                if (path) window.location.href = path;
+                if (path) navigate(path);
               }}
               className="flex items-center justify-center gap-2 bg-accent/10 text-accent hover:bg-accent/20 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors min-h-[44px]"
             >
