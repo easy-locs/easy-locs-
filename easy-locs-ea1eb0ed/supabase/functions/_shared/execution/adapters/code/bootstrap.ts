@@ -21,9 +21,12 @@ import { createCodeEditVerifier } from "./code-edit-verifier.ts";
 import { MemoryFs, type SandboxFs } from "./sandbox.ts";
 import { createDenoWorkerWorkspaceProvider } from "./worker-sandbox.ts";
 import { CODE_DOMAIN, CODE_TASK_TYPES } from "./types.ts";
+<<<<<<< HEAD
 // LC6 (#877) — dev-verifier rejects code.edit when build/test/typecheck fail.
 import { createDevVerifier } from "../../verifiers/dev-verifier.ts";
 import { composeVerifiers } from "../../verifiers/compose-verifiers.ts";
+=======
+>>>>>>> 72f31d38c (LC1 (#871): sandboxed code.edit tool adapter)
 
 export interface CodeEditBootstrapOverrides {
   /** Inject a workspace provider; default returns an empty MemoryFs. */
@@ -142,6 +145,7 @@ export async function bootstrapCodeEditAdapter(
   const workspaces = overrides.workspaces ?? defaultWorkspaceProvider(env);
   const agentQuotas = overrides.agentQuotas ?? createSupabaseAgentQuotaProvider(sb);
 
+<<<<<<< HEAD
   // LC6: dev-verifier first (build/test/typecheck), then LC1 shape verifier.
   // Composition is required because the registry binds exactly one verifier
   // per (domain, taskType); fail-fast ordering matches the registration list.
@@ -156,6 +160,10 @@ export async function bootstrapCodeEditAdapter(
       createDevVerifier({ taskType: CODE_TASK_TYPES.EDIT, requireAll: true }),
       createCodeEditVerifier(),
     ], { domain: CODE_DOMAIN, taskType: CODE_TASK_TYPES.EDIT }),
+=======
+  globalVerifierRegistry.register(
+    createCodeEditVerifier(),
+>>>>>>> 72f31d38c (LC1 (#871): sandboxed code.edit tool adapter)
     { overwrite: true },
   );
   globalAdapterRegistry.register(
