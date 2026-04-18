@@ -413,7 +413,27 @@ AS $$
        AND NOT EXISTS (SELECT 1 FROM timeouts WHERE timeouts.task_id = a.id)
        AND NOT EXISTS (SELECT 1 FROM no_heartbeat WHERE no_heartbeat.task_id = a.id)
   ),
-  -- 4. Locks held past TTL with the underlying task still active
+  -- 4. Orphan: in-flight (`running`) row with no owning worker / no lock.
+  --    Detects rows that lost their executor (worker crash before
+  --    heartbeat/lock release). Distinct from `no_heartbeat` because it
+  --    fires immediately rather than waiting for the heartbeat window.
+  orphan_running AS (
+    SELECT a.id AS task_id, a.type, a.domain, a.status, a.attempt_count, a.max_attempts,
+           'orphan_no_owner'::TEXT AS rule,
+           jsonb_build_object(
+             'lock_key', a.lock_key,
+             'locked_by', a.locked_by,
+             'started_at', a.started_at
+           ) AS evidence
+      FROM active a
+     WHERE a.status = 'running'
+       AND (a.lock_key IS NULL OR a.locked_by IS NULL)
+       AND COALESCE(a.started_at, a.stage_started_at, a.created_at) + INTERVAL '30 seconds' < now()
+       AND NOT EXISTS (SELECT 1 FROM timeouts    WHERE timeouts.task_id    = a.id)
+       AND NOT EXISTS (SELECT 1 FROM no_heartbeat WHERE no_heartbeat.task_id = a.id)
+       AND NOT EXISTS (SELECT 1 FROM no_progress  WHERE no_progress.task_id  = a.id)
+  ),
+  -- 5. Locks held past TTL with the underlying task still active
   lock_expired AS (
     SELECT a.id AS task_id, a.type, a.domain, a.status, a.attempt_count, a.max_attempts,
            'lock_ttl_expired'::TEXT AS rule,
@@ -433,6 +453,7 @@ AS $$
   SELECT * FROM timeouts
   UNION ALL SELECT * FROM no_heartbeat
   UNION ALL SELECT * FROM no_progress
+  UNION ALL SELECT * FROM orphan_running
   UNION ALL SELECT * FROM lock_expired
   LIMIT p_limit;
 $$;
@@ -569,7 +590,23 @@ AS $$
 DECLARE
   r RECORD;
   v_outcome TEXT;
+  v_lock_key BIGINT := hashtextextended('system.watchdog_tick.singleton', 0);
 BEGIN
+  -- Single-claimer / anti-stampede: a transaction-scoped advisory lock
+  -- ensures at most one tick reconciles candidates at any moment, even
+  -- under concurrent invocations from cron + manual + edge-function. The
+  -- lock is released automatically at COMMIT/ROLLBACK so a crashing tick
+  -- never poisons the next one (idempotent across restart). When the
+  -- lock can't be acquired, we return a single sentinel row so callers
+  -- can observe the skip without thinking the system is silent.
+  IF NOT pg_try_advisory_xact_lock(v_lock_key) THEN
+    out_action  := 'skipped_concurrent';
+    out_task_id := NULL;
+    out_rule    := NULL;
+    RETURN NEXT;
+    RETURN;
+  END IF;
+
   FOR r IN SELECT * FROM system.scan_stuck_tasks(p_limit) LOOP
     IF r.rule = 'timeout' THEN
       IF system.watchdog_fail_task(r.task_id, 'timeout', 'task exceeded max_duration_ms', r.evidence) THEN
