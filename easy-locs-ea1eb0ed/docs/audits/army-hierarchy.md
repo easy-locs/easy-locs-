@@ -49,10 +49,16 @@ Chief Orchestrator
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
 =======
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+
+<<<<<<< HEAD
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 | Function | Edge auth | Role | Purpose |
 | --- | --- | --- | --- |
 | `army-tick` | authenticated | - | Cron-driven dispatcher: walks every stage of the pipeline once |
@@ -65,6 +71,7 @@ Chief Orchestrator
 | `agent-spawn` | **Supreme** | privileged | **Sole** agent creation path (calls `spawnAgent()`) |
 | `agent-heal` | **Supreme** | privileged | Recycle a crashed agent (calls `spawnAgent()`) |
 | `agent-kill` | **Supreme** | Supreme | Terminate agent + cancel its in-flight tasks |
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 =======
@@ -88,6 +95,10 @@ Chief Orchestrator
 >>>>>>> 190a2571d1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
 >>>>>>> 6e8ec41af2 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 7d67375537 (Task #998 — Hierarchical agent army (Command Center + Supabase))
+=======
+>>>>>>> 013bce0790 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 
 
 Every function calls `requireAuthenticated()` or `requireSupreme()` at
