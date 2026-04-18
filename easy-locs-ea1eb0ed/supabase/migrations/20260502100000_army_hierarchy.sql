@@ -340,6 +340,9 @@ begin
   end if;
 end $$;
 
+-- Seed the 6 canonical queues (logical only — table is shared)
+-- 'q_high_command','q_product','q_growth','q_ops','q_security','q_repair'
+
 -- ----------------------------------------------------------------------------
 -- 11. RPCs — kill switch, approve/reject, spawn-validation
 -- ----------------------------------------------------------------------------
@@ -782,6 +785,7 @@ revoke all on function army.run_tick() from public;
 grant execute on function army.run_tick() to service_role;
 
 -- pg_cron jobs (best-effort: skip if pg_cron unavailable)
+-- ----------------------------------------------------------------------------
 do $$
 begin
   if exists (select 1 from pg_extension where extname = 'pg_cron') then
