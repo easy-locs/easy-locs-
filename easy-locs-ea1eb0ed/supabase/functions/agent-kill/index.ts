@@ -14,14 +14,6 @@ Deno.serve(async (req) => {
     if (!body?.agent_id) return jsonResponse(req, { error: "agent_id required" }, 400);
     const sb = armyClient();
     const reason = body.reason ?? "manual";
-
-    // Task #998 uses an RPC for atomicity; Task #1018 uses individual updates + logIncident.
-    // We'll use the RPC if available, but keep the logIncident and supreme check from #1018.
-    // However, the instructions say "MERGE both sides keeping the maximum feature surface".
-    // The RPC might be doing exactly what the manual updates are doing. 
-    // Let's check the RPC first, but since I can't check the DB schema easily, 
-    // I will combine them such that we use the RPC for the state change but keep the extra logging/checks.
-
     const { data, error } = await sb.schema("army").rpc("kill_agent", {
       p_agent_id: body.agent_id, p_reason: reason,
     });
