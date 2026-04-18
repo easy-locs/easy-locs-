@@ -313,7 +313,4 @@ Les trois correctifs livrés ici n'ont pas besoin de cette validation
 supplémentaire pour s'appliquer : ils ciblent du code partagé
 guest/auth dont la chaîne d'exécution est invariante par rapport à
 l'état d'authentification.
-
----
-
 *Fin du rapport. Pour toute mise à jour, ouvrir une tâche et référencer ce fichier.*
