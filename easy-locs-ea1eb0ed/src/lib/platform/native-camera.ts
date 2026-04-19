@@ -1,4 +1,3 @@
-import { Camera, CameraResultType, CameraSource } from "@capacitor/camera";
 import type { Photo } from "@capacitor/camera";
 
 export interface CaptureOptions {
@@ -33,23 +32,25 @@ function isNative(): boolean {
   return !!(window as unknown as CapacitorWindow).Capacitor?.isNativePlatform?.();
 }
 
-function mapSource(source?: string): CameraSource {
-  switch (source) {
-    case "camera": return CameraSource.Camera;
-    case "photos": return CameraSource.Photos;
-    default: return CameraSource.Prompt;
-  }
-}
-
-function mapResultType(type?: string): CameraResultType {
-  switch (type) {
-    case "base64": return CameraResultType.Base64;
-    case "dataUrl": return CameraResultType.DataUrl;
-    default: return CameraResultType.Uri;
-  }
-}
-
 async function captureWithNative(options: CaptureOptions): Promise<CaptureResult> {
+  const { Camera, CameraResultType, CameraSource } = await import("@capacitor/camera");
+
+  function mapSource(source?: string) {
+    switch (source) {
+      case "camera": return CameraSource.Camera;
+      case "photos": return CameraSource.Photos;
+      default: return CameraSource.Prompt;
+    }
+  }
+
+  function mapResultType(type?: string) {
+    switch (type) {
+      case "base64": return CameraResultType.Base64;
+      case "dataUrl": return CameraResultType.DataUrl;
+      default: return CameraResultType.Uri;
+    }
+  }
+
   const photo: Photo = await Camera.getPhoto({
     quality: options.quality ?? 90,
     width: options.width,

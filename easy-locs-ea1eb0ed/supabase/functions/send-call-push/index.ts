@@ -1,14 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface CallPushPayload {
   receiver_user_id: string;
@@ -23,7 +18,7 @@ interface CallPushPayload {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -41,7 +36,7 @@ Deno.serve(async (req) => {
     if (!receiver_user_id || !call_id || !caller_name) {
       return new Response(
         JSON.stringify({ error: "receiver_user_id, call_id, and caller_name are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -61,7 +56,7 @@ Deno.serve(async (req) => {
       if (!participant) {
         return new Response(
           JSON.stringify({ error: "Not authorized: caller is not a participant in this conversation" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
     } else {
@@ -74,7 +69,7 @@ Deno.serve(async (req) => {
       if (!callLog || (callLog.caller_id !== callerUserId && callLog.callee_id !== callerUserId)) {
         return new Response(
           JSON.stringify({ error: "Not authorized: caller is not a participant in this call" }),
-          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
     }
@@ -134,19 +129,19 @@ Deno.serve(async (req) => {
       console.error("[send-call-push] Push invocation error:", invokeError);
       return new Response(
         JSON.stringify({ success: false, error: invokeError.message }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 502 }
       );
     }
 
     return new Response(
       JSON.stringify({ success: true, result }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("[send-call-push] Error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

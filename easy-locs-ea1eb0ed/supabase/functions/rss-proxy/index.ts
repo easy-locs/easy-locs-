@@ -1,12 +1,6 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
-};
 
 const CACHE_TTL_S = 600;
 const MAX_ITEMS = 25;
@@ -116,7 +110,7 @@ function parseRssXml(xml: string): ParsedArticle[] {
 Deno.serve(
   withEdgeLogging("rss-proxy", async (req, logger) => {
     if (req.method === "OPTIONS") {
-      return new Response(null, { headers: corsHeaders });
+      return new Response(null, { headers: getCorsHeaders(req) });
     }
 
   const routerCheck = requireRouterOrigin(req);
@@ -124,7 +118,7 @@ Deno.serve(
     if (req.method !== "GET") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -175,7 +169,7 @@ Deno.serve(
           }),
           {
             status: 502,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           },
         );
       }
@@ -215,7 +209,7 @@ Deno.serve(
             stale: true,
           }),
           {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           },
         );
       }
@@ -224,7 +218,7 @@ Deno.serve(
         JSON.stringify({ status: "error", error: message, items: [] }),
         {
           status: 502,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }

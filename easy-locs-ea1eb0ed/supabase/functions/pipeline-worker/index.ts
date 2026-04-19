@@ -1,14 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firewallCheck, guardedUpdate } from "../_shared/brain-firewall.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { runOrLog } from "../_shared/structured-error.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent',
-};
 
 const PIPELINE_STAGES = [
   "source", "classify", "clean", "normalize", "rebuild",
@@ -36,7 +32,7 @@ function isPlaceholder(url?: string | null): boolean {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -201,13 +197,13 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       success: true, processed, failed, stages: stageStats,
       enqueuedNew: unprocessed?.length ?? 0,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
 
   } catch (err) {
     console.error("[pipeline-worker] Error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

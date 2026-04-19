@@ -1,13 +1,8 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { hasAwsCredentials, sqsSendMessage } from "../_shared/aws-sdk-clients.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const AWS_ACCOUNT_ID = Deno.env.get("AWS_ACCOUNT_ID") || "";
 const AWS_REGION = Deno.env.get("AWS_REGION") || "eu-west-1";
@@ -27,7 +22,7 @@ function getQueueUrl(queueName: string): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -38,7 +33,7 @@ Deno.serve(async (req) => {
   if (!hasAwsCredentials() || !AWS_ACCOUNT_ID) {
     return new Response(
       JSON.stringify({ success: false, error: "AWS SQS not configured" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503 },
     );
   }
 
@@ -49,7 +44,7 @@ Deno.serve(async (req) => {
     if (!queue_name || !ALLOWED_QUEUES.has(queue_name)) {
       return new Response(
         JSON.stringify({ success: false, error: `Invalid queue: ${queue_name}` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 },
       );
     }
 
@@ -62,13 +57,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, messageId }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ success: false, error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 });

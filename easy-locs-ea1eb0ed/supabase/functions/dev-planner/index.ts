@@ -30,6 +30,7 @@
 
 // @ts-expect-error — Deno remote import resolved at edge runtime.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
   dispatchAiCompletion,
@@ -42,12 +43,6 @@ import {
   mergePlanIntoPayload,
   runDevPlanner,
 } from "../_shared/execution/types/dev-plan.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 function adaptOutcome(
   outcome: AiDispatchOutcome<AiCompletionOutput>,
@@ -123,7 +118,7 @@ Deno.serve(async (req: Request) => {
   const __qs = rejectQuerySecrets(req);
   if (__qs.rejected) return __qs.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   // @ts-expect-error — Deno global.
@@ -137,7 +132,7 @@ Deno.serve(async (req: Request) => {
   if (!authHeader) {
     return new Response(
       JSON.stringify({ error: "Unauthorized" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 
@@ -148,7 +143,7 @@ Deno.serve(async (req: Request) => {
   if (authError || !user) {
     return new Response(
       JSON.stringify({ error: "Invalid or expired token" }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 
@@ -160,7 +155,7 @@ Deno.serve(async (req: Request) => {
   if (!isAdmin) {
     return new Response(
       JSON.stringify({ error: "Admin role required to run the dev planner" }),
-      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 
@@ -170,14 +165,14 @@ Deno.serve(async (req: Request) => {
   } catch {
     return new Response(
       JSON.stringify({ error: "Invalid JSON body" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
   const intent = body.intent?.trim();
   if (!intent) {
     return new Response(
       JSON.stringify({ error: "intent is required" }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 
@@ -228,6 +223,6 @@ Deno.serve(async (req: Request) => {
       persisted: persistence.persisted,
       persistence_reason: persistence.reason ?? null,
     }),
-    { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
   );
 });

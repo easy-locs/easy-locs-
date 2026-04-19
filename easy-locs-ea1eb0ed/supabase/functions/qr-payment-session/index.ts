@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * qr-payment-session — Secure QR payment flow.
  * 1. Creates a signed QR payment session with nonce + expiry
@@ -16,12 +17,6 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 function generateNonce(): string {
   const arr = new Uint8Array(16);
   crypto.getRandomValues(arr);
@@ -37,7 +32,7 @@ async function signPayload(payload: string, secret: string): Promise<string> {
 
 Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -55,7 +50,7 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       const { merchant_id, store_id, terminal_id, table_id, order_id, amount, currency, items_description } = body;
       if (!merchant_id || !amount) {
         return new Response(JSON.stringify({ error: "merchant_id and amount required" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -63,8 +58,12 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min expiry
       const sessionId = crypto.randomUUID();
 
-      // Sign the session
-      const signingSecret = Deno.env.get("QR_SIGNING_SECRET") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+      // Sign the session — QR_SIGNING_SECRET is required; failing fast prevents
+      // QR codes from being signed with the service-role key if the secret is absent.
+      const signingSecret = Deno.env.get("QR_SIGNING_SECRET");
+      if (!signingSecret) {
+        throw new Error("QR_SIGNING_SECRET env var is not configured");
+      }
       const payloadStr = `${sessionId}:${merchant_id}:${amount}:${currency || "AED"}:${nonce}`;
       const signature = await signPayload(payloadStr, signingSecret);
 
@@ -101,7 +100,7 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       }));
 
       return new Response(JSON.stringify({ session_id: sessionId, qr_payload: qrPayload, expires_at: expiresAt }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -110,7 +109,7 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       const { qr_payload, payer_user_id } = body;
       if (!qr_payload || !payer_user_id) {
         return new Response(JSON.stringify({ error: "qr_payload and payer_user_id required" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -118,14 +117,14 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       let decoded: any;
       try { decoded = JSON.parse(atob(qr_payload)); } catch { 
         return new Response(JSON.stringify({ error: "Invalid QR payload" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       // Check expiry
       if (new Date(decoded.exp) < new Date()) {
         return new Response(JSON.stringify({ error: "QR code has expired" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -135,7 +134,7 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       const expectedSig = await signPayload(payloadStr, signingSecret);
       if (decoded.sig !== expectedSig) {
         return new Response(JSON.stringify({ error: "Invalid QR signature" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -149,13 +148,13 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
 
       if (sessionError || !session) {
         return new Response(JSON.stringify({ error: "Session not found or already used" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       if (session.status !== "pending") {
         return new Response(JSON.stringify({ error: `Session already ${session.status}` }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -213,7 +212,7 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
           items_description: session.items_description,
         },
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -222,18 +221,18 @@ Deno.serve(withEdgeLogging("qr-payment-session", async (req, logger) => {
       const { session_id } = body;
       const { data: session } = await supabase.from("qr_payment_sessions").select("id, status, amount, currency, merchant_id").eq("id", session_id).single();
       return new Response(JSON.stringify({ session: session || null }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("qr-payment-session error:", message);
     return new Response(JSON.stringify({ error: message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

@@ -71,6 +71,8 @@ export const useTripTrackingStore = create<TripTrackingState>((set) => ({
           },
         });
       }
+    }).catch((err: unknown) => {
+      console.warn("[tripTrackingStore] fetchTripLiveState failed:", err);
     });
     const ch = repo.subscribeToTable(`trip-live:${jobId}`, "trip_live_state", `job_id=eq.${jobId}`, (payload: any) => {
       const d = payload.new;

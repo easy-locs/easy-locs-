@@ -1,15 +1,11 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { generateEmbedding, generateBatchEmbeddings } from "../_shared/embedding-client.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -28,7 +24,7 @@ Deno.serve(async (req) => {
       if (!text) {
         return new Response(JSON.stringify({ error: "text is required" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -52,7 +48,7 @@ Deno.serve(async (req) => {
         dimensions: result.embedding.length,
         tokensUsed: result.tokensUsed,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -61,7 +57,7 @@ Deno.serve(async (req) => {
       if (!items?.length) {
         return new Response(JSON.stringify({ error: "items array is required" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -88,7 +84,7 @@ Deno.serve(async (req) => {
         embedded: items.length,
         totalTokens: result.totalTokens,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -96,7 +92,7 @@ Deno.serve(async (req) => {
       if (!text) {
         return new Response(JSON.stringify({ error: "text is required for search" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -112,7 +108,7 @@ Deno.serve(async (req) => {
       if (error) {
         console.warn("[vector-embed] search error:", error.message);
         return new Response(JSON.stringify({ results: [], error: error.message }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -120,7 +116,7 @@ Deno.serve(async (req) => {
         results: data ?? [],
         queryTokens: queryEmbedding.tokensUsed,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -135,19 +131,19 @@ Deno.serve(async (req) => {
         staleCount: staleRecords?.length ?? 0,
         message: "Stale records identified for re-embedding",
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[vector-embed]", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

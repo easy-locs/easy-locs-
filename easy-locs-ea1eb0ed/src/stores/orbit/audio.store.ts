@@ -91,7 +91,10 @@ export const useOrbitAudioStore = create<AudioPlaybackState>((set, get) => ({
   resume: () => {
     const s = get();
     if (s._audioElement && s.status === "paused") {
-      s._audioElement.play().catch(() => {});
+      s._audioElement.play().catch((err: unknown) => {
+        console.warn("[orbit/audio] play() failed:", err);
+        set({ status: "idle" });
+      });
       set({ status: "playing" });
     }
   },

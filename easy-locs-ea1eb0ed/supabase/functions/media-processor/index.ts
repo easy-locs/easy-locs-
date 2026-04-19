@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
@@ -8,11 +9,6 @@ import { GetObjectCommand } from "npm:@aws-sdk/client-s3@3.650.0";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 interface ProcessRequest {
   bucket: string;
   path: string;
@@ -60,7 +56,7 @@ function generateLqipDataUri(width: number, height: number): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -82,7 +78,7 @@ Deno.serve(async (req) => {
     if (!bucket || !path) {
       return new Response(
         JSON.stringify({ error: "bucket and path are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -95,7 +91,7 @@ Deno.serve(async (req) => {
       if (sqsResult.success) {
         return new Response(
           JSON.stringify({ offloaded: true, messageId: sqsResult.messageId }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       console.warn("[media-processor] SQS offload failed, processing locally:", sqsResult.error);
@@ -104,14 +100,14 @@ Deno.serve(async (req) => {
     if (!ALLOWED_BUCKETS.has(bucket)) {
       return new Response(
         JSON.stringify({ error: "Bucket not allowed for processing" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (!validatePathOwnership(path, authCheck.userId)) {
       return new Response(
         JSON.stringify({ error: "Cannot process files owned by other users" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -125,7 +121,7 @@ Deno.serve(async (req) => {
       if (!s3Resp.Body) {
         return new Response(
           JSON.stringify({ error: `S3 file not found: ${s3Key}` }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       const bodyBytes = await s3Resp.Body.transformToByteArray();
@@ -138,7 +134,7 @@ Deno.serve(async (req) => {
       if (downloadError || !sbData) {
         return new Response(
           JSON.stringify({ error: `File not found: ${downloadError?.message}` }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       fileData = sbData;
@@ -263,7 +259,7 @@ Deno.serve(async (req) => {
     console.error("[media-processor] Error:", msg);
     return new Response(
       JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

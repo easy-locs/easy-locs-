@@ -234,40 +234,56 @@ export const dashboardRepo = {
     return { ok: true, drift_report: (data as Record<string, unknown> | null) ?? null } as const;
   },
 
+
   /**
    * Decisions log for a single task. Powers the “Decisions” tab on
    * ExecutionTaskPanel and the strip at the top of the decision drawer
    * (so an admin sees prior comments / changes_requested before voting).
    *
-   * IMPORTANT — read path is RPC-only (#812 control-plane invariant).
-   * Direct SELECT on `system.task_approvals` is REVOKED for the
-   * `authenticated` role; the only way to observe the audit trail is
-   * `system.list_task_approvals(p_task_id)`, which checks the admin
-   * role and returns rows ordered by `decided_at ASC`.
+   * Routes through command.execute_command() for centralised audit logging.
+   * Falls back to the direct system RPC when the command schema is not yet
+   * deployed (backward-compatible zero-downtime transition).
    */
   async fetchTaskApprovals(taskId: string) {
-    const { data, error } = await (
-      supabase.schema("system") as unknown as {
-        rpc: (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{
-          data: Array<Record<string, unknown>> | null;
-          error: { message: string } | null;
-        }>;
-      }
-    ).rpc("list_task_approvals", { p_task_id: taskId });
-    if (error) throw new Error(`fetchTaskApprovals failed: ${error.message}`);
-    return data ?? [];
+    const cmdClient = supabase.schema("command" as never) as unknown as {
+      rpc: (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{
+        data: { ok: boolean; data?: Array<Record<string, unknown>>; error?: string } | null;
+        error: { message: string } | null;
+      }>;
+    };
+    const { data, error } = await cmdClient.rpc("execute_command", {
+      p_command_type: "list_task_approvals",
+      p_input: { task_id: taskId },
+    });
+    if (error) {
+      // Fallback: direct system RPC when command schema not yet available
+      const { data: fallbackData, error: fallbackError } = await (
+        supabase.schema("system") as unknown as {
+          rpc: (
+            fn: string,
+            args: Record<string, unknown>,
+          ) => Promise<{
+            data: Array<Record<string, unknown>> | null;
+            error: { message: string } | null;
+          }>;
+        }
+      ).rpc("list_task_approvals", { p_task_id: taskId });
+      if (fallbackError) throw new Error(`fetchTaskApprovals failed: ${fallbackError.message}`);
+      return fallbackData ?? [];
+    }
+    if (data?.ok === false) throw new Error(`fetchTaskApprovals failed: ${data.error ?? "unknown"}`);
+    return data?.data ?? [];
   },
 
   /**
-   * Idempotent wrapper over `system.decide_task_approval`. The DB RPC
-   * enforces the legal state machine (pending_review → approved /
-   * rejected / changes_requested) and rejects illegal transitions with
-   * `invalid_state` so the UI can surface a precise error. Passing the
-   * same `clientRequestId` twice returns the original audit row instead
-   * of duplicating the decision — safe to retry.
+   * Idempotent wrapper over system.decide_task_approval. Routes through
+   * command.execute_command() for centralised audit logging. Idempotency is
+   * enforced by passing clientRequestId as the idempotency key — a second
+   * call with the same key returns the original result without a duplicate
+   * write. Falls back to the direct system RPC for backward compatibility.
    */
   async decideTaskApproval(input: {
     taskId: string;
@@ -276,21 +292,46 @@ export const dashboardRepo = {
     commentMd?: string | null;
     clientRequestId?: string | null;
   }) {
-    const { data, error } = await (
-      supabase.schema("system") as unknown as {
-        rpc: (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }
-    ).rpc("decide_task_approval", {
-      p_task_id: input.taskId,
-      p_decision: input.decision,
-      p_reason: input.reason ?? null,
-      p_comment_md: input.commentMd ?? null,
-      p_client_request_id: input.clientRequestId ?? null,
+    const cmdClient = supabase.schema("command" as never) as unknown as {
+      rpc: (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{
+        data: { ok: boolean; data?: unknown; error?: string } | null;
+        error: { message: string } | null;
+      }>;
+    };
+    const { data, error } = await cmdClient.rpc("execute_command", {
+      p_command_type: "decide_task_approval",
+      p_input: {
+        task_id: input.taskId,
+        decision: input.decision,
+        reason: input.reason ?? null,
+        comment_md: input.commentMd ?? null,
+        client_request_id: input.clientRequestId ?? null,
+      },
+      p_idempotency_key: input.clientRequestId ?? null,
     });
-    if (error) throw new Error(`decideTaskApproval failed: ${error.message}`);
-    return data;
+    if (error) {
+      // Fallback: direct system RPC when command schema not yet available
+      const { data: fallbackData, error: fallbackError } = await (
+        supabase.schema("system") as unknown as {
+          rpc: (
+            fn: string,
+            args: Record<string, unknown>,
+          ) => Promise<{ data: unknown; error: { message: string } | null }>;
+        }
+      ).rpc("decide_task_approval", {
+        p_task_id: input.taskId,
+        p_decision: input.decision,
+        p_reason: input.reason ?? null,
+        p_comment_md: input.commentMd ?? null,
+        p_client_request_id: input.clientRequestId ?? null,
+      });
+      if (fallbackError) throw new Error(`decideTaskApproval failed: ${fallbackError.message}`);
+      return fallbackData;
+    }
+    if (data?.ok === false) throw new Error(`decideTaskApproval failed: ${data.error ?? "unknown"}`);
+    return data?.data;
   },
 };

@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
@@ -6,12 +7,6 @@ import { checkPlaidHealth } from "../_shared/plaid-health.ts";
 import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
 import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
 import { checkAllNewsHealth } from "../_shared/news-health.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface ServiceHealth {
   status: "ok" | "error" | "not_configured" | "partial";
@@ -28,7 +23,7 @@ function dedupeKeyForService(service: string): string {
 
 Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   // Dedicated monitor bypass: a properly configured external uptime probe
@@ -85,7 +80,7 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
           notifications_sent: 0,
           timestamp: new Date().toISOString(),
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -104,7 +99,7 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
           error: adminError ? adminError.message : "No admin users found to notify",
           timestamp: new Date().toISOString(),
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -205,14 +200,14 @@ Deno.serve(withEdgeLogging("integration-health-monitor", async (req, logger) => 
         notifications_sent: notificationsSent,
         timestamp: new Date().toISOString(),
       }),
-      { status: httpStatus, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: httpStatus, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     logger.error("monitor_error", { error: e instanceof Error ? e : new Error(msg) });
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 }));

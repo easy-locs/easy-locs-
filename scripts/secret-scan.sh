@@ -24,7 +24,7 @@ PATTERNS='sbp_[A-Za-z0-9]{30,}|sk_live_[0-9a-zA-Z]{20,}|sk_test_[0-9a-zA-Z]{20,}
 
 # Path patterns to skip (vendored audit rules, this scanner, prior reports,
 # build artifacts, lockfiles, large generated text artifacts at repo root).
-SKIP_REGEX='^(\.config/|\.local/|node_modules/|.*/node_modules/|dist/|.*/dist/|storybook-static/|.*/storybook-static/|package-lock\.json$|.*/package-lock\.json$|.*\.lock$|easy-locs-ea1eb0ed/docs/security-audit-.*\.md$|easy-locs-ea1eb0ed/docs/credentials-scan-.*\.md$|scripts/secret-scan\.sh$|easy-locs-ea1eb0ed/scripts/security-scan\.ts$|all_.*\.txt$|.*_imports.*\.txt$|file_import_pairs\.txt$|orphan_.*\.txt$|candidates_.*\.txt$|missing_.*\.txt$|imported_.*\.txt$|registered_.*\.txt$|registry_.*\.txt$|component_files\.txt$|formatted_list\.txt$|attached_assets/.*)'
+SKIP_REGEX='^(\.config/|\.local/|node_modules/|.*/node_modules/|dist/|.*/dist/|storybook-static/|.*/storybook-static/|package-lock\.json$|.*/package-lock\.json$|.*\.lock$|easy-locs-ea1eb0ed/docs/security-audit-.*\.md$|easy-locs-ea1eb0ed/docs/credentials-scan-.*\.md$|easy-locs-ea1eb0ed/docs/db-state-audit\.md$|scripts/secret-scan\.sh$|easy-locs-ea1eb0ed/scripts/security-scan\.ts$|all_.*\.txt$|.*_imports.*\.txt$|file_import_pairs\.txt$|orphan_.*\.txt$|candidates_.*\.txt$|missing_.*\.txt$|imported_.*\.txt$|registered_.*\.txt$|registry_.*\.txt$|component_files\.txt$|formatted_list\.txt$|attached_assets/.*)'
 
 if ! command -v git >/dev/null 2>&1; then
   echo "secret-scan: git not available; skipping" >&2

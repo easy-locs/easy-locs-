@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { firecrawlScrape } from "../_shared/firecrawl.ts";
 
@@ -143,13 +144,13 @@ Deno.serve(async (req) => {
   };
 
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   if (!(await verifyAuth(req))) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -161,7 +162,7 @@ Deno.serve(async (req) => {
     if (!["deliveroo", "talabat", "careem"].includes(source)) {
       return new Response(JSON.stringify({ error: "Invalid source" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -190,7 +191,7 @@ Deno.serve(async (req) => {
         fallbackConfigured: firecrawlKeyExists,
         fallbackReachable,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -202,7 +203,7 @@ Deno.serve(async (req) => {
         source,
         syncedAt: new Date().toISOString(),
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -217,13 +218,13 @@ Deno.serve(async (req) => {
       fallbackSuccess: fallbackResult.success,
       fallbackError: fallbackResult.error,
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[gateway-marketplace-sync] Error:", String(err));
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

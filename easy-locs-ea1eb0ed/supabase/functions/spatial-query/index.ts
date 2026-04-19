@@ -1,12 +1,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const ALLOWED_ENTITY_TYPES = new Set([
   "drivers", "merchants", "listings", "storefronts", "properties", "hotels",
@@ -14,7 +9,7 @@ const ALLOWED_ENTITY_TYPES = new Set([
 
 Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -23,7 +18,7 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -38,7 +33,7 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
   if (claimsError || !claimsData?.user) {
     return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -53,7 +48,7 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
 
     if (lat === undefined || lat === null || lng === undefined || lng === null || !Number.isFinite(lat) || !Number.isFinite(lng)) {
       return new Response(JSON.stringify({ error: "Valid lat/lng required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -62,7 +57,7 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
     if (action === "nearby") {
       if (!entity_type || !ALLOWED_ENTITY_TYPES.has(entity_type)) {
         return new Response(JSON.stringify({ error: "Invalid entity_type" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -106,17 +101,17 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
         if (rawError) {
           logger.error("spatial_nearby_failed", { error: rawError });
           return new Response(JSON.stringify({ error: "Spatial query failed", detail: rawError.message }), {
-            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
         return new Response(JSON.stringify({ results: rawData ?? [], source: "postgis" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       return new Response(JSON.stringify({ results: data ?? [], source: "postgis" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
 
     } else if (action === "zone") {
@@ -128,12 +123,12 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
       if (error) {
         logger.error("zone_assign_failed", { error: error });
         return new Response(JSON.stringify({ error: "Zone assignment failed" }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       return new Response(JSON.stringify({ zone: data?.[0] ?? null, source: "postgis" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
 
     } else if (action === "contains") {
@@ -147,19 +142,19 @@ Deno.serve(withEdgeLogging("spatial-query", async (req, logger) => {
       }
 
       return new Response(JSON.stringify({ zones: data ?? [], source: "postgis" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
 
     } else {
       return new Response(JSON.stringify({ error: "Unknown action. Use: nearby, zone, contains" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error("spatial_query_error", { error: message });
     return new Response(JSON.stringify({ error: message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

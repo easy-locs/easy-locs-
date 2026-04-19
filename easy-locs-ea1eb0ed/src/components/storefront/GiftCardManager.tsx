@@ -32,10 +32,12 @@ const STATUS_COLORS: Record<string, string> = {
 
 function generateCode() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const randomBytes = new Uint8Array(12);
+  crypto.getRandomValues(randomBytes);
   let code = "GC-";
   for (let i = 0; i < 12; i++) {
     if (i > 0 && i % 4 === 0) code += "-";
-    code += chars[Math.floor(Math.random() * chars.length)];
+    code += chars[randomBytes[i] % chars.length];
   }
   return code;
 }

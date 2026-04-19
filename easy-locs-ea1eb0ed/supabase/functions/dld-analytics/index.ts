@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -97,15 +98,17 @@ function mapRowToTransaction(r: Record<string, unknown>) {
 }
 
 serve(async (req) => {
-  const corsHeaders = {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-endpoint, x-params, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  };
-
-  const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
+    const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
 
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
+  }
+
+  if (!["GET", "POST"].includes(req.method)) {
+    return new Response(JSON.stringify({ error: "method_not_allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -124,7 +127,7 @@ serve(async (req) => {
       const cached = getCached(cacheKey);
       if (cached) {
         return new Response(JSON.stringify(cached), {
-          headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "HIT", "X-Data-Source": "cache" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-Cache": "HIT", "X-Data-Source": "cache" },
         });
       }
     }
@@ -161,14 +164,14 @@ serve(async (req) => {
         if (!serviceRoleKey) {
           return new Response(JSON.stringify({ error: "sync requires service role" }), {
             status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         const incomingAuth = req.headers.get("authorization") || "";
         if (!incomingAuth.includes(serviceRoleKey)) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -190,7 +193,7 @@ serve(async (req) => {
         if (!serviceRoleKey) {
           return new Response(JSON.stringify({ error: "backfill requires service role" }), {
             status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         const incomingAuthBf = req.headers.get("authorization") || "";
@@ -209,14 +212,14 @@ serve(async (req) => {
         if (!backfillAuthorized) {
           return new Response(JSON.stringify({ error: "unauthorized" }), {
             status: 403,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
         if (!isDLDApiConfigured()) {
           return new Response(JSON.stringify({ error: "DLD API not configured", configured: false }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -325,7 +328,7 @@ serve(async (req) => {
         if (!rows || rows.length === 0) {
           return new Response(JSON.stringify({ error: "no_data" }), {
             status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json", "X-Data-Source": "none" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-Data-Source": "none" },
           });
         }
 
@@ -510,7 +513,7 @@ serve(async (req) => {
         if (!buildingName) {
           return new Response(JSON.stringify({ error: "building parameter required" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         const q = supabase
@@ -532,7 +535,7 @@ serve(async (req) => {
         if (!compDistrict) {
           return new Response(JSON.stringify({ error: "district parameter required" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -616,19 +619,19 @@ serve(async (req) => {
       default:
         return new Response(JSON.stringify({ error: "unknown_endpoint" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
     }
 
     setCache(cacheKey, data);
 
     return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json", "X-Cache": "MISS", "X-Data-Source": dataSource },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json", "X-Cache": "MISS", "X-Data-Source": dataSource },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -9,16 +10,10 @@ import {
   getExpectedRpId,
 } from "../_shared/webauthn-crypto.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -32,7 +27,7 @@ Deno.serve(async (req) => {
     if (!credential?.id || !credential?.response?.clientDataJSON || !credential?.response?.attestationObject) {
       return new Response(
         JSON.stringify({ error: "Invalid credential payload" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -54,7 +49,7 @@ Deno.serve(async (req) => {
     if (challengeErr || !challengeRow) {
       return new Response(
         JSON.stringify({ error: "No valid challenge found. Please retry." }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -69,7 +64,7 @@ Deno.serve(async (req) => {
     if (clientData.type !== "webauthn.create") {
       return new Response(
         JSON.stringify({ error: "Invalid client data type" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -77,7 +72,7 @@ Deno.serve(async (req) => {
     if (clientData.origin !== expectedOrigin) {
       return new Response(
         JSON.stringify({ error: "Origin mismatch" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -86,7 +81,7 @@ Deno.serve(async (req) => {
     if (receivedChallenge !== storedChallenge) {
       return new Response(
         JSON.stringify({ error: "Challenge mismatch — possible replay attack" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -95,14 +90,14 @@ Deno.serve(async (req) => {
     if (!(parsed.flags & 0x01)) {
       return new Response(
         JSON.stringify({ error: "User presence flag not set" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     if (!(parsed.flags & 0x04)) {
       return new Response(
         JSON.stringify({ error: "User verification not confirmed — biometric or PIN required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -110,7 +105,7 @@ Deno.serve(async (req) => {
     if (!rpIdValid) {
       return new Response(
         JSON.stringify({ error: "RP ID hash mismatch" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -132,7 +127,7 @@ Deno.serve(async (req) => {
       if (insertErr.code === "23505") {
         return new Response(
           JSON.stringify({ error: "This credential is already registered" }),
-          { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { status: 409, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       throw insertErr;
@@ -145,14 +140,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, credentialId: credential.id }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("webauthn-registration-verify error:", message);
     return new Response(JSON.stringify({ error: message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

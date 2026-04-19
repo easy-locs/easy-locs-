@@ -1,12 +1,8 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const MAX_MESSAGES_PER_SESSION = 20;
 const MAX_MEDIA_PER_SESSION = 5;
@@ -48,7 +44,7 @@ async function validateSession(supabase: any, token: string) {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -82,7 +78,7 @@ Deno.serve(async (req) => {
 
         if ((count || 0) >= MAX_SESSIONS_PER_FINGERPRINT) {
           return new Response(JSON.stringify({ error: "Too many sessions. Please try again later." }), {
-            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
       }
@@ -100,7 +96,7 @@ Deno.serve(async (req) => {
       if (error) throw error;
 
       return new Response(JSON.stringify({ session: data }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -117,19 +113,19 @@ Deno.serve(async (req) => {
 
       if (error || !data) {
         return new Response(JSON.stringify({ valid: false, error: "Session not found" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       if (data.blocked) {
         return new Response(JSON.stringify({ valid: false, error: "Session blocked" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       if (new Date(data.expires_at) < new Date()) {
         return new Response(JSON.stringify({ valid: false, error: "Session expired" }), {
-          status: 410, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 410, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -142,7 +138,7 @@ Deno.serve(async (req) => {
           messages_remaining: MAX_MESSAGES_PER_SESSION - data.messages_sent,
           media_remaining: MAX_MEDIA_PER_SESSION - data.media_sent,
         },
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     // ─── SEND MESSAGE ───
@@ -153,19 +149,19 @@ Deno.serve(async (req) => {
       const session = await validateSession(supabase, token);
       if (!session) {
         return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       const hasMedia = attachment_urls && attachment_urls.length > 0;
       if (session.messages_sent >= MAX_MESSAGES_PER_SESSION) {
         return new Response(JSON.stringify({ error: "Message limit reached" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       if (hasMedia && session.media_sent >= MAX_MEDIA_PER_SESSION) {
         return new Response(JSON.stringify({ error: "Media limit reached" }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -256,7 +252,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ success: true, message_id: msg.id }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -268,7 +264,7 @@ Deno.serve(async (req) => {
       const session = await validateSession(supabase, token);
       if (!session) {
         return new Response(JSON.stringify({ messages: [] }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -303,7 +299,7 @@ Deno.serve(async (req) => {
       }));
 
       return new Response(JSON.stringify({ messages: enriched }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -315,7 +311,7 @@ Deno.serve(async (req) => {
       const session = await validateSession(supabase, token);
       if (!session) {
         return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -381,7 +377,7 @@ Deno.serve(async (req) => {
       }
 
       return new Response(JSON.stringify({ call_id: callId }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -395,7 +391,7 @@ Deno.serve(async (req) => {
         const session = await validateSession(supabase, guestToken);
         if (!session) {
           return new Response(JSON.stringify({ error: "Invalid session" }), {
-            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
       }
@@ -430,7 +426,7 @@ Deno.serve(async (req) => {
       });
 
       return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -472,14 +468,14 @@ Deno.serve(async (req) => {
         signals: signals || [],
         call_status: callStatus?.status || "ringing",
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     throw new Error("Unknown action");
   } catch (err: any) {
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });
