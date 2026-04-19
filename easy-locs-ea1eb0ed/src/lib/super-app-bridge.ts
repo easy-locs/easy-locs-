@@ -1194,7 +1194,7 @@ export function installSuperAppBridge() {
         contextId: p.contextId,
         position: p.position,
       }, "tracking", {
-        correlationId: event.correlationId ?? undefined,
+        correlationId: event.correlationId,
         traceId: event.traceId,
         userId: event.userId,
         orgId: event.orgId,
