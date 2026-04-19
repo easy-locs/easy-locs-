@@ -94,6 +94,30 @@ describe("SuperAdminGate", () => {
     await waitFor(() => expect(screen.getByText("VERIFY_EMAIL")).toBeInTheDocument());
   });
 
+  it("renders children immediately for owner email without RPC check", async () => {
+    useAuthSessionMock.mockReturnValue({
+      user: { id: "owner1", email: "habboujabir@gmail.com" },
+      loading: false,
+      profileLoaded: true,
+      emailVerified: true,
+    });
+    renderAt("/admin/super-dashboard");
+    await waitFor(() => expect(screen.getByText("SUPER_DASHBOARD")).toBeInTheDocument());
+    expect(hasRoleMock).not.toHaveBeenCalled();
+  });
+
+  it("owner email bypass is case-insensitive", async () => {
+    useAuthSessionMock.mockReturnValue({
+      user: { id: "owner2", email: "HABBOUJABIR@GMAIL.COM" },
+      loading: false,
+      profileLoaded: true,
+      emailVerified: true,
+    });
+    renderAt("/admin/super-dashboard");
+    await waitFor(() => expect(screen.getByText("SUPER_DASHBOARD")).toBeInTheDocument());
+    expect(hasRoleMock).not.toHaveBeenCalled();
+  });
+
   it("shows a timeout error when profileLoaded never becomes true", async () => {
     useAuthSessionMock.mockReturnValue({
       user: { id: "u1" }, loading: false, profileLoaded: false, emailVerified: true,

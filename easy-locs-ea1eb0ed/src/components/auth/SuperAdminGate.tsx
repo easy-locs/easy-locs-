@@ -17,6 +17,12 @@ import { hasRole } from "@/repositories/auth-utils.repository";
 import AdminAccessDenied from "@/components/auth/AdminAccessDenied";
 
 const PROFILE_LOAD_TIMEOUT_MS = 8000;
+const OWNER_EMAIL = "habboujabir@gmail.com";
+
+/** Returns true if the given email matches the owner email (case-insensitive). */
+function isOwnerEmail(email: string | null | undefined): boolean {
+  return email?.toLowerCase() === OWNER_EMAIL;
+}
 
 function GateSkeleton() {
   return (
@@ -42,6 +48,11 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
   useEffect(() => {
     if (loading) return;
     if (!user?.id) {
+      setChecking(false);
+      return;
+    }
+    // Owner email bypasses role check entirely — no RPC needed.
+    if (isOwnerEmail(user.email)) {
       setChecking(false);
       return;
     }
@@ -105,6 +116,12 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
   }
 
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
+
+  // Owner email bypasses role check entirely.
+  if (isOwnerEmail(user.email)) {
+    return <>{children}</>;
+  }
+
   if (checking) return <GateSkeleton />;
 
   if (roleError) {
