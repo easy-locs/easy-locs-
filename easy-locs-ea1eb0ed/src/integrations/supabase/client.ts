@@ -8,10 +8,37 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
+// Guard: createClient throws synchronously when the URL is missing/invalid
+// (e.g. Vercel preview without env vars, CI, or local dev without .env).
+// A module-level throw here crashes the entire JS bundle BEFORE main.tsx's
+// try/catch runs, leaving users stuck on the HTML splash forever.
+// We catch and re-export a no-op proxy so the rest of the boot chain can
+// reach validateIntegrationsBoot() which surfaces a proper error message.
+function safeGetStorage() {
+  try { return localStorage; } catch { return undefined; }
+}
+
+function createSafeClient() {
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+    console.error(
+      "[Supabase] VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is not defined. " +
+      "The app will not function. Check your environment variables."
+    );
+    // Return a minimal proxy so module imports don't throw downstream.
+    // The real error is surfaced by validateIntegrationsBoot() in main.tsx.
+    return createClient<Database>(
+      "https://placeholder.supabase.co",
+      "placeholder-anon-key",
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
   }
-});
+  return createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: safeGetStorage(),
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+}
+
+export const supabase = createSafeClient();

@@ -489,6 +489,47 @@
         posthog.init(window.__POSTHOG_KEY__, {api_host: window.__POSTHOG_HOST__ || "https://us.i.posthog.com", autocapture: false, capture_pageview: false, disable_session_recording: true});
       }
     </script>
+    <!-- Global error trap: catches module-level crashes (e.g. missing env vars,
+         chunk 404 after SW stale cache) BEFORE main.tsx's try/catch runs.
+         Without this the HTML splash stays frozen indefinitely until the 15s
+         watchdog fires, giving users no feedback and no escape hatch. -->
+    <script>
+      (function () {
+        var _bundleCrashed = false;
+        function showBundleCrashUI(msg) {
+          if (_bundleCrashed) return;
+          _bundleCrashed = true;
+          var root = document.getElementById('root');
+          if (!root || window.__EASYLOCS_REACT_MOUNTED__) return;
+          var splash = document.getElementById('app-loading');
+          if (splash) { try { splash.style.display = 'none'; } catch(e) {} }
+          root.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;background:hsl(225 28% 7%);">'
+            + '<div style="text-align:center;max-width:400px;padding:20px;">'
+            + '<svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="margin:0 auto 16px;display:block;"><circle cx="24" cy="24" r="8.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.35" fill="none"/><circle cx="24" cy="24" r="14.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.27" fill="none"/><circle cx="24" cy="24" r="20.4" stroke="hsl(168 72% 44%)" stroke-width="0.8" stroke-opacity="0.19" fill="none"/><circle cx="24" cy="24" r="2.4" fill="hsl(168 72% 44%)"/></svg>'
+            + '<p style="font-size:18px;color:#f8fafc;margin:0 0 8px;">Erreur de démarrage</p>'
+            + '<p style="font-size:13px;color:#94a3b8;margin:0 0 16px;" id="__el_crash_msg__"></p>'
+            + '<button onclick="try{caches.keys().then(function(n){return Promise.all(n.map(function(k){return caches.delete(k)}))}).then(function(){if(navigator.serviceWorker&&navigator.serviceWorker.getRegistrations)return navigator.serviceWorker.getRegistrations().then(function(r){return Promise.all(r.map(function(s){return s.unregister()}))})}).finally(function(){location.reload()})}catch(e){location.reload()}" style="background:linear-gradient(135deg,hsl(168 72% 44%),hsl(168 78% 32%));color:hsl(225 28% 7%);border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Réessayer</button>'
+            + '</div></div>';
+          var el = document.getElementById('__el_crash_msg__');
+          if (el) el.textContent = msg || 'Une erreur est survenue au démarrage. Cliquez sur Réessayer pour purger le cache et recharger.';
+        }
+        window.addEventListener('error', function (e) {
+          if (window.__EASYLOCS_REACT_MOUNTED__) return;
+          // Only handle script-level crashes, not DOM errors or missing images.
+          if (e && e.filename && (e.filename.indexOf('.js') !== -1 || e.filename.indexOf('.tsx') !== -1 || e.filename.indexOf('.ts') !== -1)) {
+            showBundleCrashUI(e.message || 'Script error');
+          }
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          if (window.__EASYLOCS_REACT_MOUNTED__) return;
+          // Module import failures show up as unhandledrejection with a TypeError.
+          var msg = e && e.reason && (e.reason.message || String(e.reason));
+          if (msg && (msg.indexOf('Failed to fetch') !== -1 || msg.indexOf('dynamically imported') !== -1 || msg.indexOf('Loading chunk') !== -1 || msg.indexOf('supabaseUrl') !== -1 || msg.indexOf('import') !== -1)) {
+            showBundleCrashUI(msg);
+          }
+        });
+      })();
+    </script>
     <script type="module" src="/src/main.tsx" fetchpriority="high"></script>
     <script>
       window.__EASYLOCS_BOOTED__ = false;
