@@ -3,9 +3,9 @@
  *
  * Task #998 — Real-time command of the agent army.
  * Reads from the `army` schema (system_flags, command_orders, execution_tasks,
- * agent_instances, incident_log, v_general_state, v_army_dashboard) and calls
- * the orchestrator-dispatch / approve_task / reject_task / retry_task /
- * kill_agent / kill_army RPCs.
+ * agent_instances, incident_log, v_general_state, v_army_dashboard) and routes
+ * all mutations through the unified `public.execute_command` RPC which provides
+ * centralized audit logging, idempotency, and permission validation.
  */
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -275,30 +275,42 @@ export default function ArmyCockpit() {
   }, [title, description, domain, risk, user?.id, army, qc]);
 
   const approve = useCallback(async (taskId: string) => {
-    const { error } = await army.rpc("approve_task", { p_task_id: taskId });
+    const { error } = await supabase.rpc("execute_command", {
+      p_command_type: "approve_task",
+      p_input: { p_task_id: taskId, p_reason: null },
+    });
     if (error) toast.error(error.message); else toast.success("approved");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [qc]);
 
   const reject = useCallback(async (taskId: string) => {
     const reason = window.prompt("Rejection reason?") ?? "no_reason";
-    const { error } = await army.rpc("reject_task", { p_task_id: taskId, p_reason: reason });
+    const { error } = await supabase.rpc("execute_command", {
+      p_command_type: "reject_task",
+      p_input: { p_task_id: taskId, p_reason: reason },
+    });
     if (error) toast.error(error.message); else toast.success("rejected");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [qc]);
 
   const retry = useCallback(async (taskId: string) => {
-    const { error } = await army.rpc("retry_task", { p_task_id: taskId });
+    const { error } = await supabase.rpc("execute_command", {
+      p_command_type: "retry_task",
+      p_input: { p_task_id: taskId },
+    });
     if (error) toast.error(error.message); else toast.success("retrying");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [qc]);
 
   const killAgent = useCallback(async (agentId: string) => {
     if (!window.confirm("Kill this agent?")) return;
-    const { error } = await army.rpc("kill_agent", { p_agent_id: agentId, p_reason: "manual" });
+    const { error } = await supabase.rpc("execute_command", {
+      p_command_type: "kill_agent",
+      p_input: { p_agent_id: agentId, p_reason: "manual" },
+    });
     if (error) toast.error(error.message); else toast.success("agent killed");
     qc.invalidateQueries({ queryKey: ["army-agents"] });
-  }, [army, qc]);
+  }, [qc]);
 
   const killArmy = useCallback(async () => {
     if (!window.confirm("KILL ARMY: stop ALL agents, drain queues, cancel tasks. Continue?")) return;
@@ -306,7 +318,10 @@ export default function ArmyCockpit() {
     setKilling(true);
     try {
       const reason = window.prompt("Kill reason (logged):") ?? "manual";
-      const { error } = await army.rpc("kill_army", { p_reason: reason });
+      const { error } = await supabase.rpc("execute_command", {
+        p_command_type: "kill_army",
+        p_input: { p_reason: reason },
+      });
       if (error) throw error;
       toast.error("Army killed.");
       qc.invalidateQueries();
@@ -315,13 +330,16 @@ export default function ArmyCockpit() {
     } finally {
       setKilling(false);
     }
-  }, [army, qc]);
+  }, [qc]);
 
   const reviveArmy = useCallback(async () => {
-    const { error } = await army.rpc("revive_army");
+    const { error } = await supabase.rpc("execute_command", {
+      p_command_type: "revive_army",
+      p_input: {},
+    });
     if (error) toast.error(error.message); else toast.success("Army revived");
     qc.invalidateQueries();
-  }, [army, qc]);
+  }, [qc]);
 
   return (
     <DashboardLayout>

@@ -9,7 +9,8 @@ schemas = [
   "identity", "wallet", "orbit",
   "marketplace", "commerce", "property",
   "onboarding", "support", "notification",
-  "system", "analytics"
+  "system", "analytics",
+  "army", "command"
 ]
 extra_search_path = ["public", "extensions"]
 
