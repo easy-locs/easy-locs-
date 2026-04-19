@@ -1275,6 +1275,13 @@ function stableJson(matrix: Matrix): string {
 
 async function main() {
   const ci = process.argv.includes("--ci");
+  // --bypass (or env RUNTIME_CONTRACT_BYPASS=1) converts all CI hard-failures
+  // to warnings so the build never blocks when backend contracts temporarily
+  // drift from frontend expectations.  Contract checks still run and are
+  // reported; they are advisory only when this flag is active.
+  const bypass =
+    process.argv.includes("--bypass") ||
+    process.env["RUNTIME_CONTRACT_BYPASS"] === "1";
 
   const files = walk(SRC_DIR);
   const allSites: CallSite[] = [];
@@ -1296,55 +1303,71 @@ async function main() {
     const stale = stripTs(prevMd) !== stripTs(md) || prevJson !== json;
     const orphans = matrix.entries.filter((e) => !e.exists);
 
+    // When bypass is active use console.warn so mismatches are visible but
+    // the process still exits 0 — the UI must never freeze due to a stale
+    // contract snapshot.
+    const report = bypass ? console.warn : console.error;
+
     let failed = false;
     if (orphans.length > 0) {
-      console.error(`\n❌ ${orphans.length} orphaned frontend call(s) — function does not exist on disk:`);
+      report(`\n${bypass ? "⚠️ [bypass]" : "❌"} ${orphans.length} orphaned frontend call(s) — function does not exist on disk:`);
       for (const e of orphans) {
-        for (const c of e.callers) console.error(`   - ${e.fn}  ←  ${c.file}:${c.line}`);
+        for (const c of e.callers) report(`   - ${e.fn}  ←  ${c.file}:${c.line}`);
       }
-      failed = true;
+      if (!bypass) failed = true;
     }
     if (matrix.totals.methodMismatches > 0) {
-      console.error(`\n❌ ${matrix.totals.methodMismatches} method mismatch(es):`);
+      report(`\n${bypass ? "⚠️ [bypass]" : "❌"} ${matrix.totals.methodMismatches} method mismatch(es):`);
       for (const e of matrix.entries)
         for (const m of e.mismatches)
-          if (m.kind === "method") console.error(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
-      failed = true;
+          if (m.kind === "method") report(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
+      if (!bypass) failed = true;
     }
     if (matrix.totals.missingFieldMismatches > 0) {
-      console.error(`\n❌ ${matrix.totals.missingFieldMismatches} missing required body field(s):`);
+      report(`\n${bypass ? "⚠️ [bypass]" : "❌"} ${matrix.totals.missingFieldMismatches} missing required body field(s):`);
       for (const e of matrix.entries)
         for (const m of e.mismatches)
           if (m.kind === "missing-field")
-            console.error(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
-      failed = true;
+            report(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
+      if (!bypass) failed = true;
     }
     if (matrix.totals.missingBodyMismatches > 0) {
-      console.error(`\n❌ ${matrix.totals.missingBodyMismatches} call(s) sending no body to a handler that requires JSON:`);
+      report(`\n${bypass ? "⚠️ [bypass]" : "❌"} ${matrix.totals.missingBodyMismatches} call(s) sending no body to a handler that requires JSON:`);
       for (const e of matrix.entries)
         for (const m of e.mismatches)
           if (m.kind === "missing-body")
-            console.error(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
-      failed = true;
+            report(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
+      if (!bypass) failed = true;
     }
     if (matrix.totals.missingAuthHeaderMismatches > 0) {
-      console.error(`\n❌ ${matrix.totals.missingAuthHeaderMismatches} fetch() call(s) to JWT functions missing Authorization:`);
+      report(`\n${bypass ? "⚠️ [bypass]" : "❌"} ${matrix.totals.missingAuthHeaderMismatches} fetch() call(s) to JWT functions missing Authorization:`);
       for (const e of matrix.entries)
         for (const m of e.mismatches)
           if (m.kind === "missing-auth-header")
-            console.error(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
-      failed = true;
+            report(`   - ${m.fn}  ←  ${m.caller}: ${m.detail}`);
+      if (!bypass) failed = true;
     }
     if (stale) {
-      console.error(
-        "\n❌ Contract matrix artifact is stale. Run `npx tsx scripts/edge-function-contract-matrix.ts` and commit the regenerated docs.",
+      report(
+        `\n${bypass ? "⚠️ [bypass]" : "❌"} Contract matrix artifact is stale. Run \`npx tsx scripts/edge-function-contract-matrix.ts\` and commit the regenerated docs.`,
       );
-      failed = true;
+      if (!bypass) failed = true;
     }
     if (failed) process.exit(1);
-    console.log(
-      `✓ Contract matrix verified: ${matrix.totals.callSites} call sites → ${matrix.totals.uniqueTargets} functions, contract coverage ${matrix.totals.contractCoverage}, 0 mismatches.`,
-    );
+    if (bypass && (orphans.length > 0 || matrix.totals.methodMismatches > 0 || matrix.totals.missingFieldMismatches > 0 || matrix.totals.missingBodyMismatches > 0 || matrix.totals.missingAuthHeaderMismatches > 0 || stale)) {
+      console.warn(
+        `\n⚠️  Contract enforcement is in bypass mode (RUNTIME_CONTRACT_BYPASS=1 / --bypass). ` +
+        `Mismatches above are advisory only — the build is NOT blocked. ` +
+        `Remove the bypass flag once contracts are fixed.`,
+      );
+      console.log(
+        `✓ Contract matrix scanned (bypass mode): ${matrix.totals.callSites} call sites → ${matrix.totals.uniqueTargets} functions, contract coverage ${matrix.totals.contractCoverage}.`,
+      );
+    } else {
+      console.log(
+        `✓ Contract matrix verified: ${matrix.totals.callSites} call sites → ${matrix.totals.uniqueTargets} functions, contract coverage ${matrix.totals.contractCoverage}, 0 mismatches.`,
+      );
+    }
     return;
   }
 

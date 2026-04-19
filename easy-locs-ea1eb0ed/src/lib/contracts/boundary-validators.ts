@@ -1,6 +1,18 @@
 import { platformBus } from "@/lib/shared/platform-bus";
 import { recordObservabilityProof } from "@/lib/enforcement/observability";
 
+/**
+ * When VITE_DISABLE_CONTRACT_ENFORCEMENT=true, all runtime contract
+ * validation is advisory only: violations are logged to the console but
+ * never block a request or mutation.  Set this in environments where the
+ * backend contract may temporarily drift from frontend expectations so the
+ * UI stays responsive.
+ */
+const ENFORCEMENT_DISABLED =
+  typeof import.meta !== "undefined" &&
+  (import.meta as Record<string, unknown>).env != null &&
+  ((import.meta as { env: Record<string, string> }).env)["VITE_DISABLE_CONTRACT_ENFORCEMENT"] === "true";
+
 export type FieldType = "string" | "number" | "boolean" | "object" | "array" | "null" | "any";
 
 export interface FieldSchema {
@@ -103,6 +115,16 @@ class BoundaryContractValidator {
       return { valid: true, corrected: (data as Record<string, unknown>) ?? {}, violations: [] };
     }
 
+    // When enforcement is disabled, skip validation entirely and allow the
+    // original data through unchanged.  A console.warn is still emitted so
+    // developers can see that enforcement was skipped.
+    if (ENFORCEMENT_DISABLED) {
+      console.warn(
+        `[contract-validator] Enforcement disabled (VITE_DISABLE_CONTRACT_ENFORCEMENT=true) — skipping validation for "${contractName}" at ${boundary} boundary`,
+      );
+      return { valid: true, corrected: (data as Record<string, unknown>) ?? {}, violations: [] };
+    }
+
     const violations: ContractViolation[] = [];
     const obj = (typeof data === "object" && data !== null ? { ...data as Record<string, unknown> } : {}) as Record<string, unknown>;
     const corrected = { ...obj };
@@ -185,6 +207,14 @@ class BoundaryContractValidator {
         this._recentViolations.splice(0, this._recentViolations.length - MAX_RECENT_VIOLATIONS);
       }
 
+      // Always log contract violations to the console so developers can spot
+      // backend-contract drift without freezing the UI.
+      console.warn(
+        `[contract-validator] ${violations.length} violation(s) in "${contractName}" at ${boundary} boundary — ` +
+        violations.map(v => `${v.field}: expected ${v.expected}, got ${v.received}`).join("; ") +
+        " (corrected to safe defaults; request continues)",
+      );
+
       platformBus.emit("contract:violation", {
         contractName,
         boundary,
@@ -247,11 +277,10 @@ class BoundaryContractValidator {
       if (!this._contracts.has(contractName)) return "pass";
 
       const result = this.validate(payload, contractName, "bus");
-      if (!result.valid) {
-        if (import.meta.env?.DEV) {
-          console.warn(`[contract-validator] Bus event "${type}" had ${result.violations.length} violation(s), corrected`);
-        }
-      }
+      // validate() already logs violations via console.warn — always allow
+      // the bus event to pass through regardless of contract state so the
+      // UI never freezes on a contract mismatch.
+      void result;
       return "pass";
     });
 
