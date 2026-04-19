@@ -46,7 +46,6 @@ export function DeeplinksRoutes() {
       <Route path="/account" element={<Navigate to="/me" replace />} />
       <Route path="/messages" element={<Navigate to="/orbit" replace />} />
       <Route path="/inbox" element={<Navigate to="/notifications" replace />} />
-      <Route path="/wallet/security" element={<Navigate to="/settings/security" replace />} />
       <Route path="/driver/missions" element={<Navigate to="/driver/missions-board" replace />} />
     </>
   );

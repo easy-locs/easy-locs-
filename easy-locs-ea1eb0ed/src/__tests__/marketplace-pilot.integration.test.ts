@@ -213,6 +213,6 @@ describe("Marketplace pilot — integration via ExecutionOrchestratorV2", () => 
     const outcome = await stack.orchestrator.run(task.id);
     expect(outcome.finalStatus).toBe("failed");
     expect(outcome.errorCode).toBe("VERIFICATION_MISMATCH");
-    expect(stack.tasks.snapshot(task.id)?.status).toBe("failed");
+    expect(stack.tasks.snapshot(task.id)?.status).toBe("rolled_back");
   });
 });

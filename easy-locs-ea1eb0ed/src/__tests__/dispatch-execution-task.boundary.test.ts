@@ -13,20 +13,24 @@
  * instance.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const rpc = vi.fn();
 
-vi.mock("@/services/db", () => ({
-  db: {
-    schema: (_schema: string) => ({ rpc }),
-  },
-}));
-
+// Spy on db.schema rather than re-mocking supabase, to avoid conflicts with
+// the global setup.ts supabase mock and vi.mock hoisting order edge cases.
+import { db } from "@/services/db";
 import { dispatchExecutionTask, DispatchError } from "@/lib/execution/dispatch";
 
 describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", () => {
-  beforeEach(() => rpc.mockReset());
+  beforeEach(() => {
+    rpc.mockReset();
+    vi.spyOn(db, "schema").mockReturnValue({ rpc, from: vi.fn() } as never);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("calls system.dispatch_execution_task with the correct argument shape and returns a typed handle", async () => {
     rpc.mockResolvedValueOnce({

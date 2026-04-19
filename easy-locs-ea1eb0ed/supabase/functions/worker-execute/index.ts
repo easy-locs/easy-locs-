@@ -2,13 +2,7 @@
 // Refuses awaiting_approval / killed / forbidden tasks.
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logIncident,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   logMessage, preflight, recordMetric, requireAuthenticated, requireServiceOrSupreme,
-=======
-  logMessage, preflight, recordMetric,
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   logMessage, preflight, recordMetric, requireAuthenticated,
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
@@ -26,13 +20,8 @@ const FORBIDDEN_TYPES = new Set([
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   const deniedAuth = await requireAuthenticated(req); if (deniedAuth) return deniedAuth;
   const deniedSvc = await requireServiceOrSupreme(req); if (deniedSvc) return deniedSvc;
-=======
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   const denied = await requireAuthenticated(req); if (denied) return denied;
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))

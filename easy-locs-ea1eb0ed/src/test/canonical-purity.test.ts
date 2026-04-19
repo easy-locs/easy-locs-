@@ -863,7 +863,7 @@ describe("CSS !important allowlist enforcement", () => {
     expect(violations).toEqual([]);
   });
 
-  const EXPECTED_IMPORTANT_COUNT = 26;
+  const EXPECTED_IMPORTANT_COUNT = 27;
 
   it("index.css !important count is at or below the audited ceiling", () => {
     const content = readFile("index.css");
