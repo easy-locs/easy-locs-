@@ -55,9 +55,11 @@ const mockStorageFrom = vi.fn().mockReturnValue({
 
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
+  const mockSchemaRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task", status: "queued", agent_id: null, agent_version_id: null, blocked_reason: null }, error: null });
   const dbFn = Object.assign(dbProxy, {
     from: (...args: unknown[]) => mockDbFrom(...args),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    schema: vi.fn().mockReturnValue({ rpc: mockSchemaRpc, from: (...args: unknown[]) => mockDbFrom(...args) }),
     functions: { invoke: (...args: unknown[]) => mockFunctionsInvoke(...args) },
     storage: { from: (...args: unknown[]) => mockStorageFrom(...args) },
   });

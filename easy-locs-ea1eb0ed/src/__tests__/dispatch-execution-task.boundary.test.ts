@@ -17,9 +17,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const rpc = vi.fn();
 
-vi.mock("@/services/db", () => ({
-  db: {
-    schema: (_schema: string) => ({ rpc }),
+// Use vi.spyOn to intercept db.schema — ensures the spy is applied to the
+// actual exported `db` object after all modules are resolved, avoiding
+// hoisting-order edge cases with vi.mock + module-level vi.fn() closures.
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: {
+    auth: { getSession: vi.fn(), getUser: vi.fn(), onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }) },
+    from: vi.fn().mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) }),
+    schema: vi.fn().mockReturnValue({ rpc, from: vi.fn() }),
+    rpc: vi.fn(),
+    functions: { invoke: vi.fn() },
+    channel: vi.fn().mockReturnValue({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() }),
+    removeChannel: vi.fn(),
+    removeAllChannels: vi.fn(),
+    getChannels: vi.fn().mockReturnValue([]),
+    storage: { from: vi.fn() },
   },
 }));
 
