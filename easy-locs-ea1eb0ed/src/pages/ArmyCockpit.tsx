@@ -147,6 +147,9 @@ export default function ArmyCockpit() {
   const [killing, setKilling] = useState(false);
 
   const army = supabase.schema("army" as never);
+  const cmd = supabase.schema("command" as never) as unknown as {
+    rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: { ok: boolean; error?: string } | null; error: { message: string } | null }>;
+  };
 
   const { data: snap } = useQuery<DashSnap>({
     queryKey: ["army-dashboard"],
@@ -275,30 +278,46 @@ export default function ArmyCockpit() {
   }, [title, description, domain, risk, user?.id, army, qc]);
 
   const approve = useCallback(async (taskId: string) => {
-    const { error } = await army.rpc("approve_task", { p_task_id: taskId });
-    if (error) toast.error(error.message); else toast.success("approved");
+    const { data, error } = await cmd.rpc("execute_command", {
+      p_command_type: "approve_task",
+      p_input: { task_id: taskId },
+    });
+    if (error || data?.ok === false) toast.error(error?.message ?? data?.error ?? "approve failed");
+    else toast.success("approved");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   const reject = useCallback(async (taskId: string) => {
     const reason = window.prompt("Rejection reason?") ?? "no_reason";
-    const { error } = await army.rpc("reject_task", { p_task_id: taskId, p_reason: reason });
-    if (error) toast.error(error.message); else toast.success("rejected");
+    const { data, error } = await cmd.rpc("execute_command", {
+      p_command_type: "reject_task",
+      p_input: { task_id: taskId, reason },
+    });
+    if (error || data?.ok === false) toast.error(error?.message ?? data?.error ?? "reject failed");
+    else toast.success("rejected");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   const retry = useCallback(async (taskId: string) => {
-    const { error } = await army.rpc("retry_task", { p_task_id: taskId });
-    if (error) toast.error(error.message); else toast.success("retrying");
+    const { data, error } = await cmd.rpc("execute_command", {
+      p_command_type: "retry_task",
+      p_input: { task_id: taskId },
+    });
+    if (error || data?.ok === false) toast.error(error?.message ?? data?.error ?? "retry failed");
+    else toast.success("retrying");
     qc.invalidateQueries({ queryKey: ["army-tasks"] });
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   const killAgent = useCallback(async (agentId: string) => {
     if (!window.confirm("Kill this agent?")) return;
-    const { error } = await army.rpc("kill_agent", { p_agent_id: agentId, p_reason: "manual" });
-    if (error) toast.error(error.message); else toast.success("agent killed");
+    const { data, error } = await cmd.rpc("execute_command", {
+      p_command_type: "kill_agent",
+      p_input: { agent_id: agentId, reason: "manual" },
+    });
+    if (error || data?.ok === false) toast.error(error?.message ?? data?.error ?? "kill agent failed");
+    else toast.success("agent killed");
     qc.invalidateQueries({ queryKey: ["army-agents"] });
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   const killArmy = useCallback(async () => {
     if (!window.confirm("KILL ARMY: stop ALL agents, drain queues, cancel tasks. Continue?")) return;
@@ -306,8 +325,12 @@ export default function ArmyCockpit() {
     setKilling(true);
     try {
       const reason = window.prompt("Kill reason (logged):") ?? "manual";
-      const { error } = await army.rpc("kill_army", { p_reason: reason });
-      if (error) throw error;
+      const { data, error } = await cmd.rpc("execute_command", {
+        p_command_type: "kill_army",
+        p_input: { reason },
+      });
+      if (error) throw new Error(error.message);
+      if (data?.ok === false) throw new Error(data.error ?? "kill army failed");
       toast.error("Army killed.");
       qc.invalidateQueries();
     } catch (err) {
@@ -315,13 +338,17 @@ export default function ArmyCockpit() {
     } finally {
       setKilling(false);
     }
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   const reviveArmy = useCallback(async () => {
-    const { error } = await army.rpc("revive_army");
-    if (error) toast.error(error.message); else toast.success("Army revived");
+    const { data, error } = await cmd.rpc("execute_command", {
+      p_command_type: "revive_army",
+      p_input: {},
+    });
+    if (error || data?.ok === false) toast.error(error?.message ?? data?.error ?? "revive failed");
+    else toast.success("Army revived");
     qc.invalidateQueries();
-  }, [army, qc]);
+  }, [cmd, qc]);
 
   return (
     <DashboardLayout>

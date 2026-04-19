@@ -1872,19 +1872,13 @@
         "hasIndex": true,
         "methods": [
           "GET",
-          "OPTIONS"
+          "OPTIONS",
+          "POST"
         ],
         "name": "dld-analytics",
         "requiresJsonBody": false
       },
-      "mismatches": [
-        {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:65",
-          "detail": "caller uses POST but handler accepts GET,OPTIONS",
-          "fn": "dld-analytics",
-          "kind": "method"
-        }
-      ]
+      "mismatches": []
     },
     {
       "callers": [
@@ -6182,7 +6176,7 @@
     "contractCoverage": "28/117 (23.9%)",
     "declaredContracts": 28,
     "functionsOnDisk": 252,
-    "methodMismatches": 1,
+    "methodMismatches": 0,
     "missingAuthHeaderMismatches": 0,
     "missingBodyMismatches": 0,
     "missingFieldMismatches": 0,
