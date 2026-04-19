@@ -1,5 +1,3 @@
-import { Keyboard } from "@capacitor/keyboard";
-
 export interface KeyboardInfo {
   isVisible: boolean;
   keyboardHeight: number;
@@ -39,6 +37,8 @@ class KeyboardManager {
 
   private async initNative(): Promise<void> {
     try {
+      const { Keyboard } = await import("@capacitor/keyboard");
+
       await Keyboard.setScroll({ isDisabled: false });
 
       try {
@@ -148,6 +148,7 @@ class KeyboardManager {
   async show(): Promise<void> {
     if (!isNative()) return;
     try {
+      const { Keyboard } = await import("@capacitor/keyboard");
       await Keyboard.show();
     } catch {}
   }
@@ -158,6 +159,7 @@ class KeyboardManager {
       return;
     }
     try {
+      const { Keyboard } = await import("@capacitor/keyboard");
       await Keyboard.hide();
     } catch {}
   }
@@ -165,6 +167,7 @@ class KeyboardManager {
   async setAccessoryBarVisible(visible: boolean): Promise<void> {
     if (!isNative()) return;
     try {
+      const { Keyboard } = await import("@capacitor/keyboard");
       await Keyboard.setAccessoryBarVisible({ isVisible: visible });
     } catch {}
   }
