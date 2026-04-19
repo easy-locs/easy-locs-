@@ -136,6 +136,7 @@ export function AdminRoutes() {
       <Route path="/admin/control/master" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       {/* Task #1031 — Supreme Admin Dashboard P0 sections. SuperAdminGate
           is non-negotiable on every Phase 1 section. */}
+      <Route path="/admin/control/overview" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/tasks" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/watchdog" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
       <Route path="/admin/control/proof" element={<ProtectedRoute><SuperAdminGate><FeatureErrorBoundary featureName="Admin"><AdminShellWithChunkBoundary /></FeatureErrorBoundary></SuperAdminGate></ProtectedRoute>} />
