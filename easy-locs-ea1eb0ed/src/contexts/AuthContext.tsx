@@ -299,7 +299,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setOnboardingCompleted(profile.onboardingCompleted);
     setProfileLoaded(true);
     setProfileCountry(profile.country);
-    autoDetectAndSwitchLocale(profile.country).catch(() => {});
+    autoDetectAndSwitchLocale(profile.country).catch((err: unknown) => {
+      console.warn("[AuthContext] autoDetectAndSwitchLocale failed:", err);
+    });
   }, []);
 
   const fetchDualRoleDeferred = useCallback(async (userId: string) => {
@@ -333,11 +335,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     } catch (err) {
       console.warn("[AuthContext] DB slow → fetchDualRoleDeferred fallback safe:", err);
+      const VALID_ROLES: ActiveRole[] = ["landlord", "tenant", "client"];
       const cachedRole = (() => {
         try { return localStorage.getItem(`easylocs_active_role_${userId}`); } catch { return null; }
       })();
+      const validCachedRole = (cachedRole && VALID_ROLES.includes(cachedRole as ActiveRole))
+        ? (cachedRole as ActiveRole)
+        : null;
       const cachedAuth = getCachedAuth();
-      setActiveRole((cachedRole as ActiveRole) ?? cachedAuth?.role ?? "client");
+      setActiveRole(validCachedRole ?? cachedAuth?.role ?? "client");
       setHasDualRole(false);
     }
   }, [onboardingCompleted, withTimeout]);

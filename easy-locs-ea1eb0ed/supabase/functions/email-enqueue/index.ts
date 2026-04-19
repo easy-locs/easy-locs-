@@ -1,19 +1,15 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 // deno-lint-ignore-file no-explicit-any
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -43,7 +39,7 @@ Deno.serve(async (req) => {
       const { data: userData, error: authErr } = await userClient.auth.getUser(token);
       if (authErr || !userData?.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401
         });
       }
     }
@@ -78,12 +74,12 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ queued: true, job_id: job.id }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: any) {
     return new Response(
       JSON.stringify({ error: e.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

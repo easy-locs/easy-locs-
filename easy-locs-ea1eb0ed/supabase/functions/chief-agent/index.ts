@@ -1,14 +1,8 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
 
 interface ChiefAgentRequest {
   command: string;
@@ -93,7 +87,7 @@ async function requireSuperAdmin(
         JSON.stringify({ error: "Super admin privileges required" }),
         {
           status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       ),
     };
@@ -356,7 +350,7 @@ Deno.serve(async (req) => {
   if (__qsCheck.rejected) return __qsCheck.response!;
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const auth = await requireAuthenticatedUser(req);
@@ -376,7 +370,7 @@ Deno.serve(async (req) => {
     if (!command && !actionType) {
       return new Response(
         JSON.stringify({ error: "Command or actionType is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -626,7 +620,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify(parsed),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("[chief-agent] Error:", err);
@@ -635,7 +629,7 @@ Deno.serve(async (req) => {
         error: err instanceof Error ? err.message : "Unknown error",
         correlationId: generateCorrelationId(),
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

@@ -1,5 +1,6 @@
 // PUBLIC: Inbound email — auth via SENDGRID_INBOUND_SECRET (constant-time) + withRateLimit.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 // LB1 Track 1 (#841) — AI parsing of inbound command emails goes through the
 // platform agent registry via `parseEmailWithAI` (extracted to ./parser.ts).
 // Direct `openaiChat` is no longer permitted on this surface.
@@ -7,11 +8,6 @@ import { parseEmailWithAI, type ParsedEmail } from "./parser.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { verifyHmacSha256, constantTimeEqual } from "../_shared/webhook-signature.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-webhook-signature, x-webhook-secret, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -44,12 +40,12 @@ async function createGithubIssue(parsed: ParsedEmail): Promise<{ number: number;
 
 async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: getCorsHeaders(req) });
 
   if (!COMMAND_EMAIL_SECRET && !COMMAND_EMAIL_HMAC_SECRET) {
     console.error("[command-email-intake] No webhook secret configured — rejecting request");
-    return new Response(JSON.stringify({ error: "Webhook not configured" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Webhook not configured" }), { status: 503, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 
   // Read the raw body once so we can verify the HMAC over the exact bytes
@@ -71,7 +67,7 @@ async function handler(req: Request): Promise<Response> {
     constantTimeEqual(providedSecret, COMMAND_EMAIL_SECRET);
 
   if (!hmacOk && !legacyOk) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 
   try {
@@ -91,13 +87,13 @@ async function handler(req: Request): Promise<Response> {
       subject = body.subject || "";
       textBody = body.text || body.body || "";
     } else {
-      return new Response(JSON.stringify({ error: "Unsupported content type" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Unsupported content type" }), { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const emailMatch = fromEmail.match(/<([^>]+)>/);
     fromEmail = (emailMatch ? emailMatch[1] : fromEmail).trim().toLowerCase();
     if (!fromEmail) {
-      return new Response(JSON.stringify({ error: "No sender email" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "No sender email" }), { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     console.log("[command-email-intake] Processing from:", fromEmail, "subject:", subject);
@@ -118,7 +114,7 @@ async function handler(req: Request): Promise<Response> {
 
     if (insertErr) {
       console.error("[command-email-intake] Insert failed:", insertErr);
-      return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Failed to save" }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const ghIssue = await createGithubIssue(parsed);
@@ -147,10 +143,10 @@ async function handler(req: Request): Promise<Response> {
       email_id: emailRecord.id,
       parsed,
       github_issue: ghIssue,
-    }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
     console.error("[command-email-intake] Error:", err);
-    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: (err as Error).message }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 }
 

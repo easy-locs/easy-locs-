@@ -1,13 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const logStep = (step: string, details?: unknown) => {
   console.log(`[COLLECT-SEPA] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
@@ -16,7 +12,7 @@ const logStep = (step: string, details?: unknown) => {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -42,7 +38,7 @@ Deno.serve(async (req) => {
         .single();
       if (!config || config.value !== cronSecret) {
         return new Response(JSON.stringify({ error: "Invalid cron secret" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403,
         });
       }
     } else if (authHeader) {
@@ -50,19 +46,19 @@ Deno.serve(async (req) => {
       const { error } = await supabase.auth.getUser(token);
       if (error) {
         return new Response(JSON.stringify({ error: "Authentication failed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
         });
       }
     } else {
       return new Response(JSON.stringify({ error: "No authorization" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not set" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503,
       });
     }
 
@@ -81,14 +77,14 @@ Deno.serve(async (req) => {
 
     if (fetchError) {
       return new Response(JSON.stringify({ error: `Fetch error: ${fetchError.message}` }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500,
       });
     }
     if (!unpaidCalls || unpaidCalls.length === 0) {
       logStep("No unpaid rent calls for this month");
       return new Response(
         JSON.stringify({ success: true, processed: 0, message: "No unpaid rents" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -204,14 +200,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ success: true, collected, failed, total: unpaidCalls.length, errors }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
     return new Response(
       JSON.stringify({ error: "Collection failed" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

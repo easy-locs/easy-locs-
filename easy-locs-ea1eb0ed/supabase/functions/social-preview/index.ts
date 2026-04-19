@@ -1,13 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 const BRAND_NAME = "EASY-LOCS®";
 const APP_URL = (Deno.env.get("APP_URL") || "https://www.easy-locs.com").replace(/\/+$/, "");
 const DEFAULT_OG_IMAGE = `${APP_URL}/og/og-default.jpg`;
@@ -167,7 +163,7 @@ async function handleListing(req: Request, slug: string, shareUrl: string, share
     .maybeSingle();
 
   if (!listing) {
-    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+    return new Response("Not found", { status: 404, headers: getCorsHeaders(req) });
   }
 
   const { data: property } = await cRpcEdge(supabase, "get_listing_property", { p_listing_id: listing.id });
@@ -235,7 +231,7 @@ async function handleService(req: Request, slug: string, shareUrl: string, share
   }
 
   if (!service) {
-    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+    return new Response("Not found", { status: 404, headers: getCorsHeaders(req) });
   }
 
   const photos: string[] = Array.isArray(service.photo_urls) ? (service.photo_urls as string[]).filter(Boolean) : [];
@@ -261,7 +257,7 @@ async function handleHost(req: Request, slug: string, shareUrl: string, shareVer
     .maybeSingle();
 
   if (!host) {
-    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+    return new Response("Not found", { status: 404, headers: getCorsHeaders(req) });
   }
 
   const image = withCacheBust(host.avatar_url || DEFAULT_OG_IMAGE, shareVersion || host.updated_at || null);
@@ -281,7 +277,7 @@ async function handleProvider(req: Request, slug: string, shareUrl: string, shar
     .maybeSingle();
 
   if (!provider) {
-    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+    return new Response("Not found", { status: 404, headers: getCorsHeaders(req) });
   }
 
   const { data: firstService } = await supabase
@@ -312,7 +308,7 @@ async function handleRealEstate(req: Request, slug: string, shareUrl: string, sh
     .maybeSingle();
 
   if (!listing) {
-    return new Response("Not found", { status: 404, headers: { ...corsHeaders } });
+    return new Response("Not found", { status: 404, headers: getCorsHeaders(req) });
   }
 
   const photos: string[] = Array.isArray(listing.photo_urls) ? (listing.photo_urls as string[]) : [];
@@ -806,7 +802,7 @@ function buildBrandedFallback(req: Request, shareUrl: string): Response {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -819,7 +815,7 @@ Deno.serve(async (req) => {
   if (!type || !slug) {
     return new Response(JSON.stringify({ error: "Missing type or slug" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 

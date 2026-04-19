@@ -21,7 +21,7 @@ export interface CryptoWorkerAPI {
 const ALGO = "AES-GCM";
 
 async function importKey(keyBase64: string): Promise<CryptoKey> {
-  const raw = Uint8Array.from(atob(keyBase64), (c) => c.charCodeAt(0));
+  const raw = base64ToBytes(keyBase64);
   return crypto.subtle.importKey("raw", raw, { name: ALGO }, false, [
     "encrypt",
     "decrypt",
@@ -29,11 +29,25 @@ async function importKey(keyBase64: string): Promise<CryptoKey> {
 }
 
 function toBase64(buffer: ArrayBuffer): string {
-  return btoa(String.fromCharCode(...new Uint8Array(buffer)));
+  const bytes = new Uint8Array(buffer);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 function fromBase64(base64: string): Uint8Array {
-  return Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function base64ToBytes(base64: string): Uint8Array {
+  return fromBase64(base64);
 }
 
 const api: CryptoWorkerAPI = {

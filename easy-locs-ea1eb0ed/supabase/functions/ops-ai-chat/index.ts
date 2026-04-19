@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 // LB1 Track 1 (#841) — ops-ai-chat now goes through the platform agent
 // registry. Direct `openaiChat` is no longer permitted on this surface; every
@@ -7,16 +8,10 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -53,7 +48,7 @@ Deno.serve(async (req) => {
           },
           model: it.model ?? "gpt-4o-mini",
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -68,24 +63,24 @@ Deno.serve(async (req) => {
     if (outcome.errorCode === "AI_QUOTA_EXCEEDED") {
       return new Response(
         JSON.stringify({ error: "Rate limits exceeded, please try again later." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
     if (/\b402\b|payment\s*required|insufficient.*quota/i.test(msg)) {
       return new Response(
         JSON.stringify({ error: "Payment required, please add funds." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 402, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
     return new Response(
       JSON.stringify({ error: "OpenAI API error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (err) {
     console.error("ops-ai-chat error:", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

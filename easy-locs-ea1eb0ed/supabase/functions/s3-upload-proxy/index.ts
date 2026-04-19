@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
@@ -8,12 +9,6 @@ import {
   s3DeleteObject,
   s3HeadObject,
 } from "../_shared/aws-sdk-clients.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const ALLOWED_BUCKETS: Set<string> = new Set([
   "property-media",
@@ -47,7 +42,7 @@ function scopeKeyToUser(bucket: string, path: string, userId: string): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -58,7 +53,7 @@ Deno.serve(async (req) => {
   if (!hasAwsCredentials()) {
     return new Response(
       JSON.stringify({ success: false, error: "AWS S3 not configured" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503 },
     );
   }
 
@@ -69,14 +64,14 @@ Deno.serve(async (req) => {
     if (!bucket || !ALLOWED_BUCKETS.has(bucket)) {
       return new Response(
         JSON.stringify({ success: false, error: `Bucket not allowed: ${bucket}` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 },
       );
     }
 
     if (!sanitizePath(path)) {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid path" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 },
       );
     }
 
@@ -86,7 +81,7 @@ Deno.serve(async (req) => {
       const url = await s3GetPresignedUrl(s3Key, expiresIn || 3600);
       return new Response(
         JSON.stringify({ success: true, url }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -94,7 +89,7 @@ Deno.serve(async (req) => {
       await s3DeleteObject(s3Key);
       return new Response(
         JSON.stringify({ success: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -102,14 +97,14 @@ Deno.serve(async (req) => {
       const result = await s3HeadObject(s3Key);
       return new Response(
         JSON.stringify({ success: true, ...result }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
     if (fileSize && fileSize > 100 * 1024 * 1024) {
       return new Response(
         JSON.stringify({ success: false, error: "File too large (max 100MB)" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 },
       );
     }
 
@@ -123,13 +118,13 @@ Deno.serve(async (req) => {
         contentType,
         fileSize,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ success: false, error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 });

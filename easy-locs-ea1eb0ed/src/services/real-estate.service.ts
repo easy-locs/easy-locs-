@@ -9,6 +9,11 @@ import type { CurrencyCode } from "@/domains/shared/canonical-types";
 
 type Row = Record<string, unknown>;
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function assertUuid(id: string, label = "id"): void {
+  if (!UUID_RE.test(id)) throw new Error(`Invalid ${label} format`);
+}
+
 function s(r: Row, key: string): string { return (r[key] as string) ?? ""; }
 function sOpt(r: Row, key: string): string | undefined { return (r[key] as string) ?? undefined; }
 function n(r: Row, key: string): number { return (r[key] as number) ?? 0; }
@@ -350,7 +355,10 @@ export const realEstatePropertyService = {
     if (filters?.maxArea) query = query.lte("surface_sqm", filters.maxArea);
     if (filters?.furnished) query = query.eq("furnished", true);
     if (filters?.search) {
-      const term = `%${filters.search}%`;
+      // Use separate ilike calls chained with .or() to avoid user-controlled string
+      // injection into the PostgREST query syntax.
+      const safeTerm = filters.search.replace(/[%_\\]/g, "\\$&");
+      const term = `%${safeTerm}%`;
       query = query.or(`title.ilike.${term},description.ilike.${term},city.ilike.${term},district.ilike.${term},address.ilike.${term}`);
     }
 
@@ -667,6 +675,7 @@ export const realEstatePaymentService = {
   },
 
   async fetchByUser(userId: string): Promise<PropertyPayment[]> {
+    assertUuid(userId, "userId");
     const { data, error } = await db("property_payments")
       .select("*")
       .or(`payer_id.eq.${userId},receiver_id.eq.${userId}`)
@@ -687,6 +696,7 @@ export const realEstatePaymentService = {
   },
 
   async fetchByType(userId: string, paymentType: string): Promise<PropertyPayment[]> {
+    assertUuid(userId, "userId");
     const { data, error } = await db("property_payments")
       .select("*")
       .or(`payer_id.eq.${userId},receiver_id.eq.${userId}`)

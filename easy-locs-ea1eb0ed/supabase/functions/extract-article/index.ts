@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse, rateLimitHeaders, getClientIp, resolveUserTier, getTierEndpointLimit } from "../_shared/server-rate-limiter.ts";
@@ -9,13 +10,6 @@ import { validateUrlSsrf } from "../_shared/ssrf-validation.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-metrics-key, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
-
 const DIRECT_FETCH_TIMEOUT_MS = 8_000;
 const MAX_CONTENT_LENGTH = 500_000;
 
@@ -467,7 +461,7 @@ Deno.serve(async (req) => {
   const logger = createEdgeLogger("extract-article");
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -509,14 +503,14 @@ Deno.serve(async (req) => {
         }),
         {
           status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }
     const snapshot = getCacheMetricsSnapshot();
     logger.info("cache_metrics_requested", { ...snapshot, authMethod: keyAuth ? "key:header" : "jwt" });
     return new Response(JSON.stringify(snapshot), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -553,7 +547,7 @@ Deno.serve(async (req) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -576,7 +570,7 @@ Deno.serve(async (req) => {
       });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -619,7 +613,7 @@ Deno.serve(async (req) => {
     if (req.method !== "POST") {
       return new Response(JSON.stringify({ error: "Method not allowed" }), {
         status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -629,7 +623,7 @@ Deno.serve(async (req) => {
     } catch {
       return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -639,7 +633,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "Missing required field: url" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }
@@ -650,7 +644,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: ssrfCheck.reason }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }
@@ -667,7 +661,7 @@ Deno.serve(async (req) => {
         hitRate: metrics.hitRate,
       });
       return new Response(JSON.stringify(cached), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     logger.info("cache_miss", { url: targetUrl, cacheSize: articleCache.size, totalMisses: cacheMetrics.misses });
@@ -834,7 +828,7 @@ Deno.serve(async (req) => {
 
     const tierLimits = getTierEndpointLimit("extract-article", userTier);
     const rlHeaders = rateLimitHeaders(rlResult, tierLimits.maxRequests);
-    const responseHeaders = { ...corsHeaders, "Content-Type": "application/json", ...rlHeaders };
+    const responseHeaders = { ...getCorsHeaders(req), "Content-Type": "application/json", ...rlHeaders };
 
     return new Response(JSON.stringify(result), {
       headers: responseHeaders,
@@ -850,7 +844,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: "Internal Server Error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }

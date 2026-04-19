@@ -1,14 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 // LB1 #835 — AI translation goes through the platform-native registry so
 // every model call is governed (quota, sensitive routing, audit). Direct
 // `openaiChat` is no longer permitted on this surface.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const LOCALE_NAMES: Record<string, string> = {
   fr: "French", en: "English", es: "Spanish", de: "German", it: "Italian",
@@ -125,7 +121,7 @@ export function detectLanguageFromText(text: string): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -135,7 +131,7 @@ Deno.serve(async (req) => {
 
     if (!text) {
       return new Response(JSON.stringify({ error: "Missing text" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -143,19 +139,19 @@ Deno.serve(async (req) => {
     if (detect_only) {
       const detected = detectLanguageFromText(text);
       return new Response(JSON.stringify({ detected_locale: detected }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (!from_locale || !to_locale) {
       return new Response(JSON.stringify({ error: "Missing from_locale or to_locale" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (from_locale === to_locale) {
       return new Response(JSON.stringify({ translated: text, engine: "none" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -173,17 +169,17 @@ Deno.serve(async (req) => {
 
     if (!translated) {
       return new Response(JSON.stringify({ error: "All translation engines failed" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ translated, engine, original: text, from_locale, to_locale }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("translate-message error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

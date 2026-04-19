@@ -1,21 +1,16 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const logStep = (step: string, details?: unknown) =>
   console.log(`[PROCESS-REFUND] ${step}${details ? ` - ${JSON.stringify(details)}` : ""}`);
 
 Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -27,7 +22,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
@@ -36,7 +31,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       return new Response(JSON.stringify({ error: "Payment system not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503,
       });
     }
 
@@ -48,7 +43,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Authentication failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
@@ -57,7 +52,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
 
     if (!booking_id) {
       return new Response(JSON.stringify({ error: "booking_id required" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
     const type = booking_type || "marketplace";
@@ -71,7 +66,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
 
     if (fetchError || !booking) {
       return new Response(JSON.stringify({ error: "Booking not found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 404,
       });
     }
 
@@ -84,7 +79,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
 
     if (!membership) {
       return new Response(JSON.stringify({ error: "Not a member of this organization" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403,
       });
     }
 
@@ -93,7 +88,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
     };
     if ((roleLevel[membership.role] || 0) < 60) {
       return new Response(JSON.stringify({ error: "Insufficient role for refunds" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403,
       });
     }
 
@@ -152,7 +147,7 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
 
     if (updateError) {
       return new Response(JSON.stringify({ error: `Failed to update booking: ${updateError.message}` }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500,
       });
     }
 
@@ -178,14 +173,14 @@ Deno.serve(withEdgeLogging("process-refund", async (req, logger) => {
         refund_status: refundStatus,
         stripe_refund_id: stripeRefundId,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     logStep("Error", { error: message });
     return new Response(
       JSON.stringify({ error: "Refund processing failed" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 }));

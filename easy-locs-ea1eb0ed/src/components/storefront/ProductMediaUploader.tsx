@@ -43,7 +43,7 @@ export default function ProductMediaUploader({
     async (file: File, subfolder: string): Promise<string | null> => {
       if (!user) return null;
       const ext = file.name.split(".").pop()?.toLowerCase() || "bin";
-      const path = `${user.id}/${subfolder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const path = `${user.id}/${subfolder}/${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.${ext}`;
 
       const publicUrl = await storefrontRepo.uploadProductFile(path, file);
       return publicUrl;

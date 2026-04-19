@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * prayer-times — Fetches Islamic prayer times from Al-Adhan API and caches them.
  * Cache TTL: 24h per location (lat/lng rounded to 2 decimal places).
@@ -7,12 +8,6 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 const ALADHAN_BASE = "https://api.aladhan.com/v1";
 const CACHE_TTL_HOURS = 24;
 
@@ -34,7 +29,7 @@ interface PrayerTimesResult {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -54,7 +49,7 @@ Deno.serve(async (req) => {
     if (!latParam || !lngParam) {
       return new Response(
         JSON.stringify({ error: "lat and lng are required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -64,7 +59,7 @@ Deno.serve(async (req) => {
     if (isNaN(lat) || isNaN(lng)) {
       return new Response(
         JSON.stringify({ error: "Invalid lat/lng" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -85,7 +80,7 @@ Deno.serve(async (req) => {
     if (cached) {
       return new Response(
         JSON.stringify({ data: cached.prayer_data, cached: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -96,7 +91,7 @@ Deno.serve(async (req) => {
     if (!resp.ok) {
       return new Response(
         JSON.stringify({ error: "Failed to fetch prayer times from Al-Adhan API" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 502, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -104,7 +99,7 @@ Deno.serve(async (req) => {
     if (json.code !== 200 || !json.data?.timings) {
       return new Response(
         JSON.stringify({ error: "Invalid response from Al-Adhan API" }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 502, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -142,13 +137,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ data: result, cached: false }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("[prayer-times]", err);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

@@ -11,17 +11,12 @@
  * Returns: { task_id, status }
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
   buildMethodNotAllowedResponse,
   isAllowedTriggerGithubMethod,
 } from "./method-guard.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const GITHUB_RUNNER_DOMAIN = "github-runner";
 const SMOKE_NOOP = "SMOKE_NOOP";
@@ -31,7 +26,7 @@ Deno.serve(async (req) => {
   if (__qsCheck.rejected) return __qsCheck.response!;
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   // Lock the endpoint to POST-only requests. This Edge Function dispatches a
@@ -51,7 +46,7 @@ Deno.serve(async (req) => {
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -63,7 +58,7 @@ Deno.serve(async (req) => {
   if (authError || !user) {
     return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -75,7 +70,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: "Admin role required to trigger agent runs" }),
       {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }
@@ -108,7 +103,7 @@ Deno.serve(async (req) => {
         }));
         return new Response(
           JSON.stringify({ error: "Request body must be valid JSON" }),
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
         );
       }
     }
@@ -140,7 +135,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: rpcError.message }),
         {
           status: rpcError.code === "42501" ? 403 : 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }
@@ -150,7 +145,7 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: "dispatch_execution_task returned no row" }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       );
     }
@@ -159,7 +154,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ task_id: task.id, status: task.status }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   } catch (e: unknown) {
@@ -169,7 +164,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: msg }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }

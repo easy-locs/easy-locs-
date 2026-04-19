@@ -1,17 +1,13 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -29,7 +25,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
@@ -37,7 +33,7 @@ Deno.serve(async (req) => {
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Authentication failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
     const user = userData.user;
@@ -51,7 +47,7 @@ Deno.serve(async (req) => {
 
     if (!orgMember) {
       return new Response(JSON.stringify({ error: "No organization found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 404,
       });
     }
 
@@ -63,7 +59,7 @@ Deno.serve(async (req) => {
 
     if (!org?.stripe_account_id) {
       return new Response(JSON.stringify({ success: true, message: "No Stripe account to disconnect" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -80,13 +76,13 @@ Deno.serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ success: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[disconnect-stripe] Error:", msg);
     return new Response(JSON.stringify({ error: "Failed to disconnect" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       status: 500,
     });
   }

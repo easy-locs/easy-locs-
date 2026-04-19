@@ -11,16 +11,12 @@
 //   { entityType, limit?: number, missingOnly?: boolean }
 
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { applyGuardrails, sanitizeAssistantOutput } from "../_shared/ai-guardrails.ts";
 import { logAiInteraction, checkAiQuota } from "../_shared/ai-cost-tracker.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 type EntityType = "listing" | "seed_product" | "marketplace_service";
 
@@ -260,7 +256,7 @@ async function enrichOne(
 
 Deno.serve(async (req) => {
   const __qs = rejectQuerySecrets(req); if (__qs.rejected) return __qs.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -285,7 +281,7 @@ Deno.serve(async (req) => {
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     userId = user.id;
@@ -294,7 +290,7 @@ Deno.serve(async (req) => {
     if (!q.allowed) {
       return new Response(
         JSON.stringify({ error: "Daily AI quota reached", reason: q.reason, used: q.used, limits: q.limits }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
   }
@@ -306,7 +302,7 @@ Deno.serve(async (req) => {
     const entityType = body.entityType as EntityType | undefined;
     if (!entityType || !SOURCES[entityType]) {
       return new Response(JSON.stringify({ error: "Unknown entityType" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -315,7 +311,7 @@ Deno.serve(async (req) => {
       const status = !res.ok && res.error === "forbidden" ? 403 : 200;
       return new Response(JSON.stringify(res), {
         status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -327,7 +323,7 @@ Deno.serve(async (req) => {
     if (!isPrivileged) {
       if (!userId) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       // Restrict candidates to rows the user owns via any configured owner column.
@@ -367,12 +363,12 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       processed, total: results.length,
       results,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
     console.error("[ai-content-enrichment]", err);
     return new Response(
       JSON.stringify({ error: err instanceof Error ? err.message : "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   }
 });

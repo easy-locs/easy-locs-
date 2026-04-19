@@ -1,13 +1,8 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const FIRECRAWL_BASE = "https://api.firecrawl.dev/v1";
 const TIMEOUT_MS = 30_000;
@@ -45,25 +40,25 @@ async function verifyAuth(req: Request): Promise<{ ok: boolean; error?: string; 
 
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
   const auth = await verifyAuth(req);
   if (!auth.ok) {
     return new Response(JSON.stringify({ error: auth.error }),
-      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 
   if (!checkRateLimit(auth.userId!)) {
     return new Response(JSON.stringify({ error: "Rate limit exceeded. Max 10 requests per minute." }),
-      { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 
   const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
   if (!firecrawlKey) {
     return new Response(JSON.stringify({ error: "FIRECRAWL_API_KEY not configured" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 
   try {
@@ -72,7 +67,7 @@ Deno.serve(async (req) => {
 
     if (!action || !["search", "scrape", "map"].includes(action)) {
       return new Response(JSON.stringify({ error: "Invalid action. Use: search, scrape, or map" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     const url = `${FIRECRAWL_BASE}/${action}`;
@@ -94,17 +89,17 @@ Deno.serve(async (req) => {
 
       if (!res.ok) {
         return new Response(JSON.stringify({ error: data?.error || `Firecrawl ${res.status}` }),
-          { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+          { status: res.status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
       }
 
       return new Response(JSON.stringify(data),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     } finally {
       clearTimeout(timer);
     }
   } catch (err) {
     console.error("[scrape-proxy]", err);
     return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });

@@ -1,4 +1,6 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 /**
  * payment-notification — Bank-style transaction notifications with payment location.
  * Called after successful payment webhook to create rich user notifications.
@@ -9,19 +11,18 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(withEdgeLogging("payment-notification", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
+
+  const authResult = await requireAuthenticatedUser(req);
+  if (!authResult.authorized) return authResult.response!;
+  const callerUserId = authResult.userId;
+
   const supabase = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
   try {
@@ -38,7 +39,15 @@ Deno.serve(withEdgeLogging("payment-notification", async (req, logger) => {
 
     if (!user_id || !amount) {
       return new Response(JSON.stringify({ error: "user_id and amount required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
+      });
+    }
+
+    // Ensure the authenticated caller can only create notifications for themselves
+    // (service_role callers – e.g. other edge functions – are exempt from this check)
+    if (callerUserId !== "service_role" && callerUserId !== user_id) {
+      return new Response(JSON.stringify({ error: "Forbidden: cannot create notifications for another user" }), {
+        status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -104,13 +113,13 @@ Deno.serve(withEdgeLogging("payment-notification", async (req, logger) => {
 
     logger.info("payment_notification_sent", { user_id, payment_type, currency });
     return new Response(JSON.stringify({ success: true, title, body }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     logger.error("payment_notification_error", { error: message });
     return new Response(JSON.stringify({ error: message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

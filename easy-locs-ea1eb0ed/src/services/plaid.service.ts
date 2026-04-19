@@ -195,7 +195,7 @@ export async function initiateAchTransfer(
       .select("item_id")
       .eq("user_id", userId)
       .limit(1)
-      .single();
+      .maybeSingle();
     if (!items) return { ok: false, error: "No linked bank account found" };
     itemId = items.item_id;
   }

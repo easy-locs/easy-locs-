@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // LB Closeout #852 — orbit-ai-support routes through the platform agent
 // registry so support classification is governed (quota, sensitive routing,

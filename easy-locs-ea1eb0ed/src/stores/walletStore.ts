@@ -109,6 +109,12 @@ export const useWalletStore = create<WalletStore>((set, get) => ({
       .then(({ error }) => {
         if (error) {
           structuredLogger.error("wallet", "persistence_failure", `Failed to persist transaction success: ${error.message} (tx: ${transactionId})`);
+          // Roll back optimistic update so UI reflects actual DB state
+          set((state) => ({
+            transactions: state.transactions.map((item) =>
+              item.id === transactionId ? { ...item, status: "pending" as const } : item
+            ),
+          }));
         }
       });
 

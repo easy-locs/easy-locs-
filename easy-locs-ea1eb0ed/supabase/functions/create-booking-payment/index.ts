@@ -1,13 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const logStep = (step: string, details?: any) => {
   console.log(`[BOOKING-PAYMENT] ${step}${details ? ` - ${JSON.stringify(details)}` : ''}`);
@@ -22,7 +18,7 @@ const COUNTRY_CURRENCY: Record<string, string> = {
 
 Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -39,17 +35,17 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
 
     if (!nights || nights <= 0) {
       return new Response(JSON.stringify({ error: "Invalid nights" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
     if (!guest_email) {
       return new Response(JSON.stringify({ error: "Guest email required" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
     if (!listing_id) {
       return new Response(JSON.stringify({ error: "Listing ID required" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
@@ -62,7 +58,7 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       return new Response(JSON.stringify({ error: "Payment system not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503,
       });
     }
 
@@ -85,14 +81,14 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
 
     if (!listing) {
       return new Response(JSON.stringify({ error: "Listing not found" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 404,
       });
     }
 
     const pricePerNight = listing.price_per_night ?? 0;
     if (pricePerNight <= 0) {
       return new Response(JSON.stringify({ error: "Listing has no valid price" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
     const expectedTotal = pricePerNight * nights;
@@ -100,7 +96,7 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
     if (!amount || Math.abs(amount - expectedTotal) > 0.01) {
       logStep("Price mismatch", { clientAmount: amount, expectedTotal, pricePerNight, nights });
       return new Response(JSON.stringify({ error: `Amount mismatch: expected ${expectedTotal}` }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
@@ -143,7 +139,7 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
         if (overlapping && overlapping.length > 0) {
           logStep("Date overlap detected, rejecting payment");
           return new Response(JSON.stringify({ error: "Ces dates ne sont plus disponibles." }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
             status: 409,
           });
         }
@@ -228,14 +224,14 @@ Deno.serve(withEdgeLogging("create-booking-payment", async (req, logger) => {
     }
 
     return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       status: 200,
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: msg });
     return new Response(JSON.stringify({ error: msg }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       status: 500,
     });
   }

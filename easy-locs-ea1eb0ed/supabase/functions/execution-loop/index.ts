@@ -27,6 +27,7 @@
  * secret, RLS, financial) are refused at the agent layer (see contract.ts).
  */
 import { createClient, SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { getAgentForDomain } from "../_shared/execution-agents/registry.ts";
@@ -78,12 +79,6 @@ import {
   DEFAULT_HEARTBEAT_CADENCE_MS,
   type HeartbeatEmitter,
 } from "../_shared/execution/heartbeat-emitter.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const DEFAULT_BATCH_SIZE = 10;
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -1100,7 +1095,7 @@ catch (e) { console.warn("[execution-loop] eager heartbeat start failed:", e); }
 Deno.serve(async (req) => {
   const __qs = rejectQuerySecrets(req);
   if (__qs.rejected) return __qs.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   // Origin gate: requireRouterOrigin already accepts BOTH the router internal
   // header (set by system-router on admin-gated proxies) AND a direct
@@ -1201,6 +1196,6 @@ Deno.serve(async (req) => {
       total_ms: Date.now() - startedAt,
       timestamp: new Date().toISOString(),
     }),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
   );
 });

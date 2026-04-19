@@ -1,15 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { claimIdempotencyKey, finalizeIdempotencyKey } from "../_shared/idempotency.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface DispatchPayload {
   user_id: string;
@@ -117,7 +112,7 @@ function isInQuietHours(prefs: NotificationPrefs | null): boolean {
 
 Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -140,7 +135,7 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
       logger.warn("invalid_payload", { user_id, event_type });
       return new Response(
         JSON.stringify({ error: "user_id, event_type, and title are required" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
       );
     }
 
@@ -166,14 +161,14 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
         logger.info("deduplicated_replay", { dedupe_key: payload.dedupe_key });
         return new Response(
           JSON.stringify({ status: "deduplicated", replayed: true, prior: claim.result }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
       if (!claim.isNew && claim.status === "pending") {
         logger.info("deduplicated_inflight", { dedupe_key: payload.dedupe_key });
         return new Response(
           JSON.stringify({ status: "in_flight", dedupe_key: payload.dedupe_key }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 202 }
         );
       }
     }
@@ -195,7 +190,7 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
       logger.info("quiet_hours_deferred", { userId: user_id });
       return new Response(
         JSON.stringify({ status: "deferred", reason: "quiet_hours", channels: {} }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -415,7 +410,7 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
 
     return new Response(
       JSON.stringify(responseBody),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -436,7 +431,7 @@ Deno.serve(withEdgeLogging("notification-dispatcher", async (req, logger) => {
     } catch { /* never let cleanup mask the original error */ }
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 }));

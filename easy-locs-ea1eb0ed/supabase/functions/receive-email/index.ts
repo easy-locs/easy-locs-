@@ -1,5 +1,6 @@
 // PUBLIC: SendGrid Inbound Parse — auth via SENDGRID_INBOUND_SECRET + withRateLimit.
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * Inbound Email Webhook — receives emails from SendGrid Inbound Parse
  * and routes them into the correct Communication Center thread.
@@ -14,11 +15,6 @@ import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { constantTimeEqual } from "../_shared/webhook-signature.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -117,10 +113,10 @@ async function translateText(text: string, fromLocale: string, toLocale: string)
 
 async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
-  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: getCorsHeaders(req) });
 
   // ── Webhook authentication: verify shared secret (constant-time compare) ──
   const WEBHOOK_SECRET = Deno.env.get("SENDGRID_INBOUND_SECRET");
@@ -129,14 +125,14 @@ async function handler(req: Request): Promise<Response> {
     if (!constantTimeEqual(providedSecret, WEBHOOK_SECRET)) {
       console.warn("[receive-email] Rejected: invalid webhook secret");
       return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
   } else {
     // If no secret is configured, reject all requests as a safety measure
     console.error("[receive-email] SENDGRID_INBOUND_SECRET not configured — rejecting request");
     return new Response(JSON.stringify({ error: "Webhook not configured" }), {
-      status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 503, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -161,20 +157,20 @@ async function handler(req: Request): Promise<Response> {
       messageId = body.message_id || "";
     } else {
       return new Response(JSON.stringify({ error: "Unsupported content type" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (!fromEmail) {
       return new Response(JSON.stringify({ error: "No sender email" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     const cleanContent = cleanEmailBody(textBody || "");
     if (!cleanContent) {
       return new Response(JSON.stringify({ error: "Empty email body" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -223,7 +219,7 @@ async function handler(req: Request): Promise<Response> {
         metadata_json: { from: fromEmail, subject, body_preview: cleanContent.slice(0, 200), detected_locale: detectedLocale },
       });
       return new Response(JSON.stringify({ status: "unmatched", from: fromEmail, detected_locale: detectedLocale }), {
-        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -270,7 +266,7 @@ async function handler(req: Request): Promise<Response> {
     if (insertErr) {
       console.error("[receive-email] Insert failed:", insertErr);
       return new Response(JSON.stringify({ error: "Failed to save message" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -302,12 +298,12 @@ async function handler(req: Request): Promise<Response> {
       detected_locale: detectedLocale,
       translated: !!translatedContent,
     }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[receive-email] Error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }

@@ -288,6 +288,10 @@ export const merchantService = {
   },
 
   async fetchMerchantFinanceTransactions(userId: string) {
+    // Validate userId is a UUID before interpolating into the .or() filter
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+      throw new Error("Invalid userId format");
+    }
     const { data, error } = await db("unified_wallet_transactions")
       .select("id, type, amount, currency, status, sender_id, recipient_id, description, created_at")
       .or(`sender_id.eq.${userId},recipient_id.eq.${userId}`)

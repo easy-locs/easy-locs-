@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
@@ -6,11 +7,6 @@ import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
 // platform agent registry; direct `openaiChat` is no longer permitted.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const SENDGRID_API_KEY = Deno.env.get("SENDGRID_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -388,7 +384,7 @@ function buildDetailsHtml(data: Record<string, any>, locale: string): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -404,7 +400,7 @@ Deno.serve(async (req) => {
     if (!isInternalCall) {
       if (!authHeader.startsWith("Bearer ")) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -413,7 +409,7 @@ Deno.serve(async (req) => {
       const { data: { user: callerUser }, error: userErr } = await userClient.auth.getUser();
       if (userErr || !callerUser) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       (req as any).__callerId = callerUser.id;
@@ -428,7 +424,7 @@ Deno.serve(async (req) => {
       const resolvedOrgId = data?.org_id;
       if (!resolvedOrgId) {
         return new Response(JSON.stringify({ error: "org_id is required" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -438,7 +434,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!membership) {
         return new Response(JSON.stringify({ error: "Forbidden: not an org member" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -462,14 +458,14 @@ Deno.serve(async (req) => {
 
     if (!event_type || !recipient_email) {
       return new Response(JSON.stringify({ error: "Missing event_type or recipient_email" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     const templateGroup = TEMPLATES[event_type];
     if (!templateGroup) {
       return new Response(JSON.stringify({ error: `Unknown event_type: ${event_type}` }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -588,13 +584,13 @@ Deno.serve(async (req) => {
     if (!emailSent && !SENDGRID_API_KEY && !hasSesCredentials()) {
       console.log("[send-notification-email] No email provider configured, logging email:", { to: recipient_email, subject });
       return new Response(JSON.stringify({ success: true, mode: "dry_run", subject }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (!emailSent) {
       return new Response(JSON.stringify({ error: "Email send failed via all providers" }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -605,12 +601,12 @@ Deno.serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ success: true, subject }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[send-notification-email] Error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

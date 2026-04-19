@@ -1,14 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole, requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { redisGet, redisSet, redisDel, isRedisAvailable } from "../_shared/redis-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const CACHE_DOMAINS: Record<string, { query: () => { table: string; select: string; filter?: Record<string, unknown> }; ttl_minutes: number }> = {
   "taxonomy:categories": {
@@ -44,7 +39,7 @@ const CACHE_DOMAINS: Record<string, { query: () => { table: string; select: stri
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -75,7 +70,7 @@ Deno.serve(async (req) => {
       if (!key) {
         return new Response(
           JSON.stringify({ error: "key required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
@@ -83,7 +78,7 @@ Deno.serve(async (req) => {
         const redisValue = await redisGet<unknown>(key);
         return new Response(
           JSON.stringify({ hit: redisValue !== null, value: redisValue, source: "redis" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
@@ -92,7 +87,7 @@ Deno.serve(async (req) => {
         if (redisValue !== null) {
           return new Response(
             JSON.stringify({ hit: true, value: redisValue, source: "redis" }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
           );
         }
       }
@@ -114,13 +109,13 @@ Deno.serve(async (req) => {
 
         return new Response(
           JSON.stringify({ hit: true, value: data.value_json, source: "db" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
       return new Response(
         JSON.stringify({ hit: false, value: null }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -129,7 +124,7 @@ Deno.serve(async (req) => {
       if (!key) {
         return new Response(
           JSON.stringify({ error: "key required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
@@ -138,7 +133,7 @@ Deno.serve(async (req) => {
         await redisSet(key, value, ttlSeconds);
         return new Response(
           JSON.stringify({ stored: true, redis: true }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
@@ -164,7 +159,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ stored: true, redis: redisEnabled }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -195,13 +190,13 @@ Deno.serve(async (req) => {
       } else {
         return new Response(
           JSON.stringify({ error: "key or domain required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
       return new Response(
         JSON.stringify({ invalidated: true, redis: redisEnabled }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -264,7 +259,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ refreshed, total_domains: Object.keys(CACHE_DOMAINS).length, redis: redisEnabled }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -273,7 +268,7 @@ Deno.serve(async (req) => {
       if (!key || !domain) {
         return new Response(
           JSON.stringify({ error: "key and domain required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
@@ -284,19 +279,19 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ stored: true, redis: redisEnabled }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: "Unknown action. Use: get, set, invalidate, refresh_all, populate_l2" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

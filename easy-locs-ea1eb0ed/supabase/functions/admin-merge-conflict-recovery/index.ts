@@ -10,6 +10,7 @@
  * dashboard cannot drift (task #979).
  */
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
@@ -19,13 +20,6 @@ import {
   normalizeAudit,
   projectMergeConflictRecoverySummary,
 } from "../_shared/merge-conflict-recovery-projection.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-};
 
 const PAGE_SIZE = 500;
 const MAX_PAGES = 100;
@@ -100,7 +94,7 @@ async function requireAdmin(
         JSON.stringify({ error: "Admin privileges required" }),
         {
           status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         },
       ),
     };
@@ -111,7 +105,7 @@ async function requireAdmin(
 function jsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -120,7 +114,7 @@ Deno.serve(async (req) => {
   if (__qsCheck.rejected) return __qsCheck.response!;
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);

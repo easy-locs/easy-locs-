@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * lease-workflow — Automated lease lifecycle pipeline.
  * 
@@ -13,11 +14,6 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 // Country-specific lease defaults
 const LEASE_DEFAULTS: Record<string, { leaseType: string; durationMonths: number; noticePeriod: number; depositMonths: number; docType: string }> = {
@@ -46,7 +42,7 @@ function getLeaseDefaults(country: string) {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -89,7 +85,7 @@ Deno.serve(async (req) => {
           country,
         }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -111,7 +107,7 @@ Deno.serve(async (req) => {
           status: existingLease.status,
           message: "Lease already exists",
           action: "existing",
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
       }
 
       // Create lease in pending_signature status
@@ -242,7 +238,7 @@ Deno.serve(async (req) => {
         action: "created",
         status: "pending_signature",
         message: "Lease generated — awaiting signatures before rent schedule",
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     // ═══════════════════════════════════════════
@@ -265,7 +261,7 @@ Deno.serve(async (req) => {
           success: false,
           error: "lease_not_active",
           message: "Rent schedule can only be generated for fully signed (active) leases. Current status: " + (lease as any).status,
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 });
+        }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 });
       }
 
       const startDate = new Date((lease as any).start_date);
@@ -362,18 +358,18 @@ Deno.serve(async (req) => {
         success: true,
         months_generated: rentCalls.length,
         message: `${rentCalls.length} rent calls generated after lease activation`,
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("lease-workflow error:", err);
     return new Response(JSON.stringify({ error: (err as Error).message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

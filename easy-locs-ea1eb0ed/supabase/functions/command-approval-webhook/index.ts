@@ -1,13 +1,9 @@
 // PUBLIC: Command-approval webhook — auth via signing secret + withRateLimit.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { constantTimeEqual } from "../_shared/webhook-signature.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -204,7 +200,7 @@ function renderConfirmationPage(approval: { pr_number: number; pr_title: string;
 
 async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req, { allowedParams: ["token", "intent"], corsHeaders: { "Access-Control-Allow-Origin": "*", "Content-Type": "application/json" } }); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
   const url = new URL(req.url);
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -214,7 +210,7 @@ async function handler(req: Request): Promise<Response> {
       return new Response(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;">
         <h1 style="color:#ef4444;">Invalid Request</h1>
         <p>No token provided.</p></body></html>`,
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
     }
 
     const { data: approval, error } = await supabase.from("approval_requests")
@@ -227,12 +223,12 @@ async function handler(req: Request): Promise<Response> {
       return new Response(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;">
         <h1 style="color:#ef4444;">Invalid or Expired</h1>
         <p>This approval link is no longer valid.</p></body></html>`,
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
     }
 
     const intent = url.searchParams.get("intent") || undefined;
     return new Response(renderConfirmationPage(approval, token, intent), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" },
+      status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" },
     });
   }
 
@@ -248,7 +244,7 @@ async function handler(req: Request): Promise<Response> {
       if (!token || !action || !["approve", "reject"].includes(action)) {
         return new Response(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;">
           <h1 style="color:#ef4444;">Invalid Request</h1></body></html>`,
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
       }
 
       const { data: approval, error } = await supabase.from("approval_requests")
@@ -261,7 +257,7 @@ async function handler(req: Request): Promise<Response> {
         return new Response(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;">
           <h1 style="color:#ef4444;">Invalid or Expired</h1>
           <p>This approval link is no longer valid or has already been actioned.</p></body></html>`,
-          { status: 400, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+          { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
       }
 
       if (action === "approve") {
@@ -309,13 +305,13 @@ async function handler(req: Request): Promise<Response> {
             <h1 style="color:#22c55e;">Approved &amp; Merged</h1>
             <p>PR #${approval.pr_number} has been merged${deployMsg}.</p>
             <p>${approval.pr_title}</p></body></html>`,
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+            { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
         } else {
           return new Response(`<html><body style="font-family:sans-serif;text-align:center;padding:60px;">
             <h1 style="color:#f59e0b;">Merge Failed</h1>
             <p>PR #${approval.pr_number} was approved but could not be merged automatically. Please merge manually on GitHub.</p>
             <p>${approval.pr_title}</p></body></html>`,
-            { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+            { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
         }
       }
 
@@ -338,20 +334,20 @@ async function handler(req: Request): Promise<Response> {
           <h1 style="color:#ef4444;">Rejected</h1>
           <p>PR #${approval.pr_number} has been rejected.</p>
           <p>${approval.pr_title}</p></body></html>`,
-          { status: 200, headers: { ...corsHeaders, "Content-Type": "text/html" } });
+          { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "text/html" } });
       }
     }
 
     if (contentType.includes("application/json")) {
       if (!INTERNAL_SECRET) {
         return new Response(JSON.stringify({ error: "Server not configured" }), {
-          status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 503, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       const authHeader = req.headers.get("x-internal-secret") || "";
       if (!constantTimeEqual(authHeader, INTERNAL_SECRET)) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
-          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -361,7 +357,7 @@ async function handler(req: Request): Promise<Response> {
 
         if (!pr_number || !pr_title) {
           return new Response(JSON.stringify({ error: "pr_number and pr_title required" }), {
-            status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -376,7 +372,7 @@ async function handler(req: Request): Promise<Response> {
 
         if (insertErr) {
           return new Response(JSON.stringify({ error: "Failed to create approval" }), {
-            status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -400,17 +396,17 @@ async function handler(req: Request): Promise<Response> {
 
         return new Response(JSON.stringify({
           status: "ok", approval_id: approval.id, email_sent: emailSent,
-        }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }), { status: 200, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
       } catch (err) {
         return new Response(JSON.stringify({ error: (err as Error).message }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
   }
 
   return new Response(JSON.stringify({ error: "Invalid request" }), {
-    status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 

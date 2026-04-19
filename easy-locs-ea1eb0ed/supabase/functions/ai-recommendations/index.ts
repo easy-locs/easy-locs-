@@ -8,17 +8,12 @@
 //   4. Cache per (user, domain, context_hash) for 15 minutes.
 
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { generateEmbedding } from "../_shared/embedding-client.ts";
 import { logAiInteraction, checkAiQuota } from "../_shared/ai-cost-tracker.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 type Domain = "radar" | "marketplace" | "property" | "ride";
 
@@ -49,7 +44,7 @@ interface RecoItem {
 }
 
 Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -68,7 +63,7 @@ Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
 
     if (!DOMAIN_CONFIG[domain]) {
       return new Response(JSON.stringify({ error: "Unknown domain" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -81,7 +76,7 @@ Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const userId = user.id;
@@ -90,7 +85,7 @@ Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
     if (!q.allowed) {
       return new Response(
         JSON.stringify({ error: "Daily AI quota reached", reason: q.reason, used: q.used, limits: q.limits }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -123,7 +118,7 @@ Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
           items: (cached.items as RecoItem[]).slice(0, limit),
           cached: true,
           domain,
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
       }
     }
 
@@ -201,12 +196,12 @@ Deno.serve(withEdgeLogging("ai-recommendations", async (req, logger) => {
     });
 
     return new Response(JSON.stringify({ items: enriched, cached: false, domain }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[ai-recommendations] error:", err);
     return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

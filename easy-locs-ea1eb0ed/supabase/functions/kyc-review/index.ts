@@ -1,12 +1,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 interface ReviewRequest {
   documentId: string;
@@ -36,7 +31,7 @@ function computeKycLevel(approvedDocTypes: string[]): string {
 
 Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -51,7 +46,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -61,7 +56,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     if (!reviewer) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -77,7 +72,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     if (!isAdmin && !isOwner) {
       return new Response(JSON.stringify({ error: "Forbidden: admin access required" }), {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -87,14 +82,14 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     if (!documentId || !action || !["approve", "reject"].includes(action)) {
       return new Response(JSON.stringify({ error: "Invalid request body" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (action === "reject" && !reason) {
       return new Response(JSON.stringify({ error: "Rejection reason is required" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -108,7 +103,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
     if (docError || !doc) {
       return new Response(JSON.stringify({ error: "Document not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -252,7 +247,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   } catch (err) {
@@ -261,7 +256,7 @@ Deno.serve(withEdgeLogging("kyc-review", async (req, logger) => {
       JSON.stringify({ error: "Internal server error" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       }
     );
   }
