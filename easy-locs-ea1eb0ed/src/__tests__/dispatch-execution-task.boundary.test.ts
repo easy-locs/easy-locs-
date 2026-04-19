@@ -13,32 +13,24 @@
  * instance.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const rpc = vi.fn();
 
-// Use vi.spyOn to intercept db.schema — ensures the spy is applied to the
-// actual exported `db` object after all modules are resolved, avoiding
-// hoisting-order edge cases with vi.mock + module-level vi.fn() closures.
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    auth: { getSession: vi.fn(), getUser: vi.fn(), onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }) },
-    from: vi.fn().mockReturnValue({ select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), single: vi.fn().mockResolvedValue({ data: null, error: null }) }),
-    schema: vi.fn().mockReturnValue({ rpc, from: vi.fn() }),
-    rpc: vi.fn(),
-    functions: { invoke: vi.fn() },
-    channel: vi.fn().mockReturnValue({ on: vi.fn().mockReturnThis(), subscribe: vi.fn() }),
-    removeChannel: vi.fn(),
-    removeAllChannels: vi.fn(),
-    getChannels: vi.fn().mockReturnValue([]),
-    storage: { from: vi.fn() },
-  },
-}));
-
+// Spy on db.schema rather than re-mocking supabase, to avoid conflicts with
+// the global setup.ts supabase mock and vi.mock hoisting order edge cases.
+import { db } from "@/services/db";
 import { dispatchExecutionTask, DispatchError } from "@/lib/execution/dispatch";
 
 describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", () => {
-  beforeEach(() => rpc.mockReset());
+  beforeEach(() => {
+    rpc.mockReset();
+    vi.spyOn(db, "schema").mockReturnValue({ rpc, from: vi.fn() } as never);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it("calls system.dispatch_execution_task with the correct argument shape and returns a typed handle", async () => {
     rpc.mockResolvedValueOnce({

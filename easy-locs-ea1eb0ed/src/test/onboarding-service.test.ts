@@ -53,6 +53,27 @@ const mockStorageFrom = vi.fn().mockReturnValue({
   getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
 });
 
+vi.mock("@/lib/execution/dispatch", () => ({
+  dispatchExecutionTask: vi.fn().mockResolvedValue({
+    taskId: "mock-task-id",
+    status: "queued",
+    agentId: null,
+    agentVersionId: null,
+    blockedReason: null,
+  }),
+  DispatchError: class DispatchError extends Error {},
+}));
+
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = await import("@/services/db");
+  const dbFn = db as unknown as (table: string) => unknown;
+  return {
+    cFrom: (table: string) => dbFn(table),
+    cRpc: vi.fn(),
+    cContent: vi.fn(),
+  };
+});
+
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
   const mockSchemaRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task", status: "queued", agent_id: null, agent_version_id: null, blocked_reason: null }, error: null });

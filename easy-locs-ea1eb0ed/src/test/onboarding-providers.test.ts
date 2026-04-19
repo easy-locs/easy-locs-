@@ -37,6 +37,29 @@ function createQueryBuilder(): MockQueryBuilder {
 
 const mockDbFrom = vi.fn().mockImplementation(() => createQueryBuilder());
 
+vi.mock("@/lib/execution/dispatch", () => ({
+  dispatchExecutionTask: vi.fn().mockResolvedValue({
+    taskId: "mock-task-id",
+    status: "queued",
+    agentId: null,
+    agentVersionId: null,
+    blockedReason: null,
+  }),
+  DispatchError: class DispatchError extends Error {},
+}));
+
+// Bypass content-mutation dispatch gating so the tests can spy directly on
+// the underlying QueryBuilder mocks via mockDbFrom.
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = await import("@/services/db");
+  const dbFn = db as unknown as (table: string) => unknown;
+  return {
+    cFrom: (table: string) => dbFn(table),
+    cRpc: vi.fn(),
+    cContent: vi.fn(),
+  };
+});
+
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
   const mockSchemaRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task", status: "queued", agent_id: null, agent_version_id: null, blocked_reason: null }, error: null });
@@ -421,7 +444,7 @@ describe("submitTaxiDriverProvider — full payload shape", () => {
     );
     await expect(
       submitTaxiDriverProvider(taxiParams),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("rider profile constraint violation");
   });
 
   it("sets profile_photo_url to null when no photo provided", async () => {
@@ -871,7 +894,7 @@ describe("submitHotelProvider — full payload shape", () => {
     const { submitHotelProvider } = await import(
       "@/services/onboarding.service"
     );
-    await submitHotelProvider(hotelParams);
+    await expect(submitHotelProvider(hotelParams)).rejects.toThrow("hotels insert failed");
     expect(mockDbFrom).toHaveBeenCalledTimes(2);
   });
 
