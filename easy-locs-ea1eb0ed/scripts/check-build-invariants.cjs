@@ -67,15 +67,25 @@ function checkNoDuplicateAdminControlShellPageRoutes() {
   }
 }
 
-function checkNoDuplicateProfileLoadTimeout() {
+function checkNoProfileLoadTimeoutInSuperAdminGate() {
   const file = "src/components/auth/SuperAdminGate.tsx";
   const txt = read(file);
   if (txt == null) return;
-  const matches = txt.match(/PROFILE_LOAD_TIMEOUT_MS\s*=\s*\d+/g) || [];
-  if (matches.length > 1) {
-    fail(`${file}: PROFILE_LOAD_TIMEOUT_MS declared ${matches.length} times (must be 1)`);
+  const hasTimeout = /PROFILE_LOAD_TIMEOUT_MS/.test(txt);
+  const hasProfileLoaded = /profileLoaded/.test(txt);
+  const hasProfileTimedOut = /profileTimedOut/.test(txt);
+  const violations = [
+    hasTimeout && "PROFILE_LOAD_TIMEOUT_MS",
+    hasProfileLoaded && "profileLoaded",
+    hasProfileTimedOut && "profileTimedOut",
+  ].filter(Boolean);
+  if (violations.length > 0) {
+    fail(
+      `${file}: must not contain removed profile-timeout symbols: ${violations.join(", ")}. ` +
+        `These were removed to eliminate race conditions (see issue requirements).`,
+    );
   } else {
-    console.log("[invariants] OK: SuperAdminGate has single PROFILE_LOAD_TIMEOUT_MS");
+    console.log("[invariants] OK: SuperAdminGate free of profile-timeout symbols");
   }
 }
 
@@ -210,7 +220,7 @@ function checkCookieBannerInsideAuthProvider() {
 
 checkNoConflictMarkers();
 checkNoDuplicateAdminControlShellPageRoutes();
-checkNoDuplicateProfileLoadTimeout();
+checkNoProfileLoadTimeoutInSuperAdminGate();
 checkNoDuplicateCronAlertThresholdsCard();
 checkSharedCorsHelperHasTraceHeaders();
 checkEdgeFunctionsAcceptTraceHeaders();
