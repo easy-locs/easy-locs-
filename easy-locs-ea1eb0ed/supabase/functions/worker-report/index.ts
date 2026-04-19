@@ -2,13 +2,7 @@
 // When all child tasks of an order are terminal, marks the order completed
 // (or failed if any failed/rejected).
 import {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   armyClient, jsonResponse, logMessage, preflight, requireAuthenticated, requireServiceOrSupreme,
-=======
-  armyClient, jsonResponse, logMessage, preflight,
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   armyClient, jsonResponse, logMessage, preflight, requireAuthenticated,
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
@@ -21,12 +15,7 @@ interface Body { task_id?: string; order_id?: string; }
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   const denied = await requireAuthenticated(req) ?? await requireServiceOrSupreme(req); if (denied) return denied;
-=======
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   const denied = await requireAuthenticated(req); if (denied) return denied;
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
