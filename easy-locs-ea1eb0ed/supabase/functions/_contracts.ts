@@ -82,6 +82,15 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     ],
     note: "format query parameter must be one of: csv, pdf, json",
   },
+  "dld-analytics": {
+    methods: ["GET", "POST"],
+    response: { fields: ["data", "dataSource", "configured", "timestamp"], successStatuses: [200] },
+    errors: [
+      { status: 400, reason: "DLD API not configured or invalid endpoint" },
+      { status: 403, reason: "Unauthorized — backfill/sync requires service role or admin JWT" },
+    ],
+    note: "GET for read endpoints (backfill-status, districts, etc.); POST for mutation endpoints (backfill, sync). Endpoint selected via x-endpoint header or path suffix.",
+  },
   "booking-create": {
     methods: ["POST"],
     requestBody: {
@@ -108,7 +117,7 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     requireAuthHeader: true,
   },
   "gdpr-export": {
-    // Download endpoint — frontend uses GET with Authorization to receive
+    // Download endpoint — frontend uses POST with Authorization to receive
     // the export blob directly.
     methods: ["GET", "POST"],
     response: { fields: [], successStatuses: [200] },

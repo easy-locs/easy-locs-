@@ -32,6 +32,7 @@ async function fetchTemporaryToken(): Promise<string> {
       "Content-Type": "application/json",
       Authorization: `Bearer ${session.access_token}`,
     },
+    body: JSON.stringify({}),
   });
 
   if (!response.ok) {

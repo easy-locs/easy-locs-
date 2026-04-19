@@ -61,7 +61,12 @@ export default function SettingsPrivacy() {
 
       if (supabaseUrl && token) {
         const res = await fetch(`${supabaseUrl}/functions/v1/gdpr-export`, {
-          headers: { Authorization: `Bearer ${token}` },
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
         });
         if (res.ok) {
           const blob = await res.blob();
