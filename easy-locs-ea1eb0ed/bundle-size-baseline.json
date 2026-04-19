@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-04-19T11:32:21.174Z",
-  "totalBytes": 17608089,
+  "generatedAt": "2026-04-19T11:56:03.083Z",
+  "totalBytes": 17608002,
   "mainChunkBytes": 1401567,
   "cssBytes": 369462,
   "assetBytes": 2853072,
@@ -715,7 +715,7 @@
     "domain.js": 11284,
     "dropdown.js": 3584,
     "e2e.js": 1328,
-    "e2ee.js": 11848,
+    "e2ee.js": 11761,
     "el.js": 65,
     "email.js": 406,
     "empty.js": 1873,
