@@ -4,7 +4,7 @@
  * Consuming code should prefer useUnifiedMapStore.viewport for reads.
  */
 import { create } from "zustand";
-import type { MapMarkerRecord } from "@/lib/types/map";
+import type { MapMarkerRecord } from "@/types/map";
 import { useListingStore } from "@/stores/listingStore";
 import { useUnifiedMapStore } from "@/stores/mapStore";
 
