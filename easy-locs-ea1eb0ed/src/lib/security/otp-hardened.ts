@@ -66,10 +66,16 @@ export async function createOtpSession(
   }
 
   function generateOtp(): string {
-    // Use CSPRNG instead of Math.random() to produce an unguessable 6-digit code.
-    const buf = crypto.getRandomValues(new Uint8Array(4));
-    const n = new DataView(buf.buffer).getUint32(0, false);
-    return String(100000 + (n % 900000)).padStart(6, "0");
+    // Use CSPRNG with rejection sampling to avoid modulo bias.
+    const LIMIT = 900000; // range: [0, LIMIT) → OTP in [100000, 999999]
+    // 2^32 = 4294967296; threshold = largest multiple of LIMIT <= 2^32
+    const THRESHOLD = 0x100000000 - (0x100000000 % LIMIT); // 4294800000
+    let n: number;
+    do {
+      const buf = crypto.getRandomValues(new Uint8Array(4));
+      n = new DataView(buf.buffer).getUint32(0, false);
+    } while (n >= THRESHOLD);
+    return String(100000 + (n % LIMIT)).padStart(6, "0");
   }
 
   const otp = generateOtp();
