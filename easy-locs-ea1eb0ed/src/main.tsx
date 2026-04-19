@@ -79,7 +79,7 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
-// "Big tech" stuck-app failsafe: if 12 seconds after boot the user is still
+// "Big tech" stuck-app failsafe: if 5 seconds after boot the user is still
 // on the splash OR has been bounced into a known redirect-loop URL with no
 // route content rendered, hard-redirect to /emergency.html?stuck=1 so they
 // always have a working escape hatch. This catches:
@@ -90,7 +90,7 @@ if (typeof window !== "undefined") {
 // The ?stuck=1 param tells emergency.html to auto-purge SW + caches and
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
-  const STUCK_DEADLINE_MS = 12000;
+  const STUCK_DEADLINE_MS = 5000;
   setTimeout(() => {
     try {
       if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;
@@ -111,7 +111,7 @@ if (typeof window !== "undefined" && window.location.pathname !== "/emergency.ht
 // Time-to-first-render watchdog: if the splash hasn't dismissed (i.e. the
 // first React commit hasn't happened) within the budget, fire a Sentry
 // warning so we detect silent boot stalls in production.
-const TTFR_BUDGET_MS = 8000;
+const TTFR_BUDGET_MS = 3000;
 let __ttfrReported = false;
 function __reportTTFR(durationMs: number) {
   if (__ttfrReported) return;
@@ -161,16 +161,9 @@ try {
       setTimeout(() => splashEl.remove(), 600);
     };
     window.addEventListener("react-splash-ready", fadeOutHtmlSplash, { once: true });
-    setTimeout(fadeOutHtmlSplash, 3000);
-    setTimeout(() => {
-      if (faded || !document.body.contains(splashEl)) return;
-      const skipBtn = document.createElement("button");
-      skipBtn.textContent = "Continue anyway";
-      skipBtn.setAttribute("aria-label", "Skip loading screen");
-      skipBtn.style.cssText = "margin-top:24px;background:transparent;color:#94a3b8;border:1px solid #334155;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;";
-      skipBtn.onclick = fadeOutHtmlSplash;
-      splashEl.appendChild(skipBtn);
-    }, 5000);
+    // Auto-fade the HTML splash after 1.5s even if react-splash-ready never
+    // fires — keeps startup <= 2s visible UI goal on slow connections.
+    setTimeout(fadeOutHtmlSplash, 1500);
   }
   // NOTE: __EASYLOCS_REACT_MOUNTED__ / __EASYLOCS_BOOTED__ are intentionally
   // NOT set here. They are set inside a React useEffect (SplashScreen) so the

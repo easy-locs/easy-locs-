@@ -507,7 +507,7 @@
 
       (function () {
         var startedAt = Date.now();
-        var timeoutMs = 15000;
+        var timeoutMs = 8000;
         var retryKey = '__el_boot_retry_v1';
 
         function nukeServiceWorkersAndCaches() {
@@ -573,7 +573,7 @@
           showBootError();
         }
 
-        // After 6s with splash still visible, add a "Reset & retry" rescue button
+        // After 4s with splash still visible, add a "Reset & retry" rescue button
         // (works even if the main JS bundle never executes — pure HTML/CSS escape hatch)
         setTimeout(function () {
           if (window.__EASYLOCS_REACT_MOUNTED__ || window.__EASYLOCS_BOOTED__) return;
@@ -585,7 +585,7 @@
           btn.style.cssText = 'margin-top:32px;background:#1AAE8E;color:#0D1117;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;box-shadow:0 4px 12px rgba(26,174,142,0.3);';
           btn.onclick = function(){ nukeServiceWorkersAndCaches().then(function(){ window.location.replace('/?nosw=1'); }); };
           splash.appendChild(btn);
-        }, 6000);
+        }, 4000);
 
         window.requestAnimationFrame(checkBoot);
       })();
