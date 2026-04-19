@@ -85,6 +85,13 @@ if (typeof window !== "undefined" && window.location.pathname !== "/emergency.ht
       window.location.replace("/emergency.html?stuck=1");
     }
   }, STUCK_DEADLINE_MS);
+
+  // Hard 2s splash-dismiss timeout: regardless of auth/guard state, force
+  // the splash to hide so routes are always reachable within 2 seconds.
+  setTimeout(() => {
+    (window as any).__EASYLOCS_BOOT_FORCE_RENDER__ = true;
+    console.log("[BOOT] 2000ms hard timeout: forcing splash dismiss");
+  }, 2000);
 }
 
 // Time-to-first-render watchdog: if the splash hasn't dismissed (i.e. the

@@ -510,6 +510,15 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
         sessionStorage.setItem("el_splash_shown", "1");
       } catch {}
     }, SPLASH_DURATION + 2000);
+    // Hard boot-timeout flag: if main.tsx set __EASYLOCS_BOOT_FORCE_RENDER__
+    // before this effect ran, dismiss immediately.
+    if (typeof window !== "undefined" && (window as Record<string, unknown>).__EASYLOCS_BOOT_FORCE_RENDER__) {
+      clearTimeout(exitTimer);
+      clearTimeout(hideTimer);
+      clearTimeout(safetyTimer);
+      setShowSplash(false);
+      try { sessionStorage.setItem("el_splash_shown", "1"); } catch {}
+    }
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);

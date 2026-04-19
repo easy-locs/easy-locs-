@@ -192,7 +192,7 @@ function lineColOf(text: string, index: number): { line: number; column: number 
   return { line, column: index - lastNl };
 }
 
-function snippetAt(text: string, index: number, len = 140): string {
+function snippetAt(text: string, index: number, len = 300): string {
   return text.slice(index, index + len).replace(/\s+/g, " ").trim();
 }
 
