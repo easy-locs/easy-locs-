@@ -276,11 +276,10 @@ class BoundaryContractValidator {
       const contractName = `bus:${type}`;
       if (!this._contracts.has(contractName)) return "pass";
 
-      const result = this.validate(payload, contractName, "bus");
-      // validate() already logs violations via console.warn — always allow
-      // the bus event to pass through regardless of contract state so the
-      // UI never freezes on a contract mismatch.
-      void result;
+      // Validation is advisory only: violations are logged via console.warn
+      // inside validate() but the bus event always passes through so the UI
+      // never freezes on a contract mismatch.
+      this.validate(payload, contractName, "bus");
       return "pass";
     });
 

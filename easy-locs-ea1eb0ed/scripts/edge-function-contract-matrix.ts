@@ -1354,7 +1354,14 @@ async function main() {
       if (!bypass) failed = true;
     }
     if (failed) process.exit(1);
-    if (bypass && (orphans.length > 0 || matrix.totals.methodMismatches > 0 || matrix.totals.missingFieldMismatches > 0 || matrix.totals.missingBodyMismatches > 0 || matrix.totals.missingAuthHeaderMismatches > 0 || stale)) {
+    const hasMismatches =
+      orphans.length > 0 ||
+      matrix.totals.methodMismatches > 0 ||
+      matrix.totals.missingFieldMismatches > 0 ||
+      matrix.totals.missingBodyMismatches > 0 ||
+      matrix.totals.missingAuthHeaderMismatches > 0 ||
+      stale;
+    if (bypass && hasMismatches) {
       console.warn(
         `\n⚠️  Contract enforcement is in bypass mode (RUNTIME_CONTRACT_BYPASS=1 / --bypass). ` +
         `Mismatches above are advisory only — the build is NOT blocked. ` +
