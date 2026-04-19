@@ -13,15 +13,16 @@
  *     for profile hydration. The role check runs as soon as loading is false.
  *   - Hard 2-second timeout on the role check so a slow/down RPC never leaves
  *     the user on an infinite skeleton.
- *   - Owner email (habboujabir@gmail.com) always bypasses the role check.
+ *   - Owner/admin allowlist bypass: emails in VITE_ADMIN_ALLOWLIST (or the
+ *     default fallback list in useIsAdmin.ts) skip the async role RPC entirely.
  */
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthSession } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { hasRole } from "@/repositories/auth-utils.repository";
 import AdminAccessDenied from "@/components/auth/AdminAccessDenied";
+import { isEmailAllowedForAdmin } from "@/hooks/useIsAdmin";
 
-const OWNER_EMAIL = "habboujabir@gmail.com";
 const ROLE_CHECK_TIMEOUT_MS = 2000;
 
 function GateSkeleton() {
@@ -50,8 +51,10 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
       setChecking(false);
       return;
     }
-    // Owner email always bypasses the role check.
-    if (user.email === OWNER_EMAIL) {
+    // Allowlist bypass: configured via VITE_ADMIN_ALLOWLIST env var (with
+    // fallback to the default owner list defined in useIsAdmin.ts). Bypassing
+    // here avoids an unnecessary async RPC for known super-admin accounts.
+    if (isEmailAllowedForAdmin(user.email)) {
       setIsSuperAdmin(true);
       setChecking(false);
       return;
