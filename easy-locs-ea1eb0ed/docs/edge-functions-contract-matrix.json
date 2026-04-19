@@ -13,7 +13,7 @@
           "kind": "invoke",
           "line": 6,
           "method": "POST",
-          "snippet": "functions.invoke(\"admin-payout-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRe"
+          "snippet": "functions.invoke(\"admin-payout-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRejectPayoutRequest(input: { payoutRequestId: string; reason?: string; }) { const { data, error } = await supabase.functions.invoke(\"admin-payout-reject\", {"
         }
       ],
       "exists": true,
@@ -21,6 +21,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -51,6 +53,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -76,7 +80,7 @@
           "kind": "invoke",
           "line": 69,
           "method": "POST",
-          "snippet": "functions.invoke(\"admin-trigger\", { body: { target, payload }, }); }, /** * Autonomous Execution Layer (task #710) — admin"
+          "snippet": "functions.invoke(\"admin-trigger\", { body: { target, payload }, }); }, /** * Autonomous Execution Layer (task #710) — admin-visible task feed. * Reads system.execution_tasks via the schema-scoped client. RLS already * restricts SELECT to admins, so non-admin callers naturally"
         }
       ],
       "exists": true,
@@ -84,6 +88,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -106,7 +112,7 @@
           "kind": "url-ref",
           "line": 22,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/ai-assistant`, token, }; } export async function streamOmegaResponse(options: OmegaStreamOptions): Promise<string> {"
+          "snippet": "/functions/v1/ai-assistant`, token, }; } export async function streamOmegaResponse(options: OmegaStreamOptions): Promise<string> { const { messages, message, context, locale = \"en\", task = \"chat\", taskContext, onToken, onDone, onError, signal, } = o"
         },
         {
           "bodyHasSpread": false,
@@ -119,7 +125,7 @@
           "kind": "url-ref",
           "line": 20,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/ai-assistant`; // ─── Property Health Score Calculator ─── interface PropertyHealth { id: string; label: string; countr"
+          "snippet": "/functions/v1/ai-assistant`; // ─── Property Health Score Calculator ─── interface PropertyHealth { id: string; label: string; country: string; score: number; issues: { severity: \"critical\" | \"warning\" | \"info\"; message: string }[]; strengths: string[]; } function computePropertyHealth"
         },
         {
           "bodyHasSpread": false,
@@ -132,7 +138,7 @@
           "kind": "invoke",
           "line": 7,
           "method": "POST",
-          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function invokeRunScheduledAudit() {"
+          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function invokeRunScheduledAudit() { const { data, error } = await supabase.functions.invoke(\"run-scheduled-audit\", { body: {} }); if (error) throw error; return data; } export async function"
         },
         {
           "bodyHasSpread": false,
@@ -145,7 +151,7 @@
           "kind": "invoke",
           "line": 157,
           "method": "POST",
-          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function insertCategorySuggestion(recor"
+          "snippet": "functions.invoke(\"ai-assistant\", { body }); if (error) throw error; return data; } export async function insertCategorySuggestion(record: Record<string, any>) { await db(\"ai_category_suggestions\").insert(record); } // ── Delivery dispatch ── export async function fetchShopOrders(shopId: stri"
         },
         {
           "bodyHasSpread": true,
@@ -160,7 +166,7 @@
           "kind": "invoke",
           "line": 203,
           "method": "POST",
-          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"proxy\" } }); if (error) throw error; return data; } // ── AI category sugges"
+          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"proxy\" } }); if (error) throw error; return data; } // ── AI category suggest ── export async function invokeAICategorySuggest(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"ai-assistant\", { body: { .."
         },
         {
           "bodyHasSpread": true,
@@ -175,7 +181,7 @@
           "kind": "invoke",
           "line": 210,
           "method": "POST",
-          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"category_suggest\" } }); if (error) throw error; return data; } // ── AI shop"
+          "snippet": "functions.invoke(\"ai-assistant\", { body: { ...body, mode: \"category_suggest\" } }); if (error) throw error; return data; } // ── AI shopping chat ── export async function invokeAIShoppingChat(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"ai-shopping-chat\", { b"
         }
       ],
       "contractFields": [
@@ -189,6 +195,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -211,7 +219,7 @@
           "kind": "invoke",
           "line": 217,
           "method": "POST",
-          "snippet": "functions.invoke(\"ai-shopping-chat\", { body }); if (error) throw error; return data; } // ── Dispatch ride (storefront delivery) ── exp"
+          "snippet": "functions.invoke(\"ai-shopping-chat\", { body }); if (error) throw error; return data; } // ── Dispatch ride (storefront delivery) ── export async function invokeDispatchRide(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"dispatch-ride\", { body }); if (error)"
         }
       ],
       "exists": true,
@@ -219,6 +227,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -241,7 +251,7 @@
           "kind": "url-ref",
           "line": 19,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/ai-web-search`; const SUGGESTED_QUERIES = [ \"Quelles sont les obligations légales d'un propriétaire bailleur en France ?\","
+          "snippet": "/functions/v1/ai-web-search`; const SUGGESTED_QUERIES = [ \"Quelles sont les obligations légales d'un propriétaire bailleur en France ?\", \"Comment optimiser la fiscalité d'un investissement locatif ?\", \"Tendances du marché immobilier en 2024\", \"Comment rédiger une annonce immobilière efficac"
         }
       ],
       "exists": true,
@@ -249,6 +259,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -271,7 +283,7 @@
           "kind": "fetch",
           "line": 315,
           "method": "GET",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=csv`, { headers: { Authorization: `Bearer ${session.access_token}"
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=csv`, { headers: { Authorization: `Bearer ${session.access_token}` }, }); if (!res.ok) throw new Error(\"Export failed\"); const blob = await res.blob(); c"
         },
         {
           "bodyHasSpread": false,
@@ -284,7 +296,7 @@
           "kind": "fetch",
           "line": 342,
           "method": "GET",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=pdf`, { headers: { Authorization: `Bearer ${session.access_token}"
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=pdf`, { headers: { Authorization: `Bearer ${session.access_token}` }, }); if (!res.ok) throw new Error(\"Export failed\"); const blob = await res.blob(); c"
         }
       ],
       "contractMethods": [
@@ -295,6 +307,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -317,7 +331,7 @@
           "kind": "invoke",
           "line": 27,
           "method": "POST",
-          "snippet": "functions.invoke(\"aws-health-check\", { body: {}, }); if (error || !data) { return { overall: \"unhealthy\","
+          "snippet": "functions.invoke(\"aws-health-check\", { body: {}, }); if (error || !data) { return { overall: \"unhealthy\", services: {}, timestamp: new Date().toISOString(), region: AWS_REGION, }; } return data as AwsServiceStatus; } catch { r"
         },
         {
           "bodyHasSpread": false,
@@ -330,7 +344,7 @@
           "kind": "invoke",
           "line": 12,
           "method": "POST",
-          "snippet": "functions.invoke(\"aws-health-check\", {}); if (error) { return { timestamp: new Date().toISOString(), region: \"unk"
+          "snippet": "functions.invoke(\"aws-health-check\", {}); if (error) { return { timestamp: new Date().toISOString(), region: \"unknown\", overall: \"unavailable\", services: {}, }; } return data as AwsHealthReport; } catch { return { timestamp: new D"
         }
       ],
       "exists": true,
@@ -338,6 +352,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "aws-health-check",
         "requiresJsonBody": false
@@ -357,7 +373,7 @@
           "kind": "invoke",
           "line": 29,
           "method": "POST",
-          "snippet": "functions.invoke(\"booking-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRejectB"
+          "snippet": "functions.invoke(\"booking-approve\", { body: input, }); if (error) throw error; return data; } export async function serverRejectBooking(input: { bookingId: string }) { const { data, error } = await supabase.functions.invoke(\"booking-reject\", { body: input, }); if (error) throw e"
         }
       ],
       "exists": true,
@@ -365,6 +381,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -395,6 +413,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -417,7 +437,7 @@
           "kind": "invoke",
           "line": 16,
           "method": "POST",
-          "snippet": "functions.invoke(\"booking-create\", { body: input, }); if (error) throw error; return data; }); if (!result.ok) { t"
+          "snippet": "functions.invoke(\"booking-create\", { body: input, }); if (error) throw error; return data; }); if (!result.ok) { throw new Error(\"Booking creation failed after budget-exceeded fallback\"); } return result.result; } export async function serverApproveBooking(input: { boo"
         }
       ],
       "contractFields": [
@@ -433,6 +453,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -455,7 +477,7 @@
           "kind": "invoke",
           "line": 37,
           "method": "POST",
-          "snippet": "functions.invoke(\"booking-reject\", { body: input, }); if (error) throw error; return data; } export async function serverComplete"
+          "snippet": "functions.invoke(\"booking-reject\", { body: input, }); if (error) throw error; return data; } export async function serverCompleteBooking(input: { bookingId: string }) { const { data, error } = await supabase.functions.invoke(\"booking-complete\", { body: input, }); if (error) thro"
         }
       ],
       "exists": true,
@@ -463,6 +485,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -488,7 +512,7 @@
           "kind": "invoke",
           "line": 6,
           "method": "POST",
-          "snippet": "functions.invoke( \"browser-user-repair-engine\", { body: { scope, dryRun: false, }, } ); if (err"
+          "snippet": "functions.invoke( \"browser-user-repair-engine\", { body: { scope, dryRun: false, }, } ); if (error) throw error; platformBus.emit( APP_EVENTS.BROWSER_REPAIR_RUN_COMPLETED, { scope, result: data }, \"browser_repair\" ); platformBus.emit(AP"
         }
       ],
       "exists": true,
@@ -496,6 +520,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -521,7 +547,7 @@
           "kind": "invoke",
           "line": 253,
           "method": "POST",
-          "snippet": "functions.invoke(\"cache-manager\", { body: { action: \"get\", key: `l2:${domain}:${key}` }, }); if (cacheResult?.hit && cac"
+          "snippet": "functions.invoke(\"cache-manager\", { body: { action: \"get\", key: `l2:${domain}:${key}` }, }); if (cacheResult?.hit && cacheResult.value !== null) { appCache.recordRedisHit(); const effectiveTtl = ttlMs ?? DOMAIN_TTL_MS[domain]; appCache.set(key, cacheResult"
         }
       ],
       "exists": true,
@@ -529,6 +555,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -554,7 +582,7 @@
           "kind": "invoke",
           "line": 56,
           "method": "POST",
-          "snippet": "functions.invoke(\"capture-payment-intent\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId, }"
+          "snippet": "functions.invoke(\"capture-payment-intent\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId, }, }); if (error) throw error; const { data: order } = await supabase .from(\"orders\") .select(\"*\") .eq(\"id\", params.orderId) .maybeSingle"
         },
         {
           "bodyHasSpread": true,
@@ -567,7 +595,7 @@
           "kind": "invoke",
           "line": 81,
           "method": "POST",
-          "snippet": "functions.invoke(\"capture-payment-intent\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId"
+          "snippet": "functions.invoke(\"capture-payment-intent\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId, \"captured\", input.paymentIntentId); const { data: order } = await supabase .from(\"orders\") .select(\"id,total_amount,currency,customer_user_id,merch"
         }
       ],
       "exists": true,
@@ -575,6 +603,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -597,7 +627,7 @@
           "kind": "invoke",
           "line": 4,
           "method": "POST",
-          "snippet": "functions.invoke(\"check-connect-status\"); if (error) throw error; return data as { connected: boolean; onboarding_complete: boolean; cha"
+          "snippet": "functions.invoke(\"check-connect-status\"); if (error) throw error; return data as { connected: boolean; onboarding_complete: boolean; charges_enabled?: boolean; payouts_enabled?: boolean }; } export async function createConnectAccount() { const { data, error } = await db.functions.invoke(\"crea"
         },
         {
           "bodyHasSpread": false,
@@ -610,7 +640,7 @@
           "kind": "invoke",
           "line": 16,
           "method": "POST",
-          "snippet": "functions.invoke(\"check-connect-status\"); return data; } export async function createConnectAccount() { const { data, error } = await d"
+          "snippet": "functions.invoke(\"check-connect-status\"); return data; } export async function createConnectAccount() { const { data, error } = await db.functions.invoke(\"create-connect-account\"); if (error) throw error; return data; } export async function disconnectStripe() { const { data, error } = a"
         }
       ],
       "exists": true,
@@ -618,6 +648,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "check-connect-status",
         "requiresJsonBody": false
@@ -637,7 +669,7 @@
           "kind": "invoke",
           "line": 366,
           "method": "POST",
-          "snippet": "functions.invoke(\"check-subscription\", { body: {} }); return { name: \"Edge Functions\", status: error ? \"warning\" as const : \"ok\" as co"
+          "snippet": "functions.invoke(\"check-subscription\", { body: {} }); return { name: \"Edge Functions\", status: error ? \"warning\" as const : \"ok\" as const, message: error ? `Error: ${error.message}` : \"Responding\", checkedAt: now }; }), ]); return checks.map(r => r.status === \"fulfilled\" ? r.value : {"
         },
         {
           "bodyHasSpread": false,
@@ -650,7 +682,7 @@
           "kind": "invoke",
           "line": 43,
           "method": "POST",
-          "snippet": "functions.invoke(\"check-subscription\"); if (error) return null; return data; } catch { return null; } } export async functi"
+          "snippet": "functions.invoke(\"check-subscription\"); if (error) return null; return data; } catch { return null; } } export async function invokeConciergePayment(body: Record<string, any>) { const { data, error } = await supabase.functions.invoke(\"create-concierge-payment\", { body }); if (er"
         },
         {
           "bodyHasSpread": false,
@@ -671,6 +703,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "check-subscription",
         "requiresJsonBody": false
@@ -695,7 +729,7 @@
           "kind": "fetch",
           "line": 401,
           "method": "POST",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/chief-agent`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/chief-agent`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authorization: `Bearer ${token}`, }, body: JSON.stringify({ command: actionType ? `${command} (action: ${actionType})` : com"
         }
       ],
       "exists": true,
@@ -703,6 +737,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -725,7 +761,7 @@
           "kind": "url-ref",
           "line": 484,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/classify-business`; // Service role key only — the anon key is intentionally excluded because // the edge function rej"
+          "snippet": "/functions/v1/classify-business`; // Service role key only — the anon key is intentionally excluded because // the edge function rejects it to prevent browser-side / external abuse. const serviceKey = (typeof process !== \"undefined\" && process.env.SUPABASE_SERVICE_ROLE_KEY) ||"
         }
       ],
       "exists": true,
@@ -733,6 +769,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -755,7 +793,7 @@
           "kind": "url-ref",
           "line": 47,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/command-email-intake\", authentication: \"x-webhook-secret header with COMMAND_EMAIL_SECRET\", }, verification_steps: ["
+          "snippet": "/functions/v1/command-email-intake\", authentication: \"x-webhook-secret header with COMMAND_EMAIL_SECRET\", }, verification_steps: [ \"1. Add all DNS records above to your domain registrar\", \"2. In SendGrid dashboard: Settings > Sender Authentication > Authenticate Your Domain\", \"3"
         }
       ],
       "exists": true,
@@ -790,7 +828,7 @@
           "kind": "invoke",
           "line": 98,
           "method": "POST",
-          "snippet": "functions.invoke(\"command-email-parse\", { body: { subject, body }, }); if (error || !data) return localParsed; const par"
+          "snippet": "functions.invoke(\"command-email-parse\", { body: { subject, body }, }); if (error || !data) return localParsed; const parsed = (data.parsed ?? data) as Partial<ParsedEmail>; return { title: parsed.title || localParsed.title, description: parsed.description || local"
         }
       ],
       "exists": true,
@@ -798,6 +836,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": true,
         "methods": [
           "OPTIONS",
           "POST"
@@ -830,7 +870,7 @@
           "kind": "invoke",
           "line": 249,
           "method": "POST",
-          "snippet": "functions.invoke(\"commission-split\", { body: { payment_intent_id: params.paymentIntentId, total_amount: params.totalAm"
+          "snippet": "functions.invoke(\"commission-split\", { body: { payment_intent_id: params.paymentIntentId, total_amount: params.totalAmount, currency: params.currency, merchant_id: params.merchantId, driver_id: params.driverId || null, order_id: params.orderId ||"
         }
       ],
       "exists": true,
@@ -838,6 +878,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -873,7 +915,7 @@
           "kind": "invoke",
           "line": 129,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Mobile Money ── export async functio"
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Mobile Money ── export async function initiateMobileMoneyPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"mobile-money-payment\", { body }); if (error) th"
         },
         {
           "bodyHasSpread": false,
@@ -886,7 +928,7 @@
           "kind": "invoke",
           "line": 577,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Accounting entries properties ── exp"
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; return data; } // ── Accounting entries properties ── export async function fetchAccountingProperties(orgId: string) { const { data } = await cFrom(\"properties\").select(\"id, label, country\").eq(\"org_id\", orgId); r"
         },
         {
           "bodyHasSpread": false,
@@ -899,7 +941,7 @@
           "kind": "invoke",
           "line": 124,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; if (data?.error) throw new Error(data.error); return dat"
+          "snippet": "functions.invoke(\"create-booking-payment\", { body }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; } // ─── Photo Upload ─── export async function uploadPropertyPhoto(orgId: string, propertyId: string, file: File) { const ext = file.name.split(\".\").pop("
         }
       ],
       "contractFields": [
@@ -916,6 +958,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -940,7 +984,7 @@
           "kind": "invoke",
           "line": 7,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-checkout\", { body: { priceId } }); if (error) throw error; return data?.url; } export async function openCusto"
+          "snippet": "functions.invoke(\"create-checkout\", { body: { priceId } }); if (error) throw error; return data?.url; } export async function openCustomerPortal(): Promise<string> { const { data, error } = await supabase.functions.invoke(\"customer-portal\"); if (error) throw error; return data?.url; } ex"
         },
         {
           "bodyHasSpread": false,
@@ -953,7 +997,7 @@
           "kind": "invoke",
           "line": 22,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-checkout\", { body }); if (error) throw error; return data; } // ── Guest payment ── export async function veri"
+          "snippet": "functions.invoke(\"create-checkout\", { body }); if (error) throw error; return data; } // ── Guest payment ── export async function verifyGuestPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"verify-guest-payment\", { body }); if (error) throw error; r"
         }
       ],
       "exists": true,
@@ -961,6 +1005,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -987,7 +1033,7 @@
           "kind": "invoke",
           "line": 31,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-checkout-session\", { body: { orderId: params.orderId, amount: params.amount, currency, },"
+          "snippet": "functions.invoke(\"create-checkout-session\", { body: { orderId: params.orderId, amount: params.amount, currency, }, }); if (error) throw error; await markOrderPaymentPending(params.orderId, data?.paymentIntentId ?? \"stripe_pending\"); return { provider: \"stripe"
         },
         {
           "bodyHasSpread": true,
@@ -1000,7 +1046,7 @@
           "kind": "invoke",
           "line": 27,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-checkout-session\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderI"
+          "snippet": "functions.invoke(\"create-checkout-session\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId, \"pending\", data?.paymentIntentId ?? null); return data as { provider: \"stripe\"; clientSecret?: string; checkoutUrl?: string; paymentIntent"
         }
       ],
       "exists": true,
@@ -1008,6 +1054,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1030,7 +1078,7 @@
           "kind": "invoke",
           "line": 52,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } export async function invokeCreateBookin"
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } export async function invokeCreateBookingPayment(body: Record<string, any>) { const { data, error } = await supabase.functions.invoke(\"create-booking-payment\", { body }); if (error) throw error;"
         },
         {
           "bodyHasSpread": false,
@@ -1053,7 +1101,7 @@
           "kind": "invoke",
           "line": 126,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-concierge-payment\", { body: { order_id: params.orderId, service_id: params.serviceId, amount:"
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body: { order_id: params.orderId, service_id: params.serviceId, amount: params.amount, currency: params.currency, guest_email: params.guestEmail, guest_name: params.guestName, service_title: params.serviceTi"
         },
         {
           "bodyHasSpread": false,
@@ -1066,7 +1114,7 @@
           "kind": "invoke",
           "line": 850,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ═══ BYPASS REMOVAL — NEW CANONICAL ME"
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ═══ BYPASS REMOVAL — NEW CANONICAL METHODS ═══ export async function updateConversationMetadata(conversationId: string, metadata: Record<string, any>) { await cFrom(\"conversations_v2\").update({"
         },
         {
           "bodyHasSpread": false,
@@ -1079,7 +1127,7 @@
           "kind": "invoke",
           "line": 122,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ── Booking payment ── export async fu"
+          "snippet": "functions.invoke(\"create-concierge-payment\", { body }); if (error) throw error; return data; } // ── Booking payment ── export async function createBookingPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-booking-payment\", { body }); if (error) t"
         }
       ],
       "contractFields": [
@@ -1097,6 +1145,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1119,7 +1169,7 @@
           "kind": "invoke",
           "line": 10,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data as { url?: string }; } export async function disconnect"
+          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data as { url?: string }; } export async function disconnectStripe() { const { data, error } = await db.functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function fetchFina"
         },
         {
           "bodyHasSpread": false,
@@ -1132,7 +1182,7 @@
           "kind": "invoke",
           "line": 21,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data; } export async function disconnectStripe() { const {"
+          "snippet": "functions.invoke(\"create-connect-account\"); if (error) throw error; return data; } export async function disconnectStripe() { const { data, error } = await db.functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function savePaymentSettings(orgId: st"
         },
         {
           "bodyHasSpread": false,
@@ -1147,7 +1197,7 @@
           "kind": "invoke",
           "line": 98,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-connect-account\", { body: { org_id: orgId } }); if (error) throw error; return data; } export async function f"
+          "snippet": "functions.invoke(\"create-connect-account\", { body: { org_id: orgId } }); if (error) throw error; return data; } export async function fetchStripeLoginLink(orgId: string) { const { data, error } = await db.functions.invoke(\"stripe-connect-login\", { body: { org_id: orgId } }); if (error) thro"
         }
       ],
       "exists": true,
@@ -1155,6 +1205,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "create-connect-account",
         "requiresJsonBody": false
@@ -1174,7 +1226,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-guest-checkout\", { body }); if (error) throw error; return data; } // ── Wallet ── export async function creat"
+          "snippet": "functions.invoke(\"create-guest-checkout\", { body }); if (error) throw error; return data; } // ── Wallet ── export async function createWalletTopup(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-wallet-topup\", { body }); if (error) throw error; retu"
         }
       ],
       "exists": true,
@@ -1182,6 +1234,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1214,6 +1268,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1239,7 +1295,7 @@
           "kind": "invoke",
           "line": 27,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_renewal\" }, }); if (error) return { success:"
+          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_renewal\" }, }); if (error) return { success: false, error: error.message }; if (data?.error) return { success: false, error: data.error }; return { success: true, url: data.url }; } /** * Create Stri"
         },
         {
           "bodyHasSpread": false,
@@ -1256,7 +1312,7 @@
           "kind": "invoke",
           "line": 40,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_boost\", boostTier: tier }, }); if (error) ret"
+          "snippet": "functions.invoke(\"create-listing-checkout\", { body: { listingId, paymentType: \"listing_boost\", boostTier: tier }, }); if (error) return { success: false, error: error.message }; if (data?.error) return { success: false, error: data.error }; return { success: true, url: data.url }; }"
         }
       ],
       "exists": true,
@@ -1264,6 +1320,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1286,7 +1344,7 @@
           "kind": "invoke",
           "line": 36,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-storefront-checkout\", { body: input, }); if (error) throw new Error(error.message || \"Checkout failed\");"
+          "snippet": "functions.invoke(\"create-storefront-checkout\", { body: input, }); if (error) throw new Error(error.message || \"Checkout failed\"); if (data?.error) throw new Error(data.error); return { orderId: data.orderId, checkoutUrl: data.checkoutUrl || null, alreadyExists: data.already"
         }
       ],
       "exists": true,
@@ -1294,6 +1352,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1316,7 +1376,7 @@
           "kind": "invoke",
           "line": 8,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-stripe-intent\", { body }); if (error) throw error; return data; } // ── Rent payment ── export async function"
+          "snippet": "functions.invoke(\"create-stripe-intent\", { body }); if (error) throw error; return data; } // ── Rent payment ── export async function createRentPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); i"
         }
       ],
       "contractFields": [
@@ -1331,6 +1391,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1353,7 +1415,7 @@
           "kind": "invoke",
           "line": 166,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-subscription\", { body }); if (error) throw error; return data; } export async function manageSubscription(body"
+          "snippet": "functions.invoke(\"create-subscription\", { body }); if (error) throw error; return data; } export async function manageSubscription(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"manage-subscription\", { body }); if (error) throw error; return data; } expor"
         }
       ],
       "exists": true,
@@ -1361,6 +1423,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1388,7 +1452,7 @@
           "kind": "invoke",
           "line": 34,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-wallet-topup\", { body: { wallet_id: input.walletId, amount: input.amount, currency: i"
+          "snippet": "functions.invoke(\"create-wallet-topup\", { body: { wallet_id: input.walletId, amount: input.amount, currency: input.currency, payment_method: input.paymentMethod, }, }); if (error) { failStep(flow, createStep, error.message); endFlow(fl"
         },
         {
           "bodyHasSpread": false,
@@ -1401,7 +1465,7 @@
           "kind": "invoke",
           "line": 42,
           "method": "POST",
-          "snippet": "functions.invoke(\"create-wallet-topup\", { body }); if (error) throw error; return data; } export async function invokeWalletPin(body: R"
+          "snippet": "functions.invoke(\"create-wallet-topup\", { body }); if (error) throw error; return data; } export async function invokeWalletPin(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"wallet-pin\", { body }); if (error) throw error; return data; } // ── Orbit payme"
         }
       ],
       "exists": true,
@@ -1409,6 +1473,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1431,7 +1497,7 @@
           "kind": "invoke",
           "line": 151,
           "method": "POST",
-          "snippet": "functions.invoke(\"crypto-payment\", { body }); if (error) throw error; return data; } export async function checkCryptoChargeStatus(char"
+          "snippet": "functions.invoke(\"crypto-payment\", { body }); if (error) throw error; return data; } export async function checkCryptoChargeStatus(chargeId: string) { const { data, error } = await db.functions.invoke(\"crypto-payment\", { body: { action: \"status\", charge_id: chargeId }, }); if (error)"
         },
         {
           "bodyHasSpread": false,
@@ -1447,7 +1513,7 @@
           "kind": "invoke",
           "line": 157,
           "method": "POST",
-          "snippet": "functions.invoke(\"crypto-payment\", { body: { action: \"status\", charge_id: chargeId }, }); if (error) throw error; return data; }"
+          "snippet": "functions.invoke(\"crypto-payment\", { body: { action: \"status\", charge_id: chargeId }, }); if (error) throw error; return data; } // ── Stripe Subscriptions ── export async function createSubscription(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-"
         }
       ],
       "exists": true,
@@ -1455,6 +1521,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1477,7 +1545,7 @@
           "kind": "invoke",
           "line": 13,
           "method": "POST",
-          "snippet": "functions.invoke(\"customer-portal\"); if (error) throw error; return data?.url; } export async function signOut() { await supabase.aut"
+          "snippet": "functions.invoke(\"customer-portal\"); if (error) throw error; return data?.url; } export async function signOut() { await supabase.auth.signOut(); }"
         }
       ],
       "exists": true,
@@ -1485,6 +1553,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "customer-portal",
         "requiresJsonBody": false
@@ -1508,7 +1578,7 @@
           "kind": "invoke",
           "line": 26,
           "method": "POST",
-          "snippet": "functions.invoke(\"deep-scrape-build\", { body: { urls, city, country }, }); if (error) throw new Error(error.message); return data"
+          "snippet": "functions.invoke(\"deep-scrape-build\", { body: { urls, city, country }, }); if (error) throw new Error(error.message); return data; } export async function deepScrapeSingle( url: string, city = \"Dubai\", country = \"AE\" ): Promise<DeepScrapeResult> { const result = await deepScrapeA"
         }
       ],
       "exists": true,
@@ -1516,6 +1586,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1538,7 +1610,7 @@
           "kind": "invoke",
           "line": 16,
           "method": "POST",
-          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function fetchFinancialData(orgId: string, c"
+          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function fetchFinancialData(orgId: string, countryFilter?: string | null) { let propsQuery = db(\"properties\").select(\"id, label, country\").eq(\"org_id\", orgId).order(\"label\"); if (countryFilter) propsQ"
         },
         {
           "bodyHasSpread": false,
@@ -1551,7 +1623,7 @@
           "kind": "invoke",
           "line": 27,
           "method": "POST",
-          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function savePaymentSettings(orgId: string,"
+          "snippet": "functions.invoke(\"disconnect-stripe\"); if (error) throw error; return data; } export async function savePaymentSettings(orgId: string, settings: Record<string, any>) { await db(\"orgs\").update(settings as any).eq(\"id\", orgId); }"
         }
       ],
       "exists": true,
@@ -1559,6 +1631,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "disconnect-stripe",
         "requiresJsonBody": false
@@ -1593,7 +1667,7 @@
           "kind": "invoke",
           "line": 276,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", order_"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", order_id: updated.id, job_type: \"food\", pickup_lat: updated.shopLat ?? 0, pickup_lng: updated.shopLn"
         },
         {
           "bodyHasSpread": false,
@@ -1617,7 +1691,7 @@
           "kind": "invoke",
           "line": 67,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", org_id: event.orgId,"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"create_job\", org_id: event.orgId, order_id: referenceId, pickup_address: \"Shop pickup\", dropoff_address: \"Customer address\", package_description: `"
         },
         {
           "bodyHasSpread": false,
@@ -1630,7 +1704,7 @@
           "kind": "invoke",
           "line": 29,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Ratings ── export async function insertDe"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Ratings ── export async function insertDeliveryRating(record: Record<string, any>) { const { error } = await db(\"delivery_ratings\").insert(record); if (error) throw error; } // ── Driver analytics"
         },
         {
           "bodyHasSpread": false,
@@ -1646,7 +1720,7 @@
           "kind": "invoke",
           "line": 59,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } // ── Offers ── export"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } // ── Offers ── export async function insertDeliveryOffer(record: Record<string, any>) { const { error } = await db(\"delivery_offers\").insert(record); if (error) throw error; }"
         },
         {
           "bodyHasSpread": false,
@@ -1659,7 +1733,7 @@
           "kind": "invoke",
           "line": 97,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Live Tracking ── export async function in"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) throw error; return data; } // ── Live Tracking ── export async function insertLiveTracking(record: Record<string, any>) { const { data, error } = await db(\"live_trackings\").insert(record as any).select().single(); if (error) throw"
         },
         {
           "bodyHasSpread": false,
@@ -1675,7 +1749,7 @@
           "kind": "invoke",
           "line": 7,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } export async function"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_status\", job_id: jobId }, }); return data; } export async function confirmDelivery(jobId: string, confirmationCode: string, gps?: { lat?: number; lng?: number; accuracy?: number }) { const { data, error } = await supabase.fun"
         },
         {
           "bodyHasSpread": false,
@@ -1695,7 +1769,7 @@
           "kind": "invoke",
           "line": 14,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"confirm_delivery\", job_id: jobId, confirmation_code: confirma"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"confirm_delivery\", job_id: jobId, confirmation_code: confirmationCode, gps_lat: gps?.lat, gps_lng: gps?.lng, gps_accuracy: gps?.accuracy, }, }); if (error) throw error; if (data?.error) throw n"
         },
         {
           "bodyHasSpread": false,
@@ -1712,7 +1786,7 @@
           "kind": "invoke",
           "line": 30,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_release\", job_id: jobId, reason }, }); if (error) throw error; ret"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_release\", job_id: jobId, reason }, }); if (error) throw error; return data; } export async function refundEscrow(jobId: string, reason: string) { const { data, error } = await supabase.functions.invoke(\"dispatch-delivery\","
         },
         {
           "bodyHasSpread": false,
@@ -1729,7 +1803,7 @@
           "kind": "invoke",
           "line": 38,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_refund\", job_id: jobId, reason }, }); if (error) throw error; if ("
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body: { action: \"escrow_refund\", job_id: jobId, reason }, }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; }"
         },
         {
           "bodyHasSpread": false,
@@ -1742,7 +1816,7 @@
           "kind": "invoke",
           "line": 137,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { ret"
+          "snippet": "functions.invoke(\"dispatch-delivery\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { return createJobFallback(body); } throw new Error(error.message); } if (data?.error) throw new Error(data.error); return data; } // ─── Rider Profil"
         }
       ],
       "contractFields": [
@@ -1756,6 +1830,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1778,7 +1854,7 @@
           "kind": "invoke",
           "line": 75,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { return"
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) { if (isTransportError(error) && body.action === \"create_job\") { return createJobFallback(body); } throw new Error(error.message); } if (data?.error) throw new Error(data.error); return data; } async function createJo"
         },
         {
           "bodyHasSpread": false,
@@ -1791,7 +1867,7 @@
           "kind": "invoke",
           "line": 17,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } export async function updateOrderDeliveryJob(orderI"
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } export async function updateOrderDeliveryJob(orderId: string, jobId: string) { await cFrom(\"storefront_orders\").update({ delivery_job_id: jobId, delivery_requested: true, delivery_status: \"searching\","
         },
         {
           "bodyHasSpread": false,
@@ -1804,7 +1880,7 @@
           "kind": "invoke",
           "line": 535,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Storefront orders ── export async function up"
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Storefront orders ── export async function updateStorefrontOrder(orderId: string, updates: Record<string, any>) { await cFrom(\"storefront_orders\").update(updates).eq(\"id\", orderId); } // ── Shop follows"
         },
         {
           "bodyHasSpread": false,
@@ -1817,7 +1893,7 @@
           "kind": "invoke",
           "line": 224,
           "method": "POST",
-          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Org member lookup ── export async function fe"
+          "snippet": "functions.invoke(\"dispatch-ride\", { body }); if (error) throw error; return data; } // ── Org member lookup ── export async function fetchUserOrgId(userId: string) { const { data } = await db .from(\"org_members\").select(\"org_id\").eq(\"user_id\", userId).limit(1).single(); return data?.org"
         }
       ],
       "exists": true,
@@ -1825,6 +1901,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1847,7 +1925,7 @@
           "kind": "invoke",
           "line": 56,
           "method": "GET",
-          "snippet": "functions.invoke(\"dld-analytics\", { method: \"GET\", headers: { \"x-endpoint\": \"backfill-status\" }, }); if (error) throw error; r"
+          "snippet": "functions.invoke(\"dld-analytics\", { method: \"GET\", headers: { \"x-endpoint\": \"backfill-status\" }, }); if (error) throw error; return data; } async function triggerBackfill(months: number): Promise<BackfillResult> { const { data, error } = await supabase.functions.invoke(\"dld-analytic"
         },
         {
           "bodyHasSpread": false,
@@ -1862,14 +1940,20 @@
           "kind": "invoke",
           "line": 65,
           "method": "POST",
-          "snippet": "functions.invoke(\"dld-analytics\", { method: \"POST\", headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`,"
+          "snippet": "functions.invoke(\"dld-analytics\", { method: \"POST\", headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`, }, body: { months }, }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; } export default function AdminDld"
         }
+      ],
+      "contractMethods": [
+        "GET",
+        "POST"
       ],
       "exists": true,
       "fn": "dld-analytics",
       "info": {
-        "hasContract": false,
+        "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -1877,14 +1961,7 @@
         "name": "dld-analytics",
         "requiresJsonBody": false
       },
-      "mismatches": [
-        {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:65",
-          "detail": "caller uses POST but handler accepts GET,OPTIONS",
-          "fn": "dld-analytics",
-          "kind": "method"
-        }
-      ]
+      "mismatches": []
     },
     {
       "callers": [
@@ -1904,7 +1981,7 @@
           "kind": "invoke",
           "line": 19,
           "method": "POST",
-          "snippet": "functions.invoke(\"dlq-ingest\", { body: { source_system: sourceSystem, operation_type: operationType, payload,"
+          "snippet": "functions.invoke(\"dlq-ingest\", { body: { source_system: sourceSystem, operation_type: operationType, payload, error, }, }); if (fnErr) { console.error(\"[dlq-client] DLQ ingest failed:\", fnErr); } } catch (e) { console.error(\"[dlq-c"
         }
       ],
       "exists": true,
@@ -1912,6 +1989,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1934,7 +2013,7 @@
           "kind": "invoke",
           "line": 141,
           "method": "POST",
-          "snippet": "functions.invoke(\"engine-cron-server\", { body: {} }); if (error) throw error; return data; } export async function toggleEngineStatus(n"
+          "snippet": "functions.invoke(\"engine-cron-server\", { body: {} }); if (error) throw error; return data; } export async function toggleEngineStatus(name: string, current: boolean) { await db(\"engine_supervisor\").update({ enabled: !current }).eq(\"engine_name\", name); } // ─── Owner Cockpit ─── export async"
         }
       ],
       "exists": true,
@@ -1942,6 +2021,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "engine-cron-server",
         "requiresJsonBody": false
@@ -1970,7 +2051,7 @@
           "kind": "invoke",
           "line": 74,
           "method": "POST",
-          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"create_lease_envelope\", leaseId: options.leaseId, title:"
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"create_lease_envelope\", leaseId: options.leaseId, title: options.title, documentUrl: options.documentUrl, landlordEmail: options.landlord.email, landlordName: options.landlord.name, tenantEmail"
         },
         {
           "bodyHasSpread": false,
@@ -1989,7 +2070,7 @@
           "kind": "invoke",
           "line": 143,
           "method": "POST",
-          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"sign_document\", envelopeId, partyId, userId,"
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"sign_document\", envelopeId, partyId, userId, signatureData: signatureDataUrl, }, }); if (fnError) { return { ok: false, error: \"Failed to submit signature to server\" }; } const { data: rpc"
         },
         {
           "bodyHasSpread": false,
@@ -2005,7 +2086,7 @@
           "kind": "invoke",
           "line": 196,
           "method": "POST",
-          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"get_envelope_status\", userId }, }); if (!fnError && fnData?.envel"
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"get_envelope_status\", userId }, }); if (!fnError && fnData?.envelopes) return fnData.envelopes; if (fnError) { console.warn(\"[e-signature] Edge function failed, falling back to database query:\", fnError.message ?? f"
         },
         {
           "bodyHasSpread": false,
@@ -2023,7 +2104,7 @@
           "kind": "invoke",
           "line": 228,
           "method": "POST",
-          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"decline_document\", envelopeId, partyId, userId }, }); if (fnError) {"
+          "snippet": "functions.invoke(\"esign-create-envelope\", { body: { action: \"decline_document\", envelopeId, partyId, userId }, }); if (fnError) { return { ok: false, error: \"Failed to decline envelope on server\" }; } const { data: rpcResult, error: rpcError } = await db.rpc(\"decline_envelope_party\""
         }
       ],
       "exists": true,
@@ -2031,6 +2112,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2053,7 +2136,7 @@
           "kind": "url-ref",
           "line": 54,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/extract-article/metrics`; const headers: Record<string, string> = { \"Content-Type\": \"application/json\", }"
+          "snippet": "/functions/v1/extract-article/metrics`; const headers: Record<string, string> = { \"Content-Type\": \"application/json\", }; if (CACHE_METRICS_KEY) { headers[\"X-Metrics-Key\"] = CACHE_METRICS_KEY; } else { const { data: sessionData } = await supabase.auth"
         },
         {
           "bodyHasSpread": false,
@@ -2066,7 +2149,7 @@
           "kind": "url-ref",
           "line": 219,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/extract-article`; try { extractLog(\"server_attempt\", { url: sourceUrl }); const response = await fetchWithTimeout(a"
+          "snippet": "/functions/v1/extract-article`; try { extractLog(\"server_attempt\", { url: sourceUrl }); const response = await fetchWithTimeout(apiUrl, SERVER_EXTRACT_TIMEOUT_MS, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", \"apikey\": SUPABASE_ANON_KEY,"
         }
       ],
       "exists": true,
@@ -2074,6 +2157,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS",
@@ -2097,7 +2182,7 @@
           "kind": "fetch",
           "line": 27,
           "method": "GET",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/fx-rates`, { method: \"GET\", headers: { apikey: anonKey, Authorization"
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/fx-rates`, { method: \"GET\", headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}`, }, }); if (resp.ok) { const data = await resp.json(); if (data?.rates) { const eurRates: Re"
         },
         {
           "bodyHasSpread": false,
@@ -2110,7 +2195,7 @@
           "kind": "fetch",
           "line": 20,
           "method": "GET",
-          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `B"
+          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `Bearer ${await getAccessToken()}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, } ); if (!res.ok) return n"
         },
         {
           "bodyHasSpread": false,
@@ -2123,7 +2208,7 @@
           "kind": "url-ref",
           "line": 21,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `Bearer ${await getAccessToken()}`,"
+          "snippet": "/functions/v1/fx-rates?action=rates`, { headers: { Authorization: `Bearer ${await getAccessToken()}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, } ); if (!res.ok) return null; const data = await res.json();"
         },
         {
           "bodyHasSpread": false,
@@ -2136,7 +2221,7 @@
           "kind": "fetch",
           "line": 51,
           "method": "GET",
-          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, {"
+          "snippet": "fetch( `https://${projectId}.db.co/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, { headers: { Authorization: `Bearer ${await getAccessToken()}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,"
         },
         {
           "bodyHasSpread": false,
@@ -2149,7 +2234,7 @@
           "kind": "url-ref",
           "line": 52,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, { headers: { Authorizati"
+          "snippet": "/functions/v1/fx-rates?action=convert&from=${currency}&amount=${amount}`, { headers: { Authorization: `Bearer ${await getAccessToken()}`, apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, } );"
         },
         {
           "bodyHasSpread": false,
@@ -2162,7 +2247,7 @@
           "kind": "invoke",
           "line": 45,
           "method": "GET",
-          "snippet": "functions.invoke(\"fx-rates\", { method: \"GET\" }); if (error || !data?.rates) return null; return data.rates as Record<string, number>"
+          "snippet": "functions.invoke(\"fx-rates\", { method: \"GET\" }); if (error || !data?.rates) return null; return data.rates as Record<string, number>; } catch { return null; } } function getStaticRates(): Record<string, number> { const built = buildStaticSnapshot(); return built.rates; } functi"
         }
       ],
       "contractMethods": [
@@ -2174,6 +2259,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -2196,7 +2283,7 @@
           "kind": "invoke",
           "line": 70,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-cron-sync\", { body: connectorId ? { connectorId } : {}, }); if (error) { platformBus."
+          "snippet": "functions.invoke(\"gateway-cron-sync\", { body: connectorId ? { connectorId } : {}, }); if (error) { platformBus.emit( \"system:gateway_sync_error\", { connectorId: connectorId ?? \"all\", connectorName: connectorId ?? \"All Connector"
         }
       ],
       "exists": true,
@@ -2204,6 +2291,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2229,7 +2318,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"fetch\" }, }); if (error) { throw new"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"fetch\" }, }); if (error) { throw new Error(`Careem sync via edge function failed: ${error.message}`); } const records = Array.isArray(data?.records) ? data.records : []; const now = Da"
         },
         {
           "bodyHasSpread": false,
@@ -2245,7 +2334,7 @@
           "kind": "invoke",
           "line": 68,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"health\" }, }); if (error) return false"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"careem\", action: \"health\" }, }); if (error) return false; return data?.healthy === true; } catch { return false; } } } export const careemConnector = new CareemConnector();"
         },
         {
           "bodyHasSpread": false,
@@ -2261,7 +2350,7 @@
           "kind": "invoke",
           "line": 36,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"fetch\" }, }); if (error) { throw n"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"fetch\" }, }); if (error) { throw new Error(`Deliveroo sync via edge function failed: ${error.message}`); } const records = Array.isArray(data?.records) ? data.records : []; const no"
         },
         {
           "bodyHasSpread": false,
@@ -2277,7 +2366,7 @@
           "kind": "invoke",
           "line": 65,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"health\" }, }); if (error) return fa"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"deliveroo\", action: \"health\" }, }); if (error) return false; return data?.healthy === true; } catch { return false; } } } export const deliverooConnector = new DeliverooConnector();"
         },
         {
           "bodyHasSpread": false,
@@ -2293,7 +2382,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"fetch\" }, }); if (error) { throw new"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"fetch\" }, }); if (error) { throw new Error(`Talabat sync via edge function failed: ${error.message}`); } const records = Array.isArray(data?.records) ? data.records : []; const now ="
         },
         {
           "bodyHasSpread": false,
@@ -2309,7 +2398,7 @@
           "kind": "invoke",
           "line": 68,
           "method": "POST",
-          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"health\" }, }); if (error) return fals"
+          "snippet": "functions.invoke(\"gateway-marketplace-sync\", { body: { source: \"talabat\", action: \"health\" }, }); if (error) return false; return data?.healthy === true; } catch { return false; } } } export const talabatConnector = new TalabatConnector();"
         }
       ],
       "contractFields": [
@@ -2323,6 +2412,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2345,7 +2436,7 @@
           "kind": "fetch",
           "line": 127,
           "method": "POST",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-delete-account`, { method: \"POST\", headers: { Authorization: `Bearer"
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-delete-account`, { method: \"POST\", headers: { Authorization: `Bearer ${token}`, \"Content-Type\": \"application/json\", }, body: JSON.stringify(body), }); if (res.ok) { const"
         }
       ],
       "contractMethods": [
@@ -2356,6 +2447,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2378,7 +2471,7 @@
           "kind": "fetch",
           "line": 63,
           "method": "GET",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-export`, { headers: { Authorization: `Bearer ${token}` }, }); if (res.ok)"
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-export`, { headers: { Authorization: `Bearer ${token}` }, }); if (res.ok) { const blob = await res.blob(); const url = URL.createObjectURL(blob); const a = document.createElement(\"a\"); a.href ="
         }
       ],
       "contractMethods": [
@@ -2390,6 +2483,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "gdpr-export",
         "requiresJsonBody": false
@@ -2409,7 +2504,7 @@
           "kind": "invoke",
           "line": 19,
           "method": "POST",
-          "snippet": "functions.invoke(\"generate-cv\", { body }); if (error) throw error; return data; } export async function invokeTranslateMessage(body: Re"
+          "snippet": "functions.invoke(\"generate-cv\", { body }); if (error) throw error; return data; } export async function invokeTranslateMessage(body: Record<string, any>) { const { data, error } = await supabase.functions.invoke(\"translate-message\", { body }); if (error) throw error; return data; } expor"
         }
       ],
       "exists": true,
@@ -2417,6 +2512,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2439,7 +2536,7 @@
           "kind": "invoke",
           "line": 111,
           "method": "POST",
-          "snippet": "functions.invoke(\"generate-pdf\", { body }); if (error) throw error; return data; } // ── Reminders ── export async function fetchRemind"
+          "snippet": "functions.invoke(\"generate-pdf\", { body }); if (error) throw error; return data; } // ── Reminders ── export async function fetchReminders(orgId: string) { const { data } = await cFrom(\"reminders\").select(\"*\").eq(\"org_id\", orgId).order(\"due_date\"); return data ?? []; } export async functio"
         }
       ],
       "exists": true,
@@ -2447,6 +2544,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2469,7 +2568,7 @@
           "kind": "invoke",
           "line": 20,
           "method": "POST",
-          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) { console.warn(\"[ICE] Failed to fetch TURN credentials,"
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) { console.warn(\"[ICE] Failed to fetch TURN credentials, using STUN-only fallback\", error); return FALLBACK_ICE_SERVERS; } _cachedIceServers = data.iceServers; _cacheExpiry = Date.now() + 5 * 60 * 10"
         },
         {
           "bodyHasSpread": false,
@@ -2482,7 +2581,7 @@
           "kind": "invoke",
           "line": 13,
           "method": "POST",
-          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK_CONFIG; return { iceServers: data.iceServe"
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK_CONFIG; return { iceServers: data.iceServers }; } catch { return FALLBACK_CONFIG; } }"
         },
         {
           "bodyHasSpread": false,
@@ -2495,7 +2594,7 @@
           "kind": "invoke",
           "line": 109,
           "method": "POST",
-          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK; return { iceServers: data.ice"
+          "snippet": "functions.invoke(\"get-turn-credentials\"); if (error || !data?.iceServers) return FALLBACK; return { iceServers: data.iceServers, iceTransportPolicy: data.iceTransportPolicy ?? \"all\", bundlePolicy: \"max-bundle\", rtcpMuxPolicy: \"require\", }; } catc"
         },
         {
           "bodyHasSpread": false,
@@ -2510,7 +2609,7 @@
           "kind": "invoke",
           "line": 25,
           "method": "POST",
-          "snippet": "functions.invoke(\"get-turn-credentials\", { body: { purpose: \"orbit_call\" }, }); if (error || !data?.iceServers?.length) {"
+          "snippet": "functions.invoke(\"get-turn-credentials\", { body: { purpose: \"orbit_call\" }, }); if (error || !data?.iceServers?.length) { console.warn(\"[getIceServers] TURN fetch failed, using STUN fallback\", error); cachedIceServers = FALLBACK_ICE; cachedUntil = now + 5 * 60_000;"
         }
       ],
       "contractMethods": [
@@ -2521,6 +2620,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2543,7 +2644,7 @@
           "kind": "url-ref",
           "line": 46,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, body: JSON.stringify(body), }); const data = await res.json(); if (!res.ok) throw"
         },
         {
           "bodyHasSpread": false,
@@ -2556,7 +2657,7 @@
           "kind": "url-ref",
           "line": 6,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, body: JSON.stringify(body), }); const data = await res.json(); if (!res.ok) throw"
         },
         {
           "bodyHasSpread": false,
@@ -2569,7 +2670,7 @@
           "kind": "url-ref",
           "line": 84,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
+          "snippet": "/functions/v1/guest-session`; const res = await fetch(url, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", \"apikey\": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY, }, body: JSON.stringify(body), }); const data = await res.json(); if (!res.ok) thro"
         }
       ],
       "contractFields": [
@@ -2583,6 +2684,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2605,7 +2708,7 @@
           "kind": "invoke",
           "line": 122,
           "method": "GET",
-          "snippet": "functions.invoke(\"health-check\", { method: \"GET\" }), timeoutMs, \"supabase-edge-functions\", ); const latency = Math.roun"
+          "snippet": "functions.invoke(\"health-check\", { method: \"GET\" }), timeoutMs, \"supabase-edge-functions\", ); const latency = Math.round(performance.now() - start); if (error) { const msg = typeof error === \"object\" && \"message\" in error ? error.message : String(error); const i"
         }
       ],
       "contractMethods": [
@@ -2616,6 +2719,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -2642,7 +2747,7 @@
           "kind": "invoke",
           "line": 126,
           "method": "POST",
-          "snippet": "functions.invoke(\"kyc-review\", { body: { documentId, action, reason }, headers: token ? { Authorization: `Bearer ${token}` } : undef"
+          "snippet": "functions.invoke(\"kyc-review\", { body: { documentId, action, reason }, headers: token ? { Authorization: `Bearer ${token}` } : undefined, }); if (error) throw error; return data; } export async function getKycDocumentPreviewUrl(filePath: string): Promise<string | null> { const { da"
         }
       ],
       "exists": true,
@@ -2650,6 +2755,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2672,7 +2779,7 @@
           "kind": "invoke",
           "line": 36,
           "method": "POST",
-          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } export async function invokeCheckSubscription() {"
+          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } export async function invokeCheckSubscription() { try { const { data, error } = await supabase.functions.invoke(\"check-subscription\"); if (error) return null; return data; } catch { return n"
         },
         {
           "bodyHasSpread": false,
@@ -2685,7 +2792,7 @@
           "kind": "invoke",
           "line": 337,
           "method": "POST",
-          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } // ── Accounting entries ── export async function"
+          "snippet": "functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } // ── Accounting entries ── export async function fetchPropertiesForAccounting(orgId: string) { const { data } = await cFrom(\"properties\").select(\"id, label, country\").eq(\"org_id\", orgId); return data || []"
         }
       ],
       "exists": true,
@@ -2693,6 +2800,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2719,7 +2828,7 @@
           "kind": "invoke",
           "line": 45,
           "method": "POST",
-          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName, participantName: userName || userId }, }); if (error"
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName, participantName: userName || userId }, }); if (error) { throw new Error(`LiveKit token request failed: ${error.message ?? \"Unknown error\"}`); } if (!data?.token) { throw new Error(\"LiveKit token respo"
         },
         {
           "bodyHasSpread": false,
@@ -2735,7 +2844,7 @@
           "kind": "invoke",
           "line": 290,
           "method": "POST",
-          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"start_recording\", roomName }, }); if (error) throw error;"
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"start_recording\", roomName }, }); if (error) throw error; setState((s) => ({ ...s, isRecording: true })); } catch { setState((s) => ({ ...s, error: \"Failed to start recording\" })); } }, [roomName]);"
         },
         {
           "bodyHasSpread": false,
@@ -2751,7 +2860,7 @@
           "kind": "invoke",
           "line": 302,
           "method": "POST",
-          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"stop_recording\", roomName }, }); } catch { // continue"
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"stop_recording\", roomName }, }); } catch { // continue } setState((s) => ({ ...s, isRecording: false })); }, [roomName]); useEffect(() => { if (autoConnect) connect(); return () => { disconne"
         },
         {
           "bodyHasSpread": false,
@@ -2768,7 +2877,7 @@
           "kind": "invoke",
           "line": 42,
           "method": "POST",
-          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName: options.roomName, participantN"
+          "snippet": "functions.invoke(\"livekit-room-token\", { body: { action: \"join_room\", roomName: options.roomName, participantName: options.userName || options.userId, }, }); if (error) throw error; const token = data?.token; if (!token) throw new Error(\"No token r"
         }
       ],
       "exists": true,
@@ -2776,6 +2885,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2798,7 +2909,7 @@
           "kind": "invoke",
           "line": 172,
           "method": "POST",
-          "snippet": "functions.invoke(\"manage-subscription\", { body }); if (error) throw error; return data; } export async function openSubscriptionPortal("
+          "snippet": "functions.invoke(\"manage-subscription\", { body }); if (error) throw error; return data; } export async function openSubscriptionPortal() { const { data, error } = await db.functions.invoke(\"subscription-portal\", { body: {} }); if (error) throw error; return data; } export async function"
         }
       ],
       "exists": true,
@@ -2806,6 +2917,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2835,7 +2948,7 @@
           "kind": "invoke",
           "line": 56,
           "method": "POST",
-          "snippet": "functions.invoke(\"marketplace-router\", { body: { action: \"search\", query, types, filters: {"
+          "snippet": "functions.invoke(\"marketplace-router\", { body: { action: \"search\", query, types, filters: { city: filters.city, vertical: filters.vertical, category: filters.category, min_rating: filters.min_rating, price_min: f"
         },
         {
           "bodyHasSpread": false,
@@ -2856,7 +2969,7 @@
           "kind": "invoke",
           "line": 80,
           "method": "POST",
-          "snippet": "functions.invoke(\"marketplace-router\", { body: { query: state.query, filter: filter.length > 0 ? filter : undefined,"
+          "snippet": "functions.invoke(\"marketplace-router\", { body: { query: state.query, filter: filter.length > 0 ? filter : undefined, facets: [\"vertical\", \"subcategory\", \"city\"], sort: state.sort === \"price_asc\" ? [\"price:asc\"] : state.sort === \"price_desc\" ? [\"price"
         }
       ],
       "exists": true,
@@ -2885,7 +2998,7 @@
           "kind": "invoke",
           "line": 136,
           "method": "POST",
-          "snippet": "functions.invoke(\"mobile-money-payment\", { body }); if (error) throw error; return data; } export async function checkMobileMoneyStatus"
+          "snippet": "functions.invoke(\"mobile-money-payment\", { body }); if (error) throw error; return data; } export async function checkMobileMoneyStatus(txRef: string) { const { data, error } = await db.functions.invoke(\"mobile-money-payment\", { body: { action: \"status\", tx_ref: txRef }, }); if (error"
         },
         {
           "bodyHasSpread": false,
@@ -2901,7 +3014,7 @@
           "kind": "invoke",
           "line": 142,
           "method": "POST",
-          "snippet": "functions.invoke(\"mobile-money-payment\", { body: { action: \"status\", tx_ref: txRef }, }); if (error) throw error; return data; }"
+          "snippet": "functions.invoke(\"mobile-money-payment\", { body: { action: \"status\", tx_ref: txRef }, }); if (error) throw error; return data; } // ── Crypto (Coinbase Commerce) ── export async function createCryptoCharge(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"c"
         }
       ],
       "exists": true,
@@ -2909,6 +3022,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2931,7 +3046,7 @@
           "kind": "invoke",
           "line": 151,
           "method": "POST",
-          "snippet": "functions.invoke(\"notification-dispatcher\", { body: payload, }); if (error) return { success: false, error: error.message }; retu"
+          "snippet": "functions.invoke(\"notification-dispatcher\", { body: payload, }); if (error) return { success: false, error: error.message }; return { success: true }; }"
         }
       ],
       "exists": true,
@@ -2939,6 +3054,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2963,7 +3080,7 @@
           "kind": "invoke",
           "line": 381,
           "method": "POST",
-          "snippet": "functions.invoke(\"notify-booking\", { body: { booking_request_id: bookingRequestId } }); } // ── Local services ── export async function fet"
+          "snippet": "functions.invoke(\"notify-booking\", { body: { booking_request_id: bookingRequestId } }); } // ── Local services ── export async function fetchOrgLocalServicesEnabled(orgId: string) { const { data } = await cFrom(\"orgs\").select(\"local_services_enabled\").eq(\"id\", orgId).single(); return data?.loca"
         }
       ],
       "exists": true,
@@ -2971,6 +3088,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2999,7 +3118,7 @@
           "kind": "invoke",
           "line": 256,
           "method": "POST",
-          "snippet": "functions.invoke(\"orbit-ai-support\", { body: { session_id: sessionId, message: userMsg.content, langua"
+          "snippet": "functions.invoke(\"orbit-ai-support\", { body: { session_id: sessionId, message: userMsg.content, language: navigator.language.split(\"-\")[0] || \"en\", context: initialContext ? { order_id: initialContext.orderId,"
         }
       ],
       "exists": true,
@@ -3007,6 +3126,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3032,7 +3153,7 @@
           "kind": "invoke",
           "line": 86,
           "method": "POST",
-          "snippet": "functions.invoke(\"orbit-payment\", { body: { action, deal_id: dealId }, }); if (error) throw error; if (data?.error) throw new Erro"
+          "snippet": "functions.invoke(\"orbit-payment\", { body: { action, deal_id: dealId }, }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; } function computeExpiryDate(option: string): string | null { if (option === \"none\") return null; const hours = parseInt(opti"
         },
         {
           "bodyHasSpread": false,
@@ -3045,7 +3166,7 @@
           "kind": "invoke",
           "line": 55,
           "method": "POST",
-          "snippet": "functions.invoke(\"orbit-payment\", { body }); if (error) { const message = typeof error === \"object\" && error !== null && \"message\" in"
+          "snippet": "functions.invoke(\"orbit-payment\", { body }); if (error) { const message = typeof error === \"object\" && error !== null && \"message\" in error ? (error as Record<string, unknown>).message : String(error); throw new Error(`Orbit payment failed: ${message}`); } if (data?.error)"
         }
       ],
       "exists": true,
@@ -3053,6 +3174,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3083,6 +3206,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3107,7 +3232,7 @@
           "kind": "invoke",
           "line": 51,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_link_token\" }, }); if (error) throw new Error(\"Failed to create Plaid"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_link_token\" }, }); if (error) throw new Error(\"Failed to create Plaid link token\"); return { linkToken: data.linkToken || data.link_token, expiration: data.expiration || new Date(Date.now() + 30 * 60 * 1000).toISOString"
         },
         {
           "bodyHasSpread": false,
@@ -3123,7 +3248,7 @@
           "kind": "invoke",
           "line": 68,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"exchange_public_token\", publicToken, }, }); if (exchangeErro"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"exchange_public_token\", publicToken, }, }); if (exchangeError || !(exchangeData?.itemId || exchangeData?.item_id)) { return { ok: false, error: \"Failed to exchange token with Plaid\" }; } const itemId = exchangeD"
         },
         {
           "bodyHasSpread": false,
@@ -3139,7 +3264,7 @@
           "kind": "invoke",
           "line": 80,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId, }, }); if (accountsError || !account"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId, }, }); if (accountsError || !accountsData?.accounts) { return { ok: false, error: \"Token exchanged but failed to fetch account details. Please try again.\" }; } const accounts: LinkedBankA"
         },
         {
           "bodyHasSpread": false,
@@ -3155,7 +3280,7 @@
           "kind": "invoke",
           "line": 132,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId: item.item_id }, }); if (accountsError ||"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"get_accounts\", itemId: item.item_id }, }); if (accountsError || !accountsData?.accounts) { const errMsg = accountsError?.message ?? \"No accounts returned\"; console.warn(`[plaid] Failed to fetch accounts for i"
         },
         {
           "bodyHasSpread": false,
@@ -3174,7 +3299,7 @@
           "kind": "invoke",
           "line": 203,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_ach_transfer\", itemId, accountId, amount, d"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"create_ach_transfer\", itemId, accountId, amount, description: `Easy-Locs wallet top-up (${currency})`, }, }); if (error) { return { ok: false, error: \"ACH transfer failed. Please try again.\" }; }"
         },
         {
           "bodyHasSpread": false,
@@ -3189,7 +3314,7 @@
           "kind": "invoke",
           "line": 227,
           "method": "POST",
-          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"verify_income\" }, }); if (error) { throw new Error(\"Income verification"
+          "snippet": "functions.invoke(\"plaid-link-token\", { body: { action: \"verify_income\" }, }); if (error) { throw new Error(\"Income verification failed. Please ensure your bank account is linked and try again.\"); } return { verified: true, annualIncome: data.annual_income, currency: data."
         }
       ],
       "contractFields": [],
@@ -3201,6 +3326,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3225,7 +3352,7 @@
           "kind": "invoke",
           "line": 197,
           "method": "POST",
-          "snippet": "functions.invoke(\"platform-recovery\", { body: { job } }); } // ─── Firecrawl Usage ─── export async function fetchFirecrawlUsageLogs() {"
+          "snippet": "functions.invoke(\"platform-recovery\", { body: { job } }); } // ─── Firecrawl Usage ─── export async function fetchFirecrawlUsageLogs() { const { data, error } = await db(\"firecrawl_usage_log\") .select(\"user_id,success,text_length,created_at\") .order(\"created_at\", { ascending: false })"
         }
       ],
       "exists": true,
@@ -3233,6 +3360,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3255,7 +3384,7 @@
           "kind": "url-ref",
           "line": 105,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=${method}&school=${school}`; const resp = await fetch(fnUrl, { headers: {"
+          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=${method}&school=${school}`; const resp = await fetch(fnUrl, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }, signal: createTimeoutSignal(5000), }); if (!resp.ok) return null; const json = await re"
         },
         {
           "bodyHasSpread": false,
@@ -3268,7 +3397,7 @@
           "kind": "url-ref",
           "line": 121,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`; const resp = await fetch(url, { headers: { apikey: anonKey, Author"
+          "snippet": "/functions/v1/prayer-times?lat=${lat}&lng=${lng}&method=2`; const resp = await fetch(url, { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` }, }); if (resp.ok) { const json = await resp.json(); if (json.data) return json.data as PrayerTimesDat"
         }
       ],
       "exists": true,
@@ -3276,6 +3405,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -3302,7 +3433,7 @@
           "kind": "invoke",
           "line": 149,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: session."
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: session.access_token?.slice(-16) ?? \"unknown\", user_agent: navigator.userAgent, }, }).catch(err => console.warn(\"[boot] presen"
         },
         {
           "bodyHasSpread": false,
@@ -3319,7 +3450,7 @@
           "kind": "invoke",
           "line": 162,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: ne"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: newSession.access_token?.slice(-16) ?? \"unknown\", user_agent: navigator.userAgent, }, }).catch(err => console.warn"
         },
         {
           "bodyHasSpread": false,
@@ -3337,7 +3468,7 @@
           "kind": "invoke",
           "line": 22,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"heartbeat\", status, metadata, identity }, }); return !error; } cat"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"heartbeat\", status, metadata, identity }, }); return !error; } catch { return false; } } export async function removePresence(userId: string): Promise<void> { if (!_supabase) return; try { await _supabase.funct"
         },
         {
           "bodyHasSpread": false,
@@ -3352,7 +3483,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }); } catch {} } export async function getPresence( use"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }); } catch {} } export async function getPresence( userId: string ): Promise<{ userId: string; status: string; lastHeartbeat: number } | null> { if (!_supabase) return null; try { const { data, error } = a"
         },
         {
           "bodyHasSpread": false,
@@ -3368,7 +3499,7 @@
           "kind": "invoke",
           "line": 47,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data || !data.online)"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data || !data.online) return null; return data.presence ?? null; } catch { return null; } } export async function isUserOnline(userId: string): Promise<boolean> { if ("
         },
         {
           "bodyHasSpread": false,
@@ -3384,7 +3515,7 @@
           "kind": "invoke",
           "line": 61,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return false;"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return false; return data.online ?? false; } catch { return false; } } export async function getLastSeen(userId: string): Promise<number | null> { if (!_supabase"
         },
         {
           "bodyHasSpread": false,
@@ -3400,7 +3531,7 @@
           "kind": "invoke",
           "line": 75,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return null;"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"status\", user_id: userId }, }); if (error || !data) return null; return data.lastSeen ?? null; } catch { return null; } } export async function getBulkPresence( userIds: string[] ): Promise<Record<string, { online"
         },
         {
           "bodyHasSpread": false,
@@ -3416,7 +3547,7 @@
           "kind": "invoke",
           "line": 91,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"bulk_status\", user_ids: userIds }, }); if (error || !data) return {}"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"bulk_status\", user_ids: userIds }, }); if (error || !data) return {}; return data.users ?? {}; } catch { return {}; } } export async function getActiveUserCount(): Promise<number> { if (!_supabase) return 0; tr"
         },
         {
           "bodyHasSpread": false,
@@ -3431,7 +3562,7 @@
           "kind": "invoke",
           "line": 105,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"active_count\" }, }); if (error || !data) return 0; return data.a"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"active_count\" }, }); if (error || !data) return 0; return data.active_users ?? 0; } catch { return 0; } } let _currentIdentity: { name: string; avatar?: string; orbitId?: string } | undefined; export function start"
         },
         {
           "bodyHasSpread": false,
@@ -3447,7 +3578,7 @@
           "kind": "invoke",
           "line": 34,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"remove_session\", session_id: session.access_token.slic"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"remove_session\", session_id: session.access_token.slice(-16), }, }).catch(() => {}); await db.functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }).catch(() => {"
         },
         {
           "bodyHasSpread": false,
@@ -3462,7 +3593,7 @@
           "kind": "invoke",
           "line": 40,
           "method": "POST",
-          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }).catch(() => {}); } } catch {} return db.auth"
+          "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"offline\" }, }).catch(() => {}); } } catch {} return db.auth.signOut(); } export async function getSession() { return db.auth.getSession(); } export async function getUser() { return db.auth.getUser(); } export fu"
         }
       ],
       "contractFields": [],
@@ -3474,6 +3605,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3499,7 +3632,7 @@
           "kind": "invoke",
           "line": 22,
           "method": "POST",
-          "snippet": "functions.invoke(\"process-onboarding-media\", { body: { urls, entityId }, }); if (error) throw error; const results: Down"
+          "snippet": "functions.invoke(\"process-onboarding-media\", { body: { urls, entityId }, }); if (error) throw error; const results: DownloadedImage[] = data?.results ?? []; return results; } catch (err: unknown) { const reason = err instanceof Error ? err.message : \"Edge function call"
         }
       ],
       "exists": true,
@@ -3507,6 +3640,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3533,7 +3668,7 @@
           "kind": "invoke",
           "line": 89,
           "method": "POST",
-          "snippet": "functions.invoke(\"process-refund\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId ?? null,"
+          "snippet": "functions.invoke(\"process-refund\", { body: { orderId: params.orderId, paymentIntentId: params.paymentIntentId ?? null, reason: params.reason ?? \"admin_refund\", }, }); if (error) throw error; const { data: order } = await supabase .from(\"orders\") .select(\"*\")"
         },
         {
           "bodyHasSpread": true,
@@ -3546,7 +3681,7 @@
           "kind": "invoke",
           "line": 111,
           "method": "POST",
-          "snippet": "functions.invoke(\"process-refund\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId, \"refun"
+          "snippet": "functions.invoke(\"process-refund\", { body: input, }); if (error) throw error; await writeOrderPaymentStatus(input.orderId, \"refunded\", input.paymentIntentId); const { error: orderErr } = await supabase .from(\"orders\") .update({ status: \"refunded\", updated_at: new Date().toISOSt"
         },
         {
           "bodyHasSpread": false,
@@ -3563,7 +3698,7 @@
           "kind": "invoke",
           "line": 44,
           "method": "POST",
-          "snippet": "functions.invoke(\"process-refund\", { body: { booking_id: bookingId, booking_type: bookingType, reason }, }); if (error) throw error;"
+          "snippet": "functions.invoke(\"process-refund\", { body: { booking_id: bookingId, booking_type: bookingType, reason }, }); if (error) throw error; return data; } // ── Write operations ── export async function createDealRoom(record: Record<string, any>) { const { data, error } = await db(\"deal_rooms"
         }
       ],
       "contractFields": [],
@@ -3575,6 +3710,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3597,7 +3734,7 @@
           "kind": "url-ref",
           "line": 337,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/public-api/v1`}</code></p> </div> <div className=\"mt-6 p-4 bg-muted/50 rounded-lg\">"
+          "snippet": "/functions/v1/public-api/v1`}</code></p> </div> <div className=\"mt-6 p-4 bg-muted/50 rounded-lg\"> <h4 className=\"font-semibold text-foreground text-sm mb-2\">Webhooks — Signature</h4> <p className=\"text-xs text-muted-foreground\">Cha"
         },
         {
           "bodyHasSpread": false,
@@ -3610,7 +3747,7 @@
           "kind": "url-ref",
           "line": 364,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/public-api/v1/properties \\\\ -H \"Authorization: Bearer el_your_api_key\" \\\\ -H \"Content-Type: application/json\"`}"
+          "snippet": "/functions/v1/public-api/v1/properties \\\\ -H \"Authorization: Bearer el_your_api_key\" \\\\ -H \"Content-Type: application/json\"`} </pre> </div> <div> <h4 className=\"font-semibold text-foreground text-sm mb-2\">JavaScript — Créer un l"
         },
         {
           "bodyHasSpread": false,
@@ -3623,7 +3760,7 @@
           "kind": "url-ref",
           "line": 372,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/public-api/v1/tenants', { method: 'POST', headers: { 'Authorization': 'Bearer el_your_api_key', 'Content-Type': 'a"
+          "snippet": "/functions/v1/public-api/v1/tenants', { method: 'POST', headers: { 'Authorization': 'Bearer el_your_api_key', 'Content-Type': 'application/json', }, body: JSON.stringify({ name: 'Jean Dupont', email: 'jean@example.com', phone: '+33612345678', property_id: 'uuid-here',"
         },
         {
           "bodyHasSpread": false,
@@ -3636,7 +3773,7 @@
           "kind": "url-ref",
           "line": 394,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/public-api/v1/accounting/journal', headers={'Authorization': 'Bearer el_your_api_key'} ) transactions = response.json()`}"
+          "snippet": "/functions/v1/public-api/v1/accounting/journal', headers={'Authorization': 'Bearer el_your_api_key'} ) transactions = response.json()`} </pre> </div> </CardContent> </AppCard> </TabsContent> </Tabs> </div> </"
         }
       ],
       "exists": true,
@@ -3673,7 +3810,7 @@
           "kind": "invoke",
           "line": 156,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key: `typing:${conversationId}:${userId}`, value: { u"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key: `typing:${conversationId}:${userId}`, value: { userId, startedAt: Date.now() }, ttl_seconds: 5, }, }); return !error; } catch { return false; } } export async function clearTypi"
         },
         {
           "bodyHasSpread": false,
@@ -3689,7 +3826,7 @@
           "kind": "invoke",
           "line": 177,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys: [`typing:${conversationId}:${userId}`], }, })"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys: [`typing:${conversationId}:${userId}`], }, }); } catch {} } export function getPresenceConstants() { return { PRESENCE_TTL_SECONDS: 30, HEARTBEAT_INTERVAL_MS, } as const; }"
         },
         {
           "bodyHasSpread": false,
@@ -3705,7 +3842,7 @@
           "kind": "invoke",
           "line": 21,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"get\", key }, }); if (error || !data) return null; return (data.value as"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"get\", key }, }); if (error || !data) return null; return (data.value as T) ?? null; } catch { return null; } } export async function redisSet( key: string, value: unknown, ttlSeconds?: number ): Promise<boolean> {"
         },
         {
           "bodyHasSpread": false,
@@ -3723,7 +3860,7 @@
           "kind": "invoke",
           "line": 39,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key, value, ttl_seconds: ttlSeconds }, }); return !error; } catch {"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"set\", key, value, ttl_seconds: ttlSeconds }, }); return !error; } catch { return false; } } export async function redisDel(...keys: string[]): Promise<number> { if (!_supabase || keys.length === 0) return 0; try { con"
         },
         {
           "bodyHasSpread": false,
@@ -3739,7 +3876,7 @@
           "kind": "invoke",
           "line": 52,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys }, }); if (error || !data) return 0; return (data.deleted as"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"del\", keys }, }); if (error || !data) return 0; return (data.deleted as number) ?? 0; } catch { return 0; } } export async function redisIncr(key: string): Promise<number | null> { if (!_supabase) return null; try {"
         },
         {
           "bodyHasSpread": false,
@@ -3755,7 +3892,7 @@
           "kind": "invoke",
           "line": 66,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"incr\", key }, }); if (error || !data) return null; return (data.value a"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"incr\", key }, }); if (error || !data) return null; return (data.value as number) ?? null; } catch { return null; } } export async function redisExpire( key: string, seconds: number ): Promise<boolean> { if (!_supabas"
         },
         {
           "bodyHasSpread": false,
@@ -3772,7 +3909,7 @@
           "kind": "invoke",
           "line": 83,
           "method": "POST",
-          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"expire\", key, seconds }, }); return !error; } catch { return false;"
+          "snippet": "functions.invoke(\"redis-proxy\", { body: { action: \"expire\", key, seconds }, }); return !error; } catch { return false; } } export function resetRedisClient(): void { _supabase = null; }"
         }
       ],
       "contractFields": [
@@ -3786,6 +3923,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3810,7 +3949,7 @@
           "kind": "invoke",
           "line": 197,
           "method": "POST",
-          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"request\", ...body }, }); if (error) throw error; return data; } export async"
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"request\", ...body }, }); if (error) throw error; return data; } export async function fetchPendingRefunds(params?: { status?: string }) { const { data, error } = await db.functions.invoke(\"refund-admin\", { body: { action: \"list\", s"
         },
         {
           "bodyHasSpread": false,
@@ -3826,7 +3965,7 @@
           "kind": "invoke",
           "line": 205,
           "method": "POST",
-          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"list\", status: params?.status || \"pending\" }, }); if (error) throw error; retu"
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"list\", status: params?.status || \"pending\" }, }); if (error) throw error; return data; } export async function approveRefund(body: { refund_id: string }) { const { data, error } = await db.functions.invoke(\"refund-admin\", { body: {"
         },
         {
           "bodyHasSpread": false,
@@ -3842,7 +3981,7 @@
           "kind": "invoke",
           "line": 213,
           "method": "POST",
-          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"approve\", refund_id: body.refund_id }, }); if (error) throw error; return data"
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"approve\", refund_id: body.refund_id }, }); if (error) throw error; return data; } export async function rejectRefund(body: { refund_id: string; reason?: string }) { const { data, error } = await db.functions.invoke(\"refund-admin\", {"
         },
         {
           "bodyHasSpread": false,
@@ -3859,7 +3998,7 @@
           "kind": "invoke",
           "line": 221,
           "method": "POST",
-          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"reject\", refund_id: body.refund_id, reason: body.reason }, }); if (error) throw"
+          "snippet": "functions.invoke(\"refund-admin\", { body: { action: \"reject\", refund_id: body.refund_id, reason: body.reason }, }); if (error) throw error; return data; }"
         }
       ],
       "exists": true,
@@ -3867,6 +4006,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3897,6 +4038,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3919,7 +4062,7 @@
           "kind": "invoke",
           "line": 7,
           "method": "POST",
-          "snippet": "functions.invoke(\"refund-request-booking\", { body: input, }); if (error) throw error; return data; } export async function server"
+          "snippet": "functions.invoke(\"refund-request-booking\", { body: input, }); if (error) throw error; return data; } export async function serverProcessBookingRefund(input: { refundRequestId: string; }) { const { data, error } = await supabase.functions.invoke(\"refund-process-booking\", { body: in"
         }
       ],
       "exists": true,
@@ -3927,6 +4070,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3966,7 +4111,7 @@
           "kind": "invoke",
           "line": 15,
           "method": "POST",
-          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; return data; } // ── Stripe checkout"
+          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; return data; } // ── Stripe checkout ── export async function createStripeCheckout(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-checkout\", { body });"
         },
         {
           "bodyHasSpread": true,
@@ -3981,7 +4126,7 @@
           "kind": "invoke",
           "line": 176,
           "method": "POST",
-          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; if (data?.error) throw new Error(data"
+          "snippet": "functions.invoke(\"rent-payment\", { body: { ...body, mode: \"checkout\" } }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; } // ─── Tenant Invitations ─── export async function insertTenantInvitation(record: Record<string, any>) { const { error } = await c"
         },
         {
           "bodyHasSpread": false,
@@ -3998,7 +4143,7 @@
           "kind": "invoke",
           "line": 36,
           "method": "POST",
-          "snippet": "functions.invoke(\"rent-payment\", { body: { rent_call_id: rentCallId, payment_method: paymentMethod, mode: \"checkout\" }, }); if (erro"
+          "snippet": "functions.invoke(\"rent-payment\", { body: { rent_call_id: rentCallId, payment_method: paymentMethod, mode: \"checkout\" }, }); if (error) throw error; if (data?.error) throw new Error(data.error); return data; } export async function declareTransfer(rentCallId: string) { await cFrom(\"ren"
         }
       ],
       "contractFields": [
@@ -4012,6 +4157,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4040,7 +4187,7 @@
           "kind": "invoke",
           "line": 24,
           "method": "POST",
-          "snippet": "functions.invoke(\"reveal-contact\", { body: { reveal_type: revealType, org_id: opts.orgId || null, listing_id: opts.lis"
+          "snippet": "functions.invoke(\"reveal-contact\", { body: { reveal_type: revealType, org_id: opts.orgId || null, listing_id: opts.listingId || null, service_id: opts.serviceId || null, source: opts.source || \"real_estate\", }, }); if (error) throw error; if (data?.error)"
         }
       ],
       "exists": true,
@@ -4048,6 +4195,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4070,7 +4219,7 @@
           "kind": "url-ref",
           "line": 79,
           "method": "OPTIONS",
-          "snippet": "/functions/v1/rss-proxy?${params.toString()}`; } function extractText(xml: string, tag: string): string { const regex = new RegExp(`<${ta"
+          "snippet": "/functions/v1/rss-proxy?${params.toString()}`; } function extractText(xml: string, tag: string): string { const regex = new RegExp(`<${tag}[^>]*><!\\\\[CDATA\\\\[([\\\\s\\\\S]*?)\\\\]\\\\]><\\\\/${tag}>|<${tag}[^>]*>([^<]*)<\\\\/${tag}>`); const match = xml.match(regex); return (match?.[1] ?? match?.[2] ?? \""
         }
       ],
       "exists": true,
@@ -4078,6 +4227,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -4103,7 +4254,7 @@
           "kind": "invoke",
           "line": 44,
           "method": "POST",
-          "snippet": "functions.invoke(\"run-ingestion-pipeline\", { body: { batch_size: options?.batchSize ?? 100, entity_ids: options?.entityIds ?"
+          "snippet": "functions.invoke(\"run-ingestion-pipeline\", { body: { batch_size: options?.batchSize ?? 100, entity_ids: options?.entityIds ?? null, }, }); if (error) throw new Error(`Pipeline failed: ${error.message}`); return data as PipelineRunResult; } /** * Run pipeline on ALL entit"
         }
       ],
       "exists": true,
@@ -4111,6 +4262,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4133,7 +4286,7 @@
           "kind": "invoke",
           "line": 13,
           "method": "POST",
-          "snippet": "functions.invoke(\"run-scheduled-audit\", { body: {} }); if (error) throw error; return data; } export async function invokeGenerateCV(bo"
+          "snippet": "functions.invoke(\"run-scheduled-audit\", { body: {} }); if (error) throw error; return data; } export async function invokeGenerateCV(body: Record<string, any>) { const { data, error } = await supabase.functions.invoke(\"generate-cv\", { body }); if (error) throw error; return data; } expor"
         }
       ],
       "exists": true,
@@ -4141,6 +4294,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "run-scheduled-audit",
         "requiresJsonBody": false
@@ -4160,7 +4315,7 @@
           "kind": "invoke",
           "line": 33,
           "method": "POST",
-          "snippet": "functions.invoke(\"runtime-control-plane\", { body: request, }); if (error) { platformBus.emit(\"runtime:rpc_error\", { actio"
+          "snippet": "functions.invoke(\"runtime-control-plane\", { body: request, }); if (error) { platformBus.emit(\"runtime:rpc_error\", { action: request.action, error: error.message ?? String(error), }, \"system\"); return { ok: false, error: error.message ?? String(error) }; } return"
         }
       ],
       "exists": true,
@@ -4168,6 +4323,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4196,7 +4353,7 @@
           "kind": "invoke",
           "line": 20,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: ct, metadat"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: ct, metadata: params.metadata, fileSize: params.file.size, }, }); if (error) throw new Error(`S3 upload proxy failed: ${error.message}`); if (!data?.succe"
         },
         {
           "bodyHasSpread": false,
@@ -4214,7 +4371,7 @@
           "kind": "invoke",
           "line": 59,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"presign\", bucket: params.bucket, path: params.path, expir"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"presign\", bucket: params.bucket, path: params.path, expiresIn: params.expiresIn ?? 3600, }, }); if (error) throw new Error(`S3 presign failed: ${error.message}`); if (!data?.url) throw new Error(\"Failed to"
         },
         {
           "bodyHasSpread": false,
@@ -4231,7 +4388,7 @@
           "kind": "invoke",
           "line": 77,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"delete\", bucket: params.bucket, path: params.path, }, });"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"delete\", bucket: params.bucket, path: params.path, }, }); if (error) throw new Error(`S3 delete failed: ${error.message}`); if (!data?.success) throw new Error(data?.error || \"S3 delete failed\"); } export async"
         },
         {
           "bodyHasSpread": false,
@@ -4248,7 +4405,7 @@
           "kind": "invoke",
           "line": 93,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"head\", bucket: params.bucket, path: params.path, }, });"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { action: \"head\", bucket: params.bucket, path: params.path, }, }); if (error) return { exists: false }; return { exists: data?.exists === true }; } export { getCloudFrontUrl };"
         },
         {
           "bodyHasSpread": false,
@@ -4266,7 +4423,7 @@
           "kind": "invoke",
           "line": 99,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket, path, contentType: ct, fileSize: uploa"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket, path, contentType: ct, fileSize: uploadBlob.size, }, }); if (!error && data?.success && data?.uploadUrl) { const putResp = await fetch(data.uploadUrl, { method"
         },
         {
           "bodyHasSpread": false,
@@ -4284,7 +4441,7 @@
           "kind": "invoke",
           "line": 23,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: c"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: ct, fileSize: params.file.size, }, }); if (!error && data?.success && data?.uploadUrl) { const putResp = await fetch(data."
         },
         {
           "bodyHasSpread": false,
@@ -4302,7 +4459,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: c"
+          "snippet": "functions.invoke(\"s3-upload-proxy\", { body: { bucket: params.bucket, path: params.path, contentType: ct, fileSize: params.file.size, }, }); if (!error && data?.success && data?.uploadUrl) { const putResp = await fetch(data."
         }
       ],
       "contractFields": [
@@ -4317,6 +4474,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4341,7 +4500,7 @@
           "kind": "invoke",
           "line": 17,
           "method": "POST",
-          "snippet": "functions.invoke(\"scrape-proxy\", { body: { action, ...body }, }); if (error) throw new Error(`Edge function error: ${error.message}`"
+          "snippet": "functions.invoke(\"scrape-proxy\", { body: { action, ...body }, }); if (error) throw new Error(`Edge function error: ${error.message}`); return data; } export async function firecrawlSearch(query: string, options?: { limit?: number; country?: string; lang?: string; }): Promise<Firecra"
         }
       ],
       "exists": true,
@@ -4349,6 +4508,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4384,7 +4545,7 @@
           "kind": "invoke",
           "line": 81,
           "method": "POST",
-          "snippet": "functions.invoke(\"search-global\", { body: { query, types, page, limit, min_rating: filters.min"
+          "snippet": "functions.invoke(\"search-global\", { body: { query, types, page, limit, min_rating: filters.min_rating, price_min: filters.price_min, price_max: filters.price_max, city: filters.city, vertical: filters.vertical === \"all\" ?"
         },
         {
           "bodyHasSpread": false,
@@ -4409,7 +4570,7 @@
           "kind": "invoke",
           "line": 151,
           "method": "POST",
-          "snippet": "functions.invoke(\"search-global\", { body: { query: state.query, types: state.types, page: state.page,"
+          "snippet": "functions.invoke(\"search-global\", { body: { query: state.query, types: state.types, page: state.page, limit: state.limit, min_rating: state.minRating, price_min: state.priceMin, price_max: state.priceMax, city: state.city,"
         }
       ],
       "exists": true,
@@ -4417,6 +4578,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4446,7 +4609,7 @@
           "kind": "invoke",
           "line": 26,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, html: params.html, text: params"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, html: params.html, text: params.text, from_name: params.fromName, attachments: params.attachments, }, }); if (error) { return { success: false, provider: \"sendgrid\","
         },
         {
           "bodyHasSpread": false,
@@ -4465,7 +4628,7 @@
           "kind": "invoke",
           "line": 18,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, body: params.body, ca"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: params.to, subject: params.subject, body: params.body, category: params.category ?? \"general\", metadata: params.meta ?? {}, }, }); if (error) { console.warn(\"[email-dispatcher] Edge functi"
         },
         {
           "bodyHasSpread": false,
@@ -4482,7 +4645,7 @@
           "kind": "invoke",
           "line": 168,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject: `Order Confirmed #${orderId.slice(0, 8).toUpperCase()}`, html }, });"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject: `Order Confirmed #${orderId.slice(0, 8).toUpperCase()}`, html }, }); } catch { console.warn(\"[orderEngine] Email send skipped (edge function may not be deployed)\"); } } export async function updateStorefrontOrderStatus(p"
         },
         {
           "bodyHasSpread": false,
@@ -4495,7 +4658,7 @@
           "kind": "invoke",
           "line": 31,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } export async function invokeLeaseWorkflow(body: Record<string, any>)"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } export async function invokeLeaseWorkflow(body: Record<string, any>) { const { data, error } = await supabase.functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data; } export async function invok"
         },
         {
           "bodyHasSpread": false,
@@ -4512,7 +4675,7 @@
           "kind": "invoke",
           "line": 102,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `🚫 Réservation annulée — ${res.check_in} → ${r"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `🚫 Réservation annulée — ${res.check_in} → ${res.check_out}`, html: `<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;\"> <h2 style=\"color:#dc26"
         },
         {
           "bodyHasSpread": false,
@@ -4529,7 +4692,7 @@
           "kind": "invoke",
           "line": 138,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `📅 Dates modifiées — ${newCheckIn} → ${newChec"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: res.guest_email, subject: `📅 Dates modifiées — ${newCheckIn} → ${newCheckOut}`, html: `<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;\"> <h2 style=\"color:#1a1a1a;text-"
         },
         {
           "bodyHasSpread": false,
@@ -4542,7 +4705,7 @@
           "kind": "invoke",
           "line": 36,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }).catch(() => {}); } export async function insertDocAuditLog(orgId: string, userId: string, metadata"
+          "snippet": "functions.invoke(\"send-email\", { body }).catch(() => {}); } export async function insertDocAuditLog(orgId: string, userId: string, metadata: Record<string, any>) { await cFrom(\"audit_logs\").insert({ org_id: orgId, user_id: userId, action: \"document.created\", metadata_json: metadat"
         },
         {
           "bodyHasSpread": false,
@@ -4555,7 +4718,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Signature ── export async function uploadSignature(path: string, blob: Blob) { const {"
+          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Signature ── export async function uploadSignature(path: string, blob: Blob) { const { error } = await db.storage.from(\"rental-docs\").upload(path, blob, { contentType: \"image/png\" }); if (error) throw error; } export async function fetchOrgOwne"
         },
         {
           "bodyHasSpread": false,
@@ -4589,7 +4752,7 @@
           "kind": "invoke",
           "line": 60,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: orgEmail, subject: `💬 Message from ${guestName}`, html: `<div style=\"fon"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: orgEmail, subject: `💬 Message from ${guestName}`, html: `<div style=\"font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#fff;\"> <h2 style=\"color:#1a1a1a;\">💬 Guest Message</h2> <p style=\"bac"
         },
         {
           "bodyHasSpread": false,
@@ -4602,7 +4765,7 @@
           "kind": "invoke",
           "line": 73,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Inventory rooms/items for report ── export async function fetch"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Inventory rooms/items for report ── export async function fetchInventoryRoomsWithItems(reportId: string) { const { data: rooms } = await cFrom(\"inventory_rooms\").select(\"*\").eq(\"report_id\", reportId).order(\"sort_order\");"
         },
         {
           "bodyHasSpread": false,
@@ -4619,7 +4782,7 @@
           "kind": "invoke",
           "line": 22,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject, html } }).catch(() => {}); } export async function fetchTenantEmail(tenantId:"
+          "snippet": "functions.invoke(\"send-email\", { body: { to: email, subject, html } }).catch(() => {}); } export async function fetchTenantEmail(tenantId: string) { const { data } = await db(\"tenants\").select(\"email\").eq(\"id\", tenantId).single(); return data?.email || null; } export async function regularizeR"
         },
         {
           "bodyHasSpread": false,
@@ -4632,7 +4795,7 @@
           "kind": "invoke",
           "line": 110,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── App Notifications ─── export async function ins"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── App Notifications ─── export async function insertAppNotification(record: Record<string, any>) { await cFrom(\"app_notifications\").insert(record); } // ─── Property Detail (expenses, furniture, inventories"
         },
         {
           "bodyHasSpread": false,
@@ -4645,7 +4808,7 @@
           "kind": "invoke",
           "line": 331,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Lease workflow edge function ── export async function invokeLea"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; } // ── Lease workflow edge function ── export async function invokeLeaseWorkflow(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"lease-workflow\", { body }); if (error) throw error; return data"
         },
         {
           "bodyHasSpread": false,
@@ -4658,7 +4821,7 @@
           "kind": "invoke",
           "line": 117,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── Booking Payment ─── export async function invok"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; return data; } // ─── Booking Payment ─── export async function invokeBookingPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-booking-payment\", { body }); if (error) throw error;"
         },
         {
           "bodyHasSpread": false,
@@ -4671,7 +4834,7 @@
           "kind": "invoke",
           "line": 72,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; if (data && data.success === false) throw new Error(data?.error || \"Se"
+          "snippet": "functions.invoke(\"send-email\", { body }); if (error) throw error; if (data && data.success === false) throw new Error(data?.error || \"Send failed\"); return data; }"
         },
         {
           "bodyHasSpread": false,
@@ -4684,7 +4847,7 @@
           "kind": "invoke",
           "line": 91,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Reviews ── export async function fetchTenantInfo(userId: string) { const { data } = awa"
+          "snippet": "functions.invoke(\"send-email\", { body }); } // ── Reviews ── export async function fetchTenantInfo(userId: string) { const { data } = await cFrom(\"tenants\").select(\"id, org_id, property_id\").eq(\"tenant_user_id\", userId).limit(1).single(); return data; } export async function fetchTenantReviews"
         }
       ],
       "contractFields": [
@@ -4699,6 +4862,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4726,7 +4891,7 @@
           "kind": "invoke",
           "line": 124,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: selectedTemplate.id, locale: selectedLang,"
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: selectedTemplate.id, locale: selectedLang, to: adminEmail, test_mode: true, }, }); setTestResult(error ? `Failed: ${error.message}` : `Test sent to ${adminEmail}`);"
         },
         {
           "bodyHasSpread": false,
@@ -4745,7 +4910,7 @@
           "kind": "invoke",
           "line": 93,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"booking_request\", recipient_email: null, or"
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"booking_request\", recipient_email: null, org_id: params.orgId, data: { guest_name: params.guestName, guest_email: params.guestEmail, service_title: params.serviceTit"
         },
         {
           "bodyHasSpread": false,
@@ -4763,7 +4928,7 @@
           "kind": "invoke",
           "line": 513,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"marketplace_notification\", recipient_email: recipientEmai"
+          "snippet": "functions.invoke(\"send-notification-email\", { body: { event_type: \"marketplace_notification\", recipient_email: recipientEmail, data: { subject, message, cta_url: ctaUrl, cta_label: ctaLabel }, locale: \"fr\", }, }); } // ── Chat message delete/edit ── export async fu"
         }
       ],
       "contractFields": [
@@ -4777,6 +4942,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4802,7 +4969,7 @@
           "kind": "invoke",
           "line": 33,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-otp\", { body: { phone: params.phone, channel: params.channel || \"sms\" }, }); if (invokeErr) { throw new"
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: params.phone, channel: params.channel || \"sms\" }, }); if (invokeErr) { throw new Error(\"Failed to send verification code. Please try again.\"); } if (data && !data.success) { if (data.error_code === \"SMS_NOT_CONFIGURED\") { thro"
         },
         {
           "bodyHasSpread": false,
@@ -4818,7 +4985,7 @@
           "kind": "invoke",
           "line": 39,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-otp\", { body: { phone: normalized, channel }, }); if (invokeErr) { const errMsg = typeof invokeErr === \""
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: normalized, channel }, }); if (invokeErr) { const errMsg = typeof invokeErr === \"string\" ? invokeErr : invokeErr?.message || \"\"; if (errMsg.includes(\"Too Many Requests\") || errMsg.includes(\"429\")) { throw new Error(\"Trop de tentati"
         },
         {
           "bodyHasSpread": false,
@@ -4833,7 +5000,7 @@
           "kind": "invoke",
           "line": 68,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-otp\", { body: { probe: true }, }), new Promise<null>((resolve) => setTimeout(() => resolve(null),"
+          "snippet": "functions.invoke(\"send-otp\", { body: { probe: true }, }), new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000)), ]); if (!result || result.error || !result.data) { return { phone: false, whatsapp: false }; } return { phone: result.dat"
         },
         {
           "bodyHasSpread": false,
@@ -4849,7 +5016,7 @@
           "kind": "invoke",
           "line": 32,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-otp\", { body: { phone: target, channel: deliveryChannel }, }); if (invokeErr) { const errMsg = t"
+          "snippet": "functions.invoke(\"send-otp\", { body: { phone: target, channel: deliveryChannel }, }); if (invokeErr) { const errMsg = typeof invokeErr === \"string\" ? invokeErr : invokeErr?.message || \"\"; if (errMsg.includes(\"429\") || errMsg.includes(\"Too Many\")) { throw new Error("
         }
       ],
       "contractFields": [],
@@ -4861,6 +5028,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4889,7 +5058,7 @@
           "kind": "invoke",
           "line": 22,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Incoming ${callTypeLabel}"
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Incoming ${callTypeLabel} Call`, body: `${params.callerName} is calling you`, event_type: \"incoming_call\", data: { event_type: \"incoming_call\","
         },
         {
           "bodyHasSpread": false,
@@ -4908,7 +5077,7 @@
           "kind": "invoke",
           "line": 63,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Missed ${callTypeLabel} c"
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: params.receiverUserId, title: `Missed ${callTypeLabel} call`, body: `You missed a call from ${params.callerName}`, event_type: \"missed_call\", data: { event_type: \"missed_call\","
         },
         {
           "bodyHasSpread": false,
@@ -4927,7 +5096,7 @@
           "kind": "invoke",
           "line": 333,
           "method": "POST",
-          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: userId, title, body, data: data ?? {}, event"
+          "snippet": "functions.invoke(\"send-push-notification\", { body: { user_id: userId, title, body, data: data ?? {}, event_type: eventType ?? \"general\", }, }); if (error) console.warn(\"[push] send-push-notification failed\", error); }"
         }
       ],
       "contractFields": [],
@@ -4939,6 +5108,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4968,7 +5139,7 @@
           "kind": "invoke",
           "line": 25,
           "method": "POST",
-          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"nearby\", lat: point.lat, lng: point.lng, entity_type: entit"
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"nearby\", lat: point.lat, lng: point.lng, entity_type: entityType, radius_meters: radiusMeters, limit, }, }); if (error) throw new Error(`Spatial query failed: ${error.message}`); return data?.resu"
         },
         {
           "bodyHasSpread": false,
@@ -4985,7 +5156,7 @@
           "kind": "invoke",
           "line": 43,
           "method": "POST",
-          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"zone\", lat: point.lat, lng: point.lng, }, }); if (error)"
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"zone\", lat: point.lat, lng: point.lng, }, }); if (error) throw new Error(`Zone assignment failed: ${error.message}`); return data?.zone ?? null; } export async function queryContainingZones( point: SpatialPoint,"
         },
         {
           "bodyHasSpread": false,
@@ -5002,7 +5173,7 @@
           "kind": "invoke",
           "line": 58,
           "method": "POST",
-          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"contains\", lat: point.lat, lng: point.lng, }, }); if (er"
+          "snippet": "functions.invoke(\"spatial-query\", { body: { action: \"contains\", lat: point.lat, lng: point.lng, }, }); if (error) throw new Error(`Containment query failed: ${error.message}`); return data?.zones ?? []; } export function formatDistance(meters: number): string { if"
         }
       ],
       "exists": true,
@@ -5010,6 +5181,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5042,7 +5215,7 @@
           "kind": "invoke",
           "line": 103,
           "method": "POST",
-          "snippet": "functions.invoke(\"storefront-description\", { body: { name: input.name, vertical: input.vertical, subcategory:"
+          "snippet": "functions.invoke(\"storefront-description\", { body: { name: input.name, vertical: input.vertical, subcategory: input.subcategory ?? null, city: input.city ?? null, country: input.country ?? null, district: input.district ?? null, menuItemC"
         }
       ],
       "exists": true,
@@ -5050,6 +5223,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5074,7 +5249,7 @@
           "kind": "invoke",
           "line": 104,
           "method": "POST",
-          "snippet": "functions.invoke(\"stripe-connect-login\", { body: { org_id: orgId } }); if (error) throw error; return data; } // ── MFA ── export async"
+          "snippet": "functions.invoke(\"stripe-connect-login\", { body: { org_id: orgId } }); if (error) throw error; return data; } // ── MFA ── export async function enrollMFA() { const { data, error } = await db.auth.mfa.enroll({ factorType: \"totp\" }); if (error) throw error; return data; } export async fun"
         }
       ],
       "exists": true,
@@ -5082,6 +5257,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5110,7 +5287,7 @@
           "kind": "invoke",
           "line": 35,
           "method": "POST",
-          "snippet": "functions.invoke(\"submit-review\", { body: { targetType: params.targetType, targetId: params.targetId, rating:"
+          "snippet": "functions.invoke(\"submit-review\", { body: { targetType: params.targetType, targetId: params.targetId, rating: params.rating, comment: clientMod.cleanedText, orderId: params.orderId ?? null, }, }); if (error) { console.warn(\"[review-p"
         }
       ],
       "exists": true,
@@ -5118,6 +5295,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5140,7 +5319,7 @@
           "kind": "invoke",
           "line": 178,
           "method": "POST",
-          "snippet": "functions.invoke(\"subscription-portal\", { body: {} }); if (error) throw error; return data; } export async function fetchCurrentSubscri"
+          "snippet": "functions.invoke(\"subscription-portal\", { body: {} }); if (error) throw error; return data; } export async function fetchCurrentSubscription(userId: string) { const { data } = await db .from(\"subscriptions\") .select(\"*\") .eq(\"user_id\", userId) .in(\"status\", [\"active\", \"past_du"
         }
       ],
       "exists": true,
@@ -5148,6 +5327,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "subscription-portal",
         "requiresJsonBody": false
@@ -5172,7 +5353,7 @@
           "kind": "invoke",
           "line": 65,
           "method": "POST",
-          "snippet": "functions.invoke(\"sync-ical\", { body: { ical_url: conn.linked_properties?.[0]?.ical_url || \"\", property_id: conn.linked_prop"
+          "snippet": "functions.invoke(\"sync-ical\", { body: { ical_url: conn.linked_properties?.[0]?.ical_url || \"\", property_id: conn.linked_properties?.[0]?.property_id || \"\", provider: conn.provider, org_id: orgId, }, }); if (res.error) throw new Error(res.error.message); return r"
         },
         {
           "bodyHasSpread": false,
@@ -5206,6 +5387,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5230,7 +5413,7 @@
           "kind": "invoke",
           "line": 118,
           "method": "POST",
-          "snippet": "functions.invoke(\"sync-meilisearch-cron\", { body: { mode }, }); if (invokeErr) throw invokeErr; await loadData();"
+          "snippet": "functions.invoke(\"sync-meilisearch-cron\", { body: { mode }, }); if (invokeErr) throw invokeErr; await loadData(); } catch (err: unknown) { setError(err instanceof Error ? err.message : \"Failed to trigger sync\"); } finally { setTriggering(false); }"
         }
       ],
       "exists": true,
@@ -5238,6 +5421,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5262,7 +5447,7 @@
           "kind": "invoke",
           "line": 44,
           "method": "POST",
-          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health\" }, }); if (error) throw error; return data as Integratio"
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health\" }, }); if (error) throw error; return data as IntegrationHealthResponse; } export async function fetchIntegrationHealthHistory( range: HealthRange = \"24h\", ): Promise<IntegrationHealthHistoryResponse> { const {"
         },
         {
           "bodyHasSpread": false,
@@ -5278,7 +5463,7 @@
           "kind": "invoke",
           "line": 55,
           "method": "POST",
-          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health-history\", range }, }); if (error) throw error; return dat"
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"integration-health-history\", range }, }); if (error) throw error; return data as IntegrationHealthHistoryResponse; }"
         },
         {
           "bodyHasSpread": false,
@@ -5293,7 +5478,7 @@
           "kind": "invoke",
           "line": 113,
           "method": "POST",
-          "snippet": "functions.invoke(\"system-router\", { body: { action: \"sync-search-index\" }, }); if (error) throw error; return data?.synced ?? {};"
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"sync-search-index\" }, }); if (error) throw error; return data?.synced ?? {}; } export async function getSearchAnalytics(): Promise< Array<{ query_text: string; search_count: number; last_searched_at: string }> > { const { data, err"
         },
         {
           "bodyHasSpread": false,
@@ -5308,7 +5493,7 @@
           "kind": "invoke",
           "line": 124,
           "method": "POST",
-          "snippet": "functions.invoke(\"system-router\", { body: { action: \"search-analytics\" }, }); if (error) throw error; return data?.analytics ?? ["
+          "snippet": "functions.invoke(\"system-router\", { body: { action: \"search-analytics\" }, }); if (error) throw error; return data?.analytics ?? []; }"
         }
       ],
       "exists": true,
@@ -5337,7 +5522,7 @@
           "kind": "invoke",
           "line": 49,
           "method": "POST",
-          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } export async function fetchOrgMembership(userId: st"
+          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } export async function fetchOrgMembership(userId: string) { const { data } = await db(\"org_members\").select(\"org_id\").eq(\"user_id\", userId).limit(1).maybeSingle(); return data; } export async function fetchP"
         },
         {
           "bodyHasSpread": false,
@@ -5350,7 +5535,7 @@
           "kind": "invoke",
           "line": 324,
           "method": "POST",
-          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } // ── Send email (for lease workflow / seasonal) ──"
+          "snippet": "functions.invoke(\"tenant-signup\", { body }); if (error) throw error; return data; } // ── Send email (for lease workflow / seasonal) ── export async function invokeSendEmail(body: Record<string, any>) { const { error } = await db.functions.invoke(\"send-email\", { body }); if (error) throw er"
         }
       ],
       "exists": true,
@@ -5358,6 +5543,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5384,7 +5571,7 @@
           "kind": "invoke",
           "line": 31,
           "method": "POST",
-          "snippet": "functions.invoke(\"translate-message\", { body: { text: params.text, from_locale: params.sourceLocale ?? \"en\", t"
+          "snippet": "functions.invoke(\"translate-message\", { body: { text: params.text, from_locale: params.sourceLocale ?? \"en\", to_locale: params.targetLocale, }, }); if (error) throw error; const translatedText = data?.translated ?? `[${params.targetLocale}] ${params."
         },
         {
           "bodyHasSpread": false,
@@ -5397,7 +5584,7 @@
           "kind": "invoke",
           "line": 25,
           "method": "POST",
-          "snippet": "functions.invoke(\"translate-message\", { body }); if (error) throw error; return data; } export async function invokeSendEmail(body: Rec"
+          "snippet": "functions.invoke(\"translate-message\", { body }); if (error) throw error; return data; } export async function invokeSendEmail(body: Record<string, any>) { const { error } = await supabase.functions.invoke(\"send-email\", { body }); if (error) throw error; } export async function invokeLeaseW"
         },
         {
           "bodyHasSpread": false,
@@ -5414,7 +5601,7 @@
           "kind": "invoke",
           "line": 62,
           "method": "POST",
-          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); if (error) { console.w"
+          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); if (error) { console.warn(\"[merchant-dashboard] translate-message failed\", error); return undefined; } return data?.translated as string | undefined; }"
         },
         {
           "bodyHasSpread": false,
@@ -5431,7 +5618,7 @@
           "kind": "invoke",
           "line": 155,
           "method": "POST",
-          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); return data?.translated ??"
+          "snippet": "functions.invoke(\"translate-message\", { body: { text, from_locale: fromLocale, to_locale: toLocale }, }); return data?.translated ?? null; } export async function updateMessageMetadata(msgId: string, metadata: Record<string, any>) { await cFrom(\"chat_messages_v2\").update({ metadata }).eq("
         }
       ],
       "contractFields": [
@@ -5445,6 +5632,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5471,7 +5660,7 @@
           "kind": "invoke",
           "line": 179,
           "method": "POST",
-          "snippet": "functions.invoke(\"uae-scrape-onboard\", { body: { city, vertical, limit: 20 }, }); if (error) throw error; return data; } // ─── P"
+          "snippet": "functions.invoke(\"uae-scrape-onboard\", { body: { city, vertical, limit: 20 }, }); if (error) throw error; return data; } // ─── Platform Recovery ─── export async function fetchPlatformRecoveryRuns() { const { data } = await db .from(\"platform_recovery_runs\") .select(\"*\") .o"
         }
       ],
       "exists": true,
@@ -5479,6 +5668,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5501,7 +5692,7 @@
           "kind": "invoke",
           "line": 169,
           "method": "POST",
-          "snippet": "functions.invoke(\"vector-similarity-search\", { body: { user_id: userId, // The edge function embeds the text server-si"
+          "snippet": "functions.invoke(\"vector-similarity-search\", { body: { user_id: userId, // The edge function embeds the text server-side via the shared // AI_EMBEDDING adapter so the resulting vector has the canonical // 1536 dimensions expected by the pgvector columns. Sending"
         }
       ],
       "contractFields": [],
@@ -5534,7 +5725,7 @@
           "kind": "invoke",
           "line": 29,
           "method": "POST",
-          "snippet": "functions.invoke(\"verify-guest-payment\", { body }); if (error) throw error; return data; } export async function createGuestCheckout(bo"
+          "snippet": "functions.invoke(\"verify-guest-payment\", { body }); if (error) throw error; return data; } export async function createGuestCheckout(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"create-guest-checkout\", { body }); if (error) throw error; return data; } /"
         }
       ],
       "exists": true,
@@ -5542,6 +5733,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5567,7 +5760,7 @@
           "kind": "invoke",
           "line": 80,
           "method": "POST",
-          "snippet": "functions.invoke(\"verify-otp\", { body: { phone: normalized, code }, }); if (invokeErr) { return { valid: false, reason:"
+          "snippet": "functions.invoke(\"verify-otp\", { body: { phone: normalized, code }, }); if (invokeErr) { return { valid: false, reason: \"Erreur de vérification. Réessayez.\" }; } if (!data) { return { valid: false, reason: \"Réponse vide du service de vérification.\" }; } i"
         }
       ],
       "contractFields": [
@@ -5582,6 +5775,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5604,7 +5799,7 @@
           "kind": "fetch",
           "line": 29,
           "method": "POST",
-          "snippet": "fetch(`${dbUrl}/functions/v1/voice-stt-token`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authoriz"
+          "snippet": "fetch(`${dbUrl}/functions/v1/voice-stt-token`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authorization: `Bearer ${session.access_token}`, }, }); if (!response.ok) { throw new Error(`Failed to get STT token: ${response.status}`); } const da"
         }
       ],
       "exists": true,
@@ -5612,6 +5807,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5638,7 +5835,7 @@
           "kind": "fetch",
           "line": 19,
           "method": "POST",
-          "snippet": "fetch(`${dbUrl}/functions/v1/voice-tts`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authorization:"
+          "snippet": "fetch(`${dbUrl}/functions/v1/voice-tts`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authorization: `Bearer ${session.access_token}`, }, body: JSON.stringify({ text: options.text, voiceId: options.voiceId, modelId: options.modelId,"
         }
       ],
       "exists": true,
@@ -5646,6 +5843,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5670,7 +5869,7 @@
           "kind": "invoke",
           "line": 13,
           "method": "POST",
-          "snippet": "functions.invoke(\"wallet-ops\", { body: { action, ...payload }, }); if (error) throw new Error(error.message || \"Wallet operati"
+          "snippet": "functions.invoke(\"wallet-ops\", { body: { action, ...payload }, }); if (error) throw new Error(error.message || \"Wallet operation failed\"); if (data?.error) throw new Error(data.error); return data; } catch (err: unknown) { const message = err instanceof Error ? err.messag"
         }
       ],
       "exists": true,
@@ -5678,6 +5877,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5700,7 +5901,7 @@
           "kind": "invoke",
           "line": 48,
           "method": "POST",
-          "snippet": "functions.invoke(\"wallet-pin\", { body }); if (error) throw error; return data; } // ── Orbit payment (O5: graceful error handling) ── e"
+          "snippet": "functions.invoke(\"wallet-pin\", { body }); if (error) throw error; return data; } // ── Orbit payment (O5: graceful error handling) ── export async function invokeOrbitPayment(body: Record<string, any>) { const { data, error } = await db.functions.invoke(\"orbit-payment\", { body }); if (error"
         },
         {
           "bodyHasSpread": true,
@@ -5715,7 +5916,7 @@
           "kind": "invoke",
           "line": 61,
           "method": "POST",
-          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError"
+          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError(error); const serverMessage = await parseServerError(error); if (!transient) { throw new BusinessError(serverMessage || error.message"
         },
         {
           "bodyHasSpread": true,
@@ -5730,7 +5931,7 @@
           "kind": "invoke",
           "line": 100,
           "method": "POST",
-          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError"
+          "snippet": "functions.invoke(\"wallet-pin\", { body: { action, ...body }, }); if (error) { const transient = isTransientError(error); const serverMessage = await parseServerError(error); if (!transient) { throw new BusinessError(serverMessage || error.message"
         }
       ],
       "contractFields": [
@@ -5744,6 +5945,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5780,7 +5983,7 @@
           "kind": "invoke",
           "line": 77,
           "method": "POST",
-          "snippet": "functions.invoke(\"wallet-transfer\", { body: { sender_user_id: senderId, receiver_user_id: receiverId, amount:"
+          "snippet": "functions.invoke(\"wallet-transfer\", { body: { sender_user_id: senderId, receiver_user_id: receiverId, amount: input.amount, currency: input.currency, receiver_currency: input.receiverCurrency || undefined, note: input.description, source:"
         }
       ],
       "exists": true,
@@ -5788,6 +5991,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5810,7 +6015,7 @@
           "kind": "invoke",
           "line": 32,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-authentication-challenge\"); if (error) throw error; return data; } export async function verifyAuthenticatio"
+          "snippet": "functions.invoke(\"webauthn-authentication-challenge\"); if (error) throw error; return data; } export async function verifyAuthentication(credential: PublicKeyCredential) { const response = credential.response as AuthenticatorAssertionResponse; const { data, error } = await db.functions.invo"
         }
       ],
       "exists": true,
@@ -5818,6 +6023,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-authentication-challenge",
         "requiresJsonBody": false
@@ -5839,7 +6046,7 @@
           "kind": "invoke",
           "line": 39,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-authentication-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferTo"
+          "snippet": "functions.invoke(\"webauthn-authentication-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferToBase64(credential.rawId), type: credential.type, response: { clientDataJSON: arrayBufferToBase64(response.clientDataJSON), a"
         }
       ],
       "exists": true,
@@ -5847,6 +6054,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5869,7 +6078,7 @@
           "kind": "invoke",
           "line": 53,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-begin-registration\"); if (beginErr || !beginData?.options) throw new Error(beginErr?.message ?? \"Failed to get"
+          "snippet": "functions.invoke(\"webauthn-begin-registration\"); if (beginErr || !beginData?.options) throw new Error(beginErr?.message ?? \"Failed to get registration options from server\"); const serverOptions = beginData.options; // 2. Create credential using server challenge (convert JSON options to binar"
         }
       ],
       "exists": true,
@@ -5877,6 +6086,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-begin-registration",
         "requiresJsonBody": false
@@ -5899,7 +6110,7 @@
           "kind": "invoke",
           "line": 78,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-finish-registration\", { body: { registrationResponse, device_name: navigator.userAgent.slice(0, 200) }, });"
+          "snippet": "functions.invoke(\"webauthn-finish-registration\", { body: { registrationResponse, device_name: navigator.userAgent.slice(0, 200) }, }); if (finishErr || !finishData?.success) throw new Error(finishErr?.message ?? finishData?.error ?? \"Server verification failed\"); return true; } export de"
         }
       ],
       "exists": true,
@@ -5907,6 +6118,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5929,7 +6142,7 @@
           "kind": "invoke",
           "line": 59,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-login-challenge\", { body: identifier, }); if (error) throw error; return data; } export async function"
+          "snippet": "functions.invoke(\"webauthn-login-challenge\", { body: identifier, }); if (error) throw error; return data; } export async function verifyLogin(credential: PublicKeyCredential, userId: string) { const response = credential.response as AuthenticatorAssertionResponse; const { data, error"
         }
       ],
       "exists": true,
@@ -5937,6 +6150,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5962,7 +6177,7 @@
           "kind": "invoke",
           "line": 68,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-login-verify\", { body: { userId, credential: { id: credential.id, rawId: arrayBuf"
+          "snippet": "functions.invoke(\"webauthn-login-verify\", { body: { userId, credential: { id: credential.id, rawId: arrayBufferToBase64(credential.rawId), type: credential.type, response: { clientDataJSON: arrayBufferToBase64(response.clientDataJSON),"
         }
       ],
       "exists": true,
@@ -5970,6 +6185,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5992,7 +6209,7 @@
           "kind": "invoke",
           "line": 5,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-registration-challenge\"); if (error) throw error; return data; } export async function verifyRegistration(cr"
+          "snippet": "functions.invoke(\"webauthn-registration-challenge\"); if (error) throw error; return data; } export async function verifyRegistration(credential: PublicKeyCredential, deviceName?: string) { const response = credential.response as AuthenticatorAttestationResponse; const { data, error } = awai"
         }
       ],
       "exists": true,
@@ -6000,6 +6217,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-registration-challenge",
         "requiresJsonBody": false
@@ -6022,7 +6241,7 @@
           "kind": "invoke",
           "line": 12,
           "method": "POST",
-          "snippet": "functions.invoke(\"webauthn-registration-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferToBa"
+          "snippet": "functions.invoke(\"webauthn-registration-verify\", { body: { credential: { id: credential.id, rawId: arrayBufferToBase64(credential.rawId), type: credential.type, response: { clientDataJSON: arrayBufferToBase64(response.clientDataJSON), att"
         }
       ],
       "exists": true,
@@ -6030,6 +6249,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -6179,10 +6400,10 @@
   ],
   "totals": {
     "callSites": 257,
-    "contractCoverage": "28/117 (23.9%)",
-    "declaredContracts": 28,
+    "contractCoverage": "29/117 (24.8%)",
+    "declaredContracts": 29,
     "functionsOnDisk": 252,
-    "methodMismatches": 1,
+    "methodMismatches": 0,
     "missingAuthHeaderMismatches": 0,
     "missingBodyMismatches": 0,
     "missingFieldMismatches": 0,

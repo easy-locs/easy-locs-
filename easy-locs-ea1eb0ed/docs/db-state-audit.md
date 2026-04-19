@@ -118,9 +118,11 @@ Two layers; both are required:
 1. **Logical dump (size-bounded; current DB is 32 MB so a full `pg_dump` is trivial).**
    - From a host that *can* reach the DB (CI runner with IPv4, local dev box, or Supabase support):
      ```
+     PGPASSWORD="<SUPABASE_DB_PASSWORD>" \
      pg_dump --format=custom --no-owner --no-privileges \
-             --file=easy-locs-$(date +%F).dump \
-             "postgres://postgres:<SUPABASE_DB_PASSWORD>@db.ifvuvbolrmuuugtzxsfk.supabase.co:5432/postgres"
+             --host=db.<SUPABASE_PROJECT_REF>.supabase.co --port=5432 \
+             --username=postgres --dbname=postgres \
+             --file=easy-locs-$(date +%F).dump
      ```
    - Store the dump file **off the project** (S3, Drive, secure storage) and verify with `pg_restore --list`.
 

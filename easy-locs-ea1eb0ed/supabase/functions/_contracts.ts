@@ -168,6 +168,11 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     response: { fields: ["data"], successStatuses: [200] },
     note: "action selects subcommand (escrow_status, confirm, cancel, etc.)",
   },
+  "dld-analytics": {
+    methods: ["GET", "POST"],
+    response: { fields: ["data", "status", "message"], successStatuses: [200] },
+    note: "GET for read queries; POST for backfill/sync triggers (x-endpoint header selects sub-operation)",
+  },
   "fx-rates": {
     methods: ["GET", "POST"],
     response: { fields: ["rates", "result", "value"], successStatuses: [200] },
