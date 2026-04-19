@@ -60,9 +60,9 @@ class RootErrorBoundary extends Component<
           }}
         >
           <div style={{ textAlign: "center", maxWidth: 420, padding: "20px" }}>
-            <p style={{ fontSize: 18, color: "#f8fafc", margin: "0 0 8px" }}>
+            <h2 style={{ fontSize: 18, color: "#f8fafc", margin: "0 0 8px" }}>
               Application Error
-            </p>
+            </h2>
             <p style={{ fontSize: 13, color: "#94a3b8", margin: "0 0 16px", wordBreak: "break-word" }}>
               {error.message || "An unexpected error occurred during startup."}
             </p>
