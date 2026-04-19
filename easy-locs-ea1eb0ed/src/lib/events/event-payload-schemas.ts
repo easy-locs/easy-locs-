@@ -426,7 +426,8 @@ export interface JourneyStartedPayload {
   journeyId: JourneyId;
   intent: UserIntentName;
   pillar: JourneyPillar;
-  entryRoute: string;
+  /** The pathname observed at journey start (window.location.pathname when the wiring registered the event). */
+  observedRoute: string;
   userId?: string;
   /** Arbitrary step-level context (entity IDs, pre-filled params). */
   context?: Record<string, unknown>;

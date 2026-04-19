@@ -9,7 +9,7 @@
  * Storage key: "el_journey_registry"
  * Shape: Record<JourneyId, JourneyRecord>
  *
- * Phase 1: Foundation only — not yet called from UI. Wiring happens in Phase 2.
+ * Phase 2: Wiring active — mountJourneyWiring() in event-init.ts drives all lifecycle calls.
  */
 
 import type {
@@ -31,7 +31,8 @@ export interface JourneyRecord {
   intent: UserIntentName;
   pillar: JourneyPillar;
   status: JourneyStatus;
-  entryRoute: string;
+  /** The pathname observed at journey start (window.location.pathname when the wiring registered the event). */
+  observedRoute: string;
   /** Last known route within this journey. */
   currentRoute: string;
   /** Last known step key within the flow (e.g. "payment_pending"). */
@@ -74,7 +75,7 @@ export function startJourney(params: {
   journeyId: JourneyId;
   intent: UserIntentName;
   pillar: JourneyPillar;
-  entryRoute: string;
+  observedRoute: string;
   contextSnapshot?: Record<string, unknown>;
 }): JourneyId {
   const registry = readRegistry();
@@ -85,8 +86,8 @@ export function startJourney(params: {
     intent: params.intent,
     pillar: params.pillar,
     status: "active",
-    entryRoute: params.entryRoute,
-    currentRoute: params.entryRoute,
+    observedRoute: params.observedRoute,
+    currentRoute: params.observedRoute,
     currentStep: "start",
     contextSnapshot: params.contextSnapshot ?? {},
     retryable: false,
