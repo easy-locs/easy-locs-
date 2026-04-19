@@ -504,12 +504,13 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
         sessionStorage.setItem("el_splash_shown", "1");
       } catch {}
     }, SPLASH_DURATION);
+    // Hard 2-second cap — the splash must never block the first paint beyond 2s.
     const safetyTimer = setTimeout(() => {
       setShowSplash(false);
       try {
         sessionStorage.setItem("el_splash_shown", "1");
       } catch {}
-    }, SPLASH_DURATION + 2000);
+    }, 2000);
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);

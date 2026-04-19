@@ -9,12 +9,15 @@ import { useEffect, useState } from "react";
  * has elapsed, so a stalled `profileLoaded` flag cannot trap a verified
  * user on a permanent skeleton (task #1058 / #1049).
  *
+ * Default timeout matches the AuthContext safety timeout (2 s) so the
+ * route guard and the auth hydration cap are always in sync.
+ *
  * Resets on `userId` change so a fresh login restarts the timer.
  */
 export function useProfileTimeout(
   profileLoaded: boolean,
   userId: string | undefined,
-  ms = 5000,
+  ms = 2000,
 ): boolean {
   const [timedOut, setTimedOut] = useState(false);
   useEffect(() => {

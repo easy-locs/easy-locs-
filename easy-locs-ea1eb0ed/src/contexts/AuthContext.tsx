@@ -405,12 +405,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     let mounted = true;
     let latestSeq = 0;
-    // Safety timeout must be longer than getSessionWithRetry's max wait
-    // (1 attempt * 6s + retries 500+1000ms = ~7.5s) so a slow Supabase response
-    // does not flash route guards into their "no user" branch and bounce a
-    // logged-in user to /login on a hard refresh. When we have cached auth we
-    // wait the full window; without cached auth we exit faster.
-    const SAFETY_TIMEOUT_MS = cached ? 9000 : 4000;
+    // Hard 2-second safety cap: unblock the router/splash regardless of
+    // how long Supabase or the DB takes.  Auth hydration continues in the
+    // background after this fires; once it settles the context re-renders
+    // with the real user/profile data.  Two seconds is the maximum the
+    // user should ever see an empty/loading state before first paint.
+    const SAFETY_TIMEOUT_MS = 2000;
     const safetyTimeout = window.setTimeout(() => {
       if (!mounted) return;
       console.warn(`[AuthContext] safety timeout reached (${SAFETY_TIMEOUT_MS}ms) — unblocking loading state`);
