@@ -1,5 +1,3 @@
-import { StatusBar, Style } from "@capacitor/status-bar";
-
 export type StatusBarTheme = "light" | "dark" | "auto";
 
 export interface StatusBarConfig {
@@ -46,6 +44,7 @@ class StatusBarController {
   private async applyTheme(): Promise<void> {
     if (!isNative()) return;
     try {
+      const { StatusBar, Style } = await import("@capacitor/status-bar");
       const resolvedStyle =
         this.currentConfig.style === "auto"
           ? isDarkMode() ? "dark" : "light"
@@ -70,6 +69,7 @@ class StatusBarController {
     this.currentConfig.color = color;
     if (!isNative()) return;
     try {
+      const { StatusBar } = await import("@capacitor/status-bar");
       await StatusBar.setBackgroundColor({ color });
     } catch {}
   }
@@ -78,6 +78,7 @@ class StatusBarController {
     this.currentConfig.visible = true;
     if (!isNative()) return;
     try {
+      const { StatusBar } = await import("@capacitor/status-bar");
       await StatusBar.show();
     } catch {}
   }
@@ -86,6 +87,7 @@ class StatusBarController {
     this.currentConfig.visible = false;
     if (!isNative()) return;
     try {
+      const { StatusBar } = await import("@capacitor/status-bar");
       await StatusBar.hide();
     } catch {}
   }
@@ -94,6 +96,7 @@ class StatusBarController {
     this.currentConfig.overlay = overlay;
     if (!isNative()) return;
     try {
+      const { StatusBar } = await import("@capacitor/status-bar");
       await StatusBar.setOverlaysWebView({ overlay });
     } catch {}
   }
