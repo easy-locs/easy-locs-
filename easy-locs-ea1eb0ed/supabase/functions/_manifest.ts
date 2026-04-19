@@ -19,24 +19,24 @@ export type ManifestEntry = {
 
 export const EDGE_FUNCTION_MANIFEST: Record<string, ManifestEntry> = {
   // ── Public webhooks (third-party callers, no JWT) ────────────────────
-  "stripe-webhook": { auth: "signature", rateLimit: false, reason: "Stripe sends ts+sig; verified with stripe.webhooks.constructEvent" },
-  "ses-webhook": { auth: "signature", rateLimit: false, reason: "AWS SNS signature verification in handler" },
-  "plaid-webhook": { auth: "signature", rateLimit: false, reason: "Plaid JWT signature" },
-  "crypto-webhook": { auth: "signature", rateLimit: false, reason: "HMAC signature header" },
-  "mobile-money-webhook": { auth: "signature", rateLimit: false, reason: "PSP HMAC signature" },
-  "esign-webhook": { auth: "signature", rateLimit: false, reason: "eSign provider HMAC" },
+  "stripe-webhook": { auth: "signature", rateLimit: true, reason: "Stripe sends ts+sig; verified with stripe.webhooks.constructEvent" },
+  "ses-webhook": { auth: "signature", rateLimit: true, reason: "AWS SNS signature verification in handler" },
+  "plaid-webhook": { auth: "signature", rateLimit: true, reason: "Plaid JWT signature" },
+  "crypto-webhook": { auth: "signature", rateLimit: true, reason: "HMAC signature header" },
+  "mobile-money-webhook": { auth: "signature", rateLimit: true, reason: "PSP HMAC signature" },
+  "esign-webhook": { auth: "signature", rateLimit: true, reason: "eSign provider HMAC" },
   "dispatch-webhook": { auth: "signature", rateLimit: false, reason: "Dispatcher HMAC" },
-  "command-github-webhook": { auth: "signature", rateLimit: false, reason: "GitHub X-Hub-Signature-256 HMAC SHA-256" },
+  "command-github-webhook": { auth: "signature", rateLimit: true, reason: "GitHub X-Hub-Signature-256 HMAC SHA-256" },
   "command-email-intake": { auth: "signature", rateLimit: true, reason: "HMAC-SHA256 preferred (x-webhook-signature) or legacy shared secret (constant-time)" },
   "command-approval-webhook": { auth: "token", rateLimit: true, reason: "Per-request opaque tokens in the approval_requests table; JSON path uses constant-time shared secret" },
   "receive-email": { auth: "signature", rateLimit: true, reason: "SendGrid inbound shared secret, constant-time compare" },
-  "inngest-handler": { auth: "signature", rateLimit: false, reason: "Inngest SDK verifies its own signing key" },
+  "inngest-handler": { auth: "signature", rateLimit: true, reason: "Inngest SDK verifies its own signing key" },
 
   // ── Cron dispatchers (called by pg_cron via pg_net) ──────────────────
-  "autonomous-cron-dispatcher": { auth: "service_role", rateLimit: false, reason: "Invoked server-side via service-role header" },
-  "prayer-push-cron": { auth: "service_role", rateLimit: false, reason: "pg_cron service-role invocation" },
-  "command-monitoring-cron": { auth: "service_role", rateLimit: false, reason: "Internal secret header, constant-time compared" },
-  "merge-conflict-recovery-alerts-cron": { auth: "service_role", rateLimit: false, reason: "Internal secret header, constant-time compared (task #973)" },
+  "autonomous-cron-dispatcher": { auth: "service_role", rateLimit: true, reason: "Invoked server-side via service-role header" },
+  "prayer-push-cron": { auth: "service_role", rateLimit: true, reason: "pg_cron service-role invocation" },
+  "command-monitoring-cron": { auth: "service_role", rateLimit: true, reason: "Internal secret header, constant-time compared" },
+  "merge-conflict-recovery-alerts-cron": { auth: "service_role", rateLimit: true, reason: "Internal secret header, constant-time compared (task #973)" },
 
   // ── Public SEO / read APIs ───────────────────────────────────────────
   "public-api": { auth: "public", rateLimit: true, reason: "Read-only SEO / taxonomy endpoints; per-route RLS + rate limit" },
