@@ -14,7 +14,7 @@ On disk: **252** function directories · manifested: **40** · unclassified: **2
 | Per-request token | 1 |
 | Public (no auth) | 2 |
 
-Rate-limit wrapper: **5 / 40** manifested functions.
+Rate-limit wrapper: **17 / 40** manifested functions.
 
 ## ⚠ Unclassified functions on disk
 
@@ -235,21 +235,6 @@ Each of these must be added to `_manifest.ts` with an explicit `auth` and a one-
 
 Total unclassified: **212**
 
-## ⚠ Manifest ↔ code mismatches
-
-- `stripe-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `ses-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `plaid-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `crypto-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `mobile-money-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `esign-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `command-github-webhook` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `inngest-handler` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `autonomous-cron-dispatcher` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `prayer-push-cron` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `command-monitoring-cron` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-- `merge-conflict-recovery-alerts-cron` — rate-limit present but manifest says no: index.ts has withRateLimit( but _manifest has rateLimit=false
-
 ## Manifest (ground truth)
 
 | Function | Auth | Rate-limit | Reason |
@@ -257,38 +242,38 @@ Total unclassified: **212**
 | `admin-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending (follow-up #772) |
 | `ai-proxy` | jwt |  | JWT verified inside proxy; rate-limit wrapper pending |
 | `ai-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `autonomous-cron-dispatcher` | service_role |  | Invoked server-side via service-role header |
+| `autonomous-cron-dispatcher` | service_role | ✓ | Invoked server-side via service-role header |
 | `booking-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `command-approval-webhook` | token | ✓ | Per-request opaque tokens in the approval_requests table; JSON path uses constant-time shared secret |
 | `command-email-intake` | signature | ✓ | HMAC-SHA256 preferred (x-webhook-signature) or legacy shared secret (constant-time) |
-| `command-github-webhook` | signature |  | GitHub X-Hub-Signature-256 HMAC SHA-256 |
-| `command-monitoring-cron` | service_role |  | Internal secret header, constant-time compared |
+| `command-github-webhook` | signature | ✓ | GitHub X-Hub-Signature-256 HMAC SHA-256 |
+| `command-monitoring-cron` | service_role | ✓ | Internal secret header, constant-time compared |
 | `commerce-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `crypto-webhook` | signature |  | HMAC signature header |
+| `crypto-webhook` | signature | ✓ | HMAC signature header |
 | `csp-report` | public | ✓ | CSP report-uri collector; accepts application/csp-report from browsers, persists to security_csp_reports |
-| `dispatch-webhook` | signature |  | Dispatcher HMAC |
-| `esign-webhook` | signature |  | eSign provider HMAC |
+| `dispatch-webhook` | signature |  | Dispatcher HMAC; rate limiting via checkServerRateLimit (non-withRateLimit pattern) |
+| `esign-webhook` | signature | ✓ | eSign provider HMAC |
 | `food-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `gdpr-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `identity-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `infra-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `inngest-handler` | signature |  | Inngest SDK verifies its own signing key |
+| `inngest-handler` | signature | ✓ | Inngest SDK verifies its own signing key |
 | `logistics-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `marketplace-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `media-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `merge-conflict-recovery-alerts-cron` | service_role |  | Internal secret header, constant-time compared (task #973) |
-| `mobile-money-webhook` | signature |  | PSP HMAC signature |
+| `merge-conflict-recovery-alerts-cron` | service_role | ✓ | Internal secret header, constant-time compared (task #973) |
+| `mobile-money-webhook` | signature | ✓ | PSP HMAC signature |
 | `notification-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `orbit-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `plaid-webhook` | signature |  | Plaid JWT signature |
-| `prayer-push-cron` | service_role |  | pg_cron service-role invocation |
+| `plaid-webhook` | signature | ✓ | Plaid JWT signature |
+| `prayer-push-cron` | service_role | ✓ | pg_cron service-role invocation |
 | `public-api` | public | ✓ | Read-only SEO / taxonomy endpoints; per-route RLS + rate limit |
 | `receive-email` | signature | ✓ | SendGrid inbound shared secret, constant-time compare |
 | `rent-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `search-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `ses-webhook` | signature |  | AWS SNS signature verification in handler |
+| `ses-webhook` | signature | ✓ | AWS SNS signature verification in handler |
 | `stripe-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
-| `stripe-webhook` | signature |  | Stripe sends ts+sig; verified with stripe.webhooks.constructEvent |
+| `stripe-webhook` | signature | ✓ | Stripe sends ts+sig; verified with stripe.webhooks.constructEvent |
 | `system-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
 | `vector-similarity-search` | jwt |  | JWT verified via requireAuthenticatedUser; rate-limit wrapper pending follow-up #772 |
 | `voice-router` | jwt |  | JWT verified inside router; rate-limit wrapper pending |
