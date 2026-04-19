@@ -489,6 +489,16 @@
         posthog.init(window.__POSTHOG_KEY__, {api_host: window.__POSTHOG_HOST__ || "https://us.i.posthog.com", autocapture: false, capture_pageview: false, disable_session_recording: true});
       }
     </script>
+    <script>
+      // Early error logging — installed before the React bundle so startup
+      // crashes are always visible in the console even if Sentry never inits.
+      window.onerror = function(msg, src, line, col, err) {
+        console.error('[BOOT_ERROR]', msg, (src || '') + ':' + line + ':' + col, err);
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('[BOOT_UNHANDLED_REJECTION]', e.reason);
+      });
+    </script>
     <script type="module" src="/src/main.tsx" fetchpriority="high"></script>
     <script>
       window.__EASYLOCS_BOOTED__ = false;

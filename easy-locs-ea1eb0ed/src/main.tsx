@@ -28,6 +28,21 @@ try { installFetchTracePropagation(); } catch (err) { console.warn("[boot] insta
 // Best-effort OTel bootstrap — no-op unless VITE_OTEL_EXPORTER_OTLP_ENDPOINT is set.
 try { void initBrowserOtel({ serviceName: "easy-locs-frontend" }); } catch (err) { console.warn("[boot] initBrowserOtel failed", err); }
 
+// Global error logging — installed as early as possible so any unhandled
+// crash or promise rejection is visible in the console before React mounts.
+// Note: index.html installs identical handlers via window.onerror and
+// addEventListener before the module script tag, covering errors during
+// module evaluation itself. These handlers complement that by catching
+// errors that occur after module load completes (e.g. in async callbacks).
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    console.error("[BOOT_WINDOW_ERROR]", event.message, event.filename + ":" + event.lineno, event.error);
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    console.error("[BOOT_UNHANDLED_REJECTION]", event.reason);
+  });
+}
+
 const App = RawApp;
 
 if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID !== "function") {
@@ -37,8 +52,14 @@ if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomU
     );
 }
 
-const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("Root element #root not found");
+let rootElement = document.getElementById("root");
+if (!rootElement) {
+  // Fail-open: create a mount point rather than crashing with a thrown error.
+  console.error("[BOOT] #root element missing — creating one as fallback");
+  rootElement = document.createElement("div");
+  rootElement.id = "root";
+  document.body.appendChild(rootElement);
+}
 
 if (typeof window !== "undefined") {
   const { hash } = window.location;
@@ -115,12 +136,15 @@ try {
   // this throws when truly critical integrations (Supabase) are missing so the
   // developer sees the failure immediately. Non-critical integrations (AWS,
   // PostHog, Sentry) only emit a warning + dev banner — they no longer block
-  // boot. Wrapped here so any throw lands in the visible Boot Error UI below
-  // instead of aborting module evaluation and producing a blank screen.
+  // boot. Isolated in its own try/catch so a throw here NEVER prevents React
+  // from mounting — missing env vars must never produce a blank screen.
   validateIntegrationsBoot();
-  // Always log missing optional integration env vars once at boot, even on
-  // public routes where the dev banner is intentionally hidden.
-  warnMissingIntegrationsOnce();
+} catch (err) {
+  console.warn("[boot] validateIntegrationsBoot:", err);
+}
+try { warnMissingIntegrationsOnce(); } catch {}
+
+try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>

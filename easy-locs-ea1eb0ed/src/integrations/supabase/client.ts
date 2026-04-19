@@ -2,16 +2,29 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: localStorage,
-    persistSession: true,
-    autoRefreshToken: true,
-  }
-});
+// Fall back to placeholder strings so createClient never throws at module-eval
+// time when env vars are absent. Callers will receive network errors rather
+// than a blank screen caused by a module-evaluation crash.
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://placeholder.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "placeholder-anon-key";
+
+let _supabase: ReturnType<typeof createClient<Database>>;
+try {
+  _supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      storage: typeof localStorage !== "undefined" ? localStorage : undefined,
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  });
+} catch (err) {
+  console.warn("[supabase] createClient failed — app will run without Supabase:", err);
+  // Last-resort: a second attempt with safe placeholder values. If even this
+  // throws, let the error propagate so we don't silently swallow a real bug.
+  _supabase = createClient<Database>("https://placeholder.supabase.co", "placeholder-anon-key");
+}
+
+export const supabase = _supabase;
