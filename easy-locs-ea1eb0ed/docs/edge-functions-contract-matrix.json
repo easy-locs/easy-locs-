@@ -269,7 +269,7 @@
           "hasBody": false,
           "hasHeaders": true,
           "kind": "fetch",
-          "line": 315,
+          "line": 320,
           "method": "GET",
           "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=csv`, { headers: { Authorization: `Bearer ${session.access_token}"
         },
@@ -282,7 +282,7 @@
           "hasBody": false,
           "hasHeaders": true,
           "kind": "fetch",
-          "line": 342,
+          "line": 347,
           "method": "GET",
           "snippet": "fetch(`${supabaseUrl}/functions/v1/audit-export?format=pdf`, { headers: { Authorization: `Bearer ${session.access_token}"
         }
@@ -1865,11 +1865,17 @@
           "snippet": "functions.invoke(\"dld-analytics\", { method: \"POST\", headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`,"
         }
       ],
+      "contractMethods": [
+        "GET",
+        "POST"
+      ],
       "exists": true,
       "fn": "dld-analytics",
       "info": {
-        "hasContract": false,
+        "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -1877,14 +1883,7 @@
         "name": "dld-analytics",
         "requiresJsonBody": false
       },
-      "mismatches": [
-        {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:65",
-          "detail": "caller uses POST but handler accepts GET,OPTIONS",
-          "fn": "dld-analytics",
-          "kind": "method"
-        }
-      ]
+      "mismatches": []
     },
     {
       "callers": [
@@ -2343,7 +2342,7 @@
           "hasBody": true,
           "hasHeaders": true,
           "kind": "fetch",
-          "line": 127,
+          "line": 132,
           "method": "POST",
           "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-delete-account`, { method: \"POST\", headers: { Authorization: `Bearer"
         }
@@ -2373,12 +2372,12 @@
           "column": 27,
           "file": "src/pages/settings/SettingsPrivacy.tsx",
           "fn": "gdpr-export",
-          "hasBody": false,
+          "hasBody": true,
           "hasHeaders": true,
           "kind": "fetch",
           "line": 63,
-          "method": "GET",
-          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-export`, { headers: { Authorization: `Bearer ${token}` }, }); if (res.ok)"
+          "method": "POST",
+          "snippet": "fetch(`${supabaseUrl}/functions/v1/gdpr-export`, { method: \"POST\", headers: { Authorization: `Bearer ${token"
         }
       ],
       "contractMethods": [
@@ -5599,7 +5598,7 @@
           "column": 26,
           "file": "src/lib/voice/deepgram-client.ts",
           "fn": "voice-stt-token",
-          "hasBody": false,
+          "hasBody": true,
           "hasHeaders": true,
           "kind": "fetch",
           "line": 29,
@@ -6179,10 +6178,10 @@
   ],
   "totals": {
     "callSites": 257,
-    "contractCoverage": "28/117 (23.9%)",
-    "declaredContracts": 28,
+    "contractCoverage": "29/117 (24.8%)",
+    "declaredContracts": 29,
     "functionsOnDisk": 252,
-    "methodMismatches": 1,
+    "methodMismatches": 0,
     "missingAuthHeaderMismatches": 0,
     "missingBodyMismatches": 0,
     "missingFieldMismatches": 0,

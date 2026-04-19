@@ -42,6 +42,9 @@ export const EDGE_FUNCTION_MANIFEST: Record<string, ManifestEntry> = {
   "public-api": { auth: "public", rateLimit: true, reason: "Read-only SEO / taxonomy endpoints; per-route RLS + rate limit" },
   "csp-report": { auth: "public", rateLimit: true, reason: "CSP report-uri collector; accepts application/csp-report from browsers, persists to security_csp_reports" },
 
+  // ── Analytics / data endpoints ───────────────────────────────────────
+  "dld-analytics": { auth: "jwt", rateLimit: false, reason: "Mutation endpoints (backfill, sync) verify JWT or service-role; read endpoints accept anon key" },
+
   // ── Domain routers (JWT verified inside via edge-auth.ts) ────────────
   // rateLimit is currently false for routers: they do auth via edge-auth
   // but do not wrap with `withRateLimit`. Tracked in follow-up #772.
