@@ -435,7 +435,9 @@ describe("onboarding.service — submitHotelProvider", () => {
 
   it("throws when provider upsert fails", async () => {
     const providerQb = createQueryBuilder();
-    providerQb.single.mockResolvedValueOnce({ data: null, error: { message: "upsert failed" } });
+    providerQb.then.mockImplementationOnce(
+      (resolve: ThenHandler) => Promise.resolve({ data: null, error: { message: "upsert failed" } }).then(resolve)
+    );
     mockDbFrom.mockReturnValueOnce(providerQb);
 
     const { submitHotelProvider } = await import("@/services/onboarding.service");
@@ -510,18 +512,18 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
       ];
       const qb = createQueryBuilder();
       qb.order.mockResolvedValueOnce({ data: sessions, error: null });
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { fetchOnboardingSessions } = await import("@/services/domain/onboarding.service");
       const result = await fetchOnboardingSessions("u1");
-      expect(mockDomainOnboardingFrom).toHaveBeenCalledWith("onboarding_sessions");
+      expect(mockDbFrom).toHaveBeenCalledWith("onboarding_sessions");
       expect(result).toEqual(sessions);
     });
 
     it("returns empty array when no sessions exist", async () => {
       const qb = createQueryBuilder();
       qb.order.mockResolvedValueOnce({ data: null, error: null });
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { fetchOnboardingSessions } = await import("@/services/domain/onboarding.service");
       const result = await fetchOnboardingSessions("u-none");
@@ -532,11 +534,11 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
   describe("upsertOnboardingSession", () => {
     it("calls upsert with record", async () => {
       const qb = createQueryBuilder();
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { upsertOnboardingSession } = await import("@/services/domain/onboarding.service");
       await upsertOnboardingSession({ user_id: "u1", step: 3 });
-      expect(mockDomainOnboardingFrom).toHaveBeenCalledWith("onboarding_sessions");
+      expect(mockDbFrom).toHaveBeenCalledWith("onboarding_sessions");
       expect(qb.upsert).toHaveBeenCalledWith({ user_id: "u1", step: 3 });
     });
 
@@ -545,7 +547,7 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
       qb.then.mockImplementationOnce(
         (resolve: ThenHandler) => Promise.resolve({ data: null, error: { message: "insert failed" } }).then(resolve)
       );
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { upsertOnboardingSession } = await import("@/services/domain/onboarding.service");
       await expect(upsertOnboardingSession({ user_id: "u1" })).rejects.toEqual({ message: "insert failed" });
