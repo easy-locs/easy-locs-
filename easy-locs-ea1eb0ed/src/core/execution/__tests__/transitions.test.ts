@@ -24,6 +24,8 @@ const ALL_STATUSES: ExecutionTaskStatus[] = [
   "succeeded",
   "failed",
   "blocked",
+  "rolling_back",
+  "rollback_failed",
   "rolled_back",
   "cancelled",
 ];

@@ -211,6 +211,19 @@ describe("scoreRecommendations – deterministic weather ranking", () => {
   });
 
   it("rainy weather increases delivery vertical scores vs sunny baseline", async () => {
+    // Force isWeekend=false so lunch_rush boosts delivery on any run day,
+    // ensuring rec_delivery_1 ranks in top-10 for both sunny and rainy.
+    vi.doMock("./contextual-signals", async () => {
+      const actual = await vi.importActual<typeof import("./contextual-signals")>("./contextual-signals");
+      return {
+        ...actual,
+        getContextualFactors: () => ({
+          timeOfDay: "afternoon",
+          dayOfWeek: 3, // Wednesday
+          isWeekend: false,
+        }),
+      };
+    });
     const { scoreRecommendations } = await import("./recommendation-engine");
 
     const sunny = scoreRecommendations({ timeOfDay: "afternoon", weather: "sunny" });
@@ -218,6 +231,8 @@ describe("scoreRecommendations – deterministic weather ranking", () => {
 
     const sunnyDelivery = sunny.find((r) => r.id === "rec_delivery_1")!;
     const rainyDelivery = rainy.find((r) => r.id === "rec_delivery_1")!;
+    expect(sunnyDelivery).toBeDefined();
+    expect(rainyDelivery).toBeDefined();
     expect(rainyDelivery.score).toBeGreaterThan(sunnyDelivery.score);
   });
 
@@ -536,6 +551,18 @@ describe("scoreRecommendationsAsync – weather API fetch", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.spyOn(Math, "random").mockReturnValue(0.5);
+    // Force weekday context so rec_delivery_1 ranks in top-10 on any run day.
+    vi.doMock("./contextual-signals", async () => {
+      const actual = await vi.importActual<typeof import("./contextual-signals")>("./contextual-signals");
+      return {
+        ...actual,
+        getContextualFactors: () => ({
+          timeOfDay: "afternoon",
+          dayOfWeek: 3,
+          isWeekend: false,
+        }),
+      };
+    });
     stubAbortSignalTimeout();
     mockFetch = vi.fn();
     vi.stubGlobal("fetch", mockFetch);
@@ -889,6 +916,18 @@ describe("scoreRecommendationsAsync – pgvector database fallback", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.spyOn(Math, "random").mockReturnValue(0.5);
+    // Force weekday context so catalog items rank consistently on any run day.
+    vi.doMock("./contextual-signals", async () => {
+      const actual = await vi.importActual<typeof import("./contextual-signals")>("./contextual-signals");
+      return {
+        ...actual,
+        getContextualFactors: () => ({
+          timeOfDay: "afternoon",
+          dayOfWeek: 3,
+          isWeekend: false,
+        }),
+      };
+    });
     stubAbortSignalTimeout();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
       new Response(
@@ -1023,6 +1062,7 @@ describe("scoreRecommendationsAsync – pgvector database fallback", () => {
 
     const results = await scoreRecommendationsAsync({
       userId: "user-5",
+      recentRoutes: ["/food/test"],
       timeOfDay: "afternoon",
       location: { lat: 40.7, lng: -74.0 },
     });
@@ -1074,6 +1114,7 @@ describe("scoreRecommendationsAsync – pgvector database fallback", () => {
 
     const results = await scoreRecommendationsAsync({
       userId: "user-6",
+      recentRoutes: ["/food/test"],
       timeOfDay: "afternoon",
       location: { lat: 40.7, lng: -74.0 },
     });

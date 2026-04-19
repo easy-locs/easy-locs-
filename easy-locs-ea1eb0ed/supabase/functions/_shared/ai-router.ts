@@ -263,18 +263,6 @@ export async function parseChatResponse(
   };
 }
 
-/**
- * Provider-aware non-stream chat parser. Normalises Anthropic's
- * `{content:[{text}], usage:{input_tokens, output_tokens}}` into the
- * canonical OpenAI-shaped `{text, promptTokens, completionTokens}` so
- * the runner / telemetry never has to branch on provider name.
- *
- * Throws on non-2xx — consistent with the previous OpenAI-only parser.
- */
-export async function parseChatResponse(
-  provider: "openai" | "anthropic",
-  response: Response,
-): Promise<{ text: string; promptTokens: number; completionTokens: number }> {
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     throw new Error(`provider HTTP ${response.status}: ${text.slice(0, 200)}`);
@@ -298,18 +286,6 @@ export async function parseChatResponse(
   };
 }
 
-/**
- * Provider-aware non-stream chat parser. Normalises Anthropic's
- * `{content:[{text}], usage:{input_tokens, output_tokens}}` into the
- * canonical OpenAI-shaped `{text, promptTokens, completionTokens}` so
- * the runner / telemetry never has to branch on provider name.
- *
- * Throws on non-2xx — consistent with the previous OpenAI-only parser.
- */
-export async function parseChatResponse(
-  provider: "openai" | "anthropic",
-  response: Response,
-): Promise<{ text: string; promptTokens: number; completionTokens: number }> {
   if (!response.ok) {
     const text = await response.text().catch(() => "");
     throw new Error(`provider HTTP ${response.status}: ${text.slice(0, 200)}`);
