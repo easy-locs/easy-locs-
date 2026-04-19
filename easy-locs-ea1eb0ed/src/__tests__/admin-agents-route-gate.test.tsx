@@ -71,7 +71,7 @@ beforeEach(() => {
 });
 
 describe("/admin/agents route gate", () => {
-  it("redirects an authenticated non-super-admin away from the cockpit", async () => {
+  it("shows access denied for authenticated non-super-admin away from the cockpit", async () => {
     useAuthSessionMock.mockReturnValue({
       user: { id: "u1" },
       loading: false,
@@ -83,7 +83,7 @@ describe("/admin/agents route gate", () => {
     renderRoute();
 
     await waitFor(() =>
-      expect(screen.getByText("DASHBOARD")).toBeInTheDocument(),
+      expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument(),
     );
     // The page heading must not have rendered.
     expect(screen.queryByText(/agents cockpit/i)).not.toBeInTheDocument();

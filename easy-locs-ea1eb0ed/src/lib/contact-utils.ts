@@ -35,7 +35,10 @@ export function whatsappLink(phone: string, ctx: ListingContext): string {
 /** Telegram deep link — share via t.me/share/url for listing context */
 export function telegramLink(username: string | undefined, ctx: ListingContext): string {
   if (username) {
-    const stripped = username.replace(/^@/, "").replace(/[^a-zA-Z0-9_]/g, "");
+    if (username.startsWith("http://") || username.startsWith("https://")) {
+      return username;
+    }
+    const stripped = username.replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "");
     if (stripped.length < 5) {
       return `https://t.me/share/url?url=${encodeURIComponent(getListingUrl(ctx))}&text=${encodeURIComponent(ctx.title)}`;
     }

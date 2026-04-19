@@ -4,6 +4,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  define: {
+    __BUILD_TIMESTAMP__: JSON.stringify(new Date().toISOString()),
+  },
   test: {
     environment: "jsdom",
     globals: true,
@@ -16,6 +19,10 @@ export default defineConfig({
       seed: 42,
     },
     clearMocks: true,
+    env: {
+      VITE_SUPABASE_URL: "https://test.supabase.co",
+      VITE_SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "text-summary", "html", "lcov", "json-summary"],

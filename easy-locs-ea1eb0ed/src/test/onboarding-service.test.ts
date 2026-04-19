@@ -55,8 +55,10 @@ const mockStorageFrom = vi.fn().mockReturnValue({
 
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
+  const mockDispatchRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null });
   const dbFn = Object.assign(dbProxy, {
     from: (...args: unknown[]) => mockDbFrom(...args),
+    schema: (..._args: unknown[]) => ({ from: (...a: unknown[]) => mockDbFrom(...a), rpc: mockDispatchRpc }),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: { invoke: (...args: unknown[]) => mockFunctionsInvoke(...args) },
     storage: { from: (...args: unknown[]) => mockStorageFrom(...args) },
@@ -71,6 +73,11 @@ vi.mock("@/services/db", () => {
     },
   };
 });
+
+vi.mock("@/lib/execution/dispatch", () => ({
+  dispatchExecutionTask: vi.fn().mockResolvedValue({ taskId: "mock-task-id", status: "queued", agentId: null, agentVersionId: null, blockedReason: null }),
+  DispatchError: class DispatchError extends Error { constructor(msg: string) { super(msg); this.name = "DispatchError"; } },
+}));
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {

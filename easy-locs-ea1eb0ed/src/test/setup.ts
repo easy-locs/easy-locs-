@@ -6,42 +6,46 @@ vi.mock("@/integrations/supabase/client", () => ({
   supabase: createMockSupabase(),
 }));
 
-Object.defineProperty(window, "matchMedia", {
-  writable: true,
-  value: (query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: () => {},
-    removeListener: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  }),
-});
+if (typeof window !== "undefined") {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => {},
+    }),
+  });
 
-HTMLCanvasElement.prototype.getContext = (() => null) as any;
-HTMLCanvasElement.prototype.toDataURL = (() => "") as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (HTMLCanvasElement.prototype as any).getContext = () => null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (HTMLCanvasElement.prototype as any).toDataURL = () => "";
 
-if (!window.IntersectionObserver) {
-  (window as any).IntersectionObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
-}
+  if (!window.IntersectionObserver) {
+    (window as any).IntersectionObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
 
-if (!window.ResizeObserver) {
-  (window as any).ResizeObserver = class {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
-}
+  if (!window.ResizeObserver) {
+    (window as any).ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+  }
 
-if (typeof window.URL.createObjectURL !== "function") {
-  window.URL.createObjectURL = () => "blob:mock";
-  window.URL.revokeObjectURL = () => {};
+  if (typeof window.URL.createObjectURL !== "function") {
+    window.URL.createObjectURL = () => "blob:mock";
+    window.URL.revokeObjectURL = () => {};
+  }
 }
 
 if (typeof globalThis.requestIdleCallback !== "function") {
@@ -100,8 +104,8 @@ try {
 } catch {}
 
 beforeEach(() => {
-  localStorage.clear();
-  sessionStorage.clear();
+  if (typeof localStorage !== "undefined") localStorage.clear();
+  if (typeof sessionStorage !== "undefined") sessionStorage.clear();
 
   if (_platformBus) {
     _platformBus.clear();

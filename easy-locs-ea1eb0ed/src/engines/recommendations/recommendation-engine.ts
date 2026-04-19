@@ -197,6 +197,7 @@ async function fetchPgvectorSimilar(
 function buildPgvectorQueryText(
   recentVerticals: Set<string>,
   favorites: string[] | undefined,
+  userId?: string,
 ): string {
   const parts: string[] = [];
   if (recentVerticals.size > 0) {
@@ -208,6 +209,12 @@ function buildPgvectorQueryText(
       .filter((t): t is string => !!t);
     if (favoriteTitles.length > 0) {
       parts.push(`Liked: ${favoriteTitles.slice(0, 5).join("; ")}.`);
+    }
+  }
+  if (parts.length === 0 && userId) {
+    const profile = getUserProfile(userId);
+    if (profile && profile.interactionCount > 0) {
+      parts.push("personalized recommendations based on interaction history");
     }
   }
   return parts.join(" ");
@@ -253,7 +260,7 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
     if (profile && profile.interactionVector.length > 0) {
       userVector = profile.interactionVector;
     }
-    const pgvectorQueryText = buildPgvectorQueryText(recentVerticals, ctx.favorites);
+    const pgvectorQueryText = buildPgvectorQueryText(recentVerticals, ctx.favorites, ctx.userId);
     if (pgvectorQueryText) {
       pgvectorResults = await fetchPgvectorSimilar(ctx.userId, pgvectorQueryText, 20);
     }

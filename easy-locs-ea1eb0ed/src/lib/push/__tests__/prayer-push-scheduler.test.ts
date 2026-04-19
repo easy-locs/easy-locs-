@@ -17,7 +17,9 @@ vi.mock("@/services/db", () => {
     }),
     upsert,
   });
-  return { db: { from, __upsert: upsert, __maybeSingle: maybeSingle, __from: from } };
+  const mockDispatchRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null });
+  const schema = vi.fn().mockReturnValue({ from, rpc: mockDispatchRpc });
+  return { db: Object.assign(from, { from, schema, __upsert: upsert, __maybeSingle: maybeSingle, __from: from }) };
 });
 
 import {

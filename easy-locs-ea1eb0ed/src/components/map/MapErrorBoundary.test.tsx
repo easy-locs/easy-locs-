@@ -84,7 +84,7 @@ describe("MapErrorBoundary", () => {
       </MapErrorBoundary>,
     );
 
-    const fallbackRoot = container.firstChild as HTMLElement;
+    const fallbackRoot = (container.firstChild as HTMLElement).firstChild as HTMLElement;
     expect(fallbackRoot.style.height).toBe("500px");
     expect(fallbackRoot.style.width).toBe("100%");
   });
@@ -96,7 +96,7 @@ describe("MapErrorBoundary", () => {
       </MapErrorBoundary>,
     );
 
-    const fallbackRoot = container.firstChild as HTMLElement;
+    const fallbackRoot = (container.firstChild as HTMLElement).firstChild as HTMLElement;
     expect(fallbackRoot.style.height).toBe("50vh");
   });
 
@@ -107,7 +107,7 @@ describe("MapErrorBoundary", () => {
       </MapErrorBoundary>,
     );
 
-    const fallbackRoot = container.firstChild as HTMLElement;
+    const fallbackRoot = (container.firstChild as HTMLElement).firstChild as HTMLElement;
     expect(fallbackRoot.style.height).toBe("300px");
   });
 

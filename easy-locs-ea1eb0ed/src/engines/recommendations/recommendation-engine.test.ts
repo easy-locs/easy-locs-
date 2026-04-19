@@ -207,7 +207,13 @@ describe("computeGeoProximityBoost – edge cases", () => {
 describe("scoreRecommendations – deterministic weather ranking", () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-03-05T14:00:00.000Z")); // Wednesday — not a weekend
     vi.spyOn(Math, "random").mockReturnValue(0.5);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("rainy weather increases delivery vertical scores vs sunny baseline", async () => {
@@ -535,6 +541,8 @@ describe("scoreRecommendationsAsync – weather API fetch", () => {
 
   beforeEach(() => {
     vi.resetModules();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-03-05T14:00:00.000Z")); // Wednesday — not a weekend
     vi.spyOn(Math, "random").mockReturnValue(0.5);
     stubAbortSignalTimeout();
     mockFetch = vi.fn();
@@ -544,6 +552,7 @@ describe("scoreRecommendationsAsync – weather API fetch", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("fetches weather from API and applies rainy signal when weathercode >= 51", async () => {
@@ -888,6 +897,8 @@ describe("scoreRecommendationsAsync – non-finite intermediate boosts produce v
 describe("scoreRecommendationsAsync – pgvector database fallback", () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2025-03-05T14:00:00.000Z")); // Wednesday — not a weekend
     vi.spyOn(Math, "random").mockReturnValue(0.5);
     stubAbortSignalTimeout();
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
@@ -901,6 +912,7 @@ describe("scoreRecommendationsAsync – pgvector database fallback", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    vi.useRealTimers();
   });
 
   it("falls back to local catalog when db.functions.invoke returns an error", async () => {

@@ -34,19 +34,6 @@ export function DeeplinksRoutes() {
       <Route path="/go/:slug" element={<FeatureErrorBoundary featureName="DeepLink"><SlugResolver /></FeatureErrorBoundary>} />
       <Route path="/go/:slug/:category" element={<FeatureErrorBoundary featureName="DeepLink"><SlugCategoryResolver /></FeatureErrorBoundary>} />
 
-      {/*
-        Canonical alias redirects (task #1069 — Phase 5 deep-link audit).
-        These short paths are widely linked from external surfaces (emails,
-        QR codes, push notifications) but had no destination, leading to
-        blank pages with the SPA fallback. Each one now resolves to the
-        canonical route that actually owns the feature, eliminating the
-        dead-link / stuck-render runtime defect.
-      */}
-      <Route path="/profile" element={<Navigate to="/me" replace />} />
-      <Route path="/account" element={<Navigate to="/me" replace />} />
-      <Route path="/messages" element={<Navigate to="/orbit" replace />} />
-      <Route path="/inbox" element={<Navigate to="/notifications" replace />} />
-      <Route path="/wallet/security" element={<Navigate to="/settings/security" replace />} />
       <Route path="/driver/missions" element={<Navigate to="/driver/missions-board" replace />} />
     </>
   );

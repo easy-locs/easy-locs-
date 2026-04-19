@@ -39,8 +39,10 @@ const mockDbFrom = vi.fn().mockImplementation(() => createQueryBuilder());
 
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
+  const mockDispatchRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null });
   const dbFn = Object.assign(dbProxy, {
     from: (...args: unknown[]) => mockDbFrom(...args),
+    schema: (..._args: unknown[]) => ({ from: (...a: unknown[]) => mockDbFrom(...a), rpc: mockDispatchRpc }),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     functions: { invoke: vi.fn().mockResolvedValue({ data: null, error: null }) },
     storage: { from: vi.fn() },
