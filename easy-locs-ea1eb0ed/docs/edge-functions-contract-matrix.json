@@ -21,6 +21,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -51,6 +53,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -84,6 +88,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -189,6 +195,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -219,6 +227,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -249,6 +259,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -295,6 +307,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -338,6 +352,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "aws-health-check",
         "requiresJsonBody": false
@@ -365,6 +381,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -395,6 +413,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -433,6 +453,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -463,6 +485,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -496,6 +520,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -529,6 +555,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -575,6 +603,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -618,6 +648,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "check-connect-status",
         "requiresJsonBody": false
@@ -671,6 +703,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "check-subscription",
         "requiresJsonBody": false
@@ -698,11 +732,16 @@
           "snippet": "fetch(`${supabaseUrl}/functions/v1/chief-agent`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\","
         }
       ],
+      "contractMethods": [
+        "POST"
+      ],
       "exists": true,
       "fn": "chief-agent",
       "info": {
-        "hasContract": false,
+        "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -733,6 +772,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -798,6 +839,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": true,
         "methods": [
           "OPTIONS",
           "POST"
@@ -838,6 +881,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -916,6 +961,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -961,6 +1008,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1008,6 +1057,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1097,6 +1148,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1155,6 +1208,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "create-connect-account",
         "requiresJsonBody": false
@@ -1182,6 +1237,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1214,6 +1271,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1264,6 +1323,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1294,6 +1355,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1331,6 +1394,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1361,6 +1426,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1409,6 +1476,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1455,6 +1524,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1485,6 +1556,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "customer-portal",
         "requiresJsonBody": false
@@ -1516,6 +1589,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1559,6 +1634,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "disconnect-stripe",
         "requiresJsonBody": false
@@ -1756,6 +1833,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1825,6 +1904,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1865,11 +1946,17 @@
           "snippet": "functions.invoke(\"dld-analytics\", { method: \"POST\", headers: { \"x-endpoint\": \"backfill\", \"x-params\": `months=${months}`,"
         }
       ],
+      "contractMethods": [
+        "GET",
+        "POST"
+      ],
       "exists": true,
       "fn": "dld-analytics",
       "info": {
-        "hasContract": false,
+        "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -1877,14 +1964,7 @@
         "name": "dld-analytics",
         "requiresJsonBody": false
       },
-      "mismatches": [
-        {
-          "caller": "src/pages/admin/AdminDldBackfillPage.tsx:65",
-          "detail": "caller uses POST but handler accepts GET,OPTIONS",
-          "fn": "dld-analytics",
-          "kind": "method"
-        }
-      ]
+      "mismatches": []
     },
     {
       "callers": [
@@ -1912,6 +1992,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -1942,6 +2024,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "engine-cron-server",
         "requiresJsonBody": false
@@ -2031,6 +2115,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2074,6 +2160,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS",
@@ -2174,6 +2262,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -2204,6 +2294,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2323,6 +2415,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2356,6 +2450,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2390,6 +2486,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "gdpr-export",
         "requiresJsonBody": false
@@ -2417,6 +2515,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2447,6 +2547,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2521,6 +2623,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2583,6 +2687,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2616,6 +2722,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -2650,6 +2758,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2693,6 +2803,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2776,6 +2888,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2806,6 +2920,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2909,6 +3025,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2939,6 +3057,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -2971,6 +3091,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3007,6 +3129,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3053,6 +3177,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3083,6 +3209,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3201,6 +3329,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3233,6 +3363,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3276,6 +3408,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -3474,6 +3608,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3507,6 +3643,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3575,6 +3713,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3786,6 +3926,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3867,6 +4009,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3897,6 +4041,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -3927,6 +4073,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4012,6 +4160,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4048,6 +4198,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4078,6 +4230,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "GET",
           "OPTIONS"
@@ -4111,6 +4265,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4141,6 +4297,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "run-scheduled-audit",
         "requiresJsonBody": false
@@ -4168,6 +4326,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4317,6 +4477,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4349,6 +4511,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4417,6 +4581,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4699,6 +4865,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4777,6 +4945,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4861,6 +5031,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -4939,6 +5111,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "service_role",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5010,6 +5184,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5050,6 +5226,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5082,6 +5260,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5118,6 +5298,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5148,6 +5330,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "subscription-portal",
         "requiresJsonBody": false
@@ -5206,6 +5390,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5238,6 +5424,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5358,6 +5546,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5445,6 +5635,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5479,6 +5671,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5542,6 +5736,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5582,6 +5778,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5607,11 +5805,16 @@
           "snippet": "fetch(`${dbUrl}/functions/v1/voice-stt-token`, { method: \"POST\", headers: { \"Content-Type\": \"application/json\", Authoriz"
         }
       ],
+      "contractMethods": [
+        "POST"
+      ],
       "exists": true,
       "fn": "voice-stt-token",
       "info": {
-        "hasContract": false,
+        "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5646,6 +5849,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5678,6 +5883,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5744,6 +5951,8 @@
       "info": {
         "hasContract": true,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5788,6 +5997,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5818,6 +6029,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-authentication-challenge",
         "requiresJsonBody": false
@@ -5847,6 +6060,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5877,6 +6092,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-begin-registration",
         "requiresJsonBody": false
@@ -5907,6 +6124,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5937,6 +6156,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -5970,6 +6191,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -6000,6 +6223,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": null,
         "name": "webauthn-registration-challenge",
         "requiresJsonBody": false
@@ -6030,6 +6255,8 @@
       "info": {
         "hasContract": false,
         "hasIndex": true,
+        "manifestAuth": "jwt",
+        "manifestRateLimit": false,
         "methods": [
           "OPTIONS",
           "POST"
@@ -6179,10 +6406,10 @@
   ],
   "totals": {
     "callSites": 257,
-    "contractCoverage": "28/117 (23.9%)",
-    "declaredContracts": 28,
+    "contractCoverage": "31/117 (26.5%)",
+    "declaredContracts": 31,
     "functionsOnDisk": 252,
-    "methodMismatches": 1,
+    "methodMismatches": 0,
     "missingAuthHeaderMismatches": 0,
     "missingBodyMismatches": 0,
     "missingFieldMismatches": 0,
