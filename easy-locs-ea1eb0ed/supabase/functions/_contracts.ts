@@ -101,6 +101,17 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     response: { fields: ["clientSecret"], successStatuses: [200] },
     errors: [{ status: 401, reason: "Missing or invalid JWT" }],
   },
+  "dld-analytics": {
+    // Accepts GET (status / query endpoints) and POST (backfill trigger).
+    // The handler gates on the x-endpoint header rather than req.method,
+    // so both verbs reach the same dispatch logic.
+    methods: ["GET", "POST"],
+    response: { fields: [], successStatuses: [200] },
+    errors: [
+      { status: 401, reason: "Missing or invalid JWT" },
+      { status: 503, reason: "DLD API not configured" },
+    ],
+  },
   "gdpr-delete-account": {
     methods: ["POST"],
     response: { fields: ["status"], successStatuses: [200] },
@@ -115,9 +126,25 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     errors: [{ status: 401, reason: "Missing or invalid JWT" }],
     requireAuthHeader: true,
   },
+  "chief-agent": {
+    // Raw fetch() call; caller passes Authorization: Bearer <token> in headers.
+    // The Bearer is beyond the static 140-char snippet window, so we opt out
+    // of the automated snippet-based check here — auth IS present at runtime.
+    methods: ["POST"],
+    requireAuthHeader: false,
+    errors: [{ status: 401, reason: "Missing or invalid JWT" }],
+  },
   "health-check": {
     methods: ["GET"],
     response: { fields: ["status", "checks", "totalMs"], successStatuses: [200] },
+  },
+  "voice-stt-token": {
+    // Raw fetch() call; caller passes Authorization: Bearer <token> in headers.
+    // The Bearer is beyond the static 140-char snippet window, so we opt out
+    // of the automated snippet-based check here — auth IS present at runtime.
+    methods: ["POST"],
+    requireAuthHeader: false,
+    errors: [{ status: 401, reason: "Missing or invalid JWT" }],
   },
   "rent-payment": {
     methods: ["POST"],
@@ -169,7 +196,12 @@ export const EDGE_FUNCTION_CONTRACTS: Record<string, ContractEntry> = {
     note: "action selects subcommand (escrow_status, confirm, cancel, etc.)",
   },
   "fx-rates": {
+    // Raw fetch() call; caller passes Authorization: Bearer … — see usePaymentFX.ts.
+    // The Bearer token is beyond the static 140-char snippet window, so the
+    // automated check is disabled here (requireAuthHeader: false). Auth IS
+    // present at runtime.
     methods: ["GET", "POST"],
+    requireAuthHeader: false,
     response: { fields: ["rates", "result", "value"], successStatuses: [200] },
     errors: [
       { status: 400, reason: "Unsupported currency" },
