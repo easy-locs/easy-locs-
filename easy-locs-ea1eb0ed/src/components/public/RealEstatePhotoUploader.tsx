@@ -44,7 +44,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
       if (isVideoFile(file) && !allowVideo) { toast({ title: "Video requires a paid plan", variant: "destructive" }); continue; }
 
       const ext = file.name.split(".").pop();
-      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.${ext}`;
       try {
         await photoRepo.uploadPropertyPhoto(path, file);
         newUrls.push(photoRepo.getPublicUrl(path));
@@ -88,7 +88,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
       const response = await fetch(result.dataUrl);
       const blob = await response.blob();
       const ext = result.format || "jpeg";
-      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.${ext}`;
       const file = new File([blob], `listing_${Date.now()}.${ext}`, { type: `image/${ext}` });
       await photoRepo.uploadPropertyPhoto(path, file);
       const url = photoRepo.getPublicUrl(path);
@@ -122,7 +122,7 @@ const RealEstatePhotoUploader = ({ listingId, orgId, photos, onPhotosChange, mai
       setUploading(true);
       const response = await fetch(result.webPath);
       const blob = await response.blob();
-      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${Math.random().toString(36).slice(2)}.mp4`;
+      const path = `${orgId}/real-estate/${listingId}/${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.mp4`;
       const file = new File([blob], `listing_video_${Date.now()}.mp4`, { type: "video/mp4" });
       await photoRepo.uploadPropertyPhoto(path, file);
       const url = photoRepo.getPublicUrl(path);

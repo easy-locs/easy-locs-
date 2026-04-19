@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * orbit-payment — Server-side payment processing for Orbit
  * - Server-side QR signing with real HMAC secret
@@ -11,11 +12,6 @@ import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 /** Server-side HMAC signing key — derived from service role key (never exposed to client) */
 function getSigningKey(): string {
@@ -55,7 +51,7 @@ function generateNonce(): string {
 
 Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -110,7 +106,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         };
 
         return new Response(JSON.stringify({ payload, encoded: btoa(JSON.stringify(payload)) }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -137,7 +133,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const payload = { ...base, signature };
 
       return new Response(JSON.stringify({ payload, encoded: btoa(JSON.stringify(payload)) }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -146,7 +142,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const { payload } = body;
       if (!payload || !payload.qr_type) {
         return new Response(JSON.stringify({ valid: false, error: "Invalid QR payload" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -154,7 +150,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         // Check expiration
         if (new Date(payload.expires_at) < new Date()) {
           return new Response(JSON.stringify({ valid: false, error: "QR code expired" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -162,7 +158,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         const sigValid = await verifyQRSignature(payload);
         if (!sigValid) {
           return new Response(JSON.stringify({ valid: false, error: "Invalid signature — QR may be tampered" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
 
@@ -175,7 +171,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
 
         if (existingNonce) {
           return new Response(JSON.stringify({ valid: false, error: "QR code already used" }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
       }
@@ -192,7 +188,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         recipient: recipient ? { id: recipient.id, name: recipient.name || recipient.email } : null,
         payload,
       }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -202,14 +198,14 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
 
       if (!recipient_user_id || !amount || amount <= 0) {
         return new Response(JSON.stringify({ error: "Invalid payment parameters" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       // Anti-tampering: validate amount is a safe number
       if (!Number.isFinite(amount) || amount > 1_000_000) {
         return new Response(JSON.stringify({ error: "Amount out of bounds" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -221,7 +217,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         .maybeSingle();
       if (!recipientProfile) {
         return new Response(JSON.stringify({ error: "Recipient not found" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -268,13 +264,13 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
           p_max_retries: 5,
         }).catch(() => {});
         return new Response(JSON.stringify({ error: rpcError.message }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       if (result && !result.success) {
         return new Response(JSON.stringify({ error: result.error }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -291,7 +287,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       }
 
       return new Response(JSON.stringify({ success: true, ...result, reference_code: reference_code_out, reference_code_in }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -301,7 +297,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
 
       if (!amount || amount < 1) {
         return new Response(JSON.stringify({ error: "Minimum payment is 1 EUR equivalent" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -374,7 +370,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       });
 
       return new Response(JSON.stringify({ url: session.url, session_id: session.id, tx_id: txRecord?.id, reference_code: txRecord?.reference_code }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -383,7 +379,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const { deal_id } = body;
       if (!deal_id) {
         return new Response(JSON.stringify({ error: "Missing deal_id" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -395,7 +391,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         .single();
       if (dealErr || !deal) {
         return new Response(JSON.stringify({ error: "Deal not found" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -403,7 +399,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       // Only accepted or payment_pending deals can generate checkout
       if (!["accepted", "payment_pending"].includes(dealData.status)) {
         return new Response(JSON.stringify({ error: "Deal must be accepted before payment" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -411,7 +407,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const currency = (dealData.current_offer_currency || "EUR").toLowerCase();
       if (!amount || amount <= 0) {
         return new Response(JSON.stringify({ error: "No valid amount on deal" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -506,7 +502,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       });
 
       return new Response(JSON.stringify({ url: session.url, session_id: session.id }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -515,7 +511,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const { deal_id } = body;
       if (!deal_id) {
         return new Response(JSON.stringify({ error: "Missing deal_id" }), {
-          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -526,7 +522,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         .single();
       if (!deal) {
         return new Response(JSON.stringify({ error: "Deal not found" }), {
-          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 404, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -534,7 +530,7 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
       const sessionId = dealData.metadata_json?.stripe_session_id;
       if (!sessionId) {
         return new Response(JSON.stringify({ paid: false, error: "No checkout session" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
@@ -570,22 +566,22 @@ Deno.serve(withEdgeLogging("orbit-payment", async (req, logger) => {
         }
 
         return new Response(JSON.stringify({ paid: true, status: "confirmed" }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
 
       return new Response(JSON.stringify({ paid: false, payment_status: session.payment_status }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[orbit-payment] Error:", err);
     return new Response(JSON.stringify({ error: err instanceof Error ? err.message : "Unknown error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

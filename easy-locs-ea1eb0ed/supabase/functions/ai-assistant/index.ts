@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, checkUserRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
@@ -15,11 +16,6 @@ import { trackBackendEvent } from "../_shared/segment-client.ts";
 // `onToken` once — the UX degrades to "no progressive tokens" but stays
 // fully functional and is uniformly governed.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const LANG_PROMPTS: Record<string, string> = {
   fr: "Réponds toujours en français.",
@@ -104,7 +100,7 @@ Use bullet points and highlight key metrics and actionable insights.`,
 
 Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -136,7 +132,7 @@ Deno.serve(withEdgeLogging("ai-assistant", async (req, logger) => {
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       userId = user.id;
@@ -187,7 +183,7 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
           queued: true,
           message_id: sqsResult.messageId,
         }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       console.warn("[ai-assistant] SQS offload failed, processing inline:", sqsResult.error);
@@ -225,7 +221,7 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
           pendingReview: true,
           taskId: outcome.taskId,
         }),
-        { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 202, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -239,7 +235,7 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
       const status = outcome.errorCode === "AI_QUOTA_EXCEEDED" ? 429 : 500;
       return new Response(
         JSON.stringify({ error: outcome.errorMessage ?? "Service error" }),
-        { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
 
@@ -255,13 +251,13 @@ ${taskContext ? `Task context:\n${taskContext}` : ""}`;
     });
 
     return new Response(JSON.stringify({ reply, provider, fallbackUsed }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

@@ -1,18 +1,14 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 // LB1 #835 — shopping chat goes through the platform-native AI agent so quota
 // / sensitive routing / audit are enforced. Direct `aiRouteAndParse` is no
 // longer permitted on this surface.
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -55,12 +51,12 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ reply }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error:", error);
     return new Response(JSON.stringify({ reply: "Something went wrong. Please try again." }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

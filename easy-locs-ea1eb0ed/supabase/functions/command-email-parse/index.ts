@@ -7,15 +7,10 @@
 // `dispatchAiCompletion`) so quota / sensitive routing / audit are
 // uniformly enforced.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 import { parseEmailWithAI } from "../command-email-intake/parser.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -28,11 +23,11 @@ interface ParseRequest {
 async function handler(req: Request): Promise<Response> {
   const __qsCheck = rejectQuerySecrets(req);
   if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
   if (req.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), {
       status: 405,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -44,7 +39,7 @@ async function handler(req: Request): Promise<Response> {
   if (!accessToken) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -54,7 +49,7 @@ async function handler(req: Request): Promise<Response> {
   if (userErr || !userData?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
   const userId = userData.user.id;
@@ -65,7 +60,7 @@ async function handler(req: Request): Promise<Response> {
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -74,20 +69,20 @@ async function handler(req: Request): Promise<Response> {
   if (!subject && !text) {
     return new Response(JSON.stringify({ error: "Missing subject and body" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
   try {
     const parsed = await parseEmailWithAI(subject, text);
     return new Response(JSON.stringify({ parsed, userId }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     console.error("[command-email-parse] failure:", err);
     return new Response(JSON.stringify({ error: "Parse failed" }), {
       status: 502,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }

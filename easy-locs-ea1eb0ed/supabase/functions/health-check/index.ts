@@ -1,15 +1,11 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 import { checkPlaidHealth } from "../_shared/plaid-health.ts";
 import { checkLiveKitHealth } from "../_shared/livekit-health.ts";
 import { isMeilisearchAvailable, getMeilisearchHealth } from "../_shared/search-engine-sync.ts";
 import { checkAllNewsHealth } from "../_shared/news-health.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 async function checkSingleIntegration(service: string): Promise<Response> {
   const start = Date.now();
@@ -41,7 +37,7 @@ async function checkSingleIntegration(service: string): Promise<Response> {
         error: `Unknown service: ${service}. Available: plaid, livekit, meilisearch, news`,
       }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
   }
 
@@ -51,13 +47,13 @@ async function checkSingleIntegration(service: string): Promise<Response> {
     latencyMs: result.latencyMs ?? (Date.now() - start),
     timestamp: new Date().toISOString(),
   }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
 Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const monitorSecret = Deno.env.get("HEALTH_CHECK_SECRET") ?? "";
@@ -88,7 +84,7 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
       timestamp: new Date().toISOString(),
       version: "2.0.0",
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -270,7 +266,7 @@ Deno.serve(withEdgeLogging("health-check", async (req, logger) => {
     totalMs: Date.now() - start,
     version: "2.0.0",
   }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     status: hasError ? 503 : 200,
   });
 }));

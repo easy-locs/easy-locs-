@@ -47,9 +47,11 @@ async function getCurrentUserId(): Promise<string | null> {
 
 function generateCardNumber(): string {
   const prefix = "4";
+  const randomBytes = new Uint8Array(15);
+  crypto.getRandomValues(randomBytes);
   let number = prefix;
-  for (let i = 1; i < 16; i++) {
-    number += Math.floor(Math.random() * 10).toString();
+  for (let i = 0; i < 15; i++) {
+    number += (randomBytes[i] % 10).toString();
   }
   return number;
 }
@@ -59,7 +61,9 @@ function maskCardNumber(number: string): string {
 }
 
 function generateCvv(): string {
-  return Math.floor(100 + Math.random() * 900).toString();
+  const randomBytes = new Uint32Array(1);
+  crypto.getRandomValues(randomBytes);
+  return (100 + (randomBytes[0] % 900)).toString();
 }
 
 interface SecureCardVault {

@@ -127,7 +127,7 @@ export default function CatalogManager({ shopId }: CatalogManagerProps) {
       if (validationError) { toast.error(validationError); continue; }
 
       const ext = file.name.split(".").pop();
-      const path = `${user?.id}/${shopId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const path = `${user?.id}/${shopId}/${Date.now()}-${crypto.randomUUID().replace(/-/g, '')}.${ext}`;
       try {
         const publicUrl = await storefrontRepo.uploadCatalogPhoto(path, file);
         if (isVideoFile(file)) {

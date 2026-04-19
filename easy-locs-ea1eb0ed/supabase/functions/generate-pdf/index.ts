@@ -1,15 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * generate-pdf — Server-side PDF generation Edge Function.
  * Layer 3.1: Offloads PDF generation for automated flows (receipts, invoices).
  * Accepts template data, generates PDF, uploads to storage, returns URL.
  */
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
@@ -129,7 +124,7 @@ function buildInvoiceLines(data: Record<string, unknown>, country: string): stri
 Deno.serve(async (req: Request) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -141,7 +136,7 @@ Deno.serve(async (req: Request) => {
     if (!doc_type || !title || !org_id) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -178,7 +173,7 @@ Deno.serve(async (req: Request) => {
       console.error("[generate-pdf] upload error:", uploadError);
       return new Response(JSON.stringify({ error: "Upload failed", details: uploadError.message }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -190,13 +185,13 @@ Deno.serve(async (req: Request) => {
         pdf_url: urlData?.publicUrl || null,
         storage_path: filename,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("[generate-pdf] error:", err);
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

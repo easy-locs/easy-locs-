@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 // LB1 Track 1 (#841) — embedding generation goes through the platform agent
@@ -7,11 +8,6 @@ import { requireServiceRole } from "../_shared/edge-auth.ts";
 // quota and ai_interactions persistence.
 import { dispatchAiEmbedding } from "../_shared/execution/ai-dispatch.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
 const EMBEDDING_DIMENSIONS = 1536;
@@ -87,7 +83,7 @@ function buildEmbeddingText(row: Record<string, unknown>, columns: string[]): st
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -192,14 +188,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ results, totalEmbedded, timestamp: new Date().toISOString() }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[generate-embeddings] Error:", msg);
     return new Response(
       JSON.stringify({ error: msg }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   }
 });

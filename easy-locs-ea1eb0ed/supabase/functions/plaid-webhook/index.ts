@@ -1,15 +1,10 @@
 // PUBLIC: Plaid webhook — auth via Plaid JWT (jose jwtVerify) on signed payload.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { importJWK, jwtVerify, decodeProtectedHeader } from "npm:jose@5.9.6";
 import { createEdgeLogger } from "../_shared/structured-logger.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, plaid-verification, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const logger = createEdgeLogger("plaid-webhook");
 
@@ -65,7 +60,7 @@ async function decryptToken(ciphertext: string): Promise<string> {
 function jsonResponse(data: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -363,7 +358,7 @@ Deno.serve(withRateLimit("plaid-webhook", async (req) => {
   if (qsCheck.rejected) return qsCheck.response!;
 
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
   if (req.method !== "POST") {
     return jsonResponse({ error: "Method not allowed" }, 405);

@@ -1,14 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface AlertPayload {
   alert_type: string;
@@ -113,7 +108,7 @@ async function sendWebhookAlert(url: string, payload: AlertPayload): Promise<boo
 
 Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -145,7 +140,7 @@ Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
     if (!alert_type || !title) {
       return new Response(
         JSON.stringify({ error: "alert_type and title required" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
       );
     }
 
@@ -170,7 +165,7 @@ Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
 
       return new Response(
         JSON.stringify({ status: "throttled", reason: `Same alert sent within ${THROTTLE_MINUTES} minutes` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -199,7 +194,7 @@ Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
 
       return new Response(
         JSON.stringify({ status: "flood_suppressed", reason: `${floodCount} alerts of type '${alert_type}' in last ${FLOOD_WINDOW_MINUTES}min — suppressed` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -267,13 +262,13 @@ Deno.serve(withEdgeLogging("alert-dispatcher", async (req, logger) => {
 
     return new Response(
       JSON.stringify({ sent, failed, total_channels: channels?.length ?? 0, throttled: false }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 }));

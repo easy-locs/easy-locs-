@@ -1,20 +1,16 @@
 // PUBLIC: Inngest handler — auth via service-role token / Inngest signing.
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { inngestFunctions, sendInngestEvent } from "../_shared/inngest-client.ts";
 import { trackBackendEvent } from "../_shared/segment-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { withRateLimit } from "../_shared/with-rate-limit.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 function jsonResponse(data: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -57,7 +53,7 @@ async function verifyInngestSignature(req: Request, bodyText: string): Promise<b
 
 Deno.serve(withRateLimit("inngest-handler", async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
   const bodyText = req.method === "POST" ? await req.text() : "";
 
   const auth = requireServiceRole(req);

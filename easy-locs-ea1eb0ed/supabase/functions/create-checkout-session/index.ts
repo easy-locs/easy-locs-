@@ -1,18 +1,13 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import Stripe from "https://esm.sh/stripe@14.25.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -26,7 +21,7 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
   if (!token || token === anonKey) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -35,7 +30,7 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
     if (!stripeKey) {
       return new Response(
         JSON.stringify({ error: "Stripe secret key not configured" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
       );
     }
 
@@ -49,7 +44,7 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Authentication required" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
     const userId = user.id;
@@ -72,7 +67,7 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
 
       return new Response(
         JSON.stringify({ url: session.url }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 200 }
       );
     }
 
@@ -80,7 +75,7 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
     if (!orderId) {
       return new Response(
         JSON.stringify({ error: "orderId is required" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
       );
     }
 
@@ -96,14 +91,14 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
     if (orderErr || !order) {
       return new Response(
         JSON.stringify({ error: "Order not found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 404 }
       );
     }
 
     if (order.user_id !== userId) {
       return new Response(
         JSON.stringify({ error: "Order does not belong to this user" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 }
       );
     }
 
@@ -132,13 +127,13 @@ Deno.serve(withEdgeLogging("create-checkout-session", async (req, logger) => {
         status: paymentIntent.status,
         checkoutUrl: null,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 200 }
     );
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
     return new Response(
       JSON.stringify({ error: message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 }));

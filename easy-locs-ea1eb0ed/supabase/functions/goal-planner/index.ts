@@ -24,14 +24,9 @@
  *      finish; UI / cron can re-call compute_goal_iteration_outcome).
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface PlanStep {
   type: string;
@@ -207,7 +202,7 @@ async function generatePlan(
 Deno.serve(async (req) => {
   const __qs = rejectQuerySecrets(req);
   if (__qs.rejected) return __qs.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -217,7 +212,7 @@ Deno.serve(async (req) => {
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -228,7 +223,7 @@ Deno.serve(async (req) => {
   if (authError || !user) {
     return new Response(JSON.stringify({ error: "Invalid or expired token" }), {
       status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -240,7 +235,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: "Admin role required to run the planner" }),
       {
         status: 403,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }
@@ -251,14 +246,14 @@ Deno.serve(async (req) => {
   } catch {
     return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
   const goalId = body.goal_id?.trim();
   if (!goalId) {
     return new Response(JSON.stringify({ error: "goal_id is required" }), {
       status: 400,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -274,7 +269,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: loadError?.message ?? "Goal not found" }),
       {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }
@@ -283,7 +278,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: `Goal is ${goal.status}; only active goals can be planned` }),
       {
         status: 409,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }
@@ -316,7 +311,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: iterErr?.message ?? "iteration insert failed" }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       },
     );
   }
@@ -406,7 +401,7 @@ Deno.serve(async (req) => {
     }),
     {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     },
   );
 });

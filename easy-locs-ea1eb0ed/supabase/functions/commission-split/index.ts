@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * commission-split — Calculate and record platform / store / driver commission splits.
  * Called by stripe-webhook after successful payment or by internal operations.
@@ -10,15 +11,9 @@ import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -32,7 +27,7 @@ Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
   // Reject if no auth or if using the anon key directly (must be service_role or user JWT)
   if (!token || token === supabaseAnonKey) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 
@@ -53,7 +48,7 @@ Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
 
     if (!payment_intent_id || !total_amount || !merchant_id) {
       return new Response(JSON.stringify({ error: "payment_intent_id, total_amount, merchant_id required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -66,7 +61,7 @@ Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
 
     if (existing && existing.length > 0) {
       return new Response(JSON.stringify({ error: "Commission already split for this payment", existing_id: existing[0].id }), {
-        status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 409, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -134,13 +129,13 @@ Deno.serve(withEdgeLogging("commission-split", async (req, logger) => {
         driver: driverAmount,
       },
     }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("commission-split error:", message);
     return new Response(JSON.stringify({ error: message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

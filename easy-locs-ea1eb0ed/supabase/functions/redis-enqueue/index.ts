@@ -1,15 +1,10 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { enqueueJobToRedis } from "../_shared/redis-enqueue.ts";
 import { isRedisAvailable } from "../_shared/redis-client.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 function generateCorrelationId(): string {
   return `cor_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -18,7 +13,7 @@ function generateCorrelationId(): string {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -44,7 +39,7 @@ Deno.serve(async (req) => {
     if (!queue_name) {
       return new Response(
         JSON.stringify({ error: "queue_name required" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
       );
     }
 
@@ -69,7 +64,7 @@ Deno.serve(async (req) => {
     if (dbError || !dbJob) {
       return new Response(
         JSON.stringify({ error: "Failed to insert job into DB", detail: dbError?.message }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
       );
     }
 
@@ -94,13 +89,13 @@ Deno.serve(async (req) => {
         redis: redisEnqueued,
         correlation_id: jobCorrelationId,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

@@ -1,12 +1,8 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const ALLOWED_SOURCE_SYSTEMS = [
   "orbit-message",
@@ -20,7 +16,7 @@ const ALLOWED_SOURCE_SYSTEMS = [
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -31,7 +27,7 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
     });
   }
 
@@ -45,7 +41,7 @@ Deno.serve(async (req) => {
   const { data: userData, error: authErr } = await userClient.auth.getUser(token);
   if (authErr || !userData?.user) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
     });
   }
 
@@ -55,13 +51,13 @@ Deno.serve(async (req) => {
 
     if (!source_system || !operation_type || !error) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
     if (!ALLOWED_SOURCE_SYSTEMS.includes(source_system)) {
       return new Response(JSON.stringify({ error: "Invalid source_system" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
@@ -82,14 +78,14 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ ok: true }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[dlq-ingest] Failed:", msg);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

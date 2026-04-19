@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import {
   setPresence,
@@ -20,19 +21,13 @@ import {
   isRedisAvailable,
 } from "../_shared/redis-client.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 const ACTIVE_USERS_KEY = "active_users:count";
 const ACTIVE_USERS_TTL = 60;
 
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -46,7 +41,7 @@ Deno.serve(async (req) => {
     if (!isRedisAvailable()) {
       return new Response(
         JSON.stringify({ error: "Redis not available", online: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503 }
       );
     }
 
@@ -79,7 +74,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ ok, userId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -96,7 +91,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ ok: true, userId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -108,7 +103,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ online, presence, lastSeen }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -117,7 +112,7 @@ Deno.serve(async (req) => {
       if (userIds.length === 0 || userIds.length > 100) {
         return new Response(
           JSON.stringify({ error: "user_ids must be 1-100 entries" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
@@ -132,7 +127,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ users: result }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -140,7 +135,7 @@ Deno.serve(async (req) => {
       const count = await redisGet<number>(ACTIVE_USERS_KEY);
       return new Response(
         JSON.stringify({ active_users: count ?? 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -150,7 +145,7 @@ Deno.serve(async (req) => {
       if (!sessionId) {
         return new Response(
           JSON.stringify({ error: "session_id required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
@@ -163,7 +158,7 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ ok, userId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -172,14 +167,14 @@ Deno.serve(async (req) => {
       if (!sessionId) {
         return new Response(
           JSON.stringify({ error: "session_id required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
       const session = await getSession(userId, sessionId);
       return new Response(
         JSON.stringify({ session }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -188,26 +183,26 @@ Deno.serve(async (req) => {
       if (!sessionId) {
         return new Response(
           JSON.stringify({ error: "session_id required" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
         );
       }
 
       await removeSession(userId, sessionId);
       return new Response(
         JSON.stringify({ ok: true, userId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: "Unknown action. Use: heartbeat, offline, status, bulk_status, active_count, store_session, get_session, remove_session" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

@@ -1,11 +1,7 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 type StepResult = {
   key: string;
@@ -74,7 +70,7 @@ function buildReport(results: ScenarioResult[]) {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -357,8 +353,8 @@ Deno.serve(async (req) => {
       metadata_json: { run_id: runId, scope, pass_count: report.pass_count, fail_count: report.fail_count, degraded_count: report.degraded_count, fixed_count: report.fixed_count, critical_count: report.critical_count },
     });
 
-    return new Response(JSON.stringify({ success: true, runId, scope, ...report, duration_ms: durationMs }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, runId, scope, ...report, duration_ms: durationMs }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
-    return new Response(JSON.stringify({ success: false, error: String(err) }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: false, error: String(err) }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });

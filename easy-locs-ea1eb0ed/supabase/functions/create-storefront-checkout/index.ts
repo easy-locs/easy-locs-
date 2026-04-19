@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * create-storefront-checkout — Backend-validated storefront order + Stripe checkout session.
  * 1. Validates shop, items, prices against catalog_items
@@ -11,18 +12,12 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 const log = (step: string, d?: any) =>
   console.log(`[STOREFRONT-CHECKOUT] ${step}${d ? ` — ${JSON.stringify(d)}` : ""}`);
 
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -74,7 +69,7 @@ Deno.serve(async (req) => {
       if (existing) {
         log("Idempotent hit", { orderId: existing.id });
         return new Response(JSON.stringify({ orderId: existing.id, alreadyExists: true }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -173,7 +168,7 @@ Deno.serve(async (req) => {
     if (!stripeKey) {
       // No Stripe configured — return order only (for wallet/cash flows)
       return new Response(JSON.stringify({ orderId, checkoutUrl: null }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -213,13 +208,13 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({ orderId, checkoutUrl: session.url }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
     );
   } catch (e: any) {
     log("ERROR", { message: e.message });
     return new Response(
       JSON.stringify({ error: e.message }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 },
     );
   }
 });

@@ -1,19 +1,14 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import Stripe from "npm:stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -25,7 +20,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
@@ -39,21 +34,21 @@ Deno.serve(async (req) => {
     const { data: { user }, error: userError } = await supabaseUser.auth.getUser();
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Authentication failed" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 401,
       });
     }
 
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
       return new Response(JSON.stringify({ error: "Payment system not configured" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503,
       });
     }
 
     const { paymentIntentId, orderId } = await req.json();
     if (!paymentIntentId) {
       return new Response(JSON.stringify({ error: "paymentIntentId required" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
@@ -102,20 +97,20 @@ Deno.serve(async (req) => {
     if (!authorized) {
       console.warn(`[CAPTURE-PAYMENT] Denied: user ${user.id} not authorized for PI ${paymentIntentId}`);
       return new Response(JSON.stringify({ error: "Not authorized to capture this payment" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403,
       });
     }
 
     if (orderId && piOrderId && orderId !== piOrderId) {
       return new Response(JSON.stringify({ error: "Order ID mismatch" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400,
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400,
       });
     }
 
     if (paymentIntent.status !== "requires_capture") {
       return new Response(
         JSON.stringify({ error: `Cannot capture: status is ${paymentIntent.status}` }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 409 },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 409 },
       );
     }
 
@@ -133,14 +128,14 @@ Deno.serve(async (req) => {
         amount: captured.amount,
         currency: captured.currency,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 200 },
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     console.error("[CAPTURE-PAYMENT] Error:", message);
     return new Response(
       JSON.stringify({ error: `Capture failed: ${message}` }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 },
     );
   }
 });

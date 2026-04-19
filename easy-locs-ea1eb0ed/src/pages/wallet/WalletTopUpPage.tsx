@@ -43,6 +43,17 @@ export default function WalletTopUpPage() {
       });
 
       if (!data?.url) throw new Error("No checkout URL returned");
+      // Validate the redirect URL is a Stripe or trusted checkout URL to prevent
+      // open redirect attacks if the API response is ever tampered with.
+      const ALLOWED_REDIRECT_HOSTS = ["checkout.stripe.com", "pay.stripe.com"];
+      try {
+        const redirectUrl = new URL(data.url);
+        if (!ALLOWED_REDIRECT_HOSTS.includes(redirectUrl.host)) {
+          throw new Error("Untrusted checkout URL");
+        }
+      } catch {
+        throw new Error("Invalid checkout URL returned from server");
+      }
       window.location.href = data.url;
     } catch (err: any) {
       console.error("[Wallet]", err.message);

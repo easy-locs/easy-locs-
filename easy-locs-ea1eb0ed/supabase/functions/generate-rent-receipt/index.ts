@@ -1,13 +1,9 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 // @deno-types="npm:jspdf@2.5.2"
 import { jsPDF } from "npm:jspdf@2.5.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const log = (step: string, d?: unknown) =>
   console.log(`[RECEIPT-GEN] ${step}${d ? ` — ${JSON.stringify(d)}` : ""}`);
@@ -154,7 +150,7 @@ function generateReceiptPDF(data: {
 
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -182,7 +178,7 @@ Deno.serve(async (req) => {
     if (rc.receipt_pdf_url) {
       log("Receipt already exists, skipping");
       return new Response(JSON.stringify({ ok: true, already_exists: true, url: rc.receipt_pdf_url }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -276,13 +272,13 @@ Deno.serve(async (req) => {
     log("Receipt generated", { receiptRef, url: publicUrl });
 
     return new Response(JSON.stringify({ ok: true, url: publicUrl, ref: receiptRef }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     log("ERROR", { message: msg });
     return new Response(JSON.stringify({ error: msg }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       status: 500,
     });
   }

@@ -13,6 +13,7 @@
 //   { reply, citations: [{id, kind, title, score}], conversationId, provider, cost, fallbackUsed }
 
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { withEdgeLogging } from "../_shared/with-logging.ts";
@@ -20,12 +21,6 @@ import { dispatchAiCompletion } from "../_shared/execution/ai-dispatch.ts";
 import { generateEmbedding } from "../_shared/embedding-client.ts";
 import { applyGuardrails, sanitizeAssistantOutput } from "../_shared/ai-guardrails.ts";
 import { logAiInteraction, checkAiQuota } from "../_shared/ai-cost-tracker.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const LANG_PROMPTS: Record<string, string> = {
   fr: "Réponds toujours en français.",
@@ -89,7 +84,7 @@ function formatContext(citations: Citation[]): string {
 }
 
 Deno.serve(withEdgeLogging("ai-rag", async (req, logger) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -105,7 +100,7 @@ Deno.serve(withEdgeLogging("ai-rag", async (req, logger) => {
 
     if (typeof query !== "string" || query.trim().length < 2) {
       return new Response(JSON.stringify({ error: "query required" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -124,7 +119,7 @@ Deno.serve(withEdgeLogging("ai-rag", async (req, logger) => {
       const { data: { user } } = await userClient.auth.getUser();
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
-          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       userId = user.id;
@@ -140,7 +135,7 @@ Deno.serve(withEdgeLogging("ai-rag", async (req, logger) => {
         });
         return new Response(
           JSON.stringify({ error: "Daily AI quota reached", reason: q.reason, used: q.used, limits: q.limits }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+          { status: 429, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
         );
       }
     }
@@ -154,7 +149,7 @@ Deno.serve(withEdgeLogging("ai-rag", async (req, logger) => {
       });
       return new Response(
         JSON.stringify({ error: "Request blocked by guardrails", reason: guard.reason, details: guard.details }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { status: 400, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
     const sanitizedQuery = guard.sanitized;
@@ -232,7 +227,7 @@ ${formatContext(citations)}`;
         blockReason: aiOutcome.errorCode ?? aiOutcome.status,
       });
       return new Response(JSON.stringify({ error: "AI provider error" }), {
-        status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 502, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -269,11 +264,11 @@ ${formatContext(citations)}`;
 
     return new Response(JSON.stringify({
       reply, citations, conversationId: convId, provider, fallbackUsed, cost,
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
     console.error("[ai-rag] error:", err);
     return new Response(JSON.stringify({ error: "Internal error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 }));

@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 /**
  * deliveroo-dubai-food — Canonical Deliveroo Dubai food intake engine.
  * 3-layer discovery: Firecrawl map → crawl → seed URLs.
@@ -10,11 +11,6 @@ import { enqueueToSqs, hasSqsCredentials } from "../_shared/aws-sqs.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 const SOURCE = "deliveroo";
 const REGION = "dubai";
 const COUNTRY = "AE";
@@ -184,7 +180,7 @@ async function discoverUrls(): Promise<string[]> {
 
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -203,7 +199,7 @@ Deno.serve(async (req) => {
     if (sqsResult.success) {
       return new Response(
         JSON.stringify({ offloaded: true, messageId: sqsResult.messageId }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } },
       );
     }
     console.warn("[deliveroo-dubai-food] SQS offload failed, processing locally:", sqsResult.error);
@@ -308,7 +304,7 @@ Deno.serve(async (req) => {
       trigger_source: "deliveroo-dubai-food", metadata_json: stats,
     });
 
-    return new Response(JSON.stringify({ success: true, stats }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: true, stats }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
     if (scrapeRunId) {
       await cFromEdge(supabase, "merchant_scrape_runs").update({
@@ -322,6 +318,6 @@ Deno.serve(async (req) => {
       error_message: String(err), effect_summary: "Fatal error during Deliveroo intake",
       trigger_source: "deliveroo-dubai-food",
     });
-    return new Response(JSON.stringify({ success: false, error: String(err), stats }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ success: false, error: String(err), stats }), { status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   }
 });

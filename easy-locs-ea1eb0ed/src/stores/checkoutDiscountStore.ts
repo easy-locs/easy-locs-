@@ -63,8 +63,9 @@ async function validateCoupon(
     };
 
     return { valid: true, coupon };
-  } catch {
-    return { valid: true, coupon: { code: code.toUpperCase(), type: "percentage", value: 0 } };
+  } catch (err) {
+    console.warn("[checkoutDiscount] validateCoupon failed:", err);
+    return { valid: false, error: "Unable to validate coupon. Please try again." };
   }
 }
 

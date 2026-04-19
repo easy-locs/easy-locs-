@@ -25,6 +25,7 @@
  * Auth: service-role only.
  */
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireServiceRole } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
@@ -44,12 +45,6 @@ import { bootstrapBuildAdapters } from "../_shared/execution/adapters/build/boot
 import { bootstrapTestAdapters } from "../_shared/execution/adapters/test/bootstrap.ts";
 import { SupabaseTaskRepository } from "../_shared/execution/persistence.ts";
 import { InMemoryEventSink } from "../_shared/execution/canonical-events.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const DEFAULT_MAX_ITERATIONS = 5;
 
@@ -71,7 +66,7 @@ interface AgentRow {
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
   });
 }
 
@@ -102,7 +97,7 @@ Deno.serve(async (req) => {
   const __qs = rejectQuerySecrets(req);
   if (__qs.rejected) return __qs.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
   const auth = requireServiceRole(req);
   if (!auth.authorized) return auth.response!;

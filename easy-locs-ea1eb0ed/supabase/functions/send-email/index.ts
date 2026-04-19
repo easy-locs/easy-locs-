@@ -1,13 +1,9 @@
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { checkServerRateLimit, rateLimitResponse } from "../_shared/server-rate-limiter.ts";
 import { sendEmailViaSES, hasSesCredentials } from "../_shared/aws-ses.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 interface EmailPayload {
   to: string | string[];
@@ -25,7 +21,7 @@ interface EmailPayload {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: getCorsHeaders(req) });
   }
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -45,7 +41,7 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -54,14 +50,14 @@ Deno.serve(async (req) => {
     if (!payload.to || !payload.subject || !payload.html) {
       return new Response(JSON.stringify({ error: "Missing required fields: to, subject, html" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
     if (typeof payload.subject !== "string" || payload.subject.length > 500) {
       return new Response(JSON.stringify({ error: "Subject too long (max 500 chars)" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -69,7 +65,7 @@ Deno.serve(async (req) => {
       if (typeof payload.from_name !== "string" || payload.from_name.length > 100) {
         return new Response(JSON.stringify({ error: "from_name too long (max 100 chars)" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
       payload.from_name = payload.from_name.replace(/[\x00-\x1F\x7F]/g, "").trim();
@@ -78,7 +74,7 @@ Deno.serve(async (req) => {
     if (typeof payload.html !== "string" || payload.html.length > 1_000_000) {
       return new Response(JSON.stringify({ error: "HTML content too large (max 1MB)" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -99,19 +95,19 @@ Deno.serve(async (req) => {
         if (!att.filename || att.filename.length > 255) {
           return new Response(JSON.stringify({ error: "Invalid attachment filename (max 255 chars)" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         if (att.filename.includes("..") || att.filename.includes("/") || att.filename.includes("\\")) {
           return new Response(JSON.stringify({ error: "Invalid characters in attachment filename" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         if (!safeFilenameRegex.test(att.filename)) {
           return new Response(JSON.stringify({ error: "Attachment filename contains invalid characters" }), {
             status: 400,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
           });
         }
         totalSize += Math.ceil((att.content?.length || 0) * 0.75);
@@ -119,7 +115,7 @@ Deno.serve(async (req) => {
       if (totalSize > 10_000_000) {
         return new Response(JSON.stringify({ error: "Total attachment size too large (max 10MB)" }), {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
         });
       }
     }
@@ -155,7 +151,7 @@ Deno.serve(async (req) => {
     if (validRecipients.length === 0) {
       return new Response(JSON.stringify({ success: false, error: "Aucune adresse email valide" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -182,7 +178,7 @@ Deno.serve(async (req) => {
     if (unsuppressedRecipients.length === 0) {
       return new Response(JSON.stringify({ success: false, error: "All recipients are suppressed (bounce/complaint)" }), {
         status: 422,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -270,14 +266,14 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ success: true, provider }), {
       status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
     console.error("Error sending email:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return new Response(JSON.stringify({ success: false, error: errorMessage }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

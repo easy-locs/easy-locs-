@@ -1,4 +1,5 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { requireAuthenticatedUser } from "../_shared/edge-auth.ts";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 import {
@@ -7,12 +8,6 @@ import {
   redisDel,
   isRedisAvailable,
 } from "../_shared/redis-client.ts";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
 
 const PUBLIC_READ_PREFIXES = [
   "presence:",
@@ -38,7 +33,7 @@ function isUserScopedWriteAllowed(key: string, userId: string): boolean {
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   const routerCheck = requireRouterOrigin(req);
@@ -52,7 +47,7 @@ Deno.serve(async (req) => {
     if (!isRedisAvailable()) {
       return new Response(
         JSON.stringify({ error: "Redis not available" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 503 }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 503 }
       );
     }
 
@@ -64,14 +59,14 @@ Deno.serve(async (req) => {
       if (!key || !isReadAllowed(key, userId)) {
         return new Response(
           JSON.stringify({ error: "Key not allowed for read" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 }
         );
       }
 
       const value = await redisGet(key);
       return new Response(
         JSON.stringify({ value }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -80,14 +75,14 @@ Deno.serve(async (req) => {
       if (!key || !isUserScopedWriteAllowed(key, userId)) {
         return new Response(
           JSON.stringify({ error: "Key not allowed for write" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 }
         );
       }
 
       await redisSet(key, value, ttl_seconds);
       return new Response(
         JSON.stringify({ stored: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -97,14 +92,14 @@ Deno.serve(async (req) => {
       if (validKeys.length === 0) {
         return new Response(
           JSON.stringify({ deleted: 0 }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
         );
       }
 
       const deleted = await redisDel(...validKeys);
       return new Response(
         JSON.stringify({ deleted }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -113,7 +108,7 @@ Deno.serve(async (req) => {
       if (!incrKey || !isUserScopedWriteAllowed(incrKey, userId)) {
         return new Response(
           JSON.stringify({ error: "Key not allowed for incr" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 }
         );
       }
 
@@ -121,7 +116,7 @@ Deno.serve(async (req) => {
       const value = await serverIncr(incrKey);
       return new Response(
         JSON.stringify({ value }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
@@ -131,7 +126,7 @@ Deno.serve(async (req) => {
       if (!expireKey || !isUserScopedWriteAllowed(expireKey, userId) || !seconds) {
         return new Response(
           JSON.stringify({ error: "Key not allowed for expire" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+          { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 403 }
         );
       }
 
@@ -139,19 +134,19 @@ Deno.serve(async (req) => {
       const ok = await serverExpire(expireKey, seconds);
       return new Response(
         JSON.stringify({ ok }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } }
       );
     }
 
     return new Response(
       JSON.stringify({ error: "Unknown action. Use: get, set, del, incr, expire" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 400 }
     );
   } catch (e: unknown) {
     const msg = e instanceof Error ? e.message : String(e);
     return new Response(
       JSON.stringify({ error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

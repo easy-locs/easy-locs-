@@ -1,16 +1,12 @@
 import { requireRouterOrigin } from "../_shared/edge-function-consolidation.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { rejectQuerySecrets } from "../_shared/reject-query-secrets.ts";
 
 import { cFromEdge, cRpcEdge } from "../_shared/execution/content-mutation.ts";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-trace-id, x-span-id, x-parent-span-id, x-request-id, traceparent",
-};
-
 Deno.serve(async (req) => {
   const __qsCheck = rejectQuerySecrets(req); if (__qsCheck.rejected) return __qsCheck.response!;
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response(null, { headers: getCorsHeaders(req) });
 
   const routerCheck = requireRouterOrigin(req);
   if (!routerCheck.allowed) return routerCheck.response!;
@@ -28,7 +24,7 @@ Deno.serve(async (req) => {
 
     if (!all?.length) {
       return new Response(JSON.stringify({ success: true, total: 0 }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
       });
     }
 
@@ -86,7 +82,7 @@ Deno.serve(async (req) => {
       success: true,
       ...report,
       top_failures: sortedFailures.map(([k, v]) => ({ failure: k, count: v })),
-    }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }), { headers: { ...getCorsHeaders(req), "Content-Type": "application/json" } });
   } catch (err) {
     await cFromEdge(supabase, "engine_run_logs").insert({
       engine_name: "food-audit-engine", trigger_source: "edge-function", status: "error",
@@ -94,7 +90,7 @@ Deno.serve(async (req) => {
       duration_ms: Date.now() - started, effect_summary: `Error: ${(err as Error).message}`,
     }).then(() => {});
     return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     });
   }
 });

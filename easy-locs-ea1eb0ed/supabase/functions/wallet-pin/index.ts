@@ -48,18 +48,15 @@ async function pbkdf2HashPin(pin: string): Promise<string> {
 }
 
 async function hashPin(pin: string): Promise<string> {
-  try {
-    const salt = await generateSalt();
-    const result = await argon2id({
-      password: pin,
-      salt,
-      ...ARGON2_PARAMS,
-    });
-    return result;
-  } catch (e) {
-    console.error("[wallet-pin] Argon2id hashing failed (WASM module error), falling back to PBKDF2-SHA256:", e);
-    return await pbkdf2HashPin(pin);
-  }
+  // Argon2id is the required hashing algorithm; we do not fall back to a weaker
+  // algorithm. If WASM initialisation fails, propagate the error so callers can
+  // surface it as a 500 rather than silently downgrading security.
+  const salt = await generateSalt();
+  return await argon2id({
+    password: pin,
+    salt,
+    ...ARGON2_PARAMS,
+  });
 }
 
 async function verifyPin(pin: string, storedHash: string): Promise<boolean> {
