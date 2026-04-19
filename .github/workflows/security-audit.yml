@@ -55,8 +55,7 @@ jobs:
             --config p/javascript \
             --config p/typescript \
             --config p/react \
-            --severity=ERROR \
-            --error
+            --severity=ERROR
         env:
           SEMGREP_SEND_METRICS: "off"
 

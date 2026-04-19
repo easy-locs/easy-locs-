@@ -80,7 +80,7 @@ export async function exportRatchetPublicKey(key: CryptoKey): Promise<string> {
 
 export async function importRatchetPublicKey(base64: string): Promise<CryptoKey> {
   const raw = base64ToBuffer(base64);
-  return crypto.subtle.importKey("raw", raw.buffer as ArrayBuffer, ECDH_PARAMS, true, []);
+  return crypto.subtle.importKey("raw", raw, ECDH_PARAMS, true, []);
 }
 
 // ─── ECDH + KDF Root Chain ─────────────────────────────────
@@ -102,10 +102,10 @@ async function kdfRootKey(
   ikm.set(rootKey, 0);
   ikm.set(dhOutput, rootKey.length);
 
-  const hkdfKey = await crypto.subtle.importKey("raw", ikm.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
+  const hkdfKey = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
   const derived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: RATCHET_INFO.buffer as ArrayBuffer },
+      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: RATCHET_INFO },
       hkdfKey,
       512
     ) as ArrayBuffer
@@ -123,20 +123,20 @@ async function kdfChainKey(
   chainKey: Uint8Array
 ): Promise<{ newChainKey: Uint8Array; messageKey: Uint8Array }> {
   // Chain key → next chain key
-  const ckMaterial = await crypto.subtle.importKey("raw", chainKey.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
+  const ckMaterial = await crypto.subtle.importKey("raw", chainKey, "HKDF", false, ["deriveBits"]);
   const ckDerived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: CHAIN_KEY_INFO.buffer as ArrayBuffer },
+      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: CHAIN_KEY_INFO },
       ckMaterial,
       256
     ) as ArrayBuffer
   );
 
   // Chain key → message key
-  const mkMaterial = await crypto.subtle.importKey("raw", chainKey.buffer as ArrayBuffer, "HKDF", false, ["deriveBits"]);
+  const mkMaterial = await crypto.subtle.importKey("raw", chainKey, "HKDF", false, ["deriveBits"]);
   const mkDerived = new Uint8Array(
     await crypto.subtle.deriveBits(
-      { name: "HKDF", hash: HKDF_HASH, salt: new ArrayBuffer(64), info: MSG_KEY_INFO.buffer as ArrayBuffer },
+      { name: "HKDF", hash: HKDF_HASH, salt: new Uint8Array(64), info: MSG_KEY_INFO },
       mkMaterial,
       256
     ) as ArrayBuffer
@@ -223,7 +223,7 @@ export async function ratchetEncrypt(
   const aad = new TextEncoder().encode(`orbit-v3-${timestamp}-${header.n}`);
 
   const aesKey = await crypto.subtle.importKey(
-    "raw", messageKey.buffer as ArrayBuffer, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["encrypt"]
+    "raw", messageKey, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["encrypt"]
   );
 
   const encoded = new TextEncoder().encode(plaintext);
@@ -347,13 +347,13 @@ async function decryptWithKey(messageKey: Uint8Array, message: RatchetMessage): 
   const aad = new TextEncoder().encode(`orbit-v3-${message.ts}-${message.h.n}`);
 
   const aesKey = await crypto.subtle.importKey(
-    "raw", messageKey.buffer as ArrayBuffer, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["decrypt"]
+    "raw", messageKey, { name: AES_ALGO, length: AES_KEY_LENGTH }, false, ["decrypt"]
   );
 
   const plaintext = await crypto.subtle.decrypt(
-    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH, additionalData: aad.buffer as ArrayBuffer },
+    { name: AES_ALGO, iv, tagLength: TAG_LENGTH, additionalData: aad },
     aesKey,
-    ct.buffer as ArrayBuffer
+    ct
   );
 
   return new TextDecoder().decode(plaintext);
