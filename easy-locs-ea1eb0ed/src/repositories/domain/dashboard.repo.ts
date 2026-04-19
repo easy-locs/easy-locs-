@@ -246,19 +246,12 @@ export const dashboardRepo = {
    * role and returns rows ordered by `decided_at ASC`.
    */
   async fetchTaskApprovals(taskId: string) {
-    const { data, error } = await (
-      supabase.schema("system") as unknown as {
-        rpc: (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{
-          data: Array<Record<string, unknown>> | null;
-          error: { message: string } | null;
-        }>;
-      }
-    ).rpc("list_task_approvals", { p_task_id: taskId });
+    const { data, error } = await supabase.rpc("execute_command", {
+      p_command_type: "list_task_approvals",
+      p_input: { p_task_id: taskId },
+    });
     if (error) throw new Error(`fetchTaskApprovals failed: ${error.message}`);
-    return data ?? [];
+    return (data as Array<Record<string, unknown>> | null) ?? [];
   },
 
   /**
@@ -276,19 +269,16 @@ export const dashboardRepo = {
     commentMd?: string | null;
     clientRequestId?: string | null;
   }) {
-    const { data, error } = await (
-      supabase.schema("system") as unknown as {
-        rpc: (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ data: unknown; error: { message: string } | null }>;
-      }
-    ).rpc("decide_task_approval", {
-      p_task_id: input.taskId,
-      p_decision: input.decision,
-      p_reason: input.reason ?? null,
-      p_comment_md: input.commentMd ?? null,
-      p_client_request_id: input.clientRequestId ?? null,
+    const { data, error } = await supabase.rpc("execute_command", {
+      p_command_type: "decide_task_approval",
+      p_input: {
+        p_task_id: input.taskId,
+        p_decision: input.decision,
+        p_reason: input.reason ?? null,
+        p_comment_md: input.commentMd ?? null,
+        p_client_request_id: input.clientRequestId ?? null,
+      },
+      p_idempotency_key: input.clientRequestId ?? null,
     });
     if (error) throw new Error(`decideTaskApproval failed: ${error.message}`);
     return data;
