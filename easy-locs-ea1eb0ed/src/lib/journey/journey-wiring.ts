@@ -130,8 +130,9 @@ function handleRideDriverAssigned(event: PlatformEvent): void {
 
 function handleRideCompleted(event: PlatformEvent): void {
   const p = event.payload as Record<string, unknown>;
-  // ride-lifecycle.handler emits ridePayload (jobId), RideCompletedPayload types rideId.
-  // Both fields covered for forward compatibility.
+  // ride-lifecycle.handler always emits `ridePayload` which carries `jobId`.
+  // RideCompletedPayload is typed with `rideId` for direct ride:requested events.
+  // Both fields are checked so the handler works regardless of emitter origin.
   const jobId = (p?.jobId ?? p?.rideId) as string | undefined;
   if (!jobId) return;
   const journeyId = correlationMap.get(jobId);
@@ -193,6 +194,18 @@ function handleOrderStatusChanged(event: PlatformEvent): void {
   }
 }
 
+// ── Wallet helpers ────────────────────────────────────────────────────────────
+
+/**
+ * Resolve the canonical correlation key for wallet outcome events.
+ * PayRidePage chain sets event.correlationId; orbit/bridgePayNow chains set
+ * payload.transactionId. Both are checked so either chain resolves correctly.
+ */
+function walletOutcomeKey(event: PlatformEvent): string | undefined {
+  const p = event.payload as Record<string, unknown>;
+  return event.correlationId ?? (p?.transactionId as string | undefined);
+}
+
 // ── Wallet handlers ───────────────────────────────────────────────────────────
 
 function handleWalletPaymentRequested(event: PlatformEvent): void {
@@ -224,10 +237,7 @@ function handleWalletPaymentRequested(event: PlatformEvent): void {
 }
 
 function handleWalletPaymentSuccess(event: PlatformEvent): void {
-  const p = event.payload as Record<string, unknown>;
-  // PayRidePage chain: event.correlationId is set; transactionId is also in payload.
-  // orbit/bridgePayNow chains: only transactionId is set.
-  const domainKey = event.correlationId ?? (p?.transactionId as string | undefined);
+  const domainKey = walletOutcomeKey(event);
   if (!domainKey) return;
   const journeyId = correlationMap.get(domainKey);
   if (!journeyId) return;
@@ -235,8 +245,7 @@ function handleWalletPaymentSuccess(event: PlatformEvent): void {
 }
 
 function handleWalletPaymentFailed(event: PlatformEvent): void {
-  const p = event.payload as Record<string, unknown>;
-  const domainKey = event.correlationId ?? (p?.transactionId as string | undefined);
+  const domainKey = walletOutcomeKey(event);
   if (!domainKey) return;
   const journeyId = correlationMap.get(domainKey);
   if (!journeyId) return;
