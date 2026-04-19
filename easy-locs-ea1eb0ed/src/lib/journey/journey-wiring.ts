@@ -74,6 +74,7 @@ function handleBookingPaymentFailed(event: PlatformEvent): void {
   const journeyId = correlationMap.get(bookingId);
   if (!journeyId) return;
   failJourney(journeyId, { errorCode: "booking_payment_failed", retryable: true });
+  correlationMap.delete(bookingId);
 }
 
 function handleBookingCancelled(event: PlatformEvent): void {
@@ -97,6 +98,7 @@ function handleBookingCompleted(event: PlatformEvent): void {
   const journeyId = correlationMap.get(bookingId);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(bookingId);
 }
 
 // ── Ride handlers ─────────────────────────────────────────────────────────────
@@ -138,6 +140,7 @@ function handleRideCompleted(event: PlatformEvent): void {
   const journeyId = correlationMap.get(jobId);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(jobId);
 }
 
 function handleRideCancelled(event: PlatformEvent): void {
@@ -184,6 +187,7 @@ function handleOrderStatusChanged(event: PlatformEvent): void {
 
   if (to === "delivered" || to === "completed") {
     completeJourney(journeyId);
+    correlationMap.delete(orderId);
   } else if (to === "cancelled") {
     interruptJourney(journeyId, {
       interruptedAtRoute: window.location.pathname,
@@ -221,6 +225,12 @@ function handleWalletPaymentRequested(event: PlatformEvent): void {
   } else if (p?.transactionId) {
     domainKey = p.transactionId as string;
   } else {
+    if (import.meta.env.DEV) {
+      console.warn(
+        "[journey-wiring] wallet:payment_requested received with no correlationId or transactionId — journey not started",
+        event,
+      );
+    }
     return;
   }
 
@@ -242,6 +252,7 @@ function handleWalletPaymentSuccess(event: PlatformEvent): void {
   const journeyId = correlationMap.get(domainKey);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(domainKey);
 }
 
 function handleWalletPaymentFailed(event: PlatformEvent): void {
@@ -250,6 +261,7 @@ function handleWalletPaymentFailed(event: PlatformEvent): void {
   const journeyId = correlationMap.get(domainKey);
   if (!journeyId) return;
   failJourney(journeyId, { errorCode: "wallet_payment_failed", retryable: true });
+  correlationMap.delete(domainKey);
 }
 
 function handleWalletPaymentCompleted(event: PlatformEvent): void {
@@ -260,6 +272,7 @@ function handleWalletPaymentCompleted(event: PlatformEvent): void {
   const journeyId = correlationMap.get(transactionId);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(transactionId);
 }
 
 // ── Orbit call handlers ───────────────────────────────────────────────────────
@@ -288,6 +301,7 @@ function handleOrbitCallEnded(event: PlatformEvent): void {
   const journeyId = correlationMap.get(callId);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(callId);
 }
 
 // ── Support session handlers ──────────────────────────────────────────────────
@@ -316,6 +330,7 @@ function handleSupportSessionResolved(event: PlatformEvent): void {
   const journeyId = correlationMap.get(sessionId);
   if (!journeyId) return;
   completeJourney(journeyId);
+  correlationMap.delete(sessionId);
 }
 
 // ── Central dispatcher ────────────────────────────────────────────────────────
