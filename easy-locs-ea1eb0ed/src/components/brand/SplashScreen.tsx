@@ -519,11 +519,18 @@ export default function SplashScreen({ children }: { children?: React.ReactNode 
       dismiss();
     }, FORCE_DISMISS_MS);
     // Also listen for the flag being set externally (e.g. from App.tsx).
+    let dismissed = false;
+    const safeDismiss = () => {
+      if (dismissed) return;
+      dismissed = true;
+      dismiss();
+    };
     const pollInterval = setInterval(() => {
       if ((window as Record<string, unknown>).__EASYLOCS_FORCE_SPLASH_DISMISS__) {
-        dismiss();
+        safeDismiss();
+        clearInterval(pollInterval);
       }
-    }, 100);
+    }, 250);
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);

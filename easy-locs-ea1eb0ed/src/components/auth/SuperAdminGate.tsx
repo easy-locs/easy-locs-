@@ -49,6 +49,8 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
     }
     // Owner email bypass — allowlisted emails skip the RPC so the platform
     // owner can never be locked out by a missing/misconfigured role table.
+    // emailVerified is enforced at the render level before isSuperAdmin is
+    // consumed, so this bypass only takes effect for verified owner accounts.
     if (user.email && isEmailAllowedForAdmin(user.email)) {
       setIsSuperAdmin(true);
       setChecking(false);
