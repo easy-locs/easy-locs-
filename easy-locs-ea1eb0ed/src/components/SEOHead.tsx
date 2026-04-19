@@ -106,11 +106,14 @@ const SEOHead = ({
 
     let preconnectSupabase = document.querySelector('link[rel="preconnect"][href*="supabase"]') as HTMLLinkElement;
     if (!preconnectSupabase) {
-      preconnectSupabase = document.createElement("link");
-      preconnectSupabase.rel = "preconnect";
-      preconnectSupabase.href = "https://ifvuvbolrmuuugtzxsfk.supabase.co";
-      preconnectSupabase.crossOrigin = "anonymous";
-      document.head.appendChild(preconnectSupabase);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+      if (supabaseUrl) {
+        preconnectSupabase = document.createElement("link");
+        preconnectSupabase.rel = "preconnect";
+        preconnectSupabase.href = supabaseUrl;
+        preconnectSupabase.crossOrigin = "anonymous";
+        document.head.appendChild(preconnectSupabase);
+      }
     }
 
     let dnsPrefetch = document.querySelector('link[rel="dns-prefetch"][href*="googleapis"]') as HTMLLinkElement;

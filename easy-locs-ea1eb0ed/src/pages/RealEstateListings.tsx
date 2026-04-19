@@ -349,11 +349,11 @@ export default function RealEstateListings() {
                         {/* Share buttons */}
                         <div className="flex items-center gap-1.5">
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.whatsapp, "_blank"); }}>
+                            onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.whatsapp, "_blank", "noopener,noreferrer"); }}>
                             <WhatsAppIcon size={12} className="shrink-0" /> WhatsApp
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"
-                            onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.telegram, "_blank"); }}>
+                            onClick={() => { const links = getShareLinks("real-estate", listing.slug, listing.title, listing.updated_at); window.open(links.telegram, "_blank", "noopener,noreferrer"); }}>
                             <Send className="h-3 w-3 shrink-0" /> Telegram
                           </Button>
                           <Button size="sm" variant="outline" className="h-8 text-xs flex-1 gap-1"

@@ -188,7 +188,7 @@ function shareInvoiceWhatsApp(booking: any, service: any, provider: any) {
   const url = phone
     ? buildWhatsAppLink(phone, text)
     : buildWhatsAppShareLink(text);
-  window.open(url, "_blank");
+  window.open(url, "_blank", "noopener,noreferrer");
 }
 
 function shareInvoiceTelegram(booking: any, service: any, provider: any) {
@@ -197,7 +197,7 @@ function shareInvoiceTelegram(booking: any, service: any, provider: any) {
   const taxAmount = taxRate > 0 ? Math.round(Number(booking.total_price) * taxRate) / 100 : 0;
   const grandTotal = Number(booking.total_price) + taxAmount;
   const text = `📄 Invoice ${invoiceNum}\nService: ${service?.title || "Service"}\nAmount: ${grandTotal.toLocaleString()} ${booking.currency}\nClient: ${booking.booker_name}`;
-  window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, "_blank");
+  window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
 }
 
 async function shareInvoiceEmail(booking: any, service: any, provider: any, navigateFn?: (path: string) => void) {

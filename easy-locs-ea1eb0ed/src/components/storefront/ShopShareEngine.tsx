@@ -91,7 +91,7 @@ export default function ShopShareEngine({ shopName, shopSlug, shopDescription, s
               imageUrl={shopImage}
               url={shopUrl}
               onConfirm={() => {
-                window.open(channels[0].url, "_blank");
+                window.open(channels[0].url, "_blank", "noopener,noreferrer");
                 setShowWaPreview(false);
                 setOpen(false);
               }}

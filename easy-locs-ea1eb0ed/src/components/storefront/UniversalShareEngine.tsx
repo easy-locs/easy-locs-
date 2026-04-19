@@ -147,7 +147,7 @@ export default function UniversalShareEngine({
               price={price}
               url={socialUrl}
               onConfirm={() => {
-                window.open(channels[0].url, "_blank");
+                window.open(channels[0].url, "_blank", "noopener,noreferrer");
                 setShowWaPreview(false);
                 setOpen(false);
               }}

@@ -66,7 +66,10 @@ export async function createOtpSession(
   }
 
   function generateOtp(): string {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    // Use CSPRNG instead of Math.random() to produce an unguessable 6-digit code.
+    const buf = crypto.getRandomValues(new Uint8Array(4));
+    const n = new DataView(buf.buffer).getUint32(0, false);
+    return String(100000 + (n % 900000)).padStart(6, "0");
   }
 
   const otp = generateOtp();
@@ -88,8 +91,6 @@ export async function createOtpSession(
     .single();
 
   if (error) throw error;
-
-  console.log(`[EMAIL OTP] Code → ${target}`);
 
   return { sessionId: insertData.id };
 }

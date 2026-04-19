@@ -61,7 +61,7 @@ export default function ShareButtons({ type, slug, title, version, inline, compa
         variant="outline"
         size="sm"
         className="h-9 gap-2 text-xs font-medium bg-[#0088cc]/5 hover:bg-[#0088cc]/15 text-[#0088cc] border-[#0088cc]/20"
-        onClick={() => { track("telegram"); window.open(links.telegram, "_blank"); }}
+        onClick={() => { track("telegram"); window.open(links.telegram, "_blank", "noopener,noreferrer"); }}
       >
         <Send className="h-3.5 w-3.5" /> Telegram
       </Button>
@@ -82,7 +82,7 @@ export default function ShareButtons({ type, slug, title, version, inline, compa
             message={`${title}\n${links.copy}`}
             url={links.copy}
             onConfirm={() => {
-              window.open(links.whatsapp, "_blank");
+              window.open(links.whatsapp, "_blank", "noopener,noreferrer");
               setShowWaPreview(false);
             }}
             onCancel={() => setShowWaPreview(false)}

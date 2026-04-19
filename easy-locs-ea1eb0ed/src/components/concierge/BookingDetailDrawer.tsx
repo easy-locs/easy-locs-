@@ -208,7 +208,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                       currency: booking.currency,
                       clientName: booking.guest_name,
                     });
-                    window.open(buildWhatsAppLink(booking.guest_phone, msg), "_blank");
+                    window.open(buildWhatsAppLink(booking.guest_phone, msg), "_blank", "noopener,noreferrer");
                   }}>
                     <WhatsAppIcon size={12} className="mr-1" /> WhatsApp
                   </Button>
@@ -271,7 +271,7 @@ export default function BookingDetailDrawer({ booking, service, open, onClose, o
                 </div>
               )}
               {booking.payment_proof_url && (
-                <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => window.open(booking.payment_proof_url, "_blank")}>
+                <Button size="sm" variant="outline" className="w-full text-xs" onClick={() => window.open(booking.payment_proof_url, "_blank", "noopener,noreferrer")}>
                   <Eye className="h-3 w-3 mr-1" /> View Payment Proof
                 </Button>
               )}

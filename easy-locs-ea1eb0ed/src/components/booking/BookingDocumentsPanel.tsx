@@ -100,7 +100,7 @@ export default function BookingDocumentsPanel({
                   <span className="text-xs text-foreground truncate">{displayName}</span>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(url, "_blank")}>
+                  <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => window.open(url, "_blank", "noopener,noreferrer")}>
                     <Eye className="h-3 w-3" />
                   </Button>
                   <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive" onClick={() => removeDoc(documentUrls.indexOf(url))}>

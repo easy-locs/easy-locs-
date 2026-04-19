@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUiEngine } from "@/hooks/useUiEngine";
 import SubPageShell from "@/components/layout/SubPageShell";
 import { db } from "@/services/db";
+import { sanitizeHtml } from "@/lib/utils/sanitize-html";
 
 interface EmailTemplate {
   id: string;
@@ -234,7 +235,7 @@ export default function AdminNotificationLabPage() {
                 <h4 className="text-xs font-bold text-muted-foreground mb-2">HTML Preview</h4>
                 <div
                   className="text-sm"
-                  dangerouslySetInnerHTML={{ __html: selectedTemplate.preview }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(selectedTemplate.preview) }}
                 />
               </div>
 

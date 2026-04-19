@@ -56,7 +56,7 @@ export default function SellerListingLifecycleCard(props: ListingLifecycleProps)
     try {
       const result = await createRenewalCheckout(props.id);
       if (result.success && result.url) {
-        window.open(result.url, "_blank");
+        window.open(result.url, "_blank", "noopener,noreferrer");
       } else {
         toast.error(result.error || "Could not start renewal");
       }
@@ -69,7 +69,7 @@ export default function SellerListingLifecycleCard(props: ListingLifecycleProps)
     try {
       const result = await createBoostCheckout(props.id, tier);
       if (result.success && result.url) {
-        window.open(result.url, "_blank");
+        window.open(result.url, "_blank", "noopener,noreferrer");
       } else {
         toast.error(result.error || "Could not start boost");
       }
