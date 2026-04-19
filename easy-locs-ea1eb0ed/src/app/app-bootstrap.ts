@@ -1,5 +1,6 @@
 import { queryClient, setupQueryPersistence, hydrateFromCache } from "@/lib/query-client";
 import { setActionQueryClient } from "@/lib/run-action";
+import { platformBus } from "@/lib/shared/platform-bus";
 
 export const safeIdleCallback = (fn: () => void, opts?: { timeout: number }) => {
   if (typeof requestIdleCallback === "function") {
@@ -18,6 +19,10 @@ export function bootstrapAppRuntime() {
   if (import.meta.env.DEV) {
     (window as unknown as Record<string, unknown>).__REACT_QUERY_CLIENT__ = queryClient;
   }
+  // Expose platform bus and query client unconditionally so E2E tests, native
+  // bridge integrations, and preview builds can reach them via window globals.
+  (window as unknown as Record<string, unknown>).__platformBus__ = platformBus;
+  (window as unknown as Record<string, unknown>).__queryClient__ = queryClient;
   setActionQueryClient(queryClient);
   setupQueryPersistence();
   hydrateFromCache().catch(() => {});
