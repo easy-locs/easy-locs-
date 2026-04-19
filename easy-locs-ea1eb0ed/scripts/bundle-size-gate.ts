@@ -83,7 +83,12 @@ function snapshotDist(): BundleSnapshot {
       }
     } else if (ext === ".css") {
       cssBytes += size;
-    } else {
+    } else if (ext !== ".map" && ext !== ".br" && ext !== ".gz") {
+      // Skip source-map files (.js.map, .css.map) and pre-compressed brotli/gzip
+      // duplicates (.js.br, .js.gz, .css.br, .css.gz). These are CI/CDN delivery
+      // artifacts, not user-facing static assets, so they must not be counted
+      // against the static-assets budget. Including them caused the gate to flag
+      // false regressions whenever source-map sizes changed between builds.
       assetBytes += size;
     }
   }
