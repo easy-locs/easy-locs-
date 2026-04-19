@@ -147,6 +147,25 @@ function inferPillar(intent: UserIntentName): JourneyPillar {
   return INTENT_PILLAR_FALLBACK[intent] ?? "radar";
 }
 
+/**
+ * Resolve the effective UserIntentName from a post-login intent slot.
+ * Falls back to "deeplink_resolve" when no explicit intent was stored.
+ */
+function resolvePostLoginIntent(postLogin: PostLoginIntent): UserIntentName {
+  return postLogin.intent ?? "deeplink_resolve";
+}
+
+/**
+ * Resolve the effective JourneyPillar for a post-login intent.
+ * Prefers the explicitly stored pillar; falls back to inferring from intent.
+ */
+function resolvePostLoginPillar(
+  postLogin: PostLoginIntent,
+  intent: UserIntentName,
+): JourneyPillar {
+  return postLogin.pillar ?? inferPillar(intent);
+}
+
 // ── Engine ────────────────────────────────────────────────────────────────────
 
 /**
@@ -194,8 +213,8 @@ export function resolveResumeCandidate(): ResumeCandidate | null {
   // Priority 3: post-login intent (deep link deferred through auth)
   const postLogin = peekPostLoginIntent();
   if (postLogin) {
-    const pillar = postLogin.pillar ?? inferPillar(postLogin.intent ?? "deeplink_resolve");
-    const intent: UserIntentName = postLogin.intent ?? "deeplink_resolve";
+    const intent = resolvePostLoginIntent(postLogin);
+    const pillar = resolvePostLoginPillar(postLogin, intent);
     return {
       kind: "post_login_intent",
       route: postLogin.route,

@@ -411,23 +411,16 @@ export type ColonCanonicalEventName = keyof ColonCanonicalEventMapExtended;
 // Phase 1 — Foundation: typed payloads for cross-pillar journey tracking.
 // These are not yet emitted by the UI layer — wiring happens in Phase 2.
 
-/** Canonical pillar identifiers. Must stay in sync with navigation-intent.ts Pillar type. */
-export type JourneyPillar = "dashboard" | "radar" | "orbit" | "wallet" | "me";
+// Re-export Pillar from the canonical navigation-intent module so that
+// JourneyPillar is always in sync without duplication.
+export type { Pillar as JourneyPillar } from "@/lib/navigation/navigation-intent";
+
+// Re-export UserIntent from intent-types so all journey event payloads
+// reference the single canonical definition.
+export type { UserIntent as UserIntentName } from "@/lib/intent/intent-types";
 
 /** A unique identifier for a user journey instance (UUID or nanoid). */
 export type JourneyId = string;
-
-/** Identifies which canonical user intent initiated the journey. */
-export type UserIntentName =
-  | "discovery_browse" | "discovery_search" | "discovery_entity_open"
-  | "booking_start" | "booking_confirm" | "booking_cancel" | "booking_reschedule"
-  | "order_start" | "order_checkout" | "order_track" | "order_cancel"
-  | "ride_request" | "ride_track" | "ride_cancel"
-  | "payment_initiate" | "payment_confirm" | "payment_retry" | "payment_topup" | "payment_transfer"
-  | "orbit_open_thread" | "orbit_send_message" | "orbit_call_start"
-  | "manage_asset_view" | "manage_asset_create" | "manage_asset_edit"
-  | "support_open" | "support_escalate" | "support_resolve"
-  | "deeplink_resolve" | "resume_interrupted";
 
 export interface JourneyStartedPayload {
   journeyId: JourneyId;
