@@ -406,3 +406,106 @@ export interface ColonCanonicalEventMapExtended extends ColonCanonicalEventMap {
 }
 
 export type ColonCanonicalEventName = keyof ColonCanonicalEventMapExtended;
+
+// ── Journey Lifecycle Events ───────────────────────────────────
+// Phase 1 — Foundation: typed payloads for cross-pillar journey tracking.
+// These are not yet emitted by the UI layer — wiring happens in Phase 2.
+
+/** Canonical pillar identifiers. Must stay in sync with navigation-intent.ts Pillar type. */
+export type JourneyPillar = "dashboard" | "radar" | "orbit" | "wallet" | "me";
+
+/** A unique identifier for a user journey instance (UUID or nanoid). */
+export type JourneyId = string;
+
+/** Identifies which canonical user intent initiated the journey. */
+export type UserIntentName =
+  | "discovery_browse" | "discovery_search" | "discovery_entity_open"
+  | "booking_start" | "booking_confirm" | "booking_cancel" | "booking_reschedule"
+  | "order_start" | "order_checkout" | "order_track" | "order_cancel"
+  | "ride_request" | "ride_track" | "ride_cancel"
+  | "payment_initiate" | "payment_confirm" | "payment_retry" | "payment_topup" | "payment_transfer"
+  | "orbit_open_thread" | "orbit_send_message" | "orbit_call_start"
+  | "manage_asset_view" | "manage_asset_create" | "manage_asset_edit"
+  | "support_open" | "support_escalate" | "support_resolve"
+  | "deeplink_resolve" | "resume_interrupted";
+
+export interface JourneyStartedPayload {
+  journeyId: JourneyId;
+  intent: UserIntentName;
+  pillar: JourneyPillar;
+  entryRoute: string;
+  userId?: string;
+  /** Arbitrary step-level context (entity IDs, pre-filled params). */
+  context?: Record<string, unknown>;
+  startedAt: number;
+}
+
+export interface JourneyInterruptedPayload {
+  journeyId: JourneyId;
+  intent: UserIntentName;
+  pillar: JourneyPillar;
+  /** The route the user was on when they left. */
+  interruptedAtRoute: string;
+  /** The step key within the flow (e.g. "address_selection", "payment_pending"). */
+  step: string;
+  /** Serialisable state snapshot for resume. Must be JSON-serialisable. */
+  contextSnapshot: Record<string, unknown>;
+  /** Whether the system can offer a resume prompt for this interruption. */
+  retryable: boolean;
+  interruptedAt: number;
+}
+
+export interface JourneyResumedPayload {
+  journeyId: JourneyId;
+  intent: UserIntentName;
+  pillar: JourneyPillar;
+  resumedFromRoute: string;
+  resumedAt: number;
+}
+
+export interface JourneyCompletedPayload {
+  journeyId: JourneyId;
+  intent: UserIntentName;
+  pillar: JourneyPillar;
+  completedAt: number;
+  /** Duration from first start to completion in milliseconds. */
+  durationMs?: number;
+}
+
+export interface JourneyFailedPayload {
+  journeyId: JourneyId;
+  intent: UserIntentName;
+  pillar: JourneyPillar;
+  errorCode: string;
+  errorMessage: string;
+  /** Human-readable plain-language description for display (never shows errorCode). */
+  userFacingMessage?: string;
+  /** Route / action that can recover from this failure state. */
+  recoveryRoute?: string;
+  failedAt: number;
+}
+
+export interface DeepLinkResolvedPayload {
+  /** Original raw deep-link URL. */
+  rawUrl: string;
+  /** Resolved pillar after auth check. */
+  resolvedPillar: JourneyPillar;
+  /** Resolved route the user will be navigated to. */
+  resolvedRoute: string;
+  /** Whether the link was deferred through auth (stored as post-login intent). */
+  deferredThroughAuth: boolean;
+  userId?: string;
+  resolvedAt: number;
+}
+
+/** Extended event map including journey lifecycle events. */
+export interface ColonCanonicalEventMapJourney extends ColonCanonicalEventMapExtended {
+  "journey:started": JourneyStartedPayload;
+  "journey:interrupted": JourneyInterruptedPayload;
+  "journey:resumed": JourneyResumedPayload;
+  "journey:completed": JourneyCompletedPayload;
+  "journey:failed": JourneyFailedPayload;
+  "deeplink:resolved": DeepLinkResolvedPayload;
+}
+
+export type CanonicalEventName = keyof ColonCanonicalEventMapJourney;
