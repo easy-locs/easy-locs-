@@ -76,6 +76,7 @@ export function useMasterAppBootstrap() {
             { initPushEventBridge },
             { installCounterBridge },
             { installDeliveryBridge },
+            { installSuperAppBridge },
           ] = await Promise.all([
             import("@/lib/orchestration/orchestrator"),
             import("@/lib/runtime/smart-flow-bridge"),
@@ -95,6 +96,7 @@ export function useMasterAppBootstrap() {
             import("@/lib/push/push-event-bridge"),
             import("@/lib/dashboard/dashboard-counter-bridge"),
             import("@/lib/shared/v4-delivery-bridge"),
+            import("@/lib/super-app-bridge"),
           ]);
 
           if (hookDisposed) return;
@@ -121,6 +123,7 @@ export function useMasterAppBootstrap() {
             installCounterBridge(),
             installDeliveryBridge(),
           );
+          installSuperAppBridge();
           initPushEventBridge();
         }, "stage-0+1 orchestration");
       } catch (e) {
