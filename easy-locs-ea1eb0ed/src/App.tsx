@@ -18,7 +18,9 @@ import {
 } from "@/app/deferred-runtime";
 import { bootstrapAppRuntime } from "@/app/app-bootstrap";
 import { TransitionRouter, NavigationTracker } from "@/app/transition-router";
-import { AppRoutes, RouteLoadingSkeleton } from "@/routes";
+import { RouteLoadingSkeleton } from "@/app/route-skeletons";
+
+const AppRoutes = lazy(() => import("@/routes").then(m => ({ default: m.AppRoutes })));
 
 // ── Deferred chrome (lazy) ──
 const MainBottomNav = lazy(() => import("@/components/navigation/MainBottomNav"));
