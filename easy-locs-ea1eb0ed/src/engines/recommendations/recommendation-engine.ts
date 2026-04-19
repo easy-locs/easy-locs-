@@ -254,9 +254,7 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
       userVector = profile.interactionVector;
     }
     const pgvectorQueryText = buildPgvectorQueryText(recentVerticals, ctx.favorites);
-    if (pgvectorQueryText) {
-      pgvectorResults = await fetchPgvectorSimilar(ctx.userId, pgvectorQueryText, 20);
-    }
+    pgvectorResults = await fetchPgvectorSimilar(ctx.userId, pgvectorQueryText || "general recommendations", 20);
     collaborativeScores = getCollaborativeSignals(ctx.userId, itemEmbeddings);
   }
 
@@ -357,7 +355,7 @@ export async function scoreRecommendationsAsync(ctx: UserContext): Promise<Recom
     return {
       ...item,
       score: Math.round(Math.max(0, Math.min(100, score))),
-      reason: reasons[0] ?? "Recommended for you",
+      reason: reasons.find((r) => r === "In your favorites") ?? reasons[0] ?? "Recommended for you",
     };
   });
 
@@ -465,7 +463,7 @@ export function scoreRecommendations(ctx: UserContext): RecommendationItem[] {
     return {
       ...item,
       score: Math.round(Math.max(0, Math.min(100, score))),
-      reason: reasons[0] ?? "Recommended for you",
+      reason: reasons.find((r) => r === "In your favorites") ?? reasons[0] ?? "Recommended for you",
     };
   });
 
