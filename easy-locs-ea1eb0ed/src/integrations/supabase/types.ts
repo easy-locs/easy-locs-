@@ -34308,6 +34308,15 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      finalize_idempotency_key: {
+        Args: {
+          p_namespace: string
+          p_key: string
+          p_status: string
+          p_result_json: Json | null
+        }
+        Returns: undefined
+      }
       geocode_city_approx: {
         Args: { _city: string }
         Returns: {
@@ -34875,6 +34884,10 @@ export type Database = {
       rebuild_product_search_index: {
         Args: { p_product_id: string }
         Returns: undefined
+      }
+      resolve_short_link: {
+        Args: { p_code: string }
+        Returns: Json
       }
       ride_complete: {
         Args: {
