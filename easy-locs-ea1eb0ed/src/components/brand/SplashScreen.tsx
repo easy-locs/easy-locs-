@@ -495,25 +495,31 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!showSplash) return;
+    const dismiss = () => {
+      setShowSplash(false);
+      try {
+        sessionStorage.setItem("el_splash_shown", "1");
+      } catch {}
+    };
+    // If the hard boot timeout has already fired, dismiss immediately.
+    if ((window as Record<string, unknown>).__EASYLOCS_BOOT_TIMEOUT__) {
+      dismiss();
+      return;
+    }
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
     }, SPLASH_DURATION - 600);
-    const hideTimer = setTimeout(() => {
-      setShowSplash(false);
-      try {
-        sessionStorage.setItem("el_splash_shown", "1");
-      } catch {}
-    }, SPLASH_DURATION);
-    const safetyTimer = setTimeout(() => {
-      setShowSplash(false);
-      try {
-        sessionStorage.setItem("el_splash_shown", "1");
-      } catch {}
-    }, SPLASH_DURATION + 2000);
+    const hideTimer = setTimeout(dismiss, SPLASH_DURATION);
+    // Hard 2-second safety cap — matches the window-level boot timeout so
+    // the splash never outlasts the `__EASYLOCS_BOOT_TIMEOUT__` flag.
+    const safetyTimer = setTimeout(dismiss, 2000);
+    // Also listen for the boot-timeout event fired by main.tsx.
+    window.addEventListener("easylocs-boot-timeout", dismiss, { once: true });
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);
       clearTimeout(safetyTimer);
+      window.removeEventListener("easylocs-boot-timeout", dismiss);
     };
   }, [showSplash]);
 

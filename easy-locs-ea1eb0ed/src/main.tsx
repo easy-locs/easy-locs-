@@ -58,6 +58,17 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
+// Hard 2-second boot timeout: sets window.__EASYLOCS_BOOT_TIMEOUT__ so the
+// SplashScreen can detect a stuck boot and force-dismiss itself. This is the
+// last-resort escape hatch for any infinite-wait scenario not caught by the
+// individual component timeouts above.
+if (typeof window !== "undefined") {
+  setTimeout(() => {
+    (window as Record<string, unknown>).__EASYLOCS_BOOT_TIMEOUT__ = true;
+    window.dispatchEvent(new Event("easylocs-boot-timeout"));
+  }, 2000);
+}
+
 // "Big tech" stuck-app failsafe: if 12 seconds after boot the user is still
 // on the splash OR has been bounced into a known redirect-loop URL with no
 // route content rendered, hard-redirect to /emergency.html?stuck=1 so they
