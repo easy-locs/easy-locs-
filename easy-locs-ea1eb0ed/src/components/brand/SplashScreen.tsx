@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getTimeOfDay, getSpecialEvent, TIME_GRADIENTS } from "@/hooks/useDynamicLogo";
 import type { SpecialEvent } from "@/hooks/useDynamicLogo";
 
+// Hard first-paint guarantee: splash force-dismisses no later than 2 000 ms
+// so auth delays, slow DB, or stalled guards can never produce an infinite
+// logo screen. The flag is also set by any external module (e.g. App.tsx)
+// that needs to trigger early dismissal.
 const SPLASH_DURATION = 1800;
+const FORCE_DISMISS_MS = 2000;
 const RADAR_SIZE = 150;
 
 function seededRandom(seed: number) {
@@ -465,7 +470,7 @@ function useBootProgress() {
   return progress;
 }
 
-export default function SplashScreen({ children }: { children: React.ReactNode }) {
+export default function SplashScreen({ children }: { children?: React.ReactNode }) {
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window === "undefined") return false;
     if (import.meta.env.DEV) return false;
@@ -495,25 +500,35 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!showSplash) return;
+    const dismiss = () => {
+      setShowSplash(false);
+      try {
+        sessionStorage.setItem("el_splash_shown", "1");
+      } catch {}
+    };
     const exitTimer = setTimeout(() => {
       setIsExiting(true);
     }, SPLASH_DURATION - 600);
-    const hideTimer = setTimeout(() => {
-      setShowSplash(false);
+    const hideTimer = setTimeout(dismiss, SPLASH_DURATION);
+    // Hard 2-second guarantee: force-dismiss regardless of auth/boot state so
+    // users never see an infinite splash or blank screen.
+    const forceTimer = setTimeout(() => {
       try {
-        sessionStorage.setItem("el_splash_shown", "1");
+        (window as Record<string, unknown>).__EASYLOCS_FORCE_SPLASH_DISMISS__ = true;
       } catch {}
-    }, SPLASH_DURATION);
-    const safetyTimer = setTimeout(() => {
-      setShowSplash(false);
-      try {
-        sessionStorage.setItem("el_splash_shown", "1");
-      } catch {}
-    }, SPLASH_DURATION + 2000);
+      dismiss();
+    }, FORCE_DISMISS_MS);
+    // Also listen for the flag being set externally (e.g. from App.tsx).
+    const pollInterval = setInterval(() => {
+      if ((window as Record<string, unknown>).__EASYLOCS_FORCE_SPLASH_DISMISS__) {
+        dismiss();
+      }
+    }, 100);
     return () => {
       clearTimeout(exitTimer);
       clearTimeout(hideTimer);
-      clearTimeout(safetyTimer);
+      clearTimeout(forceTimer);
+      clearInterval(pollInterval);
     };
   }, [showSplash]);
 

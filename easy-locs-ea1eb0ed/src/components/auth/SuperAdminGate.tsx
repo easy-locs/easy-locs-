@@ -1,20 +1,23 @@
 /**
  * SuperAdminGate — Wraps routes that require the `super_admin` role.
  *
- * Behaviour after #946 audit:
- *   - We never silently redirect to /dashboard when the role check fails.
- *     Both the "rôle manquant" and "RPC en erreur" cases render the shared
- *     AdminAccessDenied panel with an explicit reason so the user / support
- *     can immediately see *why* access is refused.
- *   - The unauthenticated path still redirects to /login (preserving from-state)
- *     and the unverified email path still redirects to /verify-email — those
- *     are flow-control redirects, not access denials.
+ * Behaviour:
+ *   - loading → skeleton
+ *   - no user → /login (preserving from-state)
+ *   - unverified email → /verify-email
+ *   - owner email bypass: allowlisted owner emails are granted access without
+ *     an extra RPC round-trip so the platform owner is never locked out.
+ *   - role check inside component (fail-open to /dashboard, not infinite wait)
+ *   - non-super-admin outside /dashboard → redirect to /dashboard
+ *   - non-super-admin already on /dashboard → show "don't have access" inline
+ *     (loop guard: prevents a redirect→redirect cycle)
+ *   - profileLoaded stuck → hard timeout shows "took too long to load" message
  */
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuthSession } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { hasRole } from "@/repositories/auth-utils.repository";
-import AdminAccessDenied from "@/components/auth/AdminAccessDenied";
+import { isEmailAllowedForAdmin } from "@/hooks/useIsAdmin";
 
 const PROFILE_LOAD_TIMEOUT_MS = 8000;
 
@@ -36,7 +39,6 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
   const location = useLocation();
   const [checking, setChecking] = useState(true);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
-  const [roleError, setRoleError] = useState<Error | null>(null);
   const [profileTimedOut, setProfileTimedOut] = useState(false);
 
   useEffect(() => {
@@ -45,9 +47,15 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
       setChecking(false);
       return;
     }
+    // Owner email bypass — allowlisted emails skip the RPC so the platform
+    // owner can never be locked out by a missing/misconfigured role table.
+    if (user.email && isEmailAllowedForAdmin(user.email)) {
+      setIsSuperAdmin(true);
+      setChecking(false);
+      return;
+    }
     let cancelled = false;
     setChecking(true);
-    setRoleError(null);
     (async () => {
       try {
         const result = await hasRole(user.id, "super_admin");
@@ -56,8 +64,6 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
           setChecking(false);
         }
       } catch (err) {
-        // Log to console + observability so spikes can be investigated, but
-        // do NOT silently redirect — we now surface this to the user below.
         console.error("[SuperAdminGate] hasRole failed:", err);
         // Best-effort structured log; ignore if logger unavailable.
         void import("@/lib/observability/structured-logger")
@@ -71,15 +77,18 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
           })
           .catch(() => {});
         if (!cancelled) {
+          // Fail-open: treat errors as "not super_admin" and redirect rather
+          // than showing an opaque error wall.
           setIsSuperAdmin(false);
-          setRoleError(err instanceof Error ? err : new Error(String(err)));
           setChecking(false);
         }
       }
     })();
     return () => { cancelled = true; };
-  }, [user?.id, loading, location.pathname]);
+  }, [user?.id, loading, user?.email, location.pathname]);
 
+  // Profile-load timeout: if profileLoaded stays false for too long, surface a
+  // clear message rather than leaving the user on a skeleton forever.
   useEffect(() => {
     if (!user?.id || profileLoaded) {
       setProfileTimedOut(false);
@@ -95,10 +104,13 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
   if (!profileLoaded) {
     if (profileTimedOut) {
       return (
-        <AdminAccessDenied
-          reason="rpc-error"
-          email={user.email ?? null}
-        />
+        <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4">
+          <div className="max-w-md w-full rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              Profile took too long to load. Please try refreshing the page.
+            </p>
+          </div>
+        </div>
       );
     }
     return <GateSkeleton />;
@@ -107,22 +119,21 @@ export default function SuperAdminGate({ children }: { children: React.ReactNode
   if (!emailVerified) return <Navigate to="/verify-email" replace />;
   if (checking) return <GateSkeleton />;
 
-  if (roleError) {
-    return (
-      <AdminAccessDenied
-        reason="super-admin-rpc-error"
-        email={user.email ?? null}
-      />
-    );
-  }
-
   if (!isSuperAdmin) {
-    return (
-      <AdminAccessDenied
-        reason="super-admin-required"
-        email={user.email ?? null}
-      />
-    );
+    // Loop guard: if already on /dashboard, show an inline message instead of
+    // redirecting (which would cause an infinite redirect cycle).
+    if (location.pathname === "/dashboard") {
+      return (
+        <div className="min-h-[100dvh] bg-background flex items-center justify-center px-4">
+          <div className="max-w-md w-full rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              You don't have access to this section. Super-admin privileges are required.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

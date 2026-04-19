@@ -54,46 +54,47 @@ const App = () => (
       <Suspense fallback={null}><MissingIntegrationsBanner /></Suspense>
     )}
     <AuthProvider>
-      <SplashScreen>
-        <DeferredServicesProvider>
-          <AppLockGuardShell>
-            <Suspense fallback={null}><IntentNavigateProvider /></Suspense>
-            <DeferredBootGuards />
-            <NavigationTracker />
-            <Suspense fallback={null}>
-              <SmartCoreTracker />
-              <SentryRouteTracker />
-              <AnalyticsRouteTracker />
-            </Suspense>
-            <Suspense fallback={<RouteLoadingSkeleton />}>
-              <TransitionRouter>
-                <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
-                  <AppRoutes />
-                </SwipeableMain>
-              </TransitionRouter>
-            </Suspense>
-            <Suspense fallback={null}><MainBottomNav /></Suspense>
-            {/*
-              CookieConsentBanner MUST live inside AuthProvider so its
-              useAuth() hook reads the live session. When mounted outside
-              AuthProvider it received the default context (user: null) and
-              its bottom-nav offset always evaluated to 0px, which let the
-              banner overlap the mobile bottom nav and intercept tab clicks.
-              See scripts/check-build-invariants.cjs for the regression guard.
-            */}
-            <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
-            <Suspense fallback={null}>
-              <SmartInstallBanner />
-              <FloatingCTAButton />
-              <SmartCloseFlowSheet />
-              <GlobalSearchTrigger />
-            </Suspense>
-          </AppLockGuardShell>
-        </DeferredServicesProvider>
-        <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
-        <Suspense fallback={null}><InAppNavigationView /></Suspense>
-        <Suspense fallback={null}><AdhanMiniPlayer /></Suspense>
-      </SplashScreen>
+      <DeferredServicesProvider>
+        <AppLockGuardShell>
+          <Suspense fallback={null}><IntentNavigateProvider /></Suspense>
+          <NavigationTracker />
+          <Suspense fallback={null}>
+            <SmartCoreTracker />
+            <SentryRouteTracker />
+            <AnalyticsRouteTracker />
+          </Suspense>
+          <Suspense fallback={<RouteLoadingSkeleton />}>
+            <TransitionRouter>
+              <SwipeableMain className="pb-[calc(72px+env(safe-area-inset-bottom,0px)+16px)]">
+                <AppRoutes />
+              </SwipeableMain>
+            </TransitionRouter>
+          </Suspense>
+          <Suspense fallback={null}><MainBottomNav /></Suspense>
+          {/*
+            CookieConsentBanner MUST live inside AuthProvider so its
+            useAuth() hook reads the live session. When mounted outside
+            AuthProvider it received the default context (user: null) and
+            its bottom-nav offset always evaluated to 0px, which let the
+            banner overlap the mobile bottom nav and intercept tab clicks.
+            See scripts/check-build-invariants.cjs for the regression guard.
+          */}
+          <Suspense fallback={null}><CookieConsentBannerLazy /></Suspense>
+          <Suspense fallback={null}>
+            <SmartInstallBanner />
+            <FloatingCTAButton />
+            <SmartCloseFlowSheet />
+            <GlobalSearchTrigger />
+          </Suspense>
+        </AppLockGuardShell>
+      </DeferredServicesProvider>
+      <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
+      <Suspense fallback={null}><InAppNavigationView /></Suspense>
+      <Suspense fallback={null}><AdhanMiniPlayer /></Suspense>
+      {/* Guards run in background via idle callbacks — never block route rendering */}
+      <DeferredBootGuards />
+      {/* Splash renders as a fixed overlay OVER routes — never blocks children */}
+      <SplashScreen />
     </AuthProvider>
   </CoreProviders>
 );
