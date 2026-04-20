@@ -431,10 +431,10 @@ export default defineConfig(({ mode }) => ({
     minify: "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
-    // Generate source maps in production so Sentry can symbolicate stack
-    // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
-    // comment in shipped files — maps exist only for upload to Sentry.
-    sourcemap: mode === "production" ? "hidden" : false,
+    // Sourcemaps are skipped in production to reduce build-time heap pressure
+    // on constrained CI/CD environments (e.g. Cloudflare Pages 512 MB workers).
+    // Re-enable with `"hidden"` when a Sentry upload step is available.
+    sourcemap: false,
     reportCompressedSize: true,
     modulePreload: {
       polyfill: true,
