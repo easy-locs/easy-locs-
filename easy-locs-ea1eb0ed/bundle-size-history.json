@@ -66,6 +66,17 @@
       "allChunks": {},
       "sha": "431e0561690c724d97a2e78636e9e822d1978a4e",
       "ref": "refs/heads/main"
+    },
+    {
+      "generatedAt": "2026-04-20T00:26:14.555Z",
+      "totalBytes": 17668164,
+      "mainChunkBytes": 1324018,
+      "cssBytes": 369462,
+      "assetBytes": 2853072,
+      "pillarChunks": {},
+      "allChunks": {},
+      "sha": "312c295efab444952e26c2702f698d0c296c29cc",
+      "ref": "refs/heads/main"
     }
   ]
 }
