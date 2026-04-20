@@ -499,6 +499,37 @@
         console.error('[BOOT_UNHANDLED_REJECTION]', e.reason);
       });
     </script>
+    <script>
+      // requestIdleCallback / cancelIdleCallback polyfill — installed as a
+      // blocking classic script BEFORE the module bundle so the global is
+      // guaranteed to exist before any bundled code (which calls it at module
+      // top-level in src/main.tsx) runs. Safari < 17.4 and several mobile
+      // WebViews lack these natively and would otherwise crash the boot with
+      // "ReferenceError: Can't find variable: requestIdleCallback".
+      // src/polyfills.ts mirrors this for non-browser environments (tests/SSR).
+      (function () {
+        if (typeof window === 'undefined') return;
+        if (typeof window.requestIdleCallback !== 'function') {
+          window.requestIdleCallback = function (cb, opts) {
+            var start = Date.now();
+            var timeoutMs = (opts && typeof opts.timeout === 'number') ? opts.timeout : 50;
+            return window.setTimeout(function () {
+              var elapsed = Date.now() - start;
+              var timedOut = elapsed >= timeoutMs;
+              cb({
+                didTimeout: timedOut,
+                timeRemaining: function () {
+                  return timedOut ? 0 : Math.max(0, 50 - (Date.now() - start));
+                }
+              });
+            }, 1);
+          };
+        }
+        if (typeof window.cancelIdleCallback !== 'function') {
+          window.cancelIdleCallback = function (id) { window.clearTimeout(id); };
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx" fetchpriority="high"></script>
     <script>
       window.__EASYLOCS_BOOTED__ = false;
