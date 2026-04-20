@@ -89,7 +89,12 @@ Deno.serve(async (req) => {
         }
       }
 
-      const confirmationCode = String(Math.floor(100000 + Math.random() * 900000));
+      // Unbiased 6-digit confirmation code via rejection sampling.
+      const _codeRange = 900000;
+      const _codeThreshold = 0x100000000 - (0x100000000 % _codeRange);
+      const _codeBuf = new Uint32Array(1);
+      do { crypto.getRandomValues(_codeBuf); } while (_codeBuf[0] >= _codeThreshold);
+      const confirmationCode = String(100000 + (_codeBuf[0] % _codeRange));
 
       // Get or create customer profile
       const { data: existingProfile } = await db

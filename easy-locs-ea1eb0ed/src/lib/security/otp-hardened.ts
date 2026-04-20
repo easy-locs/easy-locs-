@@ -66,7 +66,14 @@ export async function createOtpSession(
   }
 
   function generateOtp(): string {
-    return String(Math.floor(100000 + Math.random() * 900000));
+    // Unbiased 6-digit code via rejection sampling over crypto.getRandomValues().
+    // threshold = largest multiple of 900000 that fits in a Uint32, so every
+    // value below threshold maps to exactly one output in [100000, 999999].
+    const range = 900000;
+    const threshold = 0x100000000 - (0x100000000 % range);
+    const buf = new Uint32Array(1);
+    do { crypto.getRandomValues(buf); } while (buf[0] >= threshold);
+    return String(100000 + (buf[0] % range));
   }
 
   const otp = generateOtp();
@@ -88,8 +95,6 @@ export async function createOtpSession(
     .single();
 
   if (error) throw error;
-
-  console.log(`[EMAIL OTP] Code → ${target}`);
 
   return { sessionId: insertData.id };
 }
