@@ -23,10 +23,15 @@ vi.mock("@/services/db", () => ({
   },
 }));
 
-import { dispatchExecutionTask, DispatchError } from "@/lib/execution/dispatch";
+// dispatchExecutionTask is imported dynamically inside each test after
+// vi.resetModules() to guarantee dispatch.ts picks up the mocked @/services/db
+// rather than a stale reference cached by the setup file.
 
 describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", () => {
-  beforeEach(() => rpc.mockReset());
+  beforeEach(() => {
+    vi.resetModules();
+    rpc.mockReset();
+  });
 
   it("calls system.dispatch_execution_task with the correct argument shape and returns a typed handle", async () => {
     rpc.mockResolvedValueOnce({
@@ -40,6 +45,7 @@ describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", 
       error: null,
     });
 
+    const { dispatchExecutionTask } = await import("@/lib/execution/dispatch");
     const handle = await dispatchExecutionTask({
       domain: "ai",
       taskType: "AI_COMPLETION",
@@ -86,6 +92,7 @@ describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", 
       error: null,
     });
 
+    const { dispatchExecutionTask } = await import("@/lib/execution/dispatch");
     const handle = await dispatchExecutionTask({
       domain: "marketplace",
       taskType: "MARKETPLACE.LISTING.PUBLISH",
@@ -100,6 +107,7 @@ describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", 
       error: { message: "permission denied" },
     });
 
+    const { dispatchExecutionTask, DispatchError } = await import("@/lib/execution/dispatch");
     await expect(
       dispatchExecutionTask({ domain: "ai", taskType: "AI_COMPLETION" }),
     ).rejects.toBeInstanceOf(DispatchError);
@@ -108,6 +116,7 @@ describe("dispatchExecutionTask — wire boundary against mocked Supabase RPC", 
   it("throws DispatchError when the RPC returns no data", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: null });
 
+    const { dispatchExecutionTask } = await import("@/lib/execution/dispatch");
     await expect(
       dispatchExecutionTask({ domain: "ai", taskType: "AI_COMPLETION" }),
     ).rejects.toMatchObject({

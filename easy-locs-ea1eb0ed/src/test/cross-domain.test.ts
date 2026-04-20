@@ -134,10 +134,16 @@ describe("Dashboard read-only guarantee", () => {
   it("dashboard index doesn't export write operations", async () => {
     const fs = await import("fs");
     const path = await import("path");
-    const content = fs.readFileSync(
+    const raw = fs.readFileSync(
       path.resolve(__dirname, "../domains/dashboard/index.ts"),
       "utf-8"
     );
+    // Strip block comments (/** … */) and line comments (// …) so that
+    // explanatory remarks like "no insert, no update, no delete" don't trigger
+    // the assertion — we're only guarding against real code patterns.
+    const content = raw
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*/g, "");
     expect(content).not.toContain("create");
     expect(content).not.toContain("update");
     expect(content).not.toContain("delete");

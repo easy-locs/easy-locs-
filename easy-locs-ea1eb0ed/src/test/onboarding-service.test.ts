@@ -53,6 +53,18 @@ const mockStorageFrom = vi.fn().mockReturnValue({
   getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
 });
 
+// Reset mockReturnValueOnce queues before every test to prevent cross-test pollution
+// when tests are shuffled (vi.clearAllMocks does not reset the "once" queues).
+beforeEach(() => {
+  mockDbFrom.mockReset().mockImplementation(() => createQueryBuilder());
+  mockDomainOnboardingFrom.mockReset().mockImplementation(() => createQueryBuilder());
+  mockFunctionsInvoke.mockReset().mockResolvedValue({ data: null, error: null });
+  mockStorageFrom.mockReset().mockReturnValue({
+    upload: vi.fn().mockResolvedValue({ data: { path: "mock" }, error: null }),
+    getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
+  });
+});
+
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
   const mockDispatchRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null });
@@ -88,6 +100,32 @@ vi.mock("@/integrations/supabase/client", () => ({
     schema: vi.fn(),
   },
 }));
+
+// Bypass the dispatch gateway: cFrom delegates directly to the mocked db so
+// tests can assert on the query builder calls without crossing the governance gate.
+// Calls with schema:"onboarding" are routed to domainDb.onboarding.from() so that
+// domain-service tests that assert on mockDomainOnboardingFrom continue to pass.
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db, domainDb } = (await import("@/services/db")) as {
+    db: (...args: unknown[]) => unknown;
+    domainDb: { onboarding: { from: (...args: unknown[]) => unknown } };
+  };
+  const schemaFrom = (schema: string, table: string): unknown => {
+    if (schema === "onboarding") return domainDb.onboarding.from(table);
+    return (db as unknown as { schema: (s: string) => { from: (t: string) => unknown } })
+      .schema(schema)
+      .from(table);
+  };
+  return {
+    cFrom: (table: string, opts?: { schema?: string }) =>
+      opts?.schema ? schemaFrom(opts.schema, table) : db(table),
+    cContent: (opts?: { schema?: string }) => ({
+      from: (table: string) =>
+        opts?.schema ? schemaFrom(opts.schema, table) : db(table),
+    }),
+    cRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+  };
+});
 
 vi.mock("@/lib/schema/domain-schemas", () => ({
   DOMAIN_TABLE_MAP: {
@@ -419,7 +457,9 @@ describe("onboarding.service — submitHotelProvider", () => {
 
   it("throws when provider upsert fails", async () => {
     const providerQb = createQueryBuilder();
-    providerQb.single.mockResolvedValueOnce({ data: null, error: { message: "upsert failed" } });
+    providerQb.then.mockImplementationOnce(
+      (resolve: ThenHandler) => Promise.resolve({ data: null, error: { message: "upsert failed" } }).then(resolve)
+    );
     mockDbFrom.mockReturnValueOnce(providerQb);
 
     const { submitHotelProvider } = await import("@/services/onboarding.service");

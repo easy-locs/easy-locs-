@@ -2,10 +2,10 @@ import { vi } from "vitest";
 
 const mockQueryBuilder = () => ({
   select: vi.fn().mockReturnThis(),
-  insert: vi.fn().mockResolvedValue({ data: null, error: null }),
+  insert: vi.fn().mockReturnThis(),
   update: vi.fn().mockReturnThis(),
   delete: vi.fn().mockReturnThis(),
-  upsert: vi.fn().mockResolvedValue({ data: null, error: null }),
+  upsert: vi.fn().mockReturnThis(),
   eq: vi.fn().mockReturnThis(),
   neq: vi.fn().mockReturnThis(),
   gt: vi.fn().mockReturnThis(),
@@ -59,6 +59,7 @@ export function createMockSupabase() {
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
     schema: vi.fn().mockReturnValue({
       from: vi.fn().mockImplementation(() => mockQueryBuilder()),
+      rpc: vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null }),
     }),
     removeChannel: vi.fn(),
     removeAllChannels: vi.fn(),

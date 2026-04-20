@@ -37,6 +37,12 @@ function createQueryBuilder(): MockQueryBuilder {
 
 const mockDbFrom = vi.fn().mockImplementation(() => createQueryBuilder());
 
+// Reset mockReturnValueOnce queues before every test to prevent cross-test pollution
+// when tests are shuffled (vi.clearAllMocks does not reset the "once" queues).
+beforeEach(() => {
+  mockDbFrom.mockReset().mockImplementation(() => createQueryBuilder());
+});
+
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
   const mockDispatchRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task-id", status: "queued" }, error: null });
@@ -65,6 +71,33 @@ vi.mock("@/integrations/supabase/client", () => ({
     schema: vi.fn(),
   },
 }));
+
+// Bypass the dispatch gateway: cFrom delegates directly to the mocked db so
+// tests can assert on the query builder calls without crossing the governance gate.
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = (await import("@/services/db")) as { db: (...args: unknown[]) => unknown };
+  return {
+    cFrom: (table: string, opts?: { schema?: string }) => {
+      if (opts?.schema) {
+        return (db as unknown as { schema: (s: string) => { from: (t: string) => unknown } })
+          .schema(opts.schema)
+          .from(table);
+      }
+      return db(table);
+    },
+    cContent: (opts?: { schema?: string }) => ({
+      from: (table: string) => {
+        if (opts?.schema) {
+          return (db as unknown as { schema: (s: string) => { from: (t: string) => unknown } })
+            .schema(opts.schema)
+            .from(table);
+        }
+        return db(table);
+      },
+    }),
+    cRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+  };
+});
 
 vi.mock("@/lib/schema/domain-schemas", () => ({
   DOMAIN_TABLE_MAP: {
@@ -405,7 +438,7 @@ describe("submitTaxiDriverProvider — full payload shape", () => {
     await expect(submitTaxiDriverProvider(taxiParams)).rejects.toEqual(dbError);
   });
 
-  it("completes without throwing when rider_profiles upsert returns error (no error check in source)", async () => {
+  it("throws when rider_profiles upsert returns an error", async () => {
     const providerQb = createQueryBuilder();
     const riderQb = createQueryBuilder();
     riderQb.then.mockImplementationOnce((resolve: ThenHandler) =>
@@ -421,7 +454,7 @@ describe("submitTaxiDriverProvider — full payload shape", () => {
     );
     await expect(
       submitTaxiDriverProvider(taxiParams),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow("Failed to create rider profile: rider profile constraint violation");
   });
 
   it("sets profile_photo_url to null when no photo provided", async () => {
@@ -858,7 +891,7 @@ describe("submitHotelProvider — full payload shape", () => {
     expect(mockDbFrom).toHaveBeenCalledTimes(3);
   });
 
-  it("skips rooms when hotels insert returns error (no data)", async () => {
+  it("throws when hotels insert returns an error", async () => {
     const providerQb = createQueryBuilder();
     const hotelQb = createQueryBuilder();
     hotelQb.single.mockResolvedValueOnce({
@@ -871,8 +904,9 @@ describe("submitHotelProvider — full payload shape", () => {
     const { submitHotelProvider } = await import(
       "@/services/onboarding.service"
     );
-    await submitHotelProvider(hotelParams);
-    expect(mockDbFrom).toHaveBeenCalledTimes(2);
+    await expect(submitHotelProvider(hotelParams)).rejects.toThrow(
+      "Failed to create hotel record: hotels insert failed",
+    );
   });
 
   it("propagates error from upsertProviderRecord in hotel flow", async () => {

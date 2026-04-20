@@ -22,6 +22,16 @@ vi.mock("@/services/db", () => {
   return { db: Object.assign(from, { from, schema, __upsert: upsert, __maybeSingle: maybeSingle, __from: from }) };
 });
 
+// Bypass the dispatch gateway so cFrom delegates directly to the mocked db.
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = (await import("@/services/db")) as { db: (...args: unknown[]) => unknown };
+  return {
+    cFrom: (table: string) => db(table),
+    cContent: () => ({ from: (table: string) => db(table) }),
+    cRpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+  };
+});
+
 import {
   schedulePrayerNotifications,
   clearScheduledPrayerNotifications,
