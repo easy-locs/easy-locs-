@@ -20,7 +20,7 @@ function inferDomain(text: string): typeof ARMY_DOMAINS[number] {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-  const denied = (await requireAuthenticated(req)) ?? (await requireServiceOrSupreme(req)); if (denied) return denied;
+  const denied = await requireAuthenticated(req); if (denied) return denied;
   try {
 
     const body = (await req.json()) as Body;
