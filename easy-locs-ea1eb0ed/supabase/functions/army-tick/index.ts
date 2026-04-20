@@ -12,7 +12,7 @@
 // as incidents but never abort the tick.
 import {
   armyClient, assertNotKilled, jsonResponse, logIncident, preflight,
-  requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
+  requireServiceOrSupreme, ARMY_DOMAINS,
 } from "../_shared/army.ts";
 
 const FN_BASE = `${Deno.env.get("SUPABASE_URL")}/functions/v1`;
@@ -34,18 +34,12 @@ async function call(name: string, body: unknown): Promise<unknown> {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-<<<<<<< HEAD
   // Internal pipeline endpoint: ONLY service_role (cron) or Supreme
   // Commander may invoke. A previous version OR-ed in
   // `requireAuthenticated`, which let any signed-in user trigger the
   // service-role orchestration tick — closed back to strict gate.
   const denied = await requireServiceOrSupreme(req);
   if (denied) return denied;
-=======
-  const deniedService = await requireServiceOrSupreme(req);
-  const deniedAuth = await requireAuthenticated(req);
-  if (deniedService && deniedAuth) return deniedService;
->>>>>>> f91b0b3245 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
     const sb = armyClient();
     await assertNotKilled(sb);
