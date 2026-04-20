@@ -2,6 +2,7 @@ import "./polyfills";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
+import { RootShell } from "@/app/root-shell";
 import "./index.css";
 import { APP_VERSION } from "@/lib/version-check";
 import {
@@ -148,7 +149,9 @@ try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>
-      <App />
+      <RootShell>
+        <App />
+      </RootShell>
     </BrowserRouter>
   );
   const splashEl = rootElement.querySelector("#app-loading") as HTMLElement | null;
@@ -166,10 +169,12 @@ try {
     setTimeout(fadeOutHtmlSplash, 1500);
   }
   // NOTE: __EASYLOCS_REACT_MOUNTED__ / __EASYLOCS_BOOTED__ are intentionally
-  // NOT set here. They are set inside a React useEffect (SplashScreen) so the
-  // flags reflect an actual React commit. Setting them synchronously here
-  // poisons the HTML-side boot watchdog (`checkBoot` + 6s rescue in index.html)
-  // and leaves users stuck on the splash if React never commits (task #718).
+  // NOT set here. They are set inside RootShell's useEffect so the flags
+  // reflect an actual React commit. Setting them synchronously here poisons
+  // the HTML-side boot watchdog (`checkBoot` + 6s rescue in index.html) and
+  // leaves users stuck on the splash if React never commits (task #718).
+  // RootShell is the outermost React node after BrowserRouter, so its effect
+  // fires at the very first commit — before any provider, auth, or route.
 } catch (err) {
   console.error("[BOOT_CRASH]", err);
   captureBootCrash(err, {
