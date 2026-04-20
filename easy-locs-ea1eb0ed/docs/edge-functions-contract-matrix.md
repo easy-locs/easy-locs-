@@ -509,8 +509,8 @@ Every call site is verified against either an **explicit** entry in `supabase/fu
 ### `presence-heartbeat`
 - _contract requires_: ``
 
-- `src/hooks/useMasterAppBootstrap.ts:149` — invoke · POST · body · no-headers · keys=[action,session_id,user_agent]
-- `src/hooks/useMasterAppBootstrap.ts:162` — invoke · POST · body · no-headers · keys=[action,session_id,user_agent]
+- `src/hooks/useMasterAppBootstrap.ts:152` — invoke · POST · body · no-headers · keys=[action,session_id,user_agent]
+- `src/hooks/useMasterAppBootstrap.ts:165` — invoke · POST · body · no-headers · keys=[action,session_id,user_agent]
 - `src/lib/redis/presence-service.ts:22` — invoke · POST · body · no-headers · keys=[action,status,metadata,identity]
 - `src/lib/redis/presence-service.ts:35` — invoke · POST · body · no-headers · keys=[action]
 - `src/lib/redis/presence-service.ts:47` — invoke · POST · body · no-headers · keys=[action,user_id]

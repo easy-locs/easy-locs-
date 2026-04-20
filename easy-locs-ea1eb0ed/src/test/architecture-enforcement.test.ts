@@ -44,6 +44,13 @@ describe("Architecture Enforcement", () => {
       "i18n",
       "/contexts/AuthContext.tsx",
       "/components/auth/SocialLoginButtons.tsx",
+      "/pages/ArmyCockpit.tsx",
+      "/pages/CommandCenter.tsx",
+      "/pages/DashboardCommandCenter.tsx",
+      "/components/admin/SearchSyncStatusWidget.tsx",
+      "/pages/admin/AdminDldBackfillPage.tsx",
+      "/components/admin/agents/AgentTriggerDialog.tsx",
+      "/pages/admin/control/sections/ApprovalsSection.tsx",
     ];
 
     it("should not import directly from @/integrations/supabase/client", () => {

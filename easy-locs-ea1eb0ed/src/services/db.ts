@@ -106,6 +106,7 @@ type DbFn = {
   (table: string): ReturnType<typeof supabase.from>;
   from: (table: string) => ReturnType<typeof supabase.from>;
   rpc: typeof supabase.rpc;
+  schema: typeof supabase.schema;
   storage: typeof supabase.storage;
   functions: typeof supabase.functions;
   auth: typeof supabase.auth;
@@ -130,6 +131,13 @@ export const db: DbFn = (() => {
     rpc: {
       enumerable: true,
       get: () => (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
+    },
+    // Lazy accessor: only resolves supabase.schema at call time so mocks that
+    // stub @/integrations/supabase/client don't need schema at module init.
+    schema: {
+      enumerable: true,
+      value: (...args: Parameters<typeof supabase.schema>) =>
+        (supabase as unknown as { schema: typeof supabase.schema }).schema(...args),
     },
     storage: { enumerable: true, get: () => supabase.storage },
     functions: { enumerable: true, get: () => supabase.functions },

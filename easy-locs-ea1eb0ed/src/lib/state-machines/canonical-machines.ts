@@ -232,6 +232,8 @@ export function validateAllCanonicalMachines(): {
     ["SUPPORT_TICKET_MACHINE", SUPPORT_TICKET_MACHINE],
     ["REPAIR_MACHINE", REPAIR_MACHINE],
     ["SUBSCRIPTION_MACHINE", SUBSCRIPTION_MACHINE],
+    ["JOURNEY_MACHINE", JOURNEY_MACHINE],
+    ["DEEP_LINK_MACHINE", DEEP_LINK_MACHINE],
   ];
 
   return machines.map(([name, machine]) => {
@@ -596,5 +598,67 @@ export const SUBSCRIPTION_MACHINE: CanonicalMachineDef<SubscriptionState> = {
     paused: { on: { RESUME: "active", CANCEL: "cancelled", EXPIRE: "expired" } },
     cancelled: {},   // terminal
     expired: { on: { RESUBSCRIBE: "active" } },
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// JOURNEY STATE MACHINE
+// Phase 1 — Cross-pillar journey lifecycle.
+// Tracks the user-visible lifecycle of a canonical user intent from
+// initiation through to completion or failure, with an interrupted/resume
+// branch for flows that span multiple sessions or navigation events.
+// ═══════════════════════════════════════════════════════════════
+
+export type JourneyState =
+  | "idle"
+  | "started"
+  | "in_progress"
+  | "interrupted"
+  | "resuming"
+  | "completed"
+  | "failed"
+  | "abandoned";
+
+export const JOURNEY_MACHINE: CanonicalMachineDef<JourneyState> = {
+  initial: "idle",
+  states: {
+    idle: { on: { START: "started" } },
+    started: { on: { PROGRESS: "in_progress", INTERRUPT: "interrupted", COMPLETE: "completed", FAIL: "failed", ABANDON: "abandoned" } },
+    in_progress: { on: { PROGRESS: "in_progress", INTERRUPT: "interrupted", COMPLETE: "completed", FAIL: "failed", ABANDON: "abandoned" } },
+    interrupted: { on: { RESUME: "resuming", ABANDON: "abandoned" } },
+    resuming: { on: { PROGRESS: "in_progress", COMPLETE: "completed", FAIL: "failed", INTERRUPT: "interrupted", ABANDON: "abandoned" } },
+    completed: {},   // terminal
+    failed: { on: { RETRY: "resuming", ABANDON: "abandoned" } },
+    abandoned: {},   // terminal
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════
+// DEEP LINK STATE MACHINE
+// Phase 1 — Lifecycle of a deep link from receipt to resolution.
+// Handles the common pattern of a deep link arriving while the user
+// is unauthenticated (deferred through auth) or while a conflicting
+// flow is active.
+// ═══════════════════════════════════════════════════════════════
+
+export type DeepLinkState =
+  | "received"
+  | "validating"
+  | "deferred"       // waiting for auth
+  | "resolving"      // authenticated, resolving route
+  | "resolved"       // navigation complete
+  | "invalid"        // failed validation
+  | "expired";       // deferred too long
+
+export const DEEP_LINK_MACHINE: CanonicalMachineDef<DeepLinkState> = {
+  initial: "received",
+  states: {
+    received: { on: { VALIDATE: "validating" } },
+    validating: { on: { NEEDS_AUTH: "deferred", READY: "resolving", INVALID: "invalid" } },
+    deferred: { on: { AUTH_COMPLETE: "resolving", EXPIRE: "expired" } },
+    resolving: { on: { DONE: "resolved", FAIL: "invalid" } },
+    resolved: {},    // terminal
+    invalid: {},     // terminal
+    expired: {},     // terminal
   },
 };

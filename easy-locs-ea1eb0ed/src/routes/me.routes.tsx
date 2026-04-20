@@ -22,12 +22,6 @@ export function MeRoutes() {
   return (
     <>
       <Route path="/me" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><Suspense fallback={<PillarSkeleton pillar="me" />}><MeCommandCenter /></Suspense></FeatureErrorBoundary></ProtectedRoute>} />
-      {/* Common URL aliases — kept as redirects so user-typed/legacy URLs
-          land on the real surfaces instead of the global 404. */}
-      <Route path="/profile" element={<Navigate to="/me" replace />} />
-      <Route path="/account" element={<Navigate to="/me" replace />} />
-      <Route path="/messages" element={<Navigate to="/orbit" replace />} />
-      <Route path="/inbox" element={<Navigate to="/orbit" replace />} />
       <Route path="/me/edit-profile" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><EditProfilePage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/me/spending-insights" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerSpendingInsightsPage /></FeatureErrorBoundary></ProtectedRoute>} />
       <Route path="/me/address-book" element={<ProtectedRoute><FeatureErrorBoundary featureName="Me"><CustomerAddressBookPage /></FeatureErrorBoundary></ProtectedRoute>} />
@@ -92,8 +86,7 @@ export function MeRoutes() {
       <Route path="/settings/payment-methods" element={<Navigate to="/wallet" replace />} />
       <Route path="/settings/notification-preferences" element={<Navigate to="/settings/notifications" replace />} />
 
-      {/* Back-compat: external & legacy links to /profile resolve to canonical /me */}
-      <Route path="/profile" element={<Navigate to="/me" replace />} />
+      {/* Back-compat: external & legacy links to /profile/:userId resolve to canonical /me */}
       <Route path="/profile/:userId" element={<Navigate to="/me" replace />} />
 
     </>

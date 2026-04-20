@@ -4,20 +4,52 @@ vi.mock("@/lib/push/registerPush", () => ({
   registerPushNotifications: vi.fn().mockResolvedValue({ registered: true, token: "mock-token" }),
 }));
 
+// Bypass governance dispatch so cFrom() does not block on DB-side RPC.
+vi.mock("@/lib/execution/dispatch", () => ({
+  dispatchExecutionTask: vi.fn().mockResolvedValue({
+    taskId: "mock-task-id",
+    status: "queued",
+    agentId: null,
+    agentVersionId: null,
+    blockedReason: null,
+  }),
+  DispatchError: class DispatchError extends Error {},
+}));
+
+// Mock content-mutation to use a simple db.from() pass-through so test assertions
+// can spy on the underlying from/upsert/maybeSingle mocks directly.
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = await import("@/services/db");
+  return {
+    cFrom: (table: string) => (db as unknown as { from: (t: string) => unknown }).from(table),
+    cRpc: vi.fn(),
+    cContent: vi.fn(),
+  };
+});
+
 vi.mock("@/services/db", () => {
   const upsert = vi.fn().mockResolvedValue({ data: null, error: null });
   const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-  const from = vi.fn().mockReturnValue({
+  const builder = {
     select: vi.fn().mockReturnValue({
       eq: vi.fn().mockReturnValue({
-        eq: vi.fn().mockReturnValue({
-          maybeSingle,
-        }),
+        eq: vi.fn().mockReturnValue({ maybeSingle }),
       }),
     }),
     upsert,
+  };
+  const from = vi.fn().mockReturnValue(builder);
+  const db = Object.assign(from, {
+    from,
+    schema: vi.fn().mockReturnValue({
+      from,
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    }),
+    __upsert: upsert,
+    __maybeSingle: maybeSingle,
+    __from: from,
   });
-  return { db: { from, __upsert: upsert, __maybeSingle: maybeSingle, __from: from } };
+  return { db };
 });
 
 import {

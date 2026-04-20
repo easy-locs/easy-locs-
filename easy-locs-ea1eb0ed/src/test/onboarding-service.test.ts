@@ -53,11 +53,34 @@ const mockStorageFrom = vi.fn().mockReturnValue({
   getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: "https://mock.url/file" } }),
 });
 
+vi.mock("@/lib/execution/dispatch", () => ({
+  dispatchExecutionTask: vi.fn().mockResolvedValue({
+    taskId: "mock-task-id",
+    status: "queued",
+    agentId: null,
+    agentVersionId: null,
+    blockedReason: null,
+  }),
+  DispatchError: class DispatchError extends Error {},
+}));
+
+vi.mock("@/lib/execution/content-mutation", async () => {
+  const { db } = await import("@/services/db");
+  const dbFn = db as unknown as (table: string) => unknown;
+  return {
+    cFrom: (table: string) => dbFn(table),
+    cRpc: vi.fn(),
+    cContent: vi.fn(),
+  };
+});
+
 vi.mock("@/services/db", () => {
   const dbProxy = (...args: unknown[]) => mockDbFrom(...args);
+  const mockSchemaRpc = vi.fn().mockResolvedValue({ data: { task_id: "mock-task", status: "queued", agent_id: null, agent_version_id: null, blocked_reason: null }, error: null });
   const dbFn = Object.assign(dbProxy, {
     from: (...args: unknown[]) => mockDbFrom(...args),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    schema: vi.fn().mockReturnValue({ rpc: mockSchemaRpc, from: (...args: unknown[]) => mockDbFrom(...args) }),
     functions: { invoke: (...args: unknown[]) => mockFunctionsInvoke(...args) },
     storage: { from: (...args: unknown[]) => mockStorageFrom(...args) },
   });
@@ -412,7 +435,9 @@ describe("onboarding.service — submitHotelProvider", () => {
 
   it("throws when provider upsert fails", async () => {
     const providerQb = createQueryBuilder();
-    providerQb.single.mockResolvedValueOnce({ data: null, error: { message: "upsert failed" } });
+    providerQb.then.mockImplementationOnce(
+      (resolve: ThenHandler) => Promise.resolve({ data: null, error: { message: "upsert failed" } }).then(resolve)
+    );
     mockDbFrom.mockReturnValueOnce(providerQb);
 
     const { submitHotelProvider } = await import("@/services/onboarding.service");
@@ -487,18 +512,18 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
       ];
       const qb = createQueryBuilder();
       qb.order.mockResolvedValueOnce({ data: sessions, error: null });
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { fetchOnboardingSessions } = await import("@/services/domain/onboarding.service");
       const result = await fetchOnboardingSessions("u1");
-      expect(mockDomainOnboardingFrom).toHaveBeenCalledWith("onboarding_sessions");
+      expect(mockDbFrom).toHaveBeenCalledWith("onboarding_sessions");
       expect(result).toEqual(sessions);
     });
 
     it("returns empty array when no sessions exist", async () => {
       const qb = createQueryBuilder();
       qb.order.mockResolvedValueOnce({ data: null, error: null });
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { fetchOnboardingSessions } = await import("@/services/domain/onboarding.service");
       const result = await fetchOnboardingSessions("u-none");
@@ -509,11 +534,11 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
   describe("upsertOnboardingSession", () => {
     it("calls upsert with record", async () => {
       const qb = createQueryBuilder();
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { upsertOnboardingSession } = await import("@/services/domain/onboarding.service");
       await upsertOnboardingSession({ user_id: "u1", step: 3 });
-      expect(mockDomainOnboardingFrom).toHaveBeenCalledWith("onboarding_sessions");
+      expect(mockDbFrom).toHaveBeenCalledWith("onboarding_sessions");
       expect(qb.upsert).toHaveBeenCalledWith({ user_id: "u1", step: 3 });
     });
 
@@ -522,7 +547,7 @@ describe("Onboarding Domain Service (domain/onboarding.service.ts)", () => {
       qb.then.mockImplementationOnce(
         (resolve: ThenHandler) => Promise.resolve({ data: null, error: { message: "insert failed" } }).then(resolve)
       );
-      mockDomainOnboardingFrom.mockReturnValueOnce(qb);
+      mockDbFrom.mockReturnValueOnce(qb);
 
       const { upsertOnboardingSession } = await import("@/services/domain/onboarding.service");
       await expect(upsertOnboardingSession({ user_id: "u1" })).rejects.toEqual({ message: "insert failed" });

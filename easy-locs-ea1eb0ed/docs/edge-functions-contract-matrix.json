@@ -3294,7 +3294,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 149,
+          "line": 152,
           "method": "POST",
           "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: session."
         },
@@ -3311,7 +3311,7 @@
           "hasBody": true,
           "hasHeaders": false,
           "kind": "invoke",
-          "line": 162,
+          "line": 165,
           "method": "POST",
           "snippet": "functions.invoke(\"presence-heartbeat\", { body: { action: \"store_session\", session_id: ne"
         },

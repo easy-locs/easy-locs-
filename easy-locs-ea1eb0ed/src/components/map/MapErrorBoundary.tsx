@@ -38,10 +38,12 @@ export class MapErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       const height = this.props.fallbackHeight ?? 300;
+      const heightStyle = typeof height === "number" ? `${height}px` : height;
       return (
         <div
           role="region"
           aria-label={this.props.fallbackTitle || "Map error recovery"}
+          style={{ height: heightStyle, width: "100%" }}
         >
           <MapErrorFallback
             message={this.state.errorMessage}
@@ -49,7 +51,7 @@ export class MapErrorBoundary extends Component<Props, State> {
             icon={this.props.fallbackIcon}
             onRetry={this.handleRetry}
             style={{
-              height: typeof height === "number" ? `${height}px` : height,
+              height: "100%",
               width: "100%",
               minHeight: "unset",
             }}

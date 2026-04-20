@@ -489,6 +489,47 @@
         posthog.init(window.__POSTHOG_KEY__, {api_host: window.__POSTHOG_HOST__ || "https://us.i.posthog.com", autocapture: false, capture_pageview: false, disable_session_recording: true});
       }
     </script>
+<!-- Early error logging — installed before the React bundle so startup
+         crashes are always visible in the console even if Sentry never inits. -->
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        console.error('[BOOT_ERROR]', msg, (src || '') + ':' + line + ':' + col, err);
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        console.error('[BOOT_UNHANDLED_REJECTION]', e.reason);
+      });
+    </script>
+    <script>
+      // requestIdleCallback / cancelIdleCallback polyfill — installed as a
+      // blocking classic script BEFORE the module bundle so the global is
+      // guaranteed to exist before any bundled code (which calls it at module
+      // top-level in src/main.tsx) runs. Safari < 17.4 and several mobile
+      // WebViews lack these natively and would otherwise crash the boot with
+      // "ReferenceError: Can't find variable: requestIdleCallback".
+      // src/polyfills.ts mirrors this for non-browser environments (tests/SSR).
+      (function () {
+        if (typeof window === 'undefined') return;
+        if (typeof window.requestIdleCallback !== 'function') {
+          window.requestIdleCallback = function (cb, opts) {
+            var start = Date.now();
+            var timeoutMs = (opts && typeof opts.timeout === 'number') ? opts.timeout : 50;
+            return window.setTimeout(function () {
+              var elapsed = Date.now() - start;
+              var timedOut = elapsed >= timeoutMs;
+              cb({
+                didTimeout: timedOut,
+                timeRemaining: function () {
+                  return timedOut ? 0 : Math.max(0, 50 - (Date.now() - start));
+                }
+              });
+            }, 1);
+          };
+        }
+        if (typeof window.cancelIdleCallback !== 'function') {
+          window.cancelIdleCallback = function (id) { window.clearTimeout(id); };
+        }
+      })();
+    </script>
     <!-- Global error trap: catches module-level crashes (e.g. missing env vars,
          chunk 404 after SW stale cache) BEFORE main.tsx's try/catch runs.
          Without this the HTML splash stays frozen indefinitely until the 15s
@@ -538,7 +579,7 @@
 
       (function () {
         var startedAt = Date.now();
-        var timeoutMs = 15000;
+        var timeoutMs = 8000;
         var retryKey = '__el_boot_retry_v1';
 
         function nukeServiceWorkersAndCaches() {
@@ -604,7 +645,7 @@
           showBootError();
         }
 
-        // After 6s with splash still visible, add a "Reset & retry" rescue button
+        // After 4s with splash still visible, add a "Reset & retry" rescue button
         // (works even if the main JS bundle never executes — pure HTML/CSS escape hatch)
         setTimeout(function () {
           if (window.__EASYLOCS_REACT_MOUNTED__ || window.__EASYLOCS_BOOTED__) return;
@@ -616,7 +657,7 @@
           btn.style.cssText = 'margin-top:32px;background:#1AAE8E;color:#0D1117;border:none;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:system-ui,-apple-system,sans-serif;box-shadow:0 4px 12px rgba(26,174,142,0.3);';
           btn.onclick = function(){ nukeServiceWorkersAndCaches().then(function(){ window.location.replace('/?nosw=1'); }); };
           splash.appendChild(btn);
-        }, 6000);
+        }, 4000);
 
         window.requestAnimationFrame(checkBoot);
       })();
