@@ -1,103 +1,146 @@
-# 🚀 EASY-LOCS SUPER APP
-### Property • Marketplace • Communication • Wallet • Radar
+# 🚀 EASY-LOCS — GLOBAL SUPER APP PLATFORM
+### Property • Marketplace • Orbit • Wallet • Radar
 
 ---
 
-## 🌍 Vision
+## 🌍 Mission
 
-Easy-Locs est une **Super App globale** qui unifie :
+Easy-Locs est une **super app globale de nouvelle génération** conçue pour unifier les interactions humaines, commerciales et immobilières dans un seul système cohérent.
 
-- 🏠 Gestion immobilière (Property Management)
-- 🛒 Marketplace (services, food, shops, real estate)
-- 💬 Communication temps réel (Orbit)
-- 💳 Wallet & paiements (QR, P2P, Stripe Connect)
-- 📍 Radar & géolocalisation intelligente
-
-👉 Une seule plateforme.  
-👉 Une seule source de vérité (SSOT).  
-👉 0 conflit. 100% scalable.
+👉 Une seule plateforme  
+👉 Une seule identité utilisateur  
+👉 Une seule source de vérité (SSOT)  
+👉 Zéro conflit architectural  
 
 ---
 
-## ⚡ Core Modules
+## 🧠 Product Philosophy
 
-### 🏠 Property Management
-- Gestion multi-pays (Europe + Global ready)
-- Biens, locataires, baux
-- Génération PDF (quittances, contrats, avis)
-- Portail locataire
-- Automatisation légale par pays
+- **SSOT-first architecture** (no duplication, no drift)
+- **Event-driven system (Platform Bus)**
+- **Zero-conflict domain boundaries**
+- **Realtime by default**
+- **Composable micro-engines**
+- **Global-ready from day one**
+
+---
+
+## ⚡ Core Systems
+
+### 🏠 Property Management System
+Enterprise-grade real estate infrastructure:
+
+- Multi-country legal abstraction layer
+- Lease lifecycle management
+- Tenant + owner portals
+- Automated document generation (PDF contracts, receipts)
+- Payment tracking & compliance
+- Country-specific rule engines
 
 ---
 
 ### 🛒 Marketplace Engine
-- Food / Grocery / Services / Property
-- Onboarding automatique (Deliveroo, Careem, Talabat, Web)
-- SEO dynamique + pages indexables
-- Catalogue intelligent (menus, services, produits)
-- Publication contrôlée (quality gate)
+Universal commerce layer:
+
+- Multi-vertical support:
+  - Food
+  - Grocery
+  - Services
+  - Real estate
+- AI-assisted onboarding (web scraping + normalization)
+- Canonical catalog system
+- SEO-first dynamic pages
+- Quality gate publishing pipeline
 
 ---
 
 ### 💬 Orbit — Communication Core
-- Chat temps réel (type WhatsApp)
-- Appels audio / vidéo
-- Envoi fichiers / images / localisation
+Next-gen communication layer:
+
+- Realtime messaging (ultra-low latency)
+- Audio / Video calls
+- File, media & location sharing
 - Multi-device sync
-- E2EE (AES-256-GCM + ECDH + HKDF)
-- Ghost Mode (ultra sécurisé - premium)
+- Message state machine (sending → delivered → read)
+- E2EE encryption:
+  - AES-256-GCM
+  - ECDH key exchange
+  - HKDF derivation
+
+#### 🔐 Ghost Mode (Premium)
+- Ephemeral encrypted sessions
+- No metadata persistence
+- Ultra-secure communication layer (above Signal level target)
 
 ---
 
-### 💳 Wallet & Payments
-- Wallet utilisateur intégré
-- Transactions temps réel
-- Paiement QR code (scan & pay)
-- Stripe Connect (marketplace payouts)
-- Multi-devise
-- Escrow (sécurisation transactions)
+### 💳 Wallet & Payments System
+Financial infrastructure layer:
+
+- User wallet (multi-currency)
+- Instant P2P transfers
+- QR code payments (scan & pay)
+- Stripe Connect marketplace payouts
+- Escrow system (secure transactions)
+- Apple Pay / Google Pay top-up
 
 ---
 
 ### 📍 Radar Engine
-- Carte temps réel (type Snap Map++++)
-- Détection commerces / services autour
-- Données live (trafic, météo, activité)
-- Heatmap intelligente
-- Recommandations contextuelles
+Contextual discovery engine:
+
+- Realtime map (Snap Map++ architecture)
+- Nearby services & businesses detection
+- Dynamic heatmaps
+- Context-aware recommendations
+- Live signals:
+  - activity
+  - traffic
+  - weather
 
 ---
 
-## 🧠 Core Architecture
+## 🧬 Core Architecture
 
-### 🧬 Single Source of Truth (SSOT)
-- Données unifiées globales
-- Aucun doublon
-- Synchronisation temps réel
+### 🧩 Single Source of Truth (SSOT)
+- Unified canonical data models
+- No duplication across modules
+- Deterministic state propagation
 
 ---
 
 ### ⚙️ Micro-Engines System
-- 100+ engines découplés
-- Pipeline intelligent :
-  - ingestion
-  - normalisation
-  - classification
-  - publication
+100+ decoupled engines:
+
+- ingestion
+- normalization
+- classification
+- scoring
+- publishing
+
+Each engine:
+- independent
+- observable
+- restartable
+- conflict-free
 
 ---
 
 ### 🔗 Platform Bus (Event System)
-- Communication inter-modules
-- Temps réel
-- Ultra scalable
+Central nervous system:
+
+- event-driven architecture
+- deterministic execution order
+- domain isolation
+- realtime propagation
 
 ---
 
-### 🧩 Canonical Taxonomy
-- Catégories globales unifiées
-- Mapping multi-vertical
-- SEO + UX + data alignés
+### 🧠 Canonical Taxonomy
+- global category system
+- vertical-specific mapping
+- SEO + UX alignment
+- strict schema enforcement
 
 ---
 
@@ -105,14 +148,14 @@ Easy-Locs est une **Super App globale** qui unifie :
 
 ### Frontend
 - React + TypeScript + Vite
-- Tailwind CSS + shadcn/ui
-- Zustand (state management)
-- Lazy loading i18n
+- Tailwind + shadcn/ui
+- Zustand (state)
+- i18n lazy loading
 
 ---
 
 ### Backend
-- PostgreSQL (RLS sécurisé)
+- PostgreSQL (strict RLS)
 - Supabase (Auth, Realtime, Storage)
 - Edge Functions
 
@@ -120,60 +163,85 @@ Easy-Locs est une **Super App globale** qui unifie :
 
 ### Payments
 - Stripe Connect
-- Apple Pay / Google Pay (top-up)
+- Apple Pay / Google Pay
 
 ---
 
 ### Communication
-- Realtime WebSockets
-- E2EE encryption layer
+- WebSocket realtime layer
+- E2EE encryption engine
 
 ---
 
 ### Notifications
-- SendGrid (email)
-- Push notifications (mobile-ready)
+- SendGrid
+- Push system (mobile-ready)
 
 ---
 
-## 🔐 Security
+## 🔐 Security Model
 
-- Row Level Security (RLS strict)
+- Strict Row-Level Security (RLS)
 - Zero permissive policies
-- E2EE messaging
-- CSP & headers sécurisés
-- Permissions device contrôlées
+- End-to-end encryption (Orbit)
+- CSP hardened
+- Device permission control layer
 
 ---
 
-## 🌐 Internationalisation
+## 🌐 Internationalization
 
-- FR / EN / ES / DE / IT / PT
-- Lazy loading des langues
-- SEO multilingue
-- Adaptation locale (lois, formats)
-
----
-
-## ⚡ Performance
-
-- Optimistic UI (0 latence perçue)
-- Cache intelligent
-- Lazy loading
-- Realtime sync optimisé
-- Offline fallback
+- Multi-language support:
+  - FR / EN / ES / DE / IT / PT
+- Lazy-loaded translations
+- Country-specific adaptation:
+  - legal
+  - currency
+  - formats
 
 ---
 
-## 🚀 Key Features
+## ⚡ Performance Strategy
 
-- Instant messaging (0 delay UX)
-- Marketplace auto-generated
-- Smart onboarding global
-- QR code ecosystem
-- Radar live intelligence
-- AI assistant intégré
-- Multi-device sync parfait
+- Optimistic UI (instant feel)
+- Realtime sync
+- Intelligent caching
+- Lazy loading everywhere
+- Offline-first fallback (planned)
+
+---
+
+## 🚀 System Capabilities
+
+- WhatsApp-grade messaging UX
+- Fully automated marketplace generation
+- Global onboarding pipelines
+- QR ecosystem (payments + menus)
+- Real-time geospatial intelligence
+- AI-assisted operations (future layer)
+
+---
+
+## 🧪 Current Status
+
+⚠️ Core stabilization phase:
+
+- Boot system hardening (in progress)
+- Auth system stabilization (in progress)
+- Supabase client safety layer (in progress)
+- DB module isolation (in progress)
+
+👉 Goal: **unbreakable foundation before scale**
+
+---
+
+## 🧭 Roadmap (Next Phase)
+
+- AuthContext decomposition (Session / Profile / Effects)
+- Wallet full integration
+- Orbit production-grade stability
+- Radar real-time engine optimization
+- Global rollout readiness
 
 ---
 
