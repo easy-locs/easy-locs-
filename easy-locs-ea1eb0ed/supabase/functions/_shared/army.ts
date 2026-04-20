@@ -14,7 +14,6 @@ export function armyClient(): SupabaseClient {
   );
 }
 
-<<<<<<< HEAD
 /**
  * Resolve the caller's identity from the Authorization header.
  * Returns one of:
@@ -231,5 +230,4 @@ export async function canSpawn(
   });
   if (error) return { ok: false, reason: error.message };
   return data as { ok: boolean; reason?: string };
-}
 }
