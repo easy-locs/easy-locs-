@@ -119,8 +119,7 @@ export function addPreconnectHint(url: string) {
 }
 
 export function initPreconnectHints() {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  if (supabaseUrl) addPreconnectHint(supabaseUrl);
+  addPreconnectHint("https://ifvuvbolrmuuugtzxsfk.supabase.co");
   addPreconnectHint("https://basemaps.cartocdn.com");
   addPreconnectHint("https://js.stripe.com");
   addPreconnectHint("https://firebaseinstallations.googleapis.com");

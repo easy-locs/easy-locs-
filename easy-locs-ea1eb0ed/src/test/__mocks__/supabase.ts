@@ -57,6 +57,10 @@ export function createMockSupabase() {
       unsubscribe: vi.fn(),
     }),
     rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    schema: vi.fn().mockReturnValue({
+      from: vi.fn().mockImplementation(() => mockQueryBuilder()),
+      rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
+    }),
     removeChannel: vi.fn(),
     removeAllChannels: vi.fn(),
     getChannels: vi.fn().mockReturnValue([]),

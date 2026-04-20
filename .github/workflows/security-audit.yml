@@ -54,8 +54,7 @@ jobs:
             --config p/owasp-top-ten \
             --config p/javascript \
             --config p/typescript \
-            --config p/react \
-            --severity=ERROR
+            --config p/react
         env:
           SEMGREP_SEND_METRICS: "off"
 

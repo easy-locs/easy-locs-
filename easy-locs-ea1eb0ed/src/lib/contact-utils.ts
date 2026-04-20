@@ -35,11 +35,10 @@ export function whatsappLink(phone: string, ctx: ListingContext): string {
 /** Telegram deep link — share via t.me/share/url for listing context */
 export function telegramLink(username: string | undefined, ctx: ListingContext): string {
   if (username) {
-    // Pass through full URLs (https:// or http://) unchanged
-    if (username.startsWith("https://") || username.startsWith("http://")) {
+    // Pass through full URLs unchanged
+    if (username.startsWith("http://") || username.startsWith("https://")) {
       return username;
     }
-    // Strip leading @ then remove characters not valid in Telegram usernames (allows dots)
     const stripped = username.replace(/^@/, "").replace(/[^a-zA-Z0-9_.]/g, "");
     if (stripped.length < 5) {
       return `https://t.me/share/url?url=${encodeURIComponent(getListingUrl(ctx))}&text=${encodeURIComponent(ctx.title)}`;

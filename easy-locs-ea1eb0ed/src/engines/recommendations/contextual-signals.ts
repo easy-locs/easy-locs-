@@ -54,12 +54,6 @@ const BOOST_RULES: BoostRule[] = [
     boost: 0.15,
   },
   {
-    factor: "weekend_delivery",
-    condition: (ctx) => ctx.isWeekend && ctx.timeOfDay === "afternoon",
-    verticals: ["delivery"],
-    boost: 0.2,
-  },
-  {
     factor: "rainy_day",
     condition: (ctx) => ctx.weather === "rainy",
     verticals: ["delivery", "food", "grocery"],
@@ -69,18 +63,6 @@ const BOOST_RULES: BoostRule[] = [
     factor: "hot_weather",
     condition: (ctx) => ctx.weather === "hot",
     verticals: ["delivery", "grocery", "taxi"],
-    boost: 0.2,
-  },
-  {
-    factor: "cold_weather",
-    condition: (ctx) => ctx.weather === "cold",
-    verticals: ["delivery", "grocery", "taxi"],
-    boost: 0.25,
-  },
-  {
-    factor: "cloudy_weather",
-    condition: (ctx) => ctx.weather === "cloudy",
-    verticals: ["delivery", "food"],
     boost: 0.2,
   },
   {

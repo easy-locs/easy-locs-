@@ -75,10 +75,9 @@ function atomEntry(title: string, link: string, summary: string, updated: string
 
 export async function pingWebSubHub(hub: string, feedUrl: string, timeoutMs = 10000): Promise<{ hub: string; feedUrl: string; status: number; ok: boolean; error?: string }> {
   const body = new URLSearchParams({ "hub.mode": "publish", "hub.url": feedUrl }).toString();
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeoutId = setTimeout(() => reject(new Error(`WebSub ping timed out after ${timeoutMs}ms`)), timeoutMs);
-  });
+  const timeoutPromise = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error(`WebSub ping timed out after ${timeoutMs}ms`)), timeoutMs)
+  );
   try {
     const response = await Promise.race([
       fetch(hub, {
@@ -92,8 +91,6 @@ export async function pingWebSubHub(hub: string, feedUrl: string, timeoutMs = 10
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return { hub, feedUrl, status: 0, ok: false, error: message };
-  } finally {
-    clearTimeout(timeoutId);
   }
 }
 

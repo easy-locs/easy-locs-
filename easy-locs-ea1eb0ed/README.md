@@ -1,184 +1,284 @@
-# 🚀 EASY-LOCS SUPER APP
-### Property • Marketplace • Communication • Wallet • Radar
+# 🌐 EASY-LOCS — REAL WORLD OPERATING SYSTEM (RWOS)
+### The Global Infrastructure for Human, Business & Location-Based Interactions
 
 ---
 
-## 🌍 Vision
+## 🧠 Definition
 
-Easy-Locs est une **Super App globale** qui unifie :
+Easy-Locs is not an application.
 
-- 🏠 Gestion immobilière (Property Management)
-- 🛒 Marketplace (services, food, shops, real estate)
-- 💬 Communication temps réel (Orbit)
-- 💳 Wallet & paiements (QR, P2P, Stripe Connect)
-- 📍 Radar & géolocalisation intelligente
+It is a **Real-World Operating System (RWOS)** designed to unify:
 
-👉 Une seule plateforme.  
-👉 Une seule source de vérité (SSOT).  
-👉 0 conflit. 100% scalable.
+- People
+- Businesses
+- Locations
+- Transactions
+- Communications
+- Mobility
+- Intelligence
 
----
-
-## ⚡ Core Modules
-
-### 🏠 Property Management
-- Gestion multi-pays (Europe + Global ready)
-- Biens, locataires, baux
-- Génération PDF (quittances, contrats, avis)
-- Portail locataire
-- Automatisation légale par pays
+into a **single global infrastructure layer**.
 
 ---
 
-### 🛒 Marketplace Engine
-- Food / Grocery / Services / Property
-- Onboarding automatique (Deliveroo, Careem, Talabat, Web)
-- SEO dynamique + pages indexables
-- Catalogue intelligent (menus, services, produits)
-- Publication contrôlée (quality gate)
+## 🌍 Core Principle
+
+> Everything connects.  
+> Everything is discoverable.  
+> Everything is actionable.  
+> In real time.
 
 ---
 
-### 💬 Orbit — Communication Core
-- Chat temps réel (type WhatsApp)
-- Appels audio / vidéo
-- Envoi fichiers / images / localisation
-- Multi-device sync
-- E2EE (AES-256-GCM + ECDH + HKDF)
-- Ghost Mode (ultra sécurisé - premium)
+## 🧬 System Model
+
+Easy-Locs is built as a **multi-layer distributed system**:
+
+### 1. Identity Layer
+- Unified global identity
+- User / business / asset identity graph
+- Cross-country compatible
+- Device-agnostic
 
 ---
 
-### 💳 Wallet & Payments
-- Wallet utilisateur intégré
-- Transactions temps réel
-- Paiement QR code (scan & pay)
-- Stripe Connect (marketplace payouts)
-- Multi-devise
-- Escrow (sécurisation transactions)
+### 2. Communication Layer (Orbit)
+- Ultra-secure messaging
+- Voice / video / data streams
+- E2EE multi-layer encryption
+- Ghost Mode (stateless secure sessions)
+
+👉 Communication is not a feature  
+👉 It is a **core protocol of the system**
 
 ---
 
-### 📍 Radar Engine
-- Carte temps réel (type Snap Map++++)
-- Détection commerces / services autour
-- Données live (trafic, météo, activité)
-- Heatmap intelligente
-- Recommandations contextuelles
+### 3. Transaction Layer (Wallet)
+- Instant payments
+- P2P / B2C / B2B
+- QR ecosystem
+- Escrow & trust layer
+- Multi-currency
+
+👉 Target:
+**zero friction, near-zero fees, global interoperability**
 
 ---
 
-## 🧠 Core Architecture
+### 4. Discovery Layer (Radar)
+- Real-time geospatial intelligence
+- Everything around you:
+  - services
+  - deals
+  - people
+  - opportunities
+- Context-aware recommendations
+- Live signals engine
 
-### 🧬 Single Source of Truth (SSOT)
-- Données unifiées globales
-- Aucun doublon
-- Synchronisation temps réel
+👉 Radar = **physical world search engine**
+
+---
+
+### 5. Commerce Layer (Marketplace)
+- Unified commerce system:
+  - food
+  - services
+  - retail
+  - real estate
+  - travel
+- AI onboarding + normalization
+- SEO-native structure
+
+---
+
+### 6. Property Layer
+- Real estate OS:
+  - long-term rental
+  - short-term rental (Airbnb-like)
+  - ownership & management
+- Legal abstraction engine by country
+
+---
+
+### 7. Mobility Layer
+- Taxi / rider / delivery
+- Real-time dispatch system
+- Location-aware matching
+
+---
+
+### 8. Travel Layer
+- Hotels / flights / mobility
+- Connected with:
+  - Radar
+  - Wallet
+  - Orbit
+
+👉 Travel becomes contextual, not isolated
+
+---
+
+### 9. Culture & Religion Layer (Islam Easy)
+- Prayer times
+- Quran / Hadith
+- Local religious services
+- Cultural adaptation
+
+👉 The system adapts to human reality, not the opposite
+
+---
+
+### 10. Intelligence Layer
+
+#### Live Data
+- Forex
+- Local + global news
+- Market signals
+- City-level activity
+
+👉 Easy-Locs becomes a **real-time intelligence companion**
+
+---
+
+## ⚙️ Core Architecture
+
+### 🧩 SSOT (Single Source of Truth)
+- No duplication
+- Canonical models only
+- Deterministic data flow
+
+---
+
+### 🔗 Platform Bus (Event Engine)
+- All modules communicate through events
+- Strict execution order
+- Zero race conditions
+- Full observability
 
 ---
 
 ### ⚙️ Micro-Engines System
-- 100+ engines découplés
-- Pipeline intelligent :
-  - ingestion
-  - normalisation
-  - classification
-  - publication
+100+ autonomous engines:
+
+- ingestion
+- normalization
+- enrichment
+- classification
+- scoring
+- publishing
+
+Each engine:
+- isolated
+- restartable
+- conflict-free
 
 ---
 
-### 🔗 Platform Bus (Event System)
-- Communication inter-modules
-- Temps réel
-- Ultra scalable
+### 🧠 Canonical Taxonomy Engine
+- Global classification system
+- Multi-vertical mapping
+- SEO + UX alignment
 
 ---
 
-### 🧩 Canonical Taxonomy
-- Catégories globales unifiées
-- Mapping multi-vertical
-- SEO + UX + data alignés
+## 🔐 Security Architecture
+
+- E2EE multi-layer encryption
+- Double encryption model (target)
+- Zero-trust architecture
+- Strict RLS (PostgreSQL)
+- No silent failures
+- Fail-safe boot system
+- Explicit error propagation
 
 ---
 
-## 🛠 Tech Stack
+## ⚡ Performance Model
 
-### Frontend
-- React + TypeScript + Vite
-- Tailwind CSS + shadcn/ui
-- Zustand (state management)
-- Lazy loading i18n
-
----
-
-### Backend
-- PostgreSQL (RLS sécurisé)
-- Supabase (Auth, Realtime, Storage)
-- Edge Functions
+- Realtime-first architecture
+- Optimistic UI
+- Event-driven updates
+- Smart caching
+- Offline / degraded mode
+- Zero perceived latency target
 
 ---
 
-### Payments
-- Stripe Connect
-- Apple Pay / Google Pay (top-up)
+## 🌐 Global Interoperability
+
+Easy-Locs is designed as a **planet-scale network**:
+
+- user ↔ user
+- user ↔ business
+- business ↔ business
+- city ↔ city
+- country ↔ country
+
+Everything is connected through:
+- Orbit (communication)
+- Wallet (transactions)
+- Radar (discovery)
+- Marketplace (execution)
 
 ---
 
-### Communication
-- Realtime WebSockets
-- E2EE encryption layer
+## 🚀 Product Capabilities
+
+- WhatsApp-level messaging UX
+- Instant payments ecosystem
+- Real-time discovery of everything nearby
+- Global marketplace auto-generation
+- Property + travel + mobility integration
+- Cultural + religious adaptation
+- Live intelligence integration
 
 ---
 
-### Notifications
-- SendGrid (email)
-- Push notifications (mobile-ready)
+## 🧪 Current Phase
+
+**Foundation Hardening Phase**
+
+- Boot system stabilization
+- Auth system determinism
+- Supabase safety layer
+- DB isolation
+- Runtime reliability
+
+👉 Objective:
+**Build an unbreakable core before scaling globally**
 
 ---
 
-## 🔐 Security
+## 🧭 Evolution Path
 
-- Row Level Security (RLS strict)
-- Zero permissive policies
-- E2EE messaging
-- CSP & headers sécurisés
-- Permissions device contrôlées
+### Phase 1 — Stability
+- deterministic boot
+- conflict-free architecture
+- strong auth foundation
 
----
+### Phase 2 — Expansion
+- Orbit production-grade
+- Wallet full integration
+- Radar intelligence scaling
 
-## 🌐 Internationalisation
+### Phase 3 — Globalization
+- multi-country rollout
+- travel + mobility integration
+- cultural adaptation layers
 
-- FR / EN / ES / DE / IT / PT
-- Lazy loading des langues
-- SEO multilingue
-- Adaptation locale (lois, formats)
-
----
-
-## ⚡ Performance
-
-- Optimistic UI (0 latence perçue)
-- Cache intelligent
-- Lazy loading
-- Realtime sync optimisé
-- Offline fallback
+### Phase 4 — Network Effect
+- global interconnection
+- cross-country interactions
+- full ecosystem lock-in
 
 ---
 
-## 🚀 Key Features
+## 🏁 Final Vision
 
-- Instant messaging (0 delay UX)
-- Marketplace auto-generated
-- Smart onboarding global
-- QR code ecosystem
-- Radar live intelligence
-- AI assistant intégré
-- Multi-device sync parfait
+Easy-Locs is not competing with apps.
 
----
+It is building the **infrastructure layer of real-world interactions**.
 
-## 📦 Installation
-
-```bash
-npm install
-npm run dev
+👉 A global operating system  
+👉 For everything people do in real life  
+👉 In one unified system

@@ -14,7 +14,6 @@ export function armyClient(): SupabaseClient {
   );
 }
 
-<<<<<<< HEAD
 /**
  * Resolve the caller's identity from the Authorization header.
  * Returns one of:

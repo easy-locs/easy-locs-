@@ -55,7 +55,7 @@ describe("SuperAdminGate", () => {
     });
     hasRoleMock.mockResolvedValue(false);
     renderAt("/admin/super-dashboard");
-    await waitFor(() => expect(screen.getByText("DASHBOARD")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument());
   });
 
   it("renders children for super admin users", async () => {
@@ -73,7 +73,7 @@ describe("SuperAdminGate", () => {
     });
     hasRoleMock.mockRejectedValue(new Error("rpc failure"));
     renderAt("/admin/super-dashboard");
-    await waitFor(() => expect(screen.getByText("DASHBOARD")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument());
   });
 
   it("fails closed (redirects to /dashboard) when hasRole returns null", async () => {
@@ -82,7 +82,7 @@ describe("SuperAdminGate", () => {
     });
     hasRoleMock.mockResolvedValue(null as unknown as boolean);
     renderAt("/admin/super-dashboard");
-    await waitFor(() => expect(screen.getByText("DASHBOARD")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument());
   });
 
   it("redirects to /verify-email when email is not verified", async () => {
@@ -101,7 +101,7 @@ describe("SuperAdminGate", () => {
     hasRoleMock.mockResolvedValue(true);
     renderAt("/admin/super-dashboard");
     await waitFor(
-      () => expect(screen.getByText(/took too long to load/i)).toBeInTheDocument(),
+      () => expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument(),
       { timeout: 10000, interval: 200 },
     );
   }, 15000);
@@ -126,7 +126,7 @@ describe("SuperAdminGate", () => {
       </MemoryRouter>
     );
     await waitFor(() =>
-      expect(screen.getByText(/don't have access/i)).toBeInTheDocument()
+      expect(screen.getByTestId("admin-access-denied")).toBeInTheDocument()
     );
   });
 });

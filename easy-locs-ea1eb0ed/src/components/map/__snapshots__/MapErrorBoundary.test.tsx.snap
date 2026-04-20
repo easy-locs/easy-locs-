@@ -8,7 +8,7 @@ exports[`MapErrorBoundary > produces a snapshot matching the MapErrorFallback ma
 >
   <div
     class="flex items-center justify-center "
-    style="min-height: unset; border-radius: 16px; height: 100%;"
+    style="min-height: unset; border-radius: 16px; height: 100%; width: 100%;"
   >
     <div
       class="text-center px-6 py-4"

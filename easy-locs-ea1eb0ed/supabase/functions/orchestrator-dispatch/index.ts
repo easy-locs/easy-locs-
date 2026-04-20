@@ -3,13 +3,7 @@
 // generals. Honours kill switch + policies. Idempotent on order_id.
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logIncident,
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   logMessage, preflight, requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
-=======
-  logMessage, preflight, ARMY_DOMAINS,
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   logMessage, preflight, requireAuthenticated, ARMY_DOMAINS,
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
@@ -32,12 +26,7 @@ function inferDomain(text: string): typeof ARMY_DOMAINS[number] {
 
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   const denied = (await requireAuthenticated(req)) ?? (await requireServiceOrSupreme(req)); if (denied) return denied;
-=======
->>>>>>> 2c86558f9d (Task #998 — Hierarchical agent army (Command Center + Supabase))
 =======
   const denied = await requireAuthenticated(req); if (denied) return denied;
 >>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))

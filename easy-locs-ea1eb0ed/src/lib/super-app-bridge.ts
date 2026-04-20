@@ -1183,5 +1183,24 @@ export function installSuperAppBridge() {
     invalidate("dashboard-live-stats", "contacts", "threads");
   });
 
+  // ── Radar location shared → auto-start tracking across pillars ──
+  platformBus.on("radar:location_shared", (event) => {
+    invalidate("active-delivery", "my-orders");
+    const p = event.payload as Record<string, unknown>;
+    if (p?.live === true) {
+      platformBus.emitInternal("tracking:started", {
+        userId: p.userId,
+        contextType: p.contextType,
+        contextId: p.contextId,
+        position: p.position,
+      }, "tracking", {
+        correlationId: event.correlationId,
+        traceId: event.traceId,
+        userId: event.userId,
+        orgId: event.orgId,
+      });
+    }
+  });
+
   console.info("[super-app-bridge] Cross-section bridge + module lifecycle + runtime pipeline + health system installed");
 }

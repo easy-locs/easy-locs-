@@ -81,7 +81,7 @@ const PaymentProvidersSettings = () => {
     setConnectingStripe(true);
     try {
       const data = await ppRepo.createConnectAccount();
-      if (data?.url) window.open(data.url, "_blank", "noopener,noreferrer");
+      if (data?.url) window.open(data.url, "_blank");
     } catch (err: any) {
       toast({ title: t("page.common.error"), description: "Something went wrong. Please try again.", variant: "destructive" });
     } finally {

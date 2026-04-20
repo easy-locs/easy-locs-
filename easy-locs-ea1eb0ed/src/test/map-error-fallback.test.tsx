@@ -200,6 +200,8 @@ describe("useMapCore — error states", () => {
       MAPBOX_ACCESS_TOKEN: "",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(),
@@ -236,6 +238,8 @@ describe("useMapCore — error states", () => {
       MAPBOX_ACCESS_TOKEN: "   ",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(),
@@ -272,6 +276,8 @@ describe("useMapCore — error states", () => {
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(),
@@ -309,6 +315,8 @@ describe("useMapCore — error states", () => {
       MAPBOX_ACCESS_TOKEN: "pk.test_valid_token",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
 
     const getContextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext")
@@ -362,6 +370,8 @@ describe("LiveMap — fallback on missing token", () => {
       MAPBOX_ACCESS_TOKEN: "",
       getMapTokenError: () => "Map access token is not configured.",
       getMapboxTokenError: () => "Map access token is not configured.",
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(),
@@ -393,6 +403,8 @@ describe("LiveMap — fallback on missing token", () => {
       MAPBOX_ACCESS_TOKEN: "pk.test_token",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(() => Promise.reject(new Error("CDN down"))),
@@ -429,6 +441,8 @@ describe("LiveMap — fallback on missing token", () => {
       MAPBOX_ACCESS_TOKEN: "pk.test_token",
       getMapTokenError: () => null,
       getMapboxTokenError: () => null,
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(() => {
@@ -676,6 +690,8 @@ describe("useMapCore — retry", () => {
       MAPBOX_ACCESS_TOKEN: "",
       getMapTokenError: vi.fn(() => null),
       getMapboxTokenError: vi.fn(() => null),
+         getMapStyleUrl: vi.fn(() => ""),
+      isWebGLSupported: vi.fn(() => true),
     }));
     vi.doMock("@/lib/maplibre/maplibre-loader", () => ({
       loadMapLibre: vi.fn(),

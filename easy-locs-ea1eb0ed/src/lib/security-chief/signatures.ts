@@ -50,7 +50,7 @@ export async function verifySignedPayload<T extends Record<string, unknown>>(
   return crypto.subtle.verify(
     { name: "ECDSA", hash: "SHA-256" },
     verifier,
-    fromBase64(envelope.signature),
+    fromBase64(envelope.signature).buffer as ArrayBuffer,
     new TextEncoder().encode(hash)
   );
 }

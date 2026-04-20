@@ -1,7 +1,8 @@
 import type { PrayerTime } from "@/hooks/usePrayerTimes";
 import { registerPushNotifications } from "./registerPush";
 import { db as supabase } from "@/services/db";
-import { cFrom } from "@/lib/execution/content-mutation";
+
+import { cFrom, cRpc } from "@/lib/execution/content-mutation";
 const PRAYER_ICONS: Record<string, string> = {
   Fajr: "🌙",
   Dhuhr: "☀️",
@@ -141,7 +142,7 @@ export async function syncPrayerScheduleToServer(
       }));
 
     const scheduleDate = getLocalDateString();
-    const { data: existing } = await supabase.from("prayer_push_schedules")
+    const { data: existing } = await cFrom("prayer_push_schedules")
       .select("schedule_date")
       .eq("user_id", userId)
       .eq("schedule_date", scheduleDate)

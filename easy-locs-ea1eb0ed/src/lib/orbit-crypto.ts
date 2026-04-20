@@ -40,7 +40,7 @@ export async function exportPublicKey(key: CryptoKey): Promise<string> {
 
 export async function importPublicKey(base64: string): Promise<CryptoKey> {
   const raw = base64ToBuffer(base64);
-  return crypto.subtle.importKey("raw", raw, ECDH_PARAMS, true, []);
+  return crypto.subtle.importKey("raw", raw.buffer as ArrayBuffer, ECDH_PARAMS, true, []);
 }
 
 export async function exportPrivateKey(key: CryptoKey): Promise<JsonWebKey> {
@@ -74,8 +74,8 @@ export async function deriveSharedKey(
     { 
       name: "HKDF", 
       hash: HKDF_HASH, 
-      salt: usedSalt, 
-      info: HKDF_INFO 
+      salt: usedSalt.buffer as ArrayBuffer, 
+      info: HKDF_INFO.buffer as ArrayBuffer 
     },
     hkdfKey,
     { name: AES_ALGO, length: AES_KEY_LENGTH },
@@ -126,7 +126,7 @@ export async function encryptMessage(
     ["deriveKey"]
   );
   const messageKey = await crypto.subtle.deriveKey(
-    { name: "HKDF", hash: HKDF_HASH, salt: messageSalt, info: HKDF_INFO },
+    { name: "HKDF", hash: HKDF_HASH, salt: messageSalt.buffer as ArrayBuffer, info: HKDF_INFO.buffer as ArrayBuffer },
     hkdfKey,
     { name: AES_ALGO, length: AES_KEY_LENGTH },
     false,
@@ -138,9 +138,9 @@ export async function encryptMessage(
   const aad = new TextEncoder().encode(`orbit-v${PROTOCOL_VERSION}-${timestamp}`);
 
   const ciphertext = await crypto.subtle.encrypt(
-    { name: AES_ALGO, iv, tagLength: TAG_LENGTH, additionalData: aad },
+    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH, additionalData: aad.buffer as ArrayBuffer },
     messageKey,
-    encoded
+    encoded.buffer as ArrayBuffer
   );
 
   return {
@@ -163,9 +163,9 @@ export async function decryptMessage(
   // V1 legacy decryption (backwards compat)
   if (version === 1) {
     const decrypted = await crypto.subtle.decrypt(
-      { name: AES_ALGO, iv },
+      { name: AES_ALGO, iv: iv.buffer as ArrayBuffer },
       sharedKey,
-      ciphertext
+      ciphertext.buffer as ArrayBuffer
     );
     return new TextDecoder().decode(decrypted);
   }
@@ -191,7 +191,7 @@ export async function decryptMessage(
     ["deriveKey"]
   );
   const messageKey = await crypto.subtle.deriveKey(
-    { name: "HKDF", hash: HKDF_HASH, salt: messageSalt, info: HKDF_INFO },
+    { name: "HKDF", hash: HKDF_HASH, salt: messageSalt.buffer as ArrayBuffer, info: HKDF_INFO.buffer as ArrayBuffer },
     hkdfKey,
     { name: AES_ALGO, length: AES_KEY_LENGTH },
     false,
@@ -200,9 +200,9 @@ export async function decryptMessage(
 
   const aad = new TextEncoder().encode(`orbit-v${PROTOCOL_VERSION}-${timestamp}`);
   const decrypted = await crypto.subtle.decrypt(
-    { name: AES_ALGO, iv, tagLength: TAG_LENGTH, additionalData: aad },
+    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH, additionalData: aad.buffer as ArrayBuffer },
     messageKey,
-    ciphertext
+    ciphertext.buffer as ArrayBuffer
   );
 
   return new TextDecoder().decode(decrypted);
@@ -227,7 +227,7 @@ export async function encryptFile(
     "raw", await crypto.subtle.digest("SHA-512", combined), "HKDF", false, ["deriveKey"]
   );
   const fileKey = await crypto.subtle.deriveKey(
-    { name: "HKDF", hash: HKDF_HASH, salt: fileSalt, info: HKDF_FILE_INFO },
+    { name: "HKDF", hash: HKDF_HASH, salt: fileSalt.buffer as ArrayBuffer, info: HKDF_FILE_INFO.buffer as ArrayBuffer },
     hkdfKey,
     { name: AES_ALGO, length: AES_KEY_LENGTH },
     false,
@@ -235,7 +235,7 @@ export async function encryptFile(
   );
 
   const ct = await crypto.subtle.encrypt(
-    { name: AES_ALGO, iv, tagLength: TAG_LENGTH },
+    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH },
     fileKey,
     data
   );
@@ -253,7 +253,7 @@ export async function decryptFile(
   if (!saltBase64) {
     // V1 legacy
     return crypto.subtle.decrypt(
-      { name: AES_ALGO, iv },
+      { name: AES_ALGO, iv: iv.buffer as ArrayBuffer },
       sharedKey,
       ciphertext
     );
@@ -269,7 +269,7 @@ export async function decryptFile(
     "raw", await crypto.subtle.digest("SHA-512", combined), "HKDF", false, ["deriveKey"]
   );
   const fileKey = await crypto.subtle.deriveKey(
-    { name: "HKDF", hash: HKDF_HASH, salt: fileSalt, info: HKDF_FILE_INFO },
+    { name: "HKDF", hash: HKDF_HASH, salt: fileSalt.buffer as ArrayBuffer, info: HKDF_FILE_INFO.buffer as ArrayBuffer },
     hkdfKey,
     { name: AES_ALGO, length: AES_KEY_LENGTH },
     false,
@@ -277,7 +277,7 @@ export async function decryptFile(
   );
 
   return crypto.subtle.decrypt(
-    { name: AES_ALGO, iv, tagLength: TAG_LENGTH },
+    { name: AES_ALGO, iv: iv.buffer as ArrayBuffer, tagLength: TAG_LENGTH },
     fileKey,
     ciphertext
   );
@@ -301,7 +301,7 @@ export async function generateSafetyNumber(
   combined.set(second, first.length);
 
   // Double hash for extra security
-  const hash1 = await crypto.subtle.digest("SHA-512", combined);
+  const hash1 = await crypto.subtle.digest("SHA-512", combined.buffer as ArrayBuffer);
   const hash2 = await crypto.subtle.digest("SHA-512", hash1);
   const bytes = new Uint8Array(hash2);
 
