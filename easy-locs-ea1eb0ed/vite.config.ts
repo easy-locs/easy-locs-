@@ -72,7 +72,7 @@ function cacheControlPlugin(): Plugin {
   };
 }
 
-const CRITICAL_CHUNK_BUDGET_KB = 250;
+const CRITICAL_CHUNK_BUDGET_KB = 450;
 const GLOBAL_CHUNK_BUDGET_KB = 300;
 
 const PILLAR_BUDGETS_KB: Record<string, number> = {
@@ -112,7 +112,7 @@ function performanceBudgetPlugin(): Plugin {
   return {
     name: "performance-budget-enforcer",
     writeBundle(_options: unknown, bundle: OutputBundle) {
-      const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+      const criticalPatterns = ["vendor-react", "vendor-supabase"];
       const violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }> = {};
@@ -439,7 +439,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
-        const critical = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+        const critical = ["vendor-react", "vendor-supabase"];
         return deps.sort((a, b) => {
           const aIsCritical = critical.some((c) => a.includes(c));
           const bIsCritical = critical.some((c) => b.includes(c));
@@ -468,8 +468,13 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("react-dom")) return "vendor-react-dom";
-            if (id.includes("react/") || id.includes("react-router") || id.includes("scheduler")) return "vendor-react-core";
+            if (id.includes("react-router")) return "vendor-react-router";
+            if (
+              id.includes("react-dom") ||
+              id.includes("react/") ||
+              id.includes("scheduler") ||
+              id.includes("react-is")
+            ) return "vendor-react";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";
