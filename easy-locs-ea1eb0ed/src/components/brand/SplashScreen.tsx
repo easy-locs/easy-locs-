@@ -1,7 +1,24 @@
-import React, { useState, useEffect, useCallback, useId, useMemo, memo } from "react";
+import React, { useState, useEffect, useCallback, useId, useMemo, memo, Component, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTimeOfDay, getSpecialEvent, TIME_GRADIENTS } from "@/hooks/useDynamicLogo";
 import type { SpecialEvent } from "@/hooks/useDynamicLogo";
+
+// Minimal error boundary that silently suppresses splash-animation crashes so
+// a Framer Motion failure can never block the children from being visible.
+class SplashErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { failed: false };
+  }
+  static getDerivedStateFromError(): { failed: boolean } { return { failed: true }; }
+  componentDidCatch(err: unknown) {
+    console.warn("[SplashScreen] animation error — overlay suppressed:", err);
+  }
+  render() {
+    if (this.state.failed) return null;
+    return this.props.children;
+  }
+}
 
 const SPLASH_DURATION = 1800;
 const RADAR_SIZE = 150;
@@ -520,7 +537,8 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
   return (
     <>
       {children}
-      <AnimatePresence>
+      <SplashErrorBoundary>
+        <AnimatePresence>
         {showSplash && (
           <motion.div
             className="fixed inset-0 z-[99999] flex items-center justify-center cursor-pointer overflow-hidden"
@@ -673,6 +691,7 @@ export default function SplashScreen({ children }: { children: React.ReactNode }
           </motion.div>
         )}
       </AnimatePresence>
+      </SplashErrorBoundary>
     </>
   );
 }

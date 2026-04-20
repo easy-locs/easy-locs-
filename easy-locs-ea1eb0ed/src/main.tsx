@@ -29,6 +29,21 @@ try { installFetchTracePropagation(); } catch (err) { console.warn("[boot] insta
 // Best-effort OTel bootstrap — no-op unless VITE_OTEL_EXPORTER_OTLP_ENDPOINT is set.
 try { void initBrowserOtel({ serviceName: "easy-locs-frontend" }); } catch (err) { console.warn("[boot] initBrowserOtel failed", err); }
 
+// Global error logging — installed as early as possible so any unhandled
+// crash or promise rejection is visible in the console before React mounts.
+// Note: index.html installs identical handlers via window.onerror and
+// addEventListener before the module script tag, covering errors during
+// module evaluation itself. These handlers complement that by catching
+// errors that occur after module load completes (e.g. in async callbacks).
+if (typeof window !== "undefined") {
+  window.addEventListener("error", (event) => {
+    console.error("[BOOT_WINDOW_ERROR]", event.message, event.filename + ":" + event.lineno, event.error);
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    console.error("[BOOT_UNHANDLED_REJECTION]", event.reason);
+  });
+}
+
 const App = RawApp;
 
 if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomUUID !== "function") {
@@ -38,8 +53,14 @@ if (typeof globalThis.crypto !== "undefined" && typeof globalThis.crypto.randomU
     );
 }
 
-const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("Root element #root not found");
+let rootElement = document.getElementById("root");
+if (!rootElement) {
+  // Fail-open: create a mount point rather than crashing with a thrown error.
+  console.error("[BOOT] #root element missing — creating one as fallback");
+  rootElement = document.createElement("div");
+  rootElement.id = "root";
+  document.body.appendChild(rootElement);
+}
 
 if (typeof window !== "undefined") {
   const { hash } = window.location;
@@ -59,7 +80,7 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
-// "Big tech" stuck-app failsafe: if 12 seconds after boot the user is still
+// "Big tech" stuck-app failsafe: if 5 seconds after boot the user is still
 // on the splash OR has been bounced into a known redirect-loop URL with no
 // route content rendered, hard-redirect to /emergency.html?stuck=1 so they
 // always have a working escape hatch. This catches:
@@ -70,7 +91,7 @@ if (typeof window !== "undefined") {
 // The ?stuck=1 param tells emergency.html to auto-purge SW + caches and
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
-  const STUCK_DEADLINE_MS = 12000;
+  const STUCK_DEADLINE_MS = 5000;
   setTimeout(() => {
     try {
       if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;
@@ -91,7 +112,7 @@ if (typeof window !== "undefined" && window.location.pathname !== "/emergency.ht
 // Time-to-first-render watchdog: if the splash hasn't dismissed (i.e. the
 // first React commit hasn't happened) within the budget, fire a Sentry
 // warning so we detect silent boot stalls in production.
-const TTFR_BUDGET_MS = 8000;
+const TTFR_BUDGET_MS = 3000;
 let __ttfrReported = false;
 function __reportTTFR(durationMs: number) {
   if (__ttfrReported) return;
@@ -116,12 +137,15 @@ try {
   // this throws when truly critical integrations (Supabase) are missing so the
   // developer sees the failure immediately. Non-critical integrations (AWS,
   // PostHog, Sentry) only emit a warning + dev banner — they no longer block
-  // boot. Wrapped here so any throw lands in the visible Boot Error UI below
-  // instead of aborting module evaluation and producing a blank screen.
+  // boot. Isolated in its own try/catch so a throw here NEVER prevents React
+  // from mounting — missing env vars must never produce a blank screen.
   validateIntegrationsBoot();
-  // Always log missing optional integration env vars once at boot, even on
-  // public routes where the dev banner is intentionally hidden.
-  warnMissingIntegrationsOnce();
+} catch (err) {
+  console.warn("[boot] validateIntegrationsBoot:", err);
+}
+try { warnMissingIntegrationsOnce(); } catch {}
+
+try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>
@@ -140,16 +164,9 @@ try {
       setTimeout(() => splashEl.remove(), 600);
     };
     window.addEventListener("react-splash-ready", fadeOutHtmlSplash, { once: true });
-    setTimeout(fadeOutHtmlSplash, 3000);
-    setTimeout(() => {
-      if (faded || !document.body.contains(splashEl)) return;
-      const skipBtn = document.createElement("button");
-      skipBtn.textContent = "Continue anyway";
-      skipBtn.setAttribute("aria-label", "Skip loading screen");
-      skipBtn.style.cssText = "margin-top:24px;background:transparent;color:#94a3b8;border:1px solid #334155;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;";
-      skipBtn.onclick = fadeOutHtmlSplash;
-      splashEl.appendChild(skipBtn);
-    }, 5000);
+    // Auto-fade the HTML splash after 1.5s even if react-splash-ready never
+    // fires — keeps startup <= 2s visible UI goal on slow connections.
+    setTimeout(fadeOutHtmlSplash, 1500);
   }
   // NOTE: __EASYLOCS_REACT_MOUNTED__ / __EASYLOCS_BOOTED__ are intentionally
   // NOT set here. They are set inside RootShell's useEffect so the flags

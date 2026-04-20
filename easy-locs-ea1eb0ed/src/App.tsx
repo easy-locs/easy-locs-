@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import SplashScreen from "@/components/brand/SplashScreen";
 import SwipeableMain from "@/components/navigation/SwipeableMain";
+import { FeatureErrorBoundary } from "@/components/FeatureErrorBoundary";
 
 import {
   CoreProviders,
@@ -57,7 +58,8 @@ const App = () => (
     )}
     <AuthProvider>
       <SplashScreen>
-        <DeferredServicesProvider>
+        <FeatureErrorBoundary featureName="AuthProviderTree">
+          <DeferredServicesProvider>
           <AppLockGuardShell>
             <Suspense fallback={null}><IntentNavigateProvider /></Suspense>
             <DeferredBootGuards />
@@ -92,6 +94,7 @@ const App = () => (
             </Suspense>
           </AppLockGuardShell>
         </DeferredServicesProvider>
+        </FeatureErrorBoundary>
         <Suspense fallback={null}><GlobalOverlayRenderer /></Suspense>
         <Suspense fallback={null}><InAppNavigationView /></Suspense>
         <Suspense fallback={null}><AdhanMiniPlayer /></Suspense>

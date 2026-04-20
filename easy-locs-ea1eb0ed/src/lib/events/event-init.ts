@@ -151,6 +151,10 @@ import("@/lib/social/engagement-events").then(({ installEngagementListeners }) =
   installEngagementListeners();
 }).catch(() => {});
 
+import("@/lib/journey/journey-wiring").then(({ mountJourneyWiring }) => {
+  mountJourneyWiring();
+}).catch(() => {});
+
 import("@/domains/restaurant/service").then(({ installFoodOrderReactions }) => {
   installFoodOrderReactions();
 }).catch(() => {});
