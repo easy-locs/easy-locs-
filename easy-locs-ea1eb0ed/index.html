@@ -3,6 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!--
+      requestIdleCallback / cancelIdleCallback polyfill.
+      Inlined here (NOT in a module) so it runs before ANY <script type="module">
+      evaluates. Safari iOS < 17 does not implement these globals; without this
+      shim, top-level calls in main.tsx throw `ReferenceError: Can't find
+      variable: requestIdleCallback` and the boot watchdog renders the
+      "Erreur de démarrage" screen. src/polyfills.ts duplicates this for
+      defense-in-depth (both are idempotent).
+    -->
+    <script>
+      (function () {
+        if (typeof window === "undefined") return;
+        if (typeof window.requestIdleCallback !== "function") {
+          window.requestIdleCallback = function (cb, opts) {
+            var start = Date.now();
+            var timeoutMs = (opts && typeof opts.timeout === "number") ? opts.timeout : 50;
+            return window.setTimeout(function () {
+              var elapsed = Date.now() - start;
+              var timedOut = elapsed >= timeoutMs;
+              cb({
+                didTimeout: timedOut,
+                timeRemaining: function () {
+                  return timedOut ? 0 : Math.max(0, 50 - (Date.now() - start));
+                }
+              });
+            }, 1);
+          };
+        }
+        if (typeof window.cancelIdleCallback !== "function") {
+          window.cancelIdleCallback = function (id) { window.clearTimeout(id); };
+        }
+      })();
+    </script>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="X-DNS-Prefetch-Control" content="on" />
     <meta name="format-detection" content="telephone=no" />
