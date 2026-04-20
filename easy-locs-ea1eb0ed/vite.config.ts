@@ -74,6 +74,22 @@ function cacheControlPlugin(): Plugin {
 
 const CRITICAL_CHUNK_BUDGET_KB = 250;
 
+// Per-critical-chunk budget overrides. The default critical budget (250KB) is
+// intentionally tight, but a small number of critical vendor chunks must be
+// kept whole at runtime and therefore exceed it. Each override must be
+// justified and reviewed when the chunk grows.
+//
+// vendor-react: react + react-dom + react/jsx-* + scheduler + react-is must
+// ship as a single chunk — splitting react-dom away from react causes a
+// runtime TypeError on the shared
+// `__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE` symbol.
+// The consolidated chunk measures ~409KB (react-dom client + scheduler
+// dominate); 450KB leaves a small headroom without silently absorbing future
+// growth.
+const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-react": 450,
+};
+
 // Extracts the canonical chunk basename from a Vite output path, stripping the
 // directory prefix and the trailing `-[hash].js` segment. Used for precise
 // chunk classification (e.g. so `vendor-react-router` is not matched as a
@@ -133,9 +149,11 @@ function performanceBudgetPlugin(): Plugin {
         const pillarMatch = Object.keys(PILLAR_BUDGETS_KB).find(p => fileName.includes(p));
 
         if (isCritical) {
-          summary[fileName] = { sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, ok: sizeKB <= CRITICAL_CHUNK_BUDGET_KB };
-          if (sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
-            violations.push({ chunk: fileName, sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, category: "critical" });
+          const baseName = chunkBaseName(fileName);
+          const criticalLimit = CRITICAL_CHUNK_BUDGET_OVERRIDES_KB[baseName] ?? CRITICAL_CHUNK_BUDGET_KB;
+          summary[fileName] = { sizeKB, limitKB: criticalLimit, ok: sizeKB <= criticalLimit };
+          if (sizeKB > criticalLimit) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: criticalLimit, category: "critical" });
           }
         } else if (pillarMatch) {
           const limit = PILLAR_BUDGETS_KB[pillarMatch];
