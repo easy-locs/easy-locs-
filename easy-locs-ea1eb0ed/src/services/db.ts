@@ -118,17 +118,29 @@ type DbFn = {
 const _from = (table: string) =>
   (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
 
-export const db: DbFn = Object.assign(_from, {
-  from: _from,
-  rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
-  storage: supabase.storage,
-  functions: supabase.functions,
-  auth: supabase.auth,
-  channel: supabase.channel.bind(supabase),
-  removeChannel: supabase.removeChannel.bind(supabase),
-  getChannels: supabase.getChannels.bind(supabase),
-  removeAllChannels: supabase.removeAllChannels.bind(supabase),
-});
+// Lazy property bridge — avoids eagerly touching `supabase.storage`,
+// `supabase.functions`, `supabase.channel`, etc. at module-evaluation time.
+// If the underlying client throws on property access (e.g. the guarded proxy
+// when env vars are missing), the throw is deferred until first actual use,
+// preserving a working first React commit.
+export const db: DbFn = (() => {
+  const fn = _from as unknown as DbFn;
+  Object.defineProperties(fn, {
+    from: { value: _from, enumerable: true },
+    rpc: {
+      enumerable: true,
+      get: () => (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
+    },
+    storage: { enumerable: true, get: () => supabase.storage },
+    functions: { enumerable: true, get: () => supabase.functions },
+    auth: { enumerable: true, get: () => supabase.auth },
+    channel: { enumerable: true, get: () => supabase.channel.bind(supabase) },
+    removeChannel: { enumerable: true, get: () => supabase.removeChannel.bind(supabase) },
+    getChannels: { enumerable: true, get: () => supabase.getChannels.bind(supabase) },
+    removeAllChannels: { enumerable: true, get: () => supabase.removeAllChannels.bind(supabase) },
+  });
+  return fn;
+})();
 
 // ── v2db — legacy-guarded accessor ─────────────────────────────────────────
 

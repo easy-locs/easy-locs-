@@ -185,7 +185,10 @@ requestIdleCallback(() => {
   Promise.all([
     flushSentryBoot(),
     import("@/lib/auto-heal").then(m => m.installGlobalHealer()),
-  ]).catch((err) => { console.warn("[boot] Stage 1 failed:", err); });
+  ]).catch((err) => {
+    console.warn("[boot] Stage 1 failed:", err);
+    try { captureBootCrash(err, { phase: "stage-1", critical: false }); } catch {}
+  });
 }, { timeout: 2000 });
 
 // Stage 2: Navigation readiness (300ms after mount, < 1s budget)
@@ -209,7 +212,10 @@ function injectModulePreloads() {
   }
 }
 
-setTimeout(() => {
+// Stage 2: Navigation readiness (scheduled during idle, < 1s budget).
+// Using requestIdleCallback keeps boot stages consistent (all three run during
+// idle time, never blocking first paint or a user gesture).
+requestIdleCallback(() => {
   injectModulePreloads();
   Promise.all([
     import("@/lib/performance/register-route-chunks")
@@ -217,8 +223,11 @@ setTimeout(() => {
       .then(m => m.initRoutePrefetch()),
     import("@/lib/platform/web-vitals").then(m => m.initWebVitals()),
     import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()),
-  ]).catch((err) => { console.warn("[boot] Stage 2 failed:", err); });
-}, 300);
+  ]).catch((err) => {
+    console.warn("[boot] Stage 2 failed:", err);
+    try { captureBootCrash(err, { phase: "stage-2", critical: false }); } catch {}
+  });
+}, { timeout: 1300 });
 
 // Stage 3: Enrichment (idle, < 3s budget)
 requestIdleCallback(() => {
@@ -243,7 +252,10 @@ requestIdleCallback(() => {
       script.textContent = JSON.stringify(ld);
       document.head.appendChild(script);
     }),
-  ]).catch((err) => { console.warn("[boot] Stage 3a failed:", err); });
+  ]).catch((err) => {
+    console.warn("[boot] Stage 3a failed:", err);
+    try { captureBootCrash(err, { phase: "stage-3a", critical: false }); } catch {}
+  });
 }, { timeout: 3000 });
 
 requestIdleCallback(() => {
@@ -252,5 +264,8 @@ requestIdleCallback(() => {
     import("@/lib/events/event-init"),
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
     import("@/lib/maplibre/config").then(m => m.validateMapBoot()),
-  ]).catch((err) => { console.warn("[boot] Stage 3b failed:", err); });
+  ]).catch((err) => {
+    console.warn("[boot] Stage 3b failed:", err);
+    try { captureBootCrash(err, { phase: "stage-3b", critical: false }); } catch {}
+  });
 }, { timeout: 5000 });
