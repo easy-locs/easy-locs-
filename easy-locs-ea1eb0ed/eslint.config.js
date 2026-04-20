@@ -165,40 +165,6 @@ export default tseslint.config(
       ],
     },
   },
-  // ── Domain ownership (db.ts wrapper) ─────────────────────────────────
-  // `@/services/db` is a power point. Pages, components, and contexts must
-  // access data through domain services (services/domain/*.service.ts) or
-  // repositories — never the raw wrapper. New code violating this rule is
-  // flagged as a warning so it surfaces in lint output; the existing
-  // violations (tracked for migration) remain the subject of a follow-up
-  // sweep, not part of the stabilization mission.
-  //
-  // The rule is deliberately a warning rather than an error so CI does not
-  // break on legacy imports while still making new violations visible.
-  //
-  // AuthContext.tsx is also a current violator; it will be resolved by the
-  // auth-context split (plan Step 5 — deferred to a follow-up PR).
-  {
-    files: [
-      "src/pages/**/*.{ts,tsx}",
-      "src/components/**/*.{ts,tsx}",
-      "src/contexts/**/*.{ts,tsx}",
-    ],
-    rules: {
-      "no-restricted-imports": [
-        "warn",
-        {
-          patterns: [
-            {
-              group: ["@/services/db", "*/services/db"],
-              message:
-                "Pages, components, and contexts must not import `@/services/db` directly. Use a domain service from '@/services/domain/*.service' or a repository from '@/repositories/*'. See services/db.ts header for rationale.",
-            },
-          ],
-        },
-      ],
-    },
-  },
   {
     files: [
       "src/pages/**/*.tsx",

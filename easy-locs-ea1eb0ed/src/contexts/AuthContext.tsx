@@ -632,13 +632,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
 
-  // NOTE: The previous 25-minute `supabase.auth.getSession()` keepalive was
-  // removed — it duplicated Supabase's built-in `autoRefreshToken: true` which
-  // already refreshes sessions proactively before they expire. The extra
-  // interval caused redundant network traffic and an extra timer source that
-  // could fire during teardown. The auth client config in
-  // `@/integrations/supabase/client` is the single source of truth for
-  // token refresh.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      supabase.auth.getSession();
+    }, 25 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Phone-OTP detection (defensive — never trap phone users on /verify-email).
   // A phone-OTP user is verified once Supabase has stamped `phone_confirmed_at`
