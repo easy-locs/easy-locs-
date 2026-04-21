@@ -212,7 +212,7 @@ jobs:
 
           # [9] Playwright boot/route gate — non-blocking if not configured
           PW_CONCLUSION=$(echo "$CHECK_JSON" \
-            | jq -r 'select(.name | test("(?i)playwright|boot.gate|route.gate")) | .conclusion // "pending"' \
+            | jq -r 'select(.name | test("(?i)playwright|boot\\.gate|route\\.gate")) | .conclusion // "pending"' \
             | head -1)
           PW_CONCLUSION="${PW_CONCLUSION:-not_configured}"
           case "$PW_CONCLUSION" in

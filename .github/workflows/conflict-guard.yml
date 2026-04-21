@@ -35,7 +35,7 @@ jobs:
           echo "Scanning all tracked files for unresolved merge-conflict markers…"
           # Use git ls-files so every tracked file is checked, regardless of extension.
           # Pipe through xargs git grep to avoid shell globbing limits.
-          if git ls-files -z | xargs -0 git grep -lnE '^(<{7}|={7}|>{7}) ' 2>/dev/null; then
+          if git ls-files -z | xargs -0 git grep -lnE '^(<{7}|={7}|>{7})' 2>/dev/null; then
             echo ""
             echo "::error::Unresolved merge-conflict markers detected."
             echo "Resolve all <<<<<<< / ======= / >>>>>>> markers before merging."
@@ -51,13 +51,13 @@ jobs:
           # Conflict blocks start with lines beginning with '<<<<<<<' or '>>>>>>>'.
           # The '=======' separator is also matched to catch partial conflict blocks.
           MERGE_OUT=$(git merge-tree "$BASE" HEAD origin/main 2>&1)
-          if echo "$MERGE_OUT" | grep -qE '^(<{7}|={7}|>{7}) '; then
+          if echo "$MERGE_OUT" | grep -qE '^(<{7}|={7}|>{7})'; then
             echo ""
             echo "::error::Merge conflicts detected when merging this branch into main."
             echo "Rebase or merge main into your branch and resolve all conflicts."
             echo ""
             echo "Conflict details:"
-            echo "$MERGE_OUT" | grep -E '^(<{7}|={7}|>{7}) ' | head -20
+            echo "$MERGE_OUT" | grep -E '^(<{7}|={7}|>{7})' | head -20
             exit 1
           fi
           echo "✓ Zero merge conflicts — branch merges cleanly into main."
