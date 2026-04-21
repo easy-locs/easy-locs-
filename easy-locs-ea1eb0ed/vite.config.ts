@@ -480,6 +480,9 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
+            // ORDER MATTERS: react-router-dom contains both "react-router" and "react-dom"
+            // as substrings. Checking "react-router" first ensures react-router-dom goes to
+            // vendor-react-router, not vendor-react. Do not reorder these two lines.
             if (id.includes("react-router")) return "vendor-react-router";
             if (id.includes("react-dom") || id.includes("react/") || id.includes("/react.") || id.includes("scheduler") || id.includes("react-is")) return "vendor-react";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
