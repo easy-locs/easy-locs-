@@ -207,7 +207,7 @@ requestIdleCallback(() => {
   Promise.all([
     flushSentryBoot(),
     import("@/lib/auto-heal").then(m => m.installGlobalHealer()),
-  ]).catch((err) => { console.warn("[boot] Stage 1 failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 1 failed:", err); captureBootCrash(err, { phase: "stage-1" }); });
 }, { timeout: 2000 });
 
 // Stage 2: Navigation readiness (300ms after mount, < 1s budget)
@@ -239,7 +239,7 @@ setTimeout(() => {
       .then(m => m.initRoutePrefetch()),
     import("@/lib/platform/web-vitals").then(m => m.initWebVitals()),
     import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()),
-  ]).catch((err) => { console.warn("[boot] Stage 2 failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 2 failed:", err); captureBootCrash(err, { phase: "stage-2" }); });
 }, 300);
 
 // Stage 3: Enrichment (idle, < 3s budget)
@@ -265,7 +265,7 @@ requestIdleCallback(() => {
       script.textContent = JSON.stringify(ld);
       document.head.appendChild(script);
     }),
-  ]).catch((err) => { console.warn("[boot] Stage 3a failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 3a failed:", err); captureBootCrash(err, { phase: "stage-3a" }); });
 }, { timeout: 3000 });
 
 requestIdleCallback(() => {
@@ -274,5 +274,5 @@ requestIdleCallback(() => {
     import("@/lib/events/event-init"),
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
     import("@/lib/maplibre/config").then(m => m.validateMapBoot()),
-  ]).catch((err) => { console.warn("[boot] Stage 3b failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 3b failed:", err); captureBootCrash(err, { phase: "stage-3b" }); });
 }, { timeout: 5000 });
