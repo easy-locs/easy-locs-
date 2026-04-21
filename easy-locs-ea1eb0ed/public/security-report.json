@@ -1,0 +1,112 @@
+{
+  "critical": 0,
+  "high": 6,
+  "moderate": 8,
+  "low": 3,
+  "info": 0,
+  "total": 17,
+  "advisories": [
+    {
+      "name": "@vercel/build-utils",
+      "severity": "high",
+      "title": "@vercel/python-analysis",
+      "fixAvailable": true
+    },
+    {
+      "name": "@vercel/node",
+      "severity": "high",
+      "title": "@vercel/build-utils",
+      "fixAvailable": true
+    },
+    {
+      "name": "@vercel/python-analysis",
+      "severity": "high",
+      "title": "minimatch",
+      "fixAvailable": true
+    },
+    {
+      "name": "minimatch",
+      "severity": "high",
+      "title": "minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern",
+      "fixAvailable": true
+    },
+    {
+      "name": "path-to-regexp",
+      "severity": "high",
+      "title": "path-to-regexp outputs backtracking regular expressions",
+      "fixAvailable": true
+    },
+    {
+      "name": "undici",
+      "severity": "high",
+      "title": "Use of Insufficiently Random Values in undici",
+      "fixAvailable": true
+    },
+    {
+      "name": "@vercel/static-config",
+      "severity": "moderate",
+      "title": "ajv",
+      "fixAvailable": true
+    },
+    {
+      "name": "ajv",
+      "severity": "moderate",
+      "title": "ajv has ReDoS when using `$data` option",
+      "fixAvailable": true
+    },
+    {
+      "name": "esbuild",
+      "severity": "moderate",
+      "title": "esbuild enables any website to send any requests to the development server and read the response",
+      "fixAvailable": true
+    },
+    {
+      "name": "protocol-buffers-schema",
+      "severity": "moderate",
+      "title": "Mafintosh's protocol-buffers-schema is vulnerable to prototype pollution",
+      "fixAvailable": true
+    },
+    {
+      "name": "smol-toml",
+      "severity": "moderate",
+      "title": "smol-toml: Denial of Service via TOML documents containing thousands of consecutive commented lines",
+      "fixAvailable": true
+    },
+    {
+      "name": "vite",
+      "severity": "moderate",
+      "title": "Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling",
+      "fixAvailable": true
+    },
+    {
+      "name": "vite-node",
+      "severity": "moderate",
+      "title": "vite",
+      "fixAvailable": true
+    },
+    {
+      "name": "vitest",
+      "severity": "moderate",
+      "title": "vite",
+      "fixAvailable": true
+    },
+    {
+      "name": "@tootallnate/once",
+      "severity": "low",
+      "title": "@tootallnate/once vulnerable to Incorrect Control Flow Scoping",
+      "fixAvailable": true
+    },
+    {
+      "name": "http-proxy-agent",
+      "severity": "low",
+      "title": "@tootallnate/once",
+      "fixAvailable": true
+    },
+    {
+      "name": "jsdom",
+      "severity": "low",
+      "title": "http-proxy-agent",
+      "fixAvailable": true
+    }
+  ]
+}
