@@ -14,6 +14,20 @@ import type { Database } from './types';
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Thrown when code tries to use the Supabase client without the required
+ * environment variables being configured. Callers should catch this at the
+ * boundary (e.g. `validateIntegrationsBoot()` in `main.tsx`) and surface a
+ * real configuration error instead of a generic network failure.
+ */
+export class IntegrationsNotConfiguredError extends Error {
+  readonly code = "INTEGRATIONS_NOT_CONFIGURED" as const;
+  constructor(message: string) {
+    super(message);
+    this.name = "IntegrationsNotConfiguredError";
+  }
+}
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as
   | string
@@ -30,8 +44,8 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY a
 //
 // On any failure we do NOT call createClient (which would throw synchronously
 // during module evaluation). Instead we export a Proxy with the same TS type
-// as the real client; the first meaningful property access throws a
-// descriptive, actionable error that surfaces through GlobalErrorBoundary.
+// as the real client; the first meaningful property access throws a typed
+// `IntegrationsNotConfiguredError` that surfaces through GlobalErrorBoundary.
 
 type EnvStatus =
   | "ok"
@@ -100,6 +114,10 @@ function buildDiagnosticMessage(attemptedAccess?: string): string {
   return lines.join("\n");
 }
 
+function safeGetStorage() {
+  try { return localStorage; } catch { return undefined; }
+}
+
 function createUnconfiguredClient(): SupabaseClient<Database> {
   // Property keys that must NOT throw — devtools, logging, React internals,
   // structured-clone probes, accidental `await` (`then`), and Symbol-based
@@ -129,16 +147,16 @@ function createUnconfiguredClient(): SupabaseClient<Database> {
         // errors surface naturally instead of our throw).
         return undefined;
       }
-      if (SAFE_STRING_KEYS.has(prop)) {
+      if (SAFE_STRING_KEYS.has(prop as string)) {
         return undefined;
       }
-      throw new Error(buildDiagnosticMessage(prop));
+      throw new IntegrationsNotConfiguredError(buildDiagnosticMessage(prop as string));
     },
     apply() {
-      throw new Error(buildDiagnosticMessage("()"));
+      throw new IntegrationsNotConfiguredError(buildDiagnosticMessage("()"));
     },
     construct() {
-      throw new Error(buildDiagnosticMessage("new ()"));
+      throw new IntegrationsNotConfiguredError(buildDiagnosticMessage("new ()"));
     },
   };
 
@@ -157,17 +175,25 @@ if (supabaseEnvMissing) {
   console.error(buildDiagnosticMessage());
   exportedClient = createUnconfiguredClient();
 } else {
-  exportedClient = createClient<Database>(
-    SUPABASE_URL as string,
-    SUPABASE_PUBLISHABLE_KEY as string,
-    {
-      auth: {
-        storage: localStorage,
-        persistSession: true,
-        autoRefreshToken: true,
+  // `createClient` can itself throw on malformed URLs. We still don't want
+  // a module-eval crash blanking the screen before React mounts, so fall
+  // back to the guarded proxy — the error surfaces on first use instead.
+  try {
+    exportedClient = createClient<Database>(
+      SUPABASE_URL as string,
+      SUPABASE_PUBLISHABLE_KEY as string,
+      {
+        auth: {
+          storage: safeGetStorage(),
+          persistSession: true,
+          autoRefreshToken: true,
+        },
       },
-    },
-  );
+    );
+  } catch (err) {
+    console.error("[Supabase] createClient failed:", err);
+    exportedClient = createUnconfiguredClient();
+  }
 }
 
 export const supabase: SupabaseClient<Database> = exportedClient;
