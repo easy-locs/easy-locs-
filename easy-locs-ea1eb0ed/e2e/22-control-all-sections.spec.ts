@@ -1,9 +1,18 @@
+/**
+ * #22 — Admin control plane: one test per section
+ *
+ * Verifies that a super-admin can navigate to every section of the unified
+ * /admin/control/* shell without hitting an access-denied panel or being
+ * silently redirected away from the admin area.
+ *
+ * Sections are driven from the same list defined in src/pages/admin/control/sections.ts
+ * so this spec stays in sync with the actual navigation rail.
+ *
+ * Skips gracefully when E2E_SUPER_ADMIN_EMAIL / E2E_SUPER_ADMIN_PASSWORD are
+ * not set (fork PRs, draft CI, etc.).
+ */
 import { test, expect, type Page } from "@playwright/test";
 
-const SUPER_EMAIL = process.env.E2E_SUPER_ADMIN_EMAIL;
-const SUPER_PASSWORD = process.env.E2E_SUPER_ADMIN_PASSWORD;
-
-/** All sections defined in src/pages/admin/control/sections.ts */
 const CONTROL_SECTIONS = [
   { id: "overview",  label: "Command Center" },
   { id: "tasks",     label: "Tasks"          },
@@ -19,7 +28,7 @@ const CONTROL_SECTIONS = [
   { id: "master",    label: "Master Index"   },
 ] as const;
 
-async function loginAsSuperAdmin(page: Page) {
+async function loginAsSuperAdmin(page: Page, email: string, password: string) {
   await page.goto("/#/login");
   await page.waitForLoadState("networkidle");
 
@@ -29,8 +38,8 @@ async function loginAsSuperAdmin(page: Page) {
   await passwordTab.click();
 
   await expect(page.locator("#login-email")).toBeVisible({ timeout: 10_000 });
-  await page.locator("#login-email").fill(SUPER_EMAIL!);
-  await page.locator("#login-password").fill(SUPER_PASSWORD!);
+  await page.locator("#login-email").fill(email);
+  await page.locator("#login-password").fill(password);
   await page.locator('form button[type="submit"]').click();
 
   await expect
@@ -53,37 +62,43 @@ async function loginAsSuperAdmin(page: Page) {
     .toBe(true);
 }
 
-test.describe("admin control plane — all sections", () => {
+const SUPER_EMAIL    = process.env.E2E_SUPER_ADMIN_EMAIL;
+const SUPER_PASSWORD = process.env.E2E_SUPER_ADMIN_PASSWORD;
+
+test.describe("Admin control plane — all sections (#22)", () => {
   test.beforeEach(async ({ page }) => {
     test.skip(
       !SUPER_EMAIL || !SUPER_PASSWORD,
-      "E2E_SUPER_ADMIN_EMAIL and E2E_SUPER_ADMIN_PASSWORD must be set to run admin control plane tests — skipping.",
+      "E2E_SUPER_ADMIN_EMAIL and E2E_SUPER_ADMIN_PASSWORD must be set — skipping.",
     );
-    await loginAsSuperAdmin(page);
+    await loginAsSuperAdmin(page, SUPER_EMAIL!, SUPER_PASSWORD!);
   });
 
   for (const { id, label } of CONTROL_SECTIONS) {
-    test(`${label} (/admin/control/${id}) renders without crashing`, async ({ page }) => {
+    test(`${label} (/admin/control/${id}) renders without error`, async ({ page }) => {
       await page.goto(`/#/admin/control/${id}`);
       await page.waitForLoadState("networkidle");
 
       const url      = new URL(page.url());
       const hashPath = url.hash.replace(/^#/, "") || url.pathname;
 
-      // Must not be silently redirected to /dashboard.
+      // 1. Must not be silently redirected to the user dashboard.
       expect(
         hashPath,
         `Expected to stay in /admin/control but ended up on ${hashPath}`,
       ).not.toMatch(/^\/dashboard(\b|$)/);
 
-      // Shell must be visible.
+      // 2. Must stay within the admin control shell (not kick out to login).
+      expect(hashPath).not.toMatch(/^\/login(\b|$)/);
+
+      // 3. Unified control shell must be visible.
       await expect(
-        page.locator("[data-testid='admin-control-shell']"),
+        page.locator('[data-testid="admin-control-shell"]'),
       ).toBeVisible({ timeout: 15_000 });
 
-      // No access-denied overlay.
+      // 4. No access-denied overlay.
       await expect(
-        page.locator("[data-testid='admin-access-denied']"),
+        page.locator('[data-testid="admin-access-denied"]'),
       ).toHaveCount(0);
     });
   }
