@@ -200,6 +200,12 @@ function performanceBudgetPlugin(): Plugin {
 
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
+// Cloudflare Pages sets CF_PAGES=1 automatically during hosted builds.
+// When true, skip the heavy SEO plugins (prerender ~7 800 HTML files,
+// sitemap, og-images, feeds, indexnow, seo-validate) so the build stays
+// well under the ~2 GB heap limit.  The core app routes are unaffected.
+const IS_CF_PAGES = process.env.CF_PAGES === "1";
+
 function stampServiceWorkerPlugin(version: string): Plugin {
   return {
     name: "stamp-firebase-sw-version",
@@ -241,12 +247,15 @@ export default defineConfig(({ mode }) => ({
 
     mode === "development" && repairDiagPlugin(),
     cacheControlPlugin(),
-    sitemapPlugin(),
-    prerenderPlugin(),
-    ogImagesPlugin(),
-    feedsPlugin(),
-    indexNowPlugin(),
-    seoValidatePlugin(),
+    // SEO plugins generate ~7 800 HTML files and several sitemaps.
+    // Skipped on Cloudflare Pages (CF_PAGES=1) to avoid OOM; they run
+    // normally in local production builds and CI.
+    !IS_CF_PAGES && sitemapPlugin(),
+    !IS_CF_PAGES && prerenderPlugin(),
+    !IS_CF_PAGES && ogImagesPlugin(),
+    !IS_CF_PAGES && feedsPlugin(),
+    !IS_CF_PAGES && indexNowPlugin(),
+    !IS_CF_PAGES && seoValidatePlugin(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
@@ -346,18 +355,18 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && performanceBudgetPlugin(),
-    mode === "production" && viteCompression({
+    mode === "production" && !IS_CF_PAGES && performanceBudgetPlugin(),
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && viteCompression({
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && visualizer({
+    mode === "production" && !IS_CF_PAGES && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -445,8 +454,11 @@ export default defineConfig(({ mode }) => ({
     // Generate source maps in production so Sentry can symbolicate stack
     // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
     // comment in shipped files — maps exist only for upload to Sentry.
-    sourcemap: mode === "production" ? "hidden" : false,
-    reportCompressedSize: true,
+    // Disabled on Cloudflare Pages: .map files can double build RAM usage.
+    sourcemap: (mode === "production" && !IS_CF_PAGES) ? "hidden" : false,
+    // Computing gzip/brotli sizes for every chunk during rollup is memory-
+    // intensive. Skip on Cloudflare Pages to conserve heap.
+    reportCompressedSize: !IS_CF_PAGES,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
