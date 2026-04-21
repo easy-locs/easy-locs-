@@ -284,14 +284,16 @@ The following items are **explicitly excluded** from Phase 0 and Phase 1 (Dubai 
 
 ### Stabilisation Gate Status
 
-| Gate | Current Status |
-|---|---|
-| Build green | ⚠️ BLOCKED — React chunk split defect present |
-| Playwright green | ⚠️ BLOCKED — dependent on build fix |
-| No conflict markers | ⚠️ BLOCKED — merge artifacts in edge functions |
-| Contract matrix green | ⚠️ UNKNOWN — requires CI run |
-| Secret / security scan green | ⚠️ UNKNOWN — requires CI run |
-| Supabase env valid | ⚠️ BLOCKED — duplicate export defect in ai-router.ts |
+> ⚠️ **Branch-specific note:** The statuses below reflect known defects observed on `origin/main` at the time of writing (2026-04-21). Some defects (e.g. the duplicate `parseChatResponse` export in `_shared/ai-router.ts`) may already be resolved on certain branches. **Before making any merge or implementation decision, re-verify every gate against the actual current branch using the commands in §5.** Do not rely on the snapshot below as a substitute for a live CI run.
+
+| Gate | Status at time of writing | Re-verify command |
+|---|---|---|
+| Build green | ⚠️ BLOCKED — React chunk split defect observed on origin/main | `npm run build` |
+| Playwright green | ⚠️ BLOCKED — dependent on build fix | `npx playwright test` |
+| No conflict markers | ⚠️ BLOCKED — merge artifacts observed in edge functions on origin/main | `git grep -nE '^(<{7}|={7}|>{7}) ' supabase/ src/` |
+| Contract matrix green | ⚠️ UNKNOWN — requires CI run | `npm run contracts:matrix:ci` |
+| Secret / security scan green | ⚠️ UNKNOWN — requires CI run | `bash scripts/secret-scan.sh` |
+| Supabase env valid | ⚠️ BLOCKED — duplicate export observed in ai-router.ts on origin/main; may be fixed on current branch | `awk '/^export (async )?function/ {print FILENAME":"$0}' supabase/functions/**/*.ts \| sort \| uniq -d -f1` |
 
 ### Final Verdict
 
@@ -299,9 +301,9 @@ The following items are **explicitly excluded** from Phase 0 and Phase 1 (Dubai 
 BLOCKED
 ```
 
-**Reason:** Stabilisation gates 1, 3, and 7 are confirmed failing based on known defects (React chunk split, conflict markers in supabase/ edge functions, duplicate `parseChatResponse` export). No post-stabilisation feature work — including Dubai Hub MVP — may begin until all 7 gates are green on origin/main for 5 consecutive CI runs.
+**Reason (as of 2026-04-21, origin/main):** Stabilisation gates 1, 3, and 7 were observed failing based on known defects (React chunk split, conflict markers in supabase/ edge functions, duplicate `parseChatResponse` export). These defects must be **re-verified against the current branch** before this verdict is updated — some may already be fixed. No post-stabilisation feature work — including Dubai Hub MVP — may begin until all 7 gates are green on the target branch for 5 consecutive CI runs.
 
-**Next action:** Clear Phase 0 stabilisation gates before revisiting this document. When all gates are green, update this document's verdict to `STRATEGY_DOC_READY` and initiate Phase 1 partner agreements for Dubai.
+**Next action:** Run all gate commands from §5 against the current branch. If all 7 pass, update this document's verdict to `STRATEGY_DOC_READY` and initiate Phase 1 partner agreements for Dubai.
 
 ---
 
