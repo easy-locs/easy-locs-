@@ -4,12 +4,6 @@
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logMessage,
   preflight, requireAuthenticated, requireServiceOrSupreme,
-=======
-  preflight, requireAuthenticated,
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-  preflight, requireServiceOrSupreme,
->>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body { task_id: string; }
@@ -18,12 +12,6 @@ Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   const denied = await requireServiceOrSupreme(req) || await requireAuthenticated(req);
   if (denied) return denied;
-=======
-  const denied = await requireAuthenticated(req); if (denied) return denied;
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
->>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
 
     const body = (await req.json()) as Body;
