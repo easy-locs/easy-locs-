@@ -1,0 +1,103 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sharded:
+        description: "Run cross-browser (Chromium + Firefox + WebKit)"
+        required: false
+        default: "false"
+        type: boolean
+      workers:
+        description: "Playwright worker count"
+        required: false
+        default: "4"
+        type: string
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Node setup ──────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # ── Root-level deps (Playwright) ─────────────────────────────────────────
+      - name: Install root dependencies
+        run: npm ci
+
+      # ── Playwright browsers ──────────────────────────────────────────────────
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'firefox webkit' || '' }}
+
+      # ── App deps + build ─────────────────────────────────────────────────────
+      - name: Install app dependencies
+        working-directory: easy-locs-ea1eb0ed
+        run: npm ci
+
+      - name: Build app
+        working-directory: easy-locs-ea1eb0ed
+        run: npm run build
+
+      # ── Start dev/preview server ─────────────────────────────────────────────
+      - name: Start preview server
+        working-directory: easy-locs-ea1eb0ed
+        run: npm run preview &
+        env:
+          PORT: 5173
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:5173 --timeout 60000
+
+      # ── Run root E2E suite (tests/e2e/) ──────────────────────────────────────
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          E2E_BASE_URL: http://localhost:5173
+          E2E_WORKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.workers || '4' }}
+          E2E_SHARDED: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && '1' || '0' }}
+          # Authenticated-test credentials — sourced from repository secrets.
+          # When absent, tests using `authenticatedPage` / `signedInPage` skip
+          # automatically (safe in fork PRs that cannot access secrets).
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          QA_EMAIL_USER: ${{ secrets.QA_EMAIL_USER }}
+          QA_EMAIL_PASSWORD: ${{ secrets.QA_EMAIL_PASSWORD }}
+          QA_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+          E2E_SUPER_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          E2E_SUPER_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+          QA_EMPTY_EMAIL: ${{ secrets.QA_EMPTY_EMAIL }}
+          QA_EMPTY_PASSWORD: ${{ secrets.QA_EMPTY_PASSWORD }}
+          QA_HEAVY_EMAIL: ${{ secrets.QA_HEAVY_EMAIL }}
+          QA_HEAVY_PASSWORD: ${{ secrets.QA_HEAVY_PASSWORD }}
+          QA_PHONE_NUMBER: ${{ secrets.QA_PHONE_NUMBER }}
+          QA_OTP_BYPASS_TOKEN: ${{ secrets.QA_OTP_BYPASS_TOKEN }}
+
+      # ── Upload artifacts on failure ──────────────────────────────────────────
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            test-results/
+          retention-days: 14
