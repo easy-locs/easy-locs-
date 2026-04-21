@@ -120,8 +120,8 @@ import("@/lib/c2c/listing-lifecycle").then(() => {
         checkExpiringListings(userId).catch(() => {});
         archiveExpiredListings(userId).catch(() => {});
       });
-    });
-  });
+    }).catch(() => {});
+  }).catch(() => {});
 }).catch(() => {});
 
 import("@/lib/intelligence/intelligence-boot").then(({ bootIntelligenceLayer }) => {
