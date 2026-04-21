@@ -1,25 +1,43 @@
 # Cloudflare Pages configuration for Easy-Locs static frontend.
 #
-# Deployment model: Cloudflare Pages (static assets) + Advanced Mode Worker.
-# The file public/_worker.js is copied into dist/ by Vite and is picked up
-# automatically by Cloudflare Pages as the Advanced Mode Worker script.
-# It handles SPA routing (serving index.html for non-asset paths) and injects
-# Link/canonical headers via the ASSETS binding.
+# ─── PROJECT TYPE ──────────────────────────────────────────────────────────────
+# This is a PAGES project, NOT a Workers project. In the Cloudflare dashboard:
+#   Workers & Pages → Create → Pages → Connect to Git
 #
-# Cloudflare Pages dashboard settings that must match:
-#   Build command:    cd easy-locs-ea1eb0ed && npm ci && NODE_OPTIONS=--max-old-space-size=1536 npm run build
-#   Output directory: easy-locs-ea1eb0ed/dist
-#   Root directory:   /   (leave as repo root — the build command cds into the sub-dir)
+# If your existing project shows "wrangler deploy" or "Variables and secrets
+# for your Worker" it was created as a Workers project. You must DELETE it and
+# create a new Pages project from scratch — Workers and Pages are different
+# Cloudflare products and cannot be converted.
 #
-# Environment variables to set in the Pages dashboard (Encrypted where marked):
+# ─── DEPLOYMENT MODEL ─────────────────────────────────────────────────────────
+# Cloudflare Pages (static assets) + Advanced Mode Worker.
+# public/_worker.js is copied into dist/ by Vite and picked up automatically
+# by Cloudflare Pages as the Advanced Mode Worker script. It handles SPA
+# routing (serving index.html for non-asset paths) and injects Link/canonical
+# response headers via the ASSETS binding.
+# public/_redirects provides a belt-and-suspenders SPA fallback.
+#
+# ─── CLOUDFLARE PAGES DASHBOARD SETTINGS ──────────────────────────────────────
+#   Framework preset:  None
+#   Root directory:    easy-locs-ea1eb0ed
+#   Build command:     npm ci && NODE_OPTIONS=--max-old-space-size=1536 npm run build
+#   Output directory:  dist
+#
+# (Root directory = easy-locs-ea1eb0ed means CF Pages cds into that folder
+#  before running the build command, so the build command needs no "cd".)
+#
+# ─── ENVIRONMENT VARIABLES (Pages dashboard → Settings → Environment Variables)
 #   VITE_SUPABASE_URL        – public Supabase project URL  (plain text)
 #   VITE_SUPABASE_ANON_KEY   – public anon key              (plain text)
 #   VITE_APP_VERSION         – optional release label        (plain text)
 #   VITE_SENTRY_DSN          – optional Sentry DSN           (plain text)
 #
-# DO NOT add SUPABASE_SERVICE_ROLE_KEY or any server-side secret here;
-# only VITE_* prefixed vars are safe to expose to the browser build.
+# DO NOT add SUPABASE_SERVICE_ROLE_KEY or any server-side secret — only
+# VITE_* prefixed vars are safe to expose to the browser build.
 
 name = "easy-locs"
-pages_build_output_dir = "easy-locs-ea1eb0ed/dist"
+# pages_build_output_dir is relative to this wrangler.toml file.
+# wrangler.toml lives at easy-locs-ea1eb0ed/wrangler.toml, so "dist"
+# resolves to easy-locs-ea1eb0ed/dist — the Vite output directory.
+pages_build_output_dir = "dist"
 compatibility_date = "2024-09-23"
