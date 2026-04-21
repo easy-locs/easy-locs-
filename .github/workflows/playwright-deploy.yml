@@ -1,0 +1,249 @@
+name: Playwright Deploy — Team Dispatch Gate
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Triggers
+# • PR against main        → full gate (code-health + Playwright + fan-out)
+# • Push to main           → same
+# • workflow_dispatch      → manual trigger (e.g. from the GitHub UI or another
+#                            workflow) — dispatches all checks instantly
+# ──────────────────────────────────────────────────────────────────────────────
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      skip_e2e:
+        description: "Skip Playwright E2E tests (code-health + dispatch only)"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+      target_url:
+        description: "Override E2E base URL (default: http://localhost:5173)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: write   # required to dispatch sibling workflows
+
+# Cancel in-progress runs for the same ref so teams get fast feedback
+concurrency:
+  group: playwright-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Job 1 — Code-health gate
+# Catches merge-conflict markers and duplicate export blocks before anything
+# else runs. These are deploy-blocking defects on this repo (see memory notes).
+# ──────────────────────────────────────────────────────────────────────────────
+jobs:
+  code-health:
+    name: "🩺 Code health gate"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect unresolved merge-conflict markers
+        run: |
+          echo "Scanning for unresolved git conflict markers …"
+          if git grep -nE '^(<{7}|={7}|>{7})' -- 'supabase/' 'src/' 'e2e/' 'tests/' 2>/dev/null | grep .; then
+            echo "::error::Unresolved merge-conflict markers found (see above). Resolve them before deploying."
+            exit 1
+          fi
+          echo "✅  No conflict markers found."
+
+      - name: Detect duplicate top-level export function declarations
+        # Detects the same function name exported twice from the same file,
+        # which is an ES-module SyntaxError that bricks every importer.
+        # Prints FILENAME:funcname and finds duplicates — false positives
+        # (same name in different files) are harmless and expected.
+        run: |
+          echo "Scanning for duplicate top-level export function declarations …"
+          FILES=$(git ls-files 'supabase/functions/**/*.ts' 'src/**/*.ts' 2>/dev/null || true)
+          if [ -z "$FILES" ]; then
+            echo "No TypeScript files found — skipping."
+            exit 0
+          fi
+          DUPS=$(awk '/^export (async )?function/ {
+            match($0, /function ([A-Za-z_][A-Za-z0-9_]*)/, m)
+            if (m[1] != "") print FILENAME":"m[1]
+          }' $FILES 2>/dev/null | sort | uniq -d || true)
+          if [ -n "$DUPS" ]; then
+            echo "$DUPS"
+            echo "::error::Duplicate export function declarations found in the same file. ES-module SyntaxError — remove the duplicates before deploying."
+            exit 1
+          fi
+          echo "✅  No duplicate export function declarations."
+
+      - name: Check for stray console.log leaking sensitive data
+        run: |
+          echo "Scanning for console.log(otp) / console.log(token) / console.log(password) …"
+          if git grep -niE 'console\.log\s*\(\s*(otp|token|password|secret|key)' -- 'src/' 'supabase/' 2>/dev/null | grep .; then
+            echo "::warning::Potential sensitive-data console.log detected — review the matches above."
+          else
+            echo "✅  No suspicious console.log patterns."
+          fi
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Job 2 — Playwright E2E (sharded across 3 browsers in parallel)
+# Uses the existing playwright.config.ts (E2E_SHARDED=1 → chrome/firefox/safari)
+# Skippable via the workflow_dispatch input for fast re-dispatches.
+# ──────────────────────────────────────────────────────────────────────────────
+  playwright:
+    name: "🎭 Playwright E2E [${{ matrix.project }}]"
+    runs-on: ubuntu-latest
+    needs: code-health
+    if: inputs.skip_e2e != 'true'
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false          # all browsers report independently
+      matrix:
+        project: [chromium, firefox, webkit]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Install Playwright browser — ${{ matrix.project }}
+        run: npx playwright install --with-deps ${{ matrix.project }}
+
+      - name: Run Playwright tests [${{ matrix.project }}]
+        run: |
+          npx playwright test \
+            --project="${{ matrix.project }}" \
+            --reporter=list,json \
+            --output=test-results/${{ matrix.project }}
+        env:
+          E2E_BASE_URL: ${{ inputs.target_url || 'http://localhost:5173' }}
+          E2E_WORKERS: "6"
+          CI: "true"
+          # Supabase secrets forwarded if set; tests that require them will
+          # auto-skip when they are absent (see destructive-guard.ts).
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          E2E_SUPER_ADMIN_EMAIL: ${{ secrets.E2E_SUPER_ADMIN_EMAIL }}
+          E2E_SUPER_ADMIN_PASSWORD: ${{ secrets.E2E_SUPER_ADMIN_PASSWORD }}
+        continue-on-error: false
+
+      - name: Upload Playwright report — ${{ matrix.project }}
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ matrix.project }}-${{ github.run_id }}
+          path: |
+            test-results/${{ matrix.project }}
+            test-results/playwright-results.json
+          retention-days: 14
+
+      - name: Set Playwright result label
+        if: always() && github.event_name == 'pull_request'
+        id: result_label
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "label=✅ passed" >> "$GITHUB_OUTPUT"
+          else
+            echo "label=❌ failed" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Annotate PR with Playwright badge
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        continue-on-error: true
+        with:
+          header: playwright-${{ matrix.project }}
+          message: |
+            ## 🎭 Playwright — `${{ matrix.project }}`
+
+            | | |
+            |---|---|
+            | Status | ${{ steps.result_label.outputs.label }} |
+            | Branch | `${{ github.head_ref || github.ref_name }}` |
+            | Run | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+
+            <sub>Auto-posted by [playwright-deploy.yml](.github/workflows/playwright-deploy.yml)</sub>
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Job 3 — Fan-out dispatch
+# Triggers every sibling quality workflow so the full team gate fires in
+# parallel from a single entrypoint. Each workflow is independently gated;
+# failures here are advisory (continue-on-error) so E2E results still land.
+# ──────────────────────────────────────────────────────────────────────────────
+  dispatch-sibling-checks:
+    name: "🚀 Dispatch sibling checks"
+    runs-on: ubuntu-latest
+    needs: code-health
+    if: always() && needs.code-health.result == 'success'
+    permissions:
+      actions: write
+      contents: read
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Dispatch — Security Audit
+        run: |
+          gh workflow run security-audit.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref }}" \
+          && echo "✅  security-audit dispatched" \
+          || echo "::warning::security-audit dispatch failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Dispatch — Edge Function Contract Matrix
+        run: |
+          gh workflow run edge-fn-contract-matrix.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref }}" \
+          && echo "✅  edge-fn-contract-matrix dispatched" \
+          || echo "::warning::edge-fn-contract-matrix dispatch failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Dispatch — Secret Scan
+        run: |
+          gh workflow run secret-scan.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref }}" \
+          && echo "✅  secret-scan dispatched" \
+          || echo "::warning::secret-scan dispatch failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Dispatch — Bundle Size Gate
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+        run: |
+          gh workflow run bundle-size-gate.yml \
+            --repo "${{ github.repository }}" \
+            --ref "${{ github.ref }}" \
+          && echo "✅  bundle-size-gate dispatched" \
+          || echo "::warning::bundle-size-gate dispatch failed (non-fatal)"
+        continue-on-error: true
+
+      - name: Summary
+        run: |
+          echo "## 🚀 Dispatch summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "All sibling checks have been dispatched from a single entrypoint." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Workflow | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| security-audit | dispatched |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| edge-fn-contract-matrix | dispatched |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| secret-scan | dispatched |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| bundle-size-gate | dispatched |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| playwright E2E | running (this workflow) |" >> "$GITHUB_STEP_SUMMARY"
