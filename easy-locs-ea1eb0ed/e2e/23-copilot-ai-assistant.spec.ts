@@ -59,13 +59,13 @@ async function loginAs(page: Page, email: string, password: string) {
 // Env
 // ---------------------------------------------------------------------------
 
-const SUPER_EMAIL    = process.env.E2E_SUPER_ADMIN_EMAIL;
+const SUPER_EMAIL = process.env.E2E_SUPER_ADMIN_EMAIL;
 const SUPER_PASSWORD = process.env.E2E_SUPER_ADMIN_PASSWORD;
-const TEST_EMAIL     = process.env.E2E_TEST_EMAIL;
-const TEST_PASSWORD  = process.env.E2E_TEST_PASSWORD;
+const TEST_EMAIL = process.env.E2E_TEST_EMAIL;
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD;
 
 // Prefer super-admin for full access; fall back to regular account.
-const AUTH_EMAIL    = SUPER_EMAIL    ?? TEST_EMAIL;
+const AUTH_EMAIL = SUPER_EMAIL ?? TEST_EMAIL;
 const AUTH_PASSWORD = SUPER_PASSWORD ?? TEST_PASSWORD;
 
 // ---------------------------------------------------------------------------
@@ -121,7 +121,7 @@ test.describe("Copilot — AI Assistant dashboard (/dashboard/ai) (#23)", () => 
 
     expect(
       hasContent,
-      "AI assistant page loaded but no recognisable content element was visible",
+      "AI assistant page loaded but no recognizable content element was visible",
     ).toBe(true);
   });
 });
@@ -154,7 +154,7 @@ test.describe("Copilot — Admin AI Control Center (/admin/ai-control-center) (#
 
     expect(
       hasContent,
-      "Admin AI control center page loaded but no recognisable content was visible",
+      "Admin AI control center page loaded but no recognizable content was visible",
     ).toBe(true);
   });
 });

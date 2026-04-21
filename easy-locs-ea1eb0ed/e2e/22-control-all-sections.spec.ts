@@ -62,7 +62,7 @@ async function loginAsSuperAdmin(page: Page, email: string, password: string) {
     .toBe(true);
 }
 
-const SUPER_EMAIL    = process.env.E2E_SUPER_ADMIN_EMAIL;
+const SUPER_EMAIL = process.env.E2E_SUPER_ADMIN_EMAIL;
 const SUPER_PASSWORD = process.env.E2E_SUPER_ADMIN_PASSWORD;
 
 test.describe("Admin control plane — all sections (#22)", () => {
