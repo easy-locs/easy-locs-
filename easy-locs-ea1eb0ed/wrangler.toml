@@ -26,6 +26,20 @@
 # (Root directory = easy-locs-ea1eb0ed means CF Pages cds into that folder
 #  before running the build command, so the build command needs no "cd".)
 #
+# ─── OOM / "Killed" GUARD ─────────────────────────────────────────────────────
+# Cloudflare Pages automatically sets CF_PAGES=1, which disables brotli/gzip
+# compression, hidden sourcemaps, the bundle visualizer, and the chunk-budget
+# enforcer — all of which spike peak RSS past the ~2 GB container limit and
+# cause an OOM "Killed" after the PWA service-worker generation step.
+#
+# If the project is accidentally connected as a Worker project (which does NOT
+# set CF_PAGES), the build command should be changed to:
+#   npm ci && CF_PAGES=1 NODE_OPTIONS=--max-old-space-size=1536 npm run build
+#
+# The IS_CI belt-and-suspenders guard in vite.config.ts also catches this:
+# Cloudflare's build containers always set CI=true regardless of project type,
+# so brotli/gzip will be skipped even if CF_PAGES is missing.
+#
 # ─── ENVIRONMENT VARIABLES (Pages dashboard → Settings → Environment Variables)
 #   VITE_SUPABASE_URL        – public Supabase project URL  (plain text)
 #   VITE_SUPABASE_ANON_KEY   – public anon key              (plain text)
