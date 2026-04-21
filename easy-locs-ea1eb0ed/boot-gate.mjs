@@ -181,7 +181,7 @@ async function main() {
   console.log(`Browser: Chromium (Desktop)\n`);
 
   const browser = await chromium.launch({
-    executablePath: '/usr/bin/chromium',
+    executablePath: process.env.CHROMIUM_PATH || undefined,
     args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
   });
 

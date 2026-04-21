@@ -81,7 +81,7 @@ const GLOBAL_CHUNK_BUDGET_KB = 300;
 // (__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE) at module
 // initialisation. Splitting them produces a runtime TypeError and blank screen.
 const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
-  "vendor-react": 450, // react + react-dom + scheduler (~409KB unminified)
+  "vendor-react": 450, // react + react-dom + scheduler (~418KB)
 };
 
 const PILLAR_BUDGETS_KB: Record<string, number> = {
