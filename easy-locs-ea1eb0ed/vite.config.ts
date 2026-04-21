@@ -73,6 +73,13 @@ function cacheControlPlugin(): Plugin {
 }
 
 const CRITICAL_CHUNK_BUDGET_KB = 250;
+// Per-critical-chunk budget overrides. vendor-react is a unified chunk of
+// react+react-dom+scheduler+react-is (~418KB) and legitimately exceeds the
+// default 250KB critical budget. Splitting it triggers a runtime TypeError on
+// __CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE.
+const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-react": 450,
+};
 const GLOBAL_CHUNK_BUDGET_KB = 300;
 
 const PILLAR_BUDGETS_KB: Record<string, number> = {
@@ -108,11 +115,20 @@ interface BudgetReport {
   summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }>;
 }
 
+// Strip directory prefix and `-[hash].js` suffix to get the canonical chunk
+// name (e.g. "assets/vendor-react-BnCwZp0p.js" → "vendor-react").
+// Used for precise critical-chunk matching so "vendor-react-router" is never
+// misclassified as "vendor-react" by a naive substring check.
+function chunkBaseName(fileName: string): string {
+  const basename = fileName.split("/").pop() ?? fileName;
+  return basename.replace(/-[A-Za-z0-9]{8,}\.js$/, "");
+}
+
 function performanceBudgetPlugin(): Plugin {
   return {
     name: "performance-budget-enforcer",
     writeBundle(_options: unknown, bundle: OutputBundle) {
-      const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+      const criticalPatterns = ["vendor-react", "vendor-supabase"];
       const violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }> = {};
@@ -120,14 +136,16 @@ function performanceBudgetPlugin(): Plugin {
       for (const [fileName, entry] of Object.entries(bundle)) {
         if (entry.type !== "chunk" || !fileName.endsWith(".js")) continue;
         const sizeKB = Math.round(entry.code.length / 1024);
-        const isCritical = criticalPatterns.some(p => fileName.includes(p));
+        const baseName = chunkBaseName(fileName);
+        const isCritical = criticalPatterns.includes(baseName);
 
         const pillarMatch = Object.keys(PILLAR_BUDGETS_KB).find(p => fileName.includes(p));
 
         if (isCritical) {
-          summary[fileName] = { sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, ok: sizeKB <= CRITICAL_CHUNK_BUDGET_KB };
-          if (sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
-            violations.push({ chunk: fileName, sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, category: "critical" });
+          const criticalLimit = CRITICAL_CHUNK_BUDGET_OVERRIDES_KB[baseName] ?? CRITICAL_CHUNK_BUDGET_KB;
+          summary[fileName] = { sizeKB, limitKB: criticalLimit, ok: sizeKB <= criticalLimit };
+          if (sizeKB > criticalLimit) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: criticalLimit, category: "critical" });
           }
         } else if (pillarMatch) {
           const limit = PILLAR_BUDGETS_KB[pillarMatch];
@@ -439,10 +457,10 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
-        const critical = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+        const critical = ["vendor-react", "vendor-supabase"];
         return deps.sort((a, b) => {
-          const aIsCritical = critical.some((c) => a.includes(c));
-          const bIsCritical = critical.some((c) => b.includes(c));
+          const aIsCritical = critical.includes(chunkBaseName(a));
+          const bIsCritical = critical.includes(chunkBaseName(b));
           if (aIsCritical && !bIsCritical) return -1;
           if (!aIsCritical && bIsCritical) return 1;
           return 0;
@@ -468,8 +486,13 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("react-dom")) return "vendor-react-dom";
-            if (id.includes("react/") || id.includes("react-router") || id.includes("scheduler")) return "vendor-react-core";
+            if (
+              id.includes("react-dom") ||
+              id.includes("react/") ||
+              id.includes("react-is") ||
+              id.includes("scheduler")
+            ) return "vendor-react";
+            if (id.includes("react-router")) return "vendor-react-router";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";
