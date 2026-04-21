@@ -12,7 +12,8 @@ name: Auto-Merge
 # │  [6]  Security checks passed (Dependency audit + Semgrep SAST)         │
 # │  [7]  Secret scan passed                                               │
 # │  [8]  Edge Function Contract Matrix passed                             │
-# │  [9]  Playwright boot/route gate passed — skipped if not configured    │
+# │  [9]  Playwright boot/route gate — blocking for code PRs;              │
+# │        skipped only for strictly docs-only PRs when not configured      │
 # │  [10] PR is not a draft                                                │
 # │  [11] PR has no CHANGES_REQUESTED review                               │
 # │  [12] PR has none of: do-not-merge, blocked, security-risk,            │
@@ -210,11 +211,52 @@ jobs:
           # [8] Edge Function Contract Matrix (job has no `name:` → job-id used)
           check_run "[8]" "contract-matrix" "required"
 
-          # [9] Playwright boot/route gate — non-blocking if not configured
+          # [9] Playwright boot/route gate
+          #
+          # Rule:
+          #   • If Playwright ran and FAILED  → always block (code or docs).
+          #   • If Playwright ran and PASSED  → always allow.
+          #   • If Playwright is not configured:
+          #       – docs-only PR  → skip (non-blocking).
+          #       – code/build/deploy PR → BLOCK (Playwright is mandatory for
+          #         runtime changes; add a Playwright workflow to unblock).
+          #
+          # "docs-only" = every changed file matches:
+          #   docs/** | *.md (anywhere) | README* | CHANGELOG* | LICENSE*
+          #   .github/*.md | *.txt
+          # Any .ts/.tsx/.js/.json/.yml/.sql/.sh/src/**/ etc. → NOT docs-only.
+
+          CHANGED_FILES=$(gh pr view "$PR" --repo "$REPO" \
+            --json files --jq '[.files[].path]' 2>/dev/null || echo "[]")
+
+          IS_DOCS_ONLY=true
+          while IFS= read -r FPATH; do
+            # Strip leading/trailing whitespace and quotes that jq outputs
+            FPATH=$(echo "$FPATH" | tr -d '"' | xargs)
+            [ -z "$FPATH" ] && continue
+            if ! echo "$FPATH" | grep -qE \
+              '^(docs/|README|CHANGELOG|LICENSE|\.github/[^/]+\.md|.*\.(md|txt)$)'; then
+              IS_DOCS_ONLY=false
+              break
+            fi
+          done < <(echo "$CHANGED_FILES" | jq -r '.[]' 2>/dev/null)
+
+          # Edge case: if we couldn't fetch files (empty list), treat as code PR.
+          if [ "$CHANGED_FILES" = "[]" ] || [ -z "$CHANGED_FILES" ]; then
+            IS_DOCS_ONLY=false
+          fi
+
+          if [ "$IS_DOCS_ONLY" = "true" ]; then
+            echo "ℹ [9] PR is docs-only (all changed files are documentation)."
+          else
+            echo "ℹ [9] PR is a code/build/deploy PR — Playwright gate is mandatory."
+          fi
+
           PW_CONCLUSION=$(echo "$CHECK_JSON" \
             | jq -r 'select(.name | test("(?i)playwright|boot\\.gate|route\\.gate")) | .conclusion // "pending"' \
             | head -1)
           PW_CONCLUSION="${PW_CONCLUSION:-not_configured}"
+
           case "$PW_CONCLUSION" in
             success)
               echo "✓ [9] Playwright gate — passed."
@@ -224,7 +266,14 @@ jobs:
               VIOLATIONS=$((VIOLATIONS+1))
               ;;
             not_configured|not_found)
-              echo "ℹ [9] Playwright gate not configured — skipped (non-blocking)."
+              if [ "$IS_DOCS_ONLY" = "true" ]; then
+                echo "ℹ [9] Playwright gate not configured — skipped for docs-only PR (non-blocking)."
+              else
+                echo "::error::[9] FAIL — Playwright gate not configured for a code/build/deploy PR."
+                echo "  Add a Playwright workflow whose job name matches 'playwright', 'boot.gate',"
+                echo "  or 'route.gate' to unblock auto-merge for code changes."
+                VIOLATIONS=$((VIOLATIONS+1))
+              fi
               ;;
             *)
               echo "ℹ [9] Playwright gate not yet complete ($PW_CONCLUSION) — auto-merge will wait."

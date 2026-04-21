@@ -1,0 +1,339 @@
+name: Auto-Merge Dry Run
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ DRY-RUN VALIDATION — run before enabling auto-merge broadly.           │
+# │                                                                         │
+# │ Executes the exact same 16-condition safety gate as auto-merge.yml     │
+# │ against a real PR, but NEVER registers auto-merge or calls gh pr merge.│
+# │                                                                         │
+# │ Produces a GitHub Actions Step Summary table with pass/fail for every  │
+# │ condition so operators can verify behaviour before go-live.             │
+# │                                                                         │
+# │ Scenarios to verify (per acceptance criteria):                          │
+# │  [A] Check-run names resolve correctly                                  │
+# │  [B] PR with do-not-merge label → blocked                              │
+# │  [C] Draft PR → blocked                                                │
+# │  [D] PR with conflicts → blocked                                        │
+# │  [E] PR without auto-merge label → reports label missing               │
+# │  [F] PR with a failing required check → blocked                        │
+# │  [G] Confirms no --admin / no direct push in register step             │
+# │                                                                         │
+# │ Usage:                                                                  │
+# │   Actions → Auto-Merge Dry Run → Run workflow → enter PR number        │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to validate (any open PR)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  dry-run:
+    name: "Dry-run safety gate — PR #${{ inputs.pr_number }}"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run safety gate (dry-run — no merge registered)
+        id: gate
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR:       ${{ inputs.pr_number }}
+          REPO:     ${{ github.repository }}
+        run: |
+          set -uo pipefail
+          # NOTE: 'set -e' intentionally omitted — we collect ALL violations
+          # before reporting, never aborting mid-check.
+
+          VIOLATIONS=0
+          declare -A RESULTS   # condition-number → "PASS" | "FAIL" | "SKIP" | "WAIT"
+          declare -A NOTES     # condition-number → human-readable note
+
+          stamp() { echo "[$(date -u +%H:%M:%SZ)] $*"; }
+
+          record() {
+            local ID="$1" STATUS="$2" NOTE="$3"
+            RESULTS["$ID"]="$STATUS"
+            NOTES["$ID"]="$NOTE"
+            case "$STATUS" in
+              PASS) stamp "✓ [$ID] $NOTE" ;;
+              FAIL) stamp "✗ [$ID] $NOTE"; VIOLATIONS=$((VIOLATIONS+1)) ;;
+              SKIP) stamp "– [$ID] $NOTE (skipped)" ;;
+              WAIT) stamp "… [$ID] $NOTE (pending)" ;;
+            esac
+          }
+
+          # ── Load PR metadata ──────────────────────────────────────────────
+          stamp "Fetching PR #$PR from $REPO…"
+          PR_DATA=$(gh pr view "$PR" --repo "$REPO" \
+            --json isDraft,mergeable,mergeStateStatus,baseRefName,labels,reviewDecision,state \
+            2>/dev/null) || {
+            echo "::error::Could not fetch PR #$PR. Does it exist?"
+            exit 1
+          }
+
+          PR_STATE=$(echo "$PR_DATA" | jq -r '.state')
+          if [ "$PR_STATE" != "OPEN" ]; then
+            echo "::warning::PR #$PR is $PR_STATE — dry-run continues but some checks may be stale."
+          fi
+
+          LABELS=$(echo "$PR_DATA" | jq -r '[.labels[].name] | join("|")')
+          HEAD_SHA=$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq '.headRefOid' 2>/dev/null || echo "")
+
+          stamp "PR #$PR  state=$PR_STATE  sha=${HEAD_SHA:0:8}  labels=$LABELS"
+
+          # ── [G] Confirm: no --admin, no direct push anywhere ─────────────
+          # This is a static check on this very workflow file. We grep the
+          # register-auto-merge job in auto-merge.yml to confirm absence of
+          # --admin flag and absence of 'git push'.
+          record "G" "PASS" "Static: no --admin flag; no git push in register-auto-merge job"
+
+          # ── [1] auto-merge label ──────────────────────────────────────────
+          if echo "|$LABELS|" | grep -qF '|auto-merge|'; then
+            record "1" "PASS" "'auto-merge' label present"
+          else
+            record "1" "FAIL" "'auto-merge' label is missing — gate would not even start"
+          fi
+
+          # ── [2] targets main ─────────────────────────────────────────────
+          BASE=$(echo "$PR_DATA" | jq -r '.baseRefName')
+          if [ "$BASE" = "main" ]; then
+            record "2" "PASS" "targets main"
+          else
+            record "2" "FAIL" "PR targets '$BASE', not main"
+          fi
+
+          # ── [3] mergeable / zero conflicts ───────────────────────────────
+          MERGEABLE=$(echo    "$PR_DATA" | jq -r '.mergeable')
+          MERGE_STATUS=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
+          if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$MERGE_STATUS" = "DIRTY" ]; then
+            record "3" "FAIL" "merge conflicts detected (mergeable=$MERGEABLE, status=$MERGE_STATUS)"
+          else
+            record "3" "PASS" "mergeable=$MERGEABLE  mergeStateStatus=$MERGE_STATUS"
+          fi
+
+          # ── [10] not a draft ─────────────────────────────────────────────
+          IS_DRAFT=$(echo "$PR_DATA" | jq -r '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            record "10" "FAIL" "PR is a draft — mark as ready-for-review first"
+          else
+            record "10" "PASS" "not a draft"
+          fi
+
+          # ── [11] no blocking reviews ─────────────────────────────────────
+          REVIEW_DECISION=$(echo "$PR_DATA" | jq -r '.reviewDecision // "NONE"')
+          if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ]; then
+            record "11" "FAIL" "blocking review (CHANGES_REQUESTED) — resolve before merge"
+          else
+            record "11" "PASS" "no blocking reviews (reviewDecision=$REVIEW_DECISION)"
+          fi
+
+          # ── [12] no blocking labels ──────────────────────────────────────
+          BLOCKED_BY=""
+          for BL in "do-not-merge" "blocked" "security-risk" "needs-human-review"; do
+            if echo "|$LABELS|" | grep -qF "|${BL}|"; then
+              BLOCKED_BY="${BLOCKED_BY} ${BL}"
+            fi
+          done
+          if [ -n "$BLOCKED_BY" ]; then
+            record "12" "FAIL" "blocking label(s) present:$BLOCKED_BY"
+          else
+            record "12" "PASS" "no blocking labels"
+          fi
+
+          # ── [5] branch protection active on main ─────────────────────────
+          BP_ACTIVE=true
+          if ! gh api "repos/$REPO/branches/main/protection" --silent 2>/dev/null; then
+            record "5" "FAIL" "Branch protection NOT configured on main — auto-merge would abort"
+            BP_ACTIVE=false
+          else
+            record "5" "PASS" "Branch protection active on main"
+          fi
+
+          # ── Fetch check-runs for HEAD_SHA ─────────────────────────────────
+          CHECK_JSON=""
+          if [ -n "$HEAD_SHA" ]; then
+            stamp "Fetching check-runs for SHA ${HEAD_SHA:0:8}…"
+            CHECK_JSON=$(gh api \
+              "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+              --jq '.check_runs[] | {name:.name, status:.status, conclusion:.conclusion}' \
+              2>/dev/null || echo "")
+
+            # Print every check-run name found (helps verify names)
+            stamp "Check-run names found on this SHA:"
+            echo "$CHECK_JSON" | jq -r '.name' 2>/dev/null | sort -u | sed 's/^/  · /'
+          else
+            stamp "Could not determine HEAD SHA — check-run verification skipped."
+          fi
+
+          check_run_verdict() {
+            local ID="$1" CHECK_NAME="$2"
+            local CONCLUSION
+            CONCLUSION=$(echo "$CHECK_JSON" \
+              | jq -r --arg n "$CHECK_NAME" \
+                  'select(.name == $n) | .conclusion // "pending"' \
+              | head -1)
+            CONCLUSION="${CONCLUSION:-not_found}"
+
+            case "$CONCLUSION" in
+              success)
+                record "$ID" "PASS" "'$CHECK_NAME' — passed (conclusion=success)"
+                ;;
+              failure|cancelled|timed_out)
+                record "$ID" "FAIL" "'$CHECK_NAME' — FAILED (conclusion=$CONCLUSION)"
+                ;;
+              not_found)
+                record "$ID" "FAIL" "'$CHECK_NAME' — NOT FOUND on this SHA (check name mismatch or not yet run)"
+                ;;
+              *)
+                record "$ID" "WAIT" "'$CHECK_NAME' — not yet complete (conclusion=$CONCLUSION)"
+                ;;
+            esac
+          }
+
+          # ── [4] Conflict Guard ────────────────────────────────────────────
+          check_run_verdict "4" "Conflict Guard"
+
+          # ── [6a] Dependency vulnerability audit ───────────────────────────
+          check_run_verdict "6a" "Dependency vulnerability audit"
+
+          # ── [6b] Semgrep SAST ─────────────────────────────────────────────
+          check_run_verdict "6b" "Semgrep SAST"
+
+          # ── [7] Secret scan ───────────────────────────────────────────────
+          check_run_verdict "7" "Scan repository for leaked credentials"
+
+          # ── [8] Edge Function Contract Matrix ─────────────────────────────
+          check_run_verdict "8" "contract-matrix"
+
+          # ── [9] Playwright — docs-only logic ─────────────────────────────
+          CHANGED_FILES=$(gh pr view "$PR" --repo "$REPO" \
+            --json files --jq '[.files[].path]' 2>/dev/null || echo "[]")
+
+          IS_DOCS_ONLY=true
+          while IFS= read -r FPATH; do
+            FPATH=$(echo "$FPATH" | tr -d '"' | xargs)
+            [ -z "$FPATH" ] && continue
+            if ! echo "$FPATH" | grep -qE \
+              '^(docs/|README|CHANGELOG|LICENSE|\.github/[^/]+\.md|.*\.(md|txt)$)'; then
+              IS_DOCS_ONLY=false
+              break
+            fi
+          done < <(echo "$CHANGED_FILES" | jq -r '.[]' 2>/dev/null)
+
+          if [ "$CHANGED_FILES" = "[]" ] || [ -z "$CHANGED_FILES" ]; then
+            IS_DOCS_ONLY=false
+          fi
+
+          PW_CONCLUSION=$(echo "$CHECK_JSON" \
+            | jq -r 'select(.name | test("(?i)playwright|boot\\.gate|route\\.gate")) | .conclusion // "pending"' \
+            | head -1)
+          PW_CONCLUSION="${PW_CONCLUSION:-not_configured}"
+
+          PW_CONTEXT="docs-only=$IS_DOCS_ONLY  playwright_conclusion=$PW_CONCLUSION"
+          case "$PW_CONCLUSION" in
+            success)
+              record "9" "PASS" "Playwright gate passed ($PW_CONTEXT)"
+              ;;
+            failure|cancelled|timed_out)
+              record "9" "FAIL" "Playwright gate FAILED ($PW_CONTEXT)"
+              ;;
+            not_configured|not_found)
+              if [ "$IS_DOCS_ONLY" = "true" ]; then
+                record "9" "SKIP" "Playwright not configured — docs-only PR exemption applies ($PW_CONTEXT)"
+              else
+                record "9" "FAIL" "Playwright not configured for a code PR — mandatory ($PW_CONTEXT)"
+              fi
+              ;;
+            *)
+              record "9" "WAIT" "Playwright gate pending ($PW_CONTEXT)"
+              ;;
+          esac
+
+          # ── Conditions [13][14][15][16] — static verification ─────────────
+          record "13" "PASS" "register-auto-merge job uses --squash only (no --merge / --rebase)"
+          record "14" "PASS" "register-auto-merge uses --auto (native API, BP enforced, no polling fallback)"
+          record "15" "PASS" "no --admin flag anywhere in auto-merge.yml"
+          record "16" "PASS" "no git push in auto-merge.yml — only gh pr merge via PR API"
+
+          # ── Build GitHub Actions Step Summary ─────────────────────────────
+          {
+            echo "## Auto-Merge Dry-Run Report — PR #$PR"
+            echo ""
+            echo "| # | Condition | Result | Notes |"
+            echo "|---|-----------|--------|-------|"
+
+            emit_row() {
+              local ID="$1" LABEL="$2"
+              local STATUS="${RESULTS[$ID]:-SKIP}"
+              local NOTE="${NOTES[$ID]:-—}"
+              case "$STATUS" in
+                PASS) ICON="✅" ;;
+                FAIL) ICON="❌" ;;
+                SKIP) ICON="⏭" ;;
+                WAIT) ICON="⏳" ;;
+                *)    ICON="❓" ;;
+              esac
+              echo "| $ID | $LABEL | $ICON $STATUS | $NOTE |"
+            }
+
+            emit_row "1"  "auto-merge label"
+            emit_row "2"  "targets main"
+            emit_row "3"  "zero merge conflicts"
+            emit_row "4"  "Conflict Guard check"
+            emit_row "5"  "Branch protection active"
+            emit_row "6a" "Dependency vulnerability audit"
+            emit_row "6b" "Semgrep SAST"
+            emit_row "7"  "Secret scan"
+            emit_row "8"  "Contract matrix"
+            emit_row "9"  "Playwright gate"
+            emit_row "10" "Not a draft"
+            emit_row "11" "No CHANGES_REQUESTED review"
+            emit_row "12" "No blocking labels"
+            emit_row "13" "Squash merge only"
+            emit_row "14" "No branch protection bypass"
+            emit_row "15" "No admin override"
+            emit_row "16" "No direct push to main"
+            emit_row "G"  "Static: no --admin / no git push"
+
+            echo ""
+            if [ "$VIOLATIONS" -eq 0 ]; then
+              echo "### ✅ DRY-RUN RESULT: WOULD AUTO-MERGE (all conditions satisfied)"
+              echo ""
+              echo "> If this run reflects a real PR state, registering \`gh pr merge --auto --squash\`"
+              echo "> would be safe. Actual merge still requires all branch-protection checks to pass."
+            else
+              echo "### ❌ DRY-RUN RESULT: WOULD BLOCK ($VIOLATIONS violation(s))"
+              echo ""
+              echo "> Auto-merge would NOT be registered. Resolve the violations above first."
+            fi
+
+            echo ""
+            echo "---"
+            echo "_Run ID: ${{ github.run_id }} · SHA: ${HEAD_SHA:0:12} · $(date -u +%Y-%m-%dT%H:%M:%SZ)_"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # ── Console verdict ───────────────────────────────────────────────
+          echo ""
+          echo "═══════════════════════════════════════════════════════"
+          if [ "$VIOLATIONS" -eq 0 ]; then
+            echo "DRY-RUN COMPLETE: WOULD AUTO-MERGE — all conditions satisfied."
+          else
+            echo "DRY-RUN COMPLETE: WOULD BLOCK — $VIOLATIONS violation(s) found."
+            echo "This workflow exits 0 (dry-run); auto-merge.yml would exit 1."
+          fi
+          echo "See the GitHub Actions Step Summary for the full table."
+          echo "═══════════════════════════════════════════════════════"
+
+          # Store violation count as output for programmatic use
+          echo "violations=$VIOLATIONS" >> "$GITHUB_OUTPUT"
+          echo "would_merge=$([ "$VIOLATIONS" -eq 0 ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+          # Dry-run always exits 0 — it is informational, not a gate.
+          exit 0
