@@ -1,143 +1,284 @@
 name: Auto-Merge
 
-# Automatically merges PRs (squash) as soon as every required branch-protection
-# check is green, with zero merge conflicts.
-#
-# Eligible PRs — one of:
-#   • Labeled with "auto-merge"
-#   • Head branch matches exec/* (execution-runner bot PRs)
-#   • Triggered manually via workflow_dispatch with an explicit PR number
-#
-# Mechanism:
-#   gh pr merge --auto registers GitHub's native auto-merge on the PR.
-#   GitHub merges the PR automatically once ALL required status checks defined
-#   in branch-protection pass (including "Conflict Guard").
-#   If branch-protection is not yet configured, a polling fallback merges
-#   directly once the PR's mergeStateStatus reaches CLEAN.
-#
-# Branch-protection required status checks (from BRANCH_PROTECTION.md):
-#   TypeScript Check, ESLint, Vitest Suite, UI Quality Gate,
-#   Determinism Check, Enforce Branch Naming, Production Build,
-#   Conflict Guard  ← add this one after creating the workflow
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │ STRICT SAFETY GATE — 16 conditions must ALL be true before any merge.  │
+# │                                                                         │
+# │ Conditions checked in the safety-gate job:                             │
+# │  [1]  PR has label "auto-merge"                                        │
+# │  [2]  PR targets main (base branch)                                    │
+# │  [3]  PR is mergeable — not CONFLICTING / DIRTY                        │
+# │  [4]  Conflict Guard check passed                                      │
+# │  [5]  Branch protection is ACTIVE on main (API-verified)               │
+# │  [6]  Security checks passed (Dependency audit + Semgrep SAST)         │
+# │  [7]  Secret scan passed                                               │
+# │  [8]  Edge Function Contract Matrix passed                             │
+# │  [9]  Playwright boot/route gate passed — skipped if not configured    │
+# │  [10] PR is not a draft                                                │
+# │  [11] PR has no CHANGES_REQUESTED review                               │
+# │  [12] PR has none of: do-not-merge, blocked, security-risk,            │
+# │        needs-human-review                                              │
+# │                                                                         │
+# │ Enforced at merge time by GitHub native auto-merge:                    │
+# │  [13] Squash merge only (--squash, no --merge, no --rebase)           │
+# │  [14] Never bypasses branch protection (native auto-merge API)         │
+# │  [15] No admin override (no --admin flag)                             │
+# │  [16] Never pushes directly to main (always via PR squash-merge)       │
+# │                                                                         │
+# │ ⚠ NO POLLING FALLBACK. If branch protection is inactive, ABORT.       │
+# └─────────────────────────────────────────────────────────────────────────┘
 
 on:
   pull_request:
-    types: [opened, labeled, synchronize, reopened, ready_for_review]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: "PR number to auto-merge"
-        required: true
-        type: string
+    branches: [main]        # [2] Only PRs targeting main are processed
+    types:
+      - labeled             # Fires when "auto-merge" label is added
+      - synchronize         # Re-evaluates when new commits are pushed
+      - reopened
+      - ready_for_review    # Re-evaluates when a draft is promoted
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  auto-merge:
-    name: Enable auto-merge
+  # ── Job 1: Safety Gate ────────────────────────────────────────────────────
+  safety-gate:
+    name: Safety Gate
     runs-on: ubuntu-latest
-    # Only act on eligible PRs (not on workflow_dispatch — that path resolves below)
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (
-        github.event_name == 'pull_request' && (
-          contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
-          startsWith(github.event.pull_request.head.ref, 'exec/')
-        )
-      )
+    # [1] Entry point: auto-merge label MUST be present.
+    # exec/* bypass removed — the label is the sole entry point.
+    if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    outputs:
+      safe: ${{ steps.gate.outputs.safe }}
+
     steps:
-      - name: Resolve PR number
-        id: pr
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Enable GitHub native auto-merge
-        id: native
+      - name: Verify all 16 safety conditions
+        id: gate
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR: ${{ steps.pr.outputs.number }}
-        # gh pr merge --auto queues the merge; GitHub executes it once all
-        # required branch-protection checks (including Conflict Guard) pass.
-        # Exit 0 on success, non-zero if branch-protection is not configured.
+          PR:       ${{ github.event.pull_request.number }}
+          REPO:     ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if gh pr merge "$PR" \
-              --repo "${{ github.repository }}" \
-              --auto \
-              --squash \
-              --delete-branch; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-            echo "✓ Native auto-merge registered on PR #$PR."
-            echo "  GitHub will squash-merge automatically once all required checks pass."
+          set -euo pipefail
+          VIOLATIONS=0
+
+          # ── Load PR metadata in one API call ──────────────────────────────
+          PR_DATA=$(gh pr view "$PR" --repo "$REPO" \
+            --json isDraft,mergeable,mergeStateStatus,baseRefName,labels,reviewDecision)
+
+          LABELS=$(echo "$PR_DATA" | jq -r '[.labels[].name] | join("|")')
+
+          echo "═══════════════════════════════════════════════════════"
+          echo "  Auto-Merge Safety Gate — PR #$PR"
+          echo "  Labels : $LABELS"
+          echo "  SHA    : $HEAD_SHA"
+          echo "═══════════════════════════════════════════════════════"
+
+          # ── [1] auto-merge label ─────────────────────────────────────────
+          # Belt-and-suspenders: already enforced by job `if:`, checked again
+          # so a conditional skip can never smuggle through a non-labelled PR.
+          if ! echo "|$LABELS|" | grep -qF '|auto-merge|'; then
+            echo "::error::[1] FAIL — 'auto-merge' label is missing."
+            VIOLATIONS=$((VIOLATIONS+1))
           else
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Native auto-merge unavailable (branch-protection rules may not be"
-            echo "configured via the GitHub API yet). Falling back to polling merge."
+            echo "✓ [1] 'auto-merge' label present."
           fi
 
-      # ── Polling fallback ─────────────────────────────────────────────────────
-      # Used only when the native auto-merge API call above fails.
-      # Polls PR mergeability for up to 15 minutes (30 × 30 s) then merges.
-      - name: Polling fallback merge
-        if: steps.native.outputs.enabled == 'false'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR: ${{ steps.pr.outputs.number }}
-        run: |
-          echo "Polling PR #$PR for up to 15 minutes…"
-          for attempt in $(seq 1 30); do
-            DATA=$(gh pr view "$PR" \
-              --repo "${{ github.repository }}" \
-              --json mergeable,mergeStateStatus,state \
-              --jq '{m:.mergeable,s:.mergeStateStatus,st:.state}')
+          # ── [2] targets main ─────────────────────────────────────────────
+          BASE=$(echo "$PR_DATA" | jq -r '.baseRefName')
+          if [ "$BASE" != "main" ]; then
+            echo "::error::[2] FAIL — PR targets '$BASE', not main."
+            VIOLATIONS=$((VIOLATIONS+1))
+          else
+            echo "✓ [2] targets main."
+          fi
 
-            MERGEABLE=$(echo "$DATA" | jq -r '.m')
-            STATUS=$(echo   "$DATA" | jq -r '.s')
-            STATE=$(echo    "$DATA" | jq -r '.st')
+          # ── [3] mergeable / zero conflicts ───────────────────────────────
+          MERGEABLE=$(echo    "$PR_DATA" | jq -r '.mergeable')
+          MERGE_STATUS=$(echo "$PR_DATA" | jq -r '.mergeStateStatus')
+          if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$MERGE_STATUS" = "DIRTY" ]; then
+            echo "::error::[3] FAIL — PR has merge conflicts (mergeable=$MERGEABLE, status=$MERGE_STATUS)."
+            echo "  Rebase or merge main into the branch and resolve all conflicts."
+            VIOLATIONS=$((VIOLATIONS+1))
+          else
+            echo "✓ [3] mergeable=$MERGEABLE  mergeStateStatus=$MERGE_STATUS."
+          fi
 
-            echo "[$(date -u +%H:%M:%S)] attempt=$attempt mergeable=$MERGEABLE status=$STATUS state=$STATE"
+          # ── [10] not a draft ─────────────────────────────────────────────
+          IS_DRAFT=$(echo "$PR_DATA" | jq -r '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "::error::[10] FAIL — PR is a draft. Mark as ready-for-review first."
+            VIOLATIONS=$((VIOLATIONS+1))
+          else
+            echo "✓ [10] not a draft."
+          fi
 
-            # Already merged or closed — nothing to do
-            if [ "$STATE" = "MERGED" ] || [ "$STATE" = "CLOSED" ]; then
-              echo "PR #$PR is already $STATE. Nothing to do."
-              exit 0
+          # ── [11] no blocking reviews ─────────────────────────────────────
+          REVIEW_DECISION=$(echo "$PR_DATA" | jq -r '.reviewDecision // "NONE"')
+          if [ "$REVIEW_DECISION" = "CHANGES_REQUESTED" ]; then
+            echo "::error::[11] FAIL — PR has a blocking review (CHANGES_REQUESTED)."
+            echo "  Resolve all change-request reviews before auto-merge."
+            VIOLATIONS=$((VIOLATIONS+1))
+          else
+            echo "✓ [11] no blocking reviews (reviewDecision=$REVIEW_DECISION)."
+          fi
+
+          # ── [12] no blocking labels ──────────────────────────────────────
+          BLOCKING_OK=true
+          for BL in "do-not-merge" "blocked" "security-risk" "needs-human-review"; do
+            if echo "|$LABELS|" | grep -qF "|${BL}|"; then
+              echo "::error::[12] FAIL — blocking label '$BL' is present."
+              VIOLATIONS=$((VIOLATIONS+1))
+              BLOCKING_OK=false
             fi
+          done
+          if [ "$BLOCKING_OK" = "true" ]; then
+            echo "✓ [12] no blocking labels."
+          fi
 
-            if [ "$STATUS" = "CLEAN" ] && [ "$MERGEABLE" = "MERGEABLE" ]; then
-              echo "All checks passed. Merging PR #$PR (squash)…"
-              gh pr merge "$PR" \
-                --repo "${{ github.repository }}" \
-                --squash \
-                --delete-branch
-              echo "✓ PR #$PR merged successfully."
-              exit 0
-            fi
+          # ── [5] branch protection active on main ─────────────────────────
+          # CRITICAL: Without this check, the absence of branch protection would
+          # allow the native auto-merge to succeed without any required checks,
+          # and there is NO polling fallback to catch it.
+          BP_ACTIVE=true
+          if ! gh api "repos/$REPO/branches/main/protection" --silent 2>/dev/null; then
+            echo "::error::[5] FAIL — Branch protection is NOT configured on main."
+            echo "  Auto-merge is disabled: without branch protection, required checks"
+            echo "  are not enforced and merging would be unsafe."
+            echo "  Configure branch protection in Settings → Branches → main."
+            VIOLATIONS=$((VIOLATIONS+1))
+            BP_ACTIVE=false
+          else
+            echo "✓ [5] Branch protection is active on main."
+          fi
 
-            case "$STATUS" in
-              DIRTY)
-                echo "::error::PR #$PR has merge conflicts (DIRTY). Cannot auto-merge."
-                echo "Resolve conflicts and push again."
-                exit 1
+          # ── [4] [6] [7] [8] [9] — Verify named check runs ───────────────
+          # Strategy: fetch all completed check runs for HEAD_SHA.
+          #   • conclusion = "failure" | "cancelled" | "timed_out"  → BLOCK
+          #   • conclusion = "success"                               → ✓ pass
+          #   • check not found / queued / in_progress              → log only
+          #     (gh pr merge --auto will wait for them via branch protection)
+          #
+          # Exact check names come from the `name:` field of each workflow job.
+          # Jobs without a `name:` field use the job-id as the check name.
+          echo "─── Check-run verification ─────────────────────────────"
+          CHECK_JSON=$(gh api \
+            "repos/$REPO/commits/$HEAD_SHA/check-runs?per_page=100" \
+            --jq '.check_runs[] | {name:.name, status:.status, conclusion:.conclusion}' \
+            2>/dev/null || echo "")
+
+          check_run() {
+            local LABEL="$1" CHECK_NAME="$2" REQUIRED="$3"
+            local CONCLUSION
+            CONCLUSION=$(echo "$CHECK_JSON" \
+              | jq -r --arg n "$CHECK_NAME" \
+                  'select(.name == $n) | .conclusion // "pending"' \
+              | head -1)
+            CONCLUSION="${CONCLUSION:-not_found}"
+
+            case "$CONCLUSION" in
+              success)
+                echo "✓ $LABEL ('$CHECK_NAME') — passed."
                 ;;
-              BEHIND)
-                echo "::error::PR #$PR branch is behind main (BEHIND). Update branch first."
-                exit 1
-                ;;
-              BLOCKED|UNKNOWN|UNSTABLE)
-                echo "Status is $STATUS — waiting 30 s before retry…"
-                sleep 30
+              failure|cancelled|timed_out)
+                echo "::error::$LABEL FAIL — '$CHECK_NAME' concluded: $CONCLUSION."
+                if [ "$REQUIRED" = "required" ]; then
+                  VIOLATIONS=$((VIOLATIONS+1))
+                fi
                 ;;
               *)
-                echo "Unrecognized status '$STATUS' — waiting 30 s…"
-                sleep 30
+                # pending / queued / in_progress / not_found
+                echo "ℹ $LABEL — '$CHECK_NAME' not yet complete ($CONCLUSION)."
+                echo "  gh pr merge --auto will wait for this check via branch protection."
                 ;;
             esac
-          done
+          }
 
-          echo "::error::Timeout: PR #$PR did not reach CLEAN status within 15 minutes."
-          exit 1
+          # [4] Conflict Guard
+          check_run "[4]" "Conflict Guard" "required"
+
+          # [6] Security — Dependency audit
+          check_run "[6a]" "Dependency vulnerability audit" "required"
+
+          # [6] Security — SAST
+          check_run "[6b]" "Semgrep SAST" "required"
+
+          # [7] Secret scan (secret-scan.yml job `secret-scan`)
+          check_run "[7]" "Scan repository for leaked credentials" "required"
+
+          # [8] Edge Function Contract Matrix (job has no `name:` → job-id used)
+          check_run "[8]" "contract-matrix" "required"
+
+          # [9] Playwright boot/route gate — non-blocking if not configured
+          PW_CONCLUSION=$(echo "$CHECK_JSON" \
+            | jq -r 'select(.name | test("(?i)playwright|boot.gate|route.gate")) | .conclusion // "pending"' \
+            | head -1)
+          PW_CONCLUSION="${PW_CONCLUSION:-not_configured}"
+          case "$PW_CONCLUSION" in
+            success)
+              echo "✓ [9] Playwright gate — passed."
+              ;;
+            failure|cancelled|timed_out)
+              echo "::error::[9] FAIL — Playwright gate concluded: $PW_CONCLUSION."
+              VIOLATIONS=$((VIOLATIONS+1))
+              ;;
+            not_configured|not_found)
+              echo "ℹ [9] Playwright gate not configured — skipped (non-blocking)."
+              ;;
+            *)
+              echo "ℹ [9] Playwright gate not yet complete ($PW_CONCLUSION) — auto-merge will wait."
+              ;;
+          esac
+
+          # ── Conditions [13][14][15][16] enforced at merge time ───────────
+          # [13] --squash enforced by the register-auto-merge job (no --merge, no --rebase)
+          # [14] native auto-merge API never bypasses branch protection
+          # [15] no --admin flag in the register-auto-merge job
+          # [16] gh pr merge always merges via PR, never git push origin main
+          echo "✓ [13][14][15][16] Merge method / bypass guards enforced by register-auto-merge job."
+
+          # ── Verdict ──────────────────────────────────────────────────────
+          echo "═══════════════════════════════════════════════════════"
+          if [ "$VIOLATIONS" -gt 0 ]; then
+            echo "::error::Safety gate FAILED — $VIOLATIONS violation(s) found."
+            echo "  Auto-merge will NOT proceed until all conditions are satisfied."
+            echo "safe=false" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "✓ Safety gate PASSED — all enforced conditions satisfied."
+          echo "  Handing off to register-auto-merge job."
+          echo "safe=true" >> "$GITHUB_OUTPUT"
+
+  # ── Job 2: Register auto-merge ────────────────────────────────────────────
+  # Runs only when the safety gate passes.
+  # Uses GitHub's NATIVE auto-merge API — GitHub will execute the merge only
+  # after ALL required branch-protection checks are green.
+  # No polling. No fallback. No admin override. Squash only.
+  register-auto-merge:
+    name: Register auto-merge (squash · no bypass · no admin)
+    needs: safety-gate
+    runs-on: ubuntu-latest
+    if: needs.safety-gate.outputs.safe == 'true'
+
+    steps:
+      - name: Enable GitHub native auto-merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR:       ${{ github.event.pull_request.number }}
+        run: |
+          # [13] --squash  : squash merge only — no --merge, no --rebase
+          # [14] --auto    : native auto-merge; GitHub enforces branch protection
+          # [15] no --admin: never overrides required reviews or checks
+          # [16] gh pr merge: merges via PR API, never pushes directly to main
+          gh pr merge "$PR" \
+            --repo "${{ github.repository }}" \
+            --auto \
+            --squash \
+            --delete-branch
+
+          echo "✓ Native auto-merge registered on PR #$PR."
+          echo "  GitHub will squash-merge once ALL required branch-protection checks pass."
+          echo "  This job never bypasses branch protection, never uses admin override,"
+          echo "  and never pushes directly to main."
