@@ -123,13 +123,20 @@ export const db: DbFn = Object.assign(_from, {
   from: _from,
   rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
   schema: supabase.schema.bind(supabase),
-  storage: supabase.storage,
-  functions: supabase.functions,
-  auth: supabase.auth,
   channel: supabase.channel.bind(supabase),
   removeChannel: supabase.removeChannel.bind(supabase),
   getChannels: supabase.getChannels.bind(supabase),
   removeAllChannels: supabase.removeAllChannels.bind(supabase),
+});
+
+// storage, functions, and auth are exposed as lazy getters so that any access
+// fault in the Supabase client (e.g. bad env vars causing a broken client
+// object) is deferred to call time rather than module evaluation time, keeping
+// the render-time import path safe when Supabase is unavailable.
+Object.defineProperties(db, {
+  storage: { get: () => supabase.storage, enumerable: true, configurable: true },
+  functions: { get: () => supabase.functions, enumerable: true, configurable: true },
+  auth: { get: () => supabase.auth, enumerable: true, configurable: true },
 });
 
 // ── v2db — legacy-guarded accessor ─────────────────────────────────────────

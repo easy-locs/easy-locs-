@@ -193,18 +193,22 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const syncLocale = async () => {
-      const { data: { session } } = await db.auth.getSession();
-      if (!session?.user) return;
-      const { data } = await cFrom("profiles")
-        .select("locale")
-        .eq("id", session.user.id)
-        .single();
-      if (data?.locale && isValidLocale(data.locale)) {
-        setLocaleState(data.locale);
-        try {
-          localStorage.setItem("app_locale", data.locale);
-        } catch {
+      try {
+        const { data: { session } } = await db.auth.getSession();
+        if (!session?.user) return;
+        const { data } = await cFrom("profiles")
+          .select("locale")
+          .eq("id", session.user.id)
+          .single();
+        if (data?.locale && isValidLocale(data.locale)) {
+          setLocaleState(data.locale);
+          try {
+            localStorage.setItem("app_locale", data.locale);
+          } catch {
+          }
         }
+      } catch {
+        // Supabase unavailable — skip locale sync without crashing render
       }
     };
     syncLocale();
@@ -222,9 +226,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }
     loadLocaleTranslations(l).then(() => forceUpdate(n => n + 1));
     loadLocaleExtras(l);
-    const { data: { session } } = await db.auth.getSession();
-    if (session?.user) {
-      await cFrom("profiles").update({ locale: l }).eq("id", session.user.id);
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      if (session?.user) {
+        await cFrom("profiles").update({ locale: l }).eq("id", session.user.id);
+      }
+    } catch {
+      // Supabase unavailable — locale persisted locally, skip remote sync
     }
   }, []);
 

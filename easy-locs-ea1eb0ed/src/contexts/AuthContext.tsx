@@ -580,37 +580,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setProfileLoaded(true);
     });
 
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
-      if (_event === "INITIAL_SESSION") return;
+    // onAuthStateChange may throw synchronously if the Supabase client is
+    // mis-configured (e.g. missing env vars). Guard so a broken client never
+    // crashes the auth effect and blanks the screen on public routes.
+    let authSub: { unsubscribe: () => void } = { unsubscribe: () => {} };
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+        if (_event === "INITIAL_SESSION") return;
 
-      if (_event === "SIGNED_IN" && nextSession?.user) {
-        logAudit({ userId: nextSession.user.id, action: "user_login" });
-        void import("@/lib/analytics/sentry").then(m => m.setUserContext(nextSession.user.id, nextSession.user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined })).catch(() => {});
-        void import("@/lib/auth/profile")
-          .then((m) => m.ensureUserProfile(nextSession.user.id, {
-            fullName: nextSession.user.user_metadata?.full_name,
-            phone: nextSession.user.phone ?? undefined,
-          }))
-          .catch(() => null);
-        setTimeout(() => {
-          void import("@/lib/notif-alert-prefs")
-            .then((m) => m?.requestNotificationPermission?.())
+        if (_event === "SIGNED_IN" && nextSession?.user) {
+          logAudit({ userId: nextSession.user.id, action: "user_login" });
+          void import("@/lib/analytics/sentry").then(m => m.setUserContext(nextSession.user.id, nextSession.user.email ?? undefined, { role: activeRole, orgId: orgId ?? undefined })).catch(() => {});
+          void import("@/lib/auth/profile")
+            .then((m) => m.ensureUserProfile(nextSession.user.id, {
+              fullName: nextSession.user.user_metadata?.full_name,
+              phone: nextSession.user.phone ?? undefined,
+            }))
             .catch(() => null);
-        }, 3000);
-      }
-      if (_event === "SIGNED_OUT") {
-        logAudit({ action: "user_logout" });
-        void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
-        clearReferralCaches();
-        queryClient.clear();
-      }
-      // Drop any cached role/admin lookup so the next render reflects the
-      // new session immediately (sign-in, sign-out, token refresh, user swap).
-      if (_event === "SIGNED_IN" || _event === "SIGNED_OUT" || _event === "TOKEN_REFRESHED" || _event === "USER_UPDATED") {
-        queryClient.removeQueries({ queryKey: ["auth", "is-admin"] });
-      }
-      void hydrateAuthState(nextSession);
-    });
+          setTimeout(() => {
+            void import("@/lib/notif-alert-prefs")
+              .then((m) => m?.requestNotificationPermission?.())
+              .catch(() => null);
+          }, 3000);
+        }
+        if (_event === "SIGNED_OUT") {
+          logAudit({ action: "user_logout" });
+          void import("@/lib/analytics/sentry").then(m => m.clearUserContext()).catch(() => {});
+          clearReferralCaches();
+          queryClient.clear();
+        }
+        // Drop any cached role/admin lookup so the next render reflects the
+        // new session immediately (sign-in, sign-out, token refresh, user swap).
+        if (_event === "SIGNED_IN" || _event === "SIGNED_OUT" || _event === "TOKEN_REFRESHED" || _event === "USER_UPDATED") {
+          queryClient.removeQueries({ queryKey: ["auth", "is-admin"] });
+        }
+        void hydrateAuthState(nextSession);
+      });
+      authSub = subscription;
+    } catch (err) {
+      console.warn("[AuthContext] onAuthStateChange setup failed — Supabase may be unavailable:", err);
+    }
 
     return () => {
       mounted = false;
@@ -628,7 +637,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      supabase.auth.getSession();
+      supabase.auth.getSession().catch(() => {});
     }, 25 * 60 * 1000);
     return () => clearInterval(interval);
   }, []);
