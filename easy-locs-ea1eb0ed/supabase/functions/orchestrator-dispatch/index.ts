@@ -4,12 +4,6 @@
 import {
   armyClient, assertNotKilled, hasPermission, jsonResponse, logIncident,
   logMessage, preflight, requireServiceOrSupreme, requireAuthenticated, ARMY_DOMAINS,
-=======
-  logMessage, preflight, requireAuthenticated, ARMY_DOMAINS,
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-  logMessage, preflight, requireServiceOrSupreme, ARMY_DOMAINS,
->>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
 } from "../_shared/army.ts";
 
 interface Body { order_id: string; }
@@ -27,12 +21,6 @@ function inferDomain(text: string): typeof ARMY_DOMAINS[number] {
 Deno.serve(async (req) => {
   const pre = preflight(req); if (pre) return pre;
   const denied = (await requireAuthenticated(req)) ?? (await requireServiceOrSupreme(req)); if (denied) return denied;
-=======
-  const denied = await requireAuthenticated(req); if (denied) return denied;
->>>>>>> 488b7d9910 (Task #998 — Hierarchical agent army (Command Center + Supabase))
-=======
-  const denied = await requireServiceOrSupreme(req); if (denied) return denied;
->>>>>>> abc35bf8a1 (Task #998 — Hierarchical agent army (Command Center + Supabase))
   try {
 
     const body = (await req.json()) as Body;
