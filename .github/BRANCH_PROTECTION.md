@@ -19,6 +19,7 @@ Configure these settings in GitHub repository Settings > Branches > Add rule:
     - `Determinism Check`
     - `Enforce Branch Naming`
     - `Production Build`
+    - `Conflict Guard`
 - [x] Require conversation resolution before merging
 - [x] Do not allow bypassing the above settings
 - [ ] Restrict who can push to matching branches (optional — enable for strict teams)

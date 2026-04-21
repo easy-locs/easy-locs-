@@ -1,0 +1,143 @@
+name: Auto-Merge
+
+# Automatically merges PRs (squash) as soon as every required branch-protection
+# check is green, with zero merge conflicts.
+#
+# Eligible PRs — one of:
+#   • Labeled with "auto-merge"
+#   • Head branch matches exec/* (execution-runner bot PRs)
+#   • Triggered manually via workflow_dispatch with an explicit PR number
+#
+# Mechanism:
+#   gh pr merge --auto registers GitHub's native auto-merge on the PR.
+#   GitHub merges the PR automatically once ALL required status checks defined
+#   in branch-protection pass (including "Conflict Guard").
+#   If branch-protection is not yet configured, a polling fallback merges
+#   directly once the PR's mergeStateStatus reaches CLEAN.
+#
+# Branch-protection required status checks (from BRANCH_PROTECTION.md):
+#   TypeScript Check, ESLint, Vitest Suite, UI Quality Gate,
+#   Determinism Check, Enforce Branch Naming, Production Build,
+#   Conflict Guard  ← add this one after creating the workflow
+
+on:
+  pull_request:
+    types: [opened, labeled, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to auto-merge"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    name: Enable auto-merge
+    runs-on: ubuntu-latest
+    # Only act on eligible PRs (not on workflow_dispatch — that path resolves below)
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event_name == 'pull_request' && (
+          contains(github.event.pull_request.labels.*.name, 'auto-merge') ||
+          startsWith(github.event.pull_request.head.ref, 'exec/')
+        )
+      )
+    steps:
+      - name: Resolve PR number
+        id: pr
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ inputs.pr_number }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Enable GitHub native auto-merge
+        id: native
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+        # gh pr merge --auto queues the merge; GitHub executes it once all
+        # required branch-protection checks (including Conflict Guard) pass.
+        # Exit 0 on success, non-zero if branch-protection is not configured.
+        run: |
+          if gh pr merge "$PR" \
+              --repo "${{ github.repository }}" \
+              --auto \
+              --squash \
+              --delete-branch; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "✓ Native auto-merge registered on PR #$PR."
+            echo "  GitHub will squash-merge automatically once all required checks pass."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Native auto-merge unavailable (branch-protection rules may not be"
+            echo "configured via the GitHub API yet). Falling back to polling merge."
+          fi
+
+      # ── Polling fallback ─────────────────────────────────────────────────────
+      # Used only when the native auto-merge API call above fails.
+      # Polls PR mergeability for up to 15 minutes (30 × 30 s) then merges.
+      - name: Polling fallback merge
+        if: steps.native.outputs.enabled == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ steps.pr.outputs.number }}
+        run: |
+          echo "Polling PR #$PR for up to 15 minutes…"
+          for attempt in $(seq 1 30); do
+            DATA=$(gh pr view "$PR" \
+              --repo "${{ github.repository }}" \
+              --json mergeable,mergeStateStatus,state \
+              --jq '{m:.mergeable,s:.mergeStateStatus,st:.state}')
+
+            MERGEABLE=$(echo "$DATA" | jq -r '.m')
+            STATUS=$(echo   "$DATA" | jq -r '.s')
+            STATE=$(echo    "$DATA" | jq -r '.st')
+
+            echo "[$(date -u +%H:%M:%S)] attempt=$attempt mergeable=$MERGEABLE status=$STATUS state=$STATE"
+
+            # Already merged or closed — nothing to do
+            if [ "$STATE" = "MERGED" ] || [ "$STATE" = "CLOSED" ]; then
+              echo "PR #$PR is already $STATE. Nothing to do."
+              exit 0
+            fi
+
+            if [ "$STATUS" = "CLEAN" ] && [ "$MERGEABLE" = "MERGEABLE" ]; then
+              echo "All checks passed. Merging PR #$PR (squash)…"
+              gh pr merge "$PR" \
+                --repo "${{ github.repository }}" \
+                --squash \
+                --delete-branch
+              echo "✓ PR #$PR merged successfully."
+              exit 0
+            fi
+
+            case "$STATUS" in
+              DIRTY)
+                echo "::error::PR #$PR has merge conflicts (DIRTY). Cannot auto-merge."
+                echo "Resolve conflicts and push again."
+                exit 1
+                ;;
+              BEHIND)
+                echo "::error::PR #$PR branch is behind main (BEHIND). Update branch first."
+                exit 1
+                ;;
+              BLOCKED|UNKNOWN|UNSTABLE)
+                echo "Status is $STATUS — waiting 30 s before retry…"
+                sleep 30
+                ;;
+              *)
+                echo "Unrecognized status '$STATUS' — waiting 30 s…"
+                sleep 30
+                ;;
+            esac
+          done
+
+          echo "::error::Timeout: PR #$PR did not reach CLEAN status within 15 minutes."
+          exit 1
