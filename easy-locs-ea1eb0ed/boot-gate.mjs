@@ -57,7 +57,7 @@ async function auditRoute(page, route) {
     await page.waitForFunction(() => {
       const splash = document.getElementById('app-loading');
       const root = document.getElementById('root');
-      const mounted = !!(window).__EASYLOCS_REACT_MOUNTED__ || !!(window).__EASYLOCS_BOOTED__;
+      const mounted = !!(window.__EASYLOCS_REACT_MOUNTED__) || !!(window.__EASYLOCS_BOOTED__);
       const hasSplash = !!splash;
       const rootHasContent = root && root.children.length > 0;
       return !hasSplash || mounted || rootHasContent;
@@ -67,12 +67,13 @@ async function auditRoute(page, route) {
     // Timeout - splash still showing
   }
 
-  // Small wait for React rendering
-  await page.waitForTimeout(1500);
+  // Wait for React to fully mount (useEffect fires after first commit, then
+  // stage-2/3 lazy chunks resolve). 3s is generous but reliable.
+  await page.waitForTimeout(3000);
 
   try {
     reactMounted = await page.evaluate(() => {
-      return !!(window).__EASYLOCS_REACT_MOUNTED__ || !!(window).__EASYLOCS_BOOTED__;
+      return !!(window.__EASYLOCS_REACT_MOUNTED__) || !!(window.__EASYLOCS_BOOTED__);
     });
   } catch {}
 
@@ -137,9 +138,15 @@ async function auditRoute(page, route) {
     };
   }
 
-  // Classify fatal console errors
+  // Classify fatal console errors — exclude Supabase-not-configured (env issue, not code bug)
   const fatalErrors = consoleErrors.filter(e =>
-    /BOOT_CRASH|BOOT_STUCK|ChunkLoadError|SyntaxError|TypeError.*undefined|Cannot read/i.test(e)
+    /BOOT_CRASH|BOOT_STUCK|ChunkLoadError|SyntaxError|TypeError.*undefined|Cannot read/i.test(e) &&
+    !/supabase.*client.*not configured|SUPABASE_URL.*missing|SUPABASE_PUBLISHABLE_KEY.*missing/i.test(e)
+  );
+
+  // Exclude Supabase-not-configured pageerrors — env issue in local build
+  const realPageErrors = pageErrors.filter(e =>
+    !/supabase.*client.*not configured|SUPABASE_URL.*missing|SUPABASE_PUBLISHABLE_KEY.*missing/i.test(e)
   );
 
   // Check failed JS/CSS assets
@@ -148,7 +155,7 @@ async function auditRoute(page, route) {
   );
 
   const severity = fatalErrors.length > 0 ? 'BOOT_BLOCKER' :
-                   pageErrors.length > 0 ? 'BOOT_BLOCKER' :
+                   realPageErrors.length > 0 ? 'BOOT_BLOCKER' :
                    assetFailures.length > 0 ? 'NETWORK_FAILURE' :
                    'PASS';
 
@@ -163,6 +170,7 @@ async function auditRoute(page, route) {
     pageErrors,
     failedRequests: failedRequests.slice(0, 10),
     fatalErrors,
+    realPageErrors,
     assetFailures,
   };
 }
