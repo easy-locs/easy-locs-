@@ -187,6 +187,15 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+// Cloudflare Pages sets CF_PAGES=1 in every build container. We use this to
+// disable memory-intensive post-processing steps (hidden source-maps, brotli/
+// gzip compression, bundle visualizer, budget enforcement) that push peak RSS
+// past the ~2 GB limit of CF Pages builders and trigger an OOM "Killed".
+// Cloudflare Pages serves brotli/gzip automatically, so pre-compressed files
+// are unnecessary there anyway. Sentry source-map upload also only runs when
+// all three Sentry env vars are present, which they won't be on CF Pages.
+const IS_CF_PAGES = process.env.CF_PAGES === "1";
+
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
 function stampServiceWorkerPlugin(version: string): Plugin {
@@ -335,18 +344,22 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && performanceBudgetPlugin(),
-    mode === "production" && viteCompression({
+    // Skip budget enforcement and compression on Cloudflare Pages: CF Pages
+    // sets CI=true which would cause the budget plugin to throw on violations,
+    // and pre-compressed .br/.gz files waste build memory — CF serves brotli
+    // automatically.  The visualizer is also skipped to save peak RSS.
+    mode === "production" && !IS_CF_PAGES && performanceBudgetPlugin(),
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && viteCompression({
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && visualizer({
+    mode === "production" && !IS_CF_PAGES && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -431,11 +444,14 @@ export default defineConfig(({ mode }) => ({
     minify: "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
-    // Generate source maps in production so Sentry can symbolicate stack
-    // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
-    // comment in shipped files — maps exist only for upload to Sentry.
-    sourcemap: mode === "production" ? "hidden" : false,
-    reportCompressedSize: true,
+    // Source maps are generated in production for Sentry symbolication.
+    // On Cloudflare Pages they are skipped: CF Pages has no Sentry upload step
+    // and generating hidden maps doubles peak memory (triggering OOM "Killed").
+    sourcemap: mode === "production" && !IS_CF_PAGES ? "hidden" : false,
+    // reportCompressedSize re-reads every output file through gzip to show
+    // compressed sizes in the CLI table. This is ~50 % extra RSS at the point
+    // where the build is already at peak memory. Skip on CF Pages.
+    reportCompressedSize: !IS_CF_PAGES,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {

@@ -1,0 +1,25 @@
+# Cloudflare Pages configuration for Easy-Locs static frontend.
+#
+# Deployment model: Cloudflare Pages (static assets) + Advanced Mode Worker.
+# The file public/_worker.js is copied into dist/ by Vite and is picked up
+# automatically by Cloudflare Pages as the Advanced Mode Worker script.
+# It handles SPA routing (serving index.html for non-asset paths) and injects
+# Link/canonical headers via the ASSETS binding.
+#
+# Cloudflare Pages dashboard settings that must match:
+#   Build command:    cd easy-locs-ea1eb0ed && npm ci && NODE_OPTIONS=--max-old-space-size=1536 npm run build
+#   Output directory: easy-locs-ea1eb0ed/dist
+#   Root directory:   /   (leave as repo root — the build command cds into the sub-dir)
+#
+# Environment variables to set in the Pages dashboard (Encrypted where marked):
+#   VITE_SUPABASE_URL        – public Supabase project URL  (plain text)
+#   VITE_SUPABASE_ANON_KEY   – public anon key              (plain text)
+#   VITE_APP_VERSION         – optional release label        (plain text)
+#   VITE_SENTRY_DSN          – optional Sentry DSN           (plain text)
+#
+# DO NOT add SUPABASE_SERVICE_ROLE_KEY or any server-side secret here;
+# only VITE_* prefixed vars are safe to expose to the browser build.
+
+name = "easy-locs"
+pages_build_output_dir = "easy-locs-ea1eb0ed/dist"
+compatibility_date = "2024-09-23"
