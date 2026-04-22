@@ -65,9 +65,17 @@ export default {
       // (/login, /dashboard, /orbit, etc.) work on direct navigation or refresh.
       // Without this, Cloudflare Pages returns its own 404 page for SPA routes.
       if (response.status === 404) {
+        // Only forward safe, non-credential headers to the index.html fetch.
+        // Forwarding Authorization/Cookie to a static asset is unnecessary
+        // and could leak sensitive data.
+        const safeHeaders = new Headers();
+        for (const header of ["Accept", "Accept-Language", "Accept-Encoding"]) {
+          const val = request.headers.get(header);
+          if (val) safeHeaders.set(header, val);
+        }
         const indexReq = new Request(new URL("/index.html", request.url).href, {
           method: "GET",
-          headers: request.headers,
+          headers: safeHeaders,
         });
         const indexResp = await env.ASSETS.fetch(indexReq);
         if (indexResp.ok) {
