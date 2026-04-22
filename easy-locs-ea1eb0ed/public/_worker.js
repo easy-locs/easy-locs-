@@ -59,23 +59,29 @@ export default {
       const canonical = deriveCanonical(pathname);
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
-      const response = await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
 
-      // SPA fallback: if ASSETS returned 404 for a document navigation, serve
-      // index.html so React Router can handle the route client-side.
-      const body = response.status === 404
-        ? await env.ASSETS.fetch(new Request(new URL("/index.html", request.url).toString()))
-        : response;
+      // SPA fallback: React Router handles all non-asset routes client-side.
+      // If ASSETS returns 404 for a document request (e.g. /dashboard, /orbit),
+      // serve /index.html so the SPA can boot and route correctly.
+      if (response.status === 404) {
+        const indexUrl = new URL("/index.html", request.url);
+        const indexReq = new Request(indexUrl.toString(), { method: "GET", headers: request.headers });
+        const fallback = await env.ASSETS.fetch(indexReq);
+        if (fallback.ok) {
+          response = fallback;
+        }
+      }
 
-      const headers = new Headers(body.headers);
+      const headers = new Headers(response.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);
       }
       headers.set("X-Robots-Tag", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
 
-      return new Response(body.body, {
-        status: response.status === 404 ? 200 : body.status,
-        statusText: response.status === 404 ? "OK" : body.statusText,
+      return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
         headers,
       });
     }

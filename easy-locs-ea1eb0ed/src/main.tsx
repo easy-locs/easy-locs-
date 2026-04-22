@@ -14,6 +14,7 @@ import {
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
 import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
+import { supabaseEnvMissing } from "@/integrations/supabase/client";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
@@ -145,12 +146,59 @@ try {
 }
 try { warnMissingIntegrationsOnce(); } catch {}
 
+// ── Env-var diagnostic screen ─────────────────────────────────────────────────
+// If the two required Cloudflare Pages env vars are missing or invalid, render
+// a visible diagnostic screen instead of a black page.  Values are never
+// exposed — only the variable NAMES that are missing are shown.
+//
+// Required Cloudflare Pages env vars (set in dashboard → Settings → Variables):
+//   VITE_SUPABASE_URL          — e.g. https://xyzxyz.supabase.co
+//   VITE_SUPABASE_PUBLISHABLE_KEY — the anon/public key for this project
+//
+// NOTE: the variable is named VITE_SUPABASE_PUBLISHABLE_KEY throughout this
+// codebase (NOT VITE_SUPABASE_ANON_KEY). Set accordingly in CF Pages dashboard.
+function EnvDiagnosticScreen() {
+  const missing: string[] = [];
+  const url = import.meta.env.VITE_SUPABASE_URL;
+  const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || (url as string).trim().length === 0) missing.push("VITE_SUPABASE_URL");
+  if (!key || (key as string).trim().length === 0) missing.push("VITE_SUPABASE_PUBLISHABLE_KEY");
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif", background: "hsl(225 28% 7%)" }}>
+      <div style={{ textAlign: "center", maxWidth: 480, padding: "32px 24px" }}>
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
+          <circle cx="24" cy="24" r="8.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.35" fill="none"/>
+          <circle cx="24" cy="24" r="14.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.27" fill="none"/>
+          <circle cx="24" cy="24" r="20.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.19" fill="none"/>
+          <circle cx="24" cy="24" r="2.4" fill="hsl(168 72% 44%)"/>
+        </svg>
+        <p style={{ fontSize: 20, color: "#f8fafc", margin: "0 0 8px", fontWeight: 700 }}>Configuration Required</p>
+        <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.6 }}>
+          The following environment variable{missing.length > 1 ? "s are" : " is"} missing or invalid.<br/>
+          Set {missing.length > 1 ? "them" : "it"} in the Cloudflare Pages dashboard under<br/>
+          <strong style={{ color: "#cbd5e1" }}>Settings → Environment Variables</strong>.
+        </p>
+        <div style={{ background: "hsl(225 28% 11%)", border: "1px solid hsl(225 28% 20%)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, textAlign: "left" }}>
+          {missing.map(name => (
+            <div key={name} style={{ fontFamily: "monospace", fontSize: 13, color: "#f87171", marginBottom: 4 }}>
+              ✗ {name} — not set
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>
+          Re-deploy after adding the variables. No secrets are exposed in this screen.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <BrowserRouter>
       <RootShell>
-        <App />
+        {supabaseEnvMissing ? <EnvDiagnosticScreen /> : <App />}
       </RootShell>
     </BrowserRouter>
   );
