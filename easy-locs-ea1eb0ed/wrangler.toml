@@ -1,0 +1,37 @@
+# Cloudflare Pages configuration for easy-locs
+# https://developers.cloudflare.com/pages/platform/configuration/
+#
+# This project deploys as a Cloudflare Pages site with a custom Worker
+# (public/_worker.js → dist/_worker.js) that injects Link preload headers
+# and canonical tags for every document request.
+#
+# BUILD COMMAND (set in CF Pages dashboard or wrangler CLI):
+#   cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf
+#
+# DEPLOY COMMAND (Cloudflare Pages CI handles this automatically, or use):
+#   npx wrangler pages deploy dist --project-name easy-locs
+#
+# ⚠️  DO NOT use `wrangler versions upload` with the `--yes` flag for this project.
+#     - `wrangler versions upload` is for Workers scripts, NOT for Pages.
+#     - Wrangler 4.x does not accept --yes for that command at all.
+#     - For Pages deploys, always use `wrangler pages deploy <dist>`.
+#
+# ENV VARS required at build time (set in CF Pages dashboard → Settings → Env vars):
+#   VITE_SUPABASE_URL          — Supabase project REST URL
+#   VITE_SUPABASE_PUBLISHABLE_KEY — Supabase anon/publishable key
+#   NODE_OPTIONS=--max-old-space-size=1536  — prevents OOM during build
+#
+# Triggers (apply with `wrangler pages deployment list` or CF dashboard):
+#   - Custom domain:  www.easy-locs.com  →  needs manual DNS CNAME in CF dashboard
+#   - Cron triggers:  none (crons belong to Worker scripts, not Pages)
+#   - Worker version activation:  handled automatically by `wrangler pages deploy`
+
+name = "easy-locs"
+
+# Pinned to a date that is stable and widely-available across all CF edge DCs.
+# Bump this date only when a new API/standard is required (test on staging first).
+compatibility_date = "2024-09-23"
+
+# Tells Wrangler where the built static assets live.
+# `npm run build:cf` outputs to this directory.
+pages_build_output_dir = "dist"

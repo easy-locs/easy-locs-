@@ -205,6 +205,19 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+// Detected when running inside a Cloudflare Pages build (CF_PAGES=1 is set
+// automatically by the platform) or when invoking `npm run build:cf` locally
+// (which sets SKIP_HEAVY_SEO=1). Skips sourcemaps, brotli/gzip compression,
+// the bundle visualizer, the Sentry source-map upload, and the performance
+// budget enforcer — all of which are unnecessary on CF Pages and would push
+// peak RAM above the 2 GB limit or add network round-trips that are pointless
+// for a static-asset deploy.
+const IS_CF_PAGES =
+  process.env.CF_PAGES === "1" ||
+  process.env.SKIP_HEAVY_SEO === "1" ||
+  process.env.CF_PAGES_BRANCH !== undefined ||
+  process.env.CF_PAGES_URL !== undefined;
+
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
 function stampServiceWorkerPlugin(version: string): Plugin {
@@ -353,18 +366,23 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && performanceBudgetPlugin(),
-    mode === "production" && viteCompression({
+    // Performance budget, compression, visualizer, and Sentry source-map
+    // upload are all skipped for Cloudflare Pages / build:cf to keep peak RAM
+    // under 2 GB and avoid pointless network round-trips during a static
+    // deploy. IS_CF_PAGES is true when CF_PAGES=1 (set by the platform) or
+    // SKIP_HEAVY_SEO=1 (set by `npm run build:cf`).
+    mode === "production" && !IS_CF_PAGES && performanceBudgetPlugin(),
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && viteCompression({
+    mode === "production" && !IS_CF_PAGES && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && visualizer({
+    mode === "production" && !IS_CF_PAGES && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -373,7 +391,9 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    // Skipped for CF Pages builds (IS_CF_PAGES=true) to avoid the Sentry
+    // network upload and the hidden-sourcemap RAM spike.
+    mode === "production" && !IS_CF_PAGES && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -452,8 +472,12 @@ export default defineConfig(({ mode }) => ({
     // Generate source maps in production so Sentry can symbolicate stack
     // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
     // comment in shipped files — maps exist only for upload to Sentry.
-    sourcemap: mode === "production" ? "hidden" : false,
-    reportCompressedSize: true,
+    // Disabled for Cloudflare Pages builds (IS_CF_PAGES) to avoid the RAM
+    // spike and the upload step that has no target on CF Pages.
+    sourcemap: (mode === "production" && !IS_CF_PAGES) ? "hidden" : false,
+    // Skip compressed-size reporting on CF Pages builds — Brotli/gzip are not
+    // emitted there and the extra pass adds ~15s to an already-constrained build.
+    reportCompressedSize: !IS_CF_PAGES,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
