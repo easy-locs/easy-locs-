@@ -19,6 +19,8 @@ import { test, expect } from "@playwright/test";
 async function assertPublicPage(
   page: import("@playwright/test").Page,
   hash: string,
+  /** Set true for auth pages that legitimately live at /login (or similar) */
+  isAuthPage = false,
 ) {
   await page.goto(`/#${hash}`);
   await page.waitForLoadState("networkidle");
@@ -26,10 +28,12 @@ async function assertPublicPage(
   const url = new URL(page.url());
   const hashPath = (url.hash.replace(/^#/, "") || url.pathname).split("?")[0];
 
-  // Must not be silently redirected to the login gate.
-  expect(hashPath, `Route ${hash} redirected to login unexpectedly`).not.toMatch(
-    /^\/login(\b|$)/,
-  );
+  // Must not be silently redirected to the login gate — unless the page IS the auth flow.
+  if (!isAuthPage) {
+    expect(hashPath, `Route ${hash} redirected to login unexpectedly`).not.toMatch(
+      /^\/login(\b|$)/,
+    );
+  }
 
   // No hard crash screen.
   await expect(
@@ -71,7 +75,7 @@ test.describe("Smoke — Auth pages (#24)", () => {
     ["Verify account", "/verify-account"],
   ] as const) {
     test(`${label} renders without crash`, async ({ page }) => {
-      await assertPublicPage(page, hash);
+      await assertPublicPage(page, hash, true);
     });
   }
 });

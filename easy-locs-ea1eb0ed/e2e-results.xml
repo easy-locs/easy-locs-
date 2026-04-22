@@ -1,0 +1,100 @@
+<testsuites id="" name="" tests="48" failures="0" skipped="0" errors="0" time="39.102697">
+<testsuite name="24-smoke-public.spec.ts" timestamp="2026-04-22T03:06:09.250Z" hostname="chromium-mobile" tests="48" failures="0" skipped="0" time="141.101" errors="0">
+<testcase name="Smoke — Landing &amp; home (#24) › Root / renders without crash" classname="24-smoke-public.spec.ts" time="3.265">
+</testcase>
+<testcase name="Smoke — Landing &amp; home (#24) › Landing page renders without crash" classname="24-smoke-public.spec.ts" time="3.124">
+</testcase>
+<testcase name="Smoke — Landing &amp; home (#24) › Pricing redirect renders without crash" classname="24-smoke-public.spec.ts" time="3.261">
+</testcase>
+<testcase name="Smoke — Landing &amp; home (#24) › Install PWA renders without crash" classname="24-smoke-public.spec.ts" time="3.252">
+</testcase>
+<testcase name="Smoke — Auth pages (#24) › Login page renders without crash" classname="24-smoke-public.spec.ts" time="3.159">
+</testcase>
+<testcase name="Smoke — Auth pages (#24) › Signup page renders without crash" classname="24-smoke-public.spec.ts" time="3.052">
+</testcase>
+<testcase name="Smoke — Auth pages (#24) › Forgot password renders without crash" classname="24-smoke-public.spec.ts" time="2.939">
+</testcase>
+<testcase name="Smoke — Auth pages (#24) › Reset password renders without crash" classname="24-smoke-public.spec.ts" time="2.897">
+</testcase>
+<testcase name="Smoke — Auth pages (#24) › Verify account renders without crash" classname="24-smoke-public.spec.ts" time="2.925">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Radar / HyperRadar renders without crash" classname="24-smoke-public.spec.ts" time="3.042">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Explore page renders without crash" classname="24-smoke-public.spec.ts" time="2.805">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Search results renders without crash" classname="24-smoke-public.spec.ts" time="2.687">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Geo explorer renders without crash" classname="24-smoke-public.spec.ts" time="3.059">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse (all verticals) renders without crash" classname="24-smoke-public.spec.ts" time="3.047">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — food renders without crash" classname="24-smoke-public.spec.ts" time="3.133">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — grocery renders without crash" classname="24-smoke-public.spec.ts" time="2.92">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — retail renders without crash" classname="24-smoke-public.spec.ts" time="3.227">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — services renders without crash" classname="24-smoke-public.spec.ts" time="3.112">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — healthcare renders without crash" classname="24-smoke-public.spec.ts" time="2.977">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — experiences renders without crash" classname="24-smoke-public.spec.ts" time="3.15">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Browse — utility renders without crash" classname="24-smoke-public.spec.ts" time="2.962">
+</testcase>
+<testcase name="Smoke — Radar / discovery (#24) › Shop index renders without crash" classname="24-smoke-public.spec.ts" time="2.819">
+</testcase>
+<testcase name="Smoke — Food vertical (#24) › Food hub redirect renders without crash" classname="24-smoke-public.spec.ts" time="2.965">
+</testcase>
+<testcase name="Smoke — Food vertical (#24) › Food type: halal renders without crash" classname="24-smoke-public.spec.ts" time="3.094">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Travel hub renders without crash" classname="24-smoke-public.spec.ts" time="2.851">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Travel — flights renders without crash" classname="24-smoke-public.spec.ts" time="2.885">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Travel — stays renders without crash" classname="24-smoke-public.spec.ts" time="2.858">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Flight search renders without crash" classname="24-smoke-public.spec.ts" time="3.044">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Mobility hub renders without crash" classname="24-smoke-public.spec.ts" time="2.901">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Mobility — taxi renders without crash" classname="24-smoke-public.spec.ts" time="3.183">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Mobility — delivery renders without crash" classname="24-smoke-public.spec.ts" time="2.855">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Mobility — delivery: bring renders without crash" classname="24-smoke-public.spec.ts" time="2.874">
+</testcase>
+<testcase name="Smoke — Travel &amp; mobility (#24) › Mobility — delivery: parcel renders without crash" classname="24-smoke-public.spec.ts" time="2.808">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Property public hub renders without crash" classname="24-smoke-public.spec.ts" time="2.737">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Property hub management renders without crash" classname="24-smoke-public.spec.ts" time="2.91">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Property search renders without crash" classname="24-smoke-public.spec.ts" time="2.584">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Real-estate analytics Dubai renders without crash" classname="24-smoke-public.spec.ts" time="2.857">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Long-term rentals renders without crash" classname="24-smoke-public.spec.ts" time="2.694">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Seasonal rentals booking renders without crash" classname="24-smoke-public.spec.ts" time="3.011">
+</testcase>
+<testcase name="Smoke — Property / real estate (#24) › Activities booking renders without crash" classname="24-smoke-public.spec.ts" time="2.824">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Marketplace services renders without crash" classname="24-smoke-public.spec.ts" time="2.867">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Property owner software renders without crash" classname="24-smoke-public.spec.ts" time="3.346">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Property management platform renders without crash" classname="24-smoke-public.spec.ts" time="2.836">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Rental management software renders without crash" classname="24-smoke-public.spec.ts" time="2.712">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Locations index renders without crash" classname="24-smoke-public.spec.ts" time="2.835">
+</testcase>
+<testcase name="Smoke — SEO &amp; location pages (#24) › Browse services renders without crash" classname="24-smoke-public.spec.ts" time="2.677">
+</testcase>
+<testcase name="Smoke — Merchant public pages (#24) › Merchant claim renders without crash" classname="24-smoke-public.spec.ts" time="2.538">
+</testcase>
+<testcase name="Smoke — Merchant public pages (#24) › Merchant onboarding renders without crash" classname="24-smoke-public.spec.ts" time="2.541">
+</testcase>
+</testsuite>
+</testsuites>
