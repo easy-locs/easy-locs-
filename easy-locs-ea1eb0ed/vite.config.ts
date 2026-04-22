@@ -200,11 +200,25 @@ function performanceBudgetPlugin(): Plugin {
 
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
-// Cloudflare Pages sets CF_PAGES=1 automatically during hosted builds.
-// When true, skip the heavy SEO plugins (prerender ~7 800 HTML files,
-// sitemap, og-images, feeds, indexnow, seo-validate) so the build stays
-// well under the ~2 GB heap limit.  The core app routes are unaffected.
-const IS_CF_PAGES = process.env.CF_PAGES === "1";
+// Detects any light/memory-constrained build environment.
+// Covers all Cloudflare Pages signals (CF_PAGES, CF_PAGES_BRANCH, CF_PAGES_URL)
+// plus an explicit override (SKIP_HEAVY_SEO / VITE_SKIP_HEAVY_SEO) for local
+// reproduction and the `build:cf` npm script.
+// When true, heavy SEO/prerender/OG/compression/sourcemap plugins are skipped.
+const boolEnv = (v: string | undefined) => v === "1" || v === "true" || v === "yes";
+const IS_LIGHT_CLOUDFLARE_BUILD =
+  boolEnv(process.env.CF_PAGES) ||
+  boolEnv(process.env.SKIP_HEAVY_SEO) ||
+  boolEnv(process.env.VITE_SKIP_HEAVY_SEO) ||
+  Boolean(process.env.CF_PAGES_BRANCH) ||
+  Boolean(process.env.CF_PAGES_URL);
+
+if (IS_LIGHT_CLOUDFLARE_BUILD) {
+  console.info(
+    "[build] Light Cloudflare build active: heavy SEO/prerender/OG/feed/" +
+    "compression/sourcemap plugins are disabled."
+  );
+}
 
 /** Prints a one-line summary of which plugin groups are active at build start. */
 function buildEnvPlugin(): Plugin {
@@ -212,9 +226,9 @@ function buildEnvPlugin(): Plugin {
     name: "build-env-logger",
     apply: "build",
     buildStart() {
-      if (IS_CF_PAGES) {
+      if (IS_LIGHT_CLOUDFLARE_BUILD) {
         console.log(
-          "[build] Cloudflare Pages mode active (CF_PAGES=1) — " +
+          "[build] Light Cloudflare build active — " +
           "heavy plugins SKIPPED: sitemap, prerender, og-images, feeds, " +
           "indexnow, seo-validate, brotli/gzip, visualizer, sourcemaps"
         );
@@ -271,14 +285,14 @@ export default defineConfig(({ mode }) => ({
     buildEnvPlugin(),
     cacheControlPlugin(),
     // SEO plugins generate ~7 800 HTML files and several sitemaps.
-    // Skipped on Cloudflare Pages (CF_PAGES=1) to avoid OOM; they run
-    // normally in local production builds and CI.
-    !IS_CF_PAGES && sitemapPlugin(),
-    !IS_CF_PAGES && prerenderPlugin(),
-    !IS_CF_PAGES && ogImagesPlugin(),
-    !IS_CF_PAGES && feedsPlugin(),
-    !IS_CF_PAGES && indexNowPlugin(),
-    !IS_CF_PAGES && seoValidatePlugin(),
+    // Skipped on light/CF builds to avoid OOM; they run normally in local
+    // production builds and CI.
+    !IS_LIGHT_CLOUDFLARE_BUILD && sitemapPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && prerenderPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && ogImagesPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && feedsPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && indexNowPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && seoValidatePlugin(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
@@ -378,18 +392,18 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && !IS_CF_PAGES && performanceBudgetPlugin(),
-    mode === "production" && !IS_CF_PAGES && viteCompression({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && performanceBudgetPlugin(),
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && !IS_CF_PAGES && viteCompression({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && !IS_CF_PAGES && visualizer({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -478,10 +492,10 @@ export default defineConfig(({ mode }) => ({
     // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
     // comment in shipped files — maps exist only for upload to Sentry.
     // Disabled on Cloudflare Pages: .map files can double build RAM usage.
-    sourcemap: (mode === "production" && !IS_CF_PAGES) ? "hidden" : false,
+    sourcemap: (mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD) ? "hidden" : false,
     // Computing gzip/brotli sizes for every chunk during rollup is memory-
     // intensive. Skip on Cloudflare Pages to conserve heap.
-    reportCompressedSize: !IS_CF_PAGES,
+    reportCompressedSize: !IS_LIGHT_CLOUDFLARE_BUILD,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {

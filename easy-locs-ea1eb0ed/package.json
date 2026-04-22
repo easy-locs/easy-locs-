@@ -8,6 +8,7 @@
     "dev": "bash scripts/kill-port.sh && npx vite",
     "prebuild": "node scripts/check-build-invariants.cjs && npx tsx scripts/generate-locales.ts",
     "build": "vite build",
+    "build:cf": "npm run prebuild && SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=3072 vite build",
     "build:dev": "vite build --mode development",
     "build:analyze": "vite build && echo 'Bundle report: dist/bundle-report.html'",
     "check:bundle": "npx tsx scripts/check-bundle-size.ts",
