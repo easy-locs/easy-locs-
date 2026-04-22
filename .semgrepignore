@@ -1,0 +1,3 @@
+# Semgrep ignore rules
+# Exclude generated/vendored test artefacts that cause scan timeouts
+test-results/

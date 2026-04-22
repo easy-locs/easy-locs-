@@ -1,0 +1,82 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sharded:
+        description: "Run cross-browser (Chromium + Firefox + WebKit)"
+        required: false
+        default: "false"
+        type: boolean
+      workers:
+        description: "Playwright worker count"
+        required: false
+        default: "4"
+        type: string
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      # ── Checkout ────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Node setup ──────────────────────────────────────────────────────────
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      # ── Root-level deps (Playwright) ─────────────────────────────────────────
+      - name: Install root dependencies
+        run: npm ci
+
+      # ── Playwright browsers ──────────────────────────────────────────────────
+      - name: Install Playwright browsers
+        env:
+          # Use an intermediate env var to avoid run-shell-injection (CWE-78).
+          # Never interpolate ${{ github.* }} directly inside a run: script.
+          EXTRA_BROWSERS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'firefox webkit' || '' }}
+        run: npx playwright install --with-deps chromium $EXTRA_BROWSERS
+
+      # ── App deps + build ─────────────────────────────────────────────────────
+      - name: Install app dependencies
+        working-directory: easy-locs-ea1eb0ed
+        run: npm ci
+
+      - name: Build app
+        working-directory: easy-locs-ea1eb0ed
+        run: npm run build
+
+      # ── Start dev/preview server ─────────────────────────────────────────────
+      - name: Start preview server
+        working-directory: easy-locs-ea1eb0ed
+        run: npm run preview &
+        env:
+          PORT: 5173
+
+      - name: Wait for server to be ready
+        run: npx wait-on http://localhost:5173 --timeout 60000
+
+      # ── Run root E2E suite (tests/e2e/) ──────────────────────────────────────
+      - name: Run Playwright tests
+        run: npm run test:e2e
+        env:
+          E2E_BASE_URL: http://localhost:5173
+          E2E_WORKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.workers || '4' }}
+          E2E_SHARDED: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && '1' || '0' }}
