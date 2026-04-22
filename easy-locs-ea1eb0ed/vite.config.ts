@@ -206,6 +206,28 @@ const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 // well under the ~2 GB heap limit.  The core app routes are unaffected.
 const IS_CF_PAGES = process.env.CF_PAGES === "1";
 
+/** Prints a one-line summary of which plugin groups are active at build start. */
+function buildEnvPlugin(): Plugin {
+  return {
+    name: "build-env-logger",
+    apply: "build",
+    buildStart() {
+      if (IS_CF_PAGES) {
+        console.log(
+          "[build] Cloudflare Pages mode active (CF_PAGES=1) — " +
+          "heavy plugins SKIPPED: sitemap, prerender, og-images, feeds, " +
+          "indexnow, seo-validate, brotli/gzip, visualizer, sourcemaps"
+        );
+      } else {
+        console.log(
+          "[build] Standard production mode — " +
+          "all SEO/prerender/compression plugins ENABLED"
+        );
+      }
+    },
+  };
+}
+
 function stampServiceWorkerPlugin(version: string): Plugin {
   return {
     name: "stamp-firebase-sw-version",
@@ -246,6 +268,7 @@ export default defineConfig(({ mode }) => ({
     }),
 
     mode === "development" && repairDiagPlugin(),
+    buildEnvPlugin(),
     cacheControlPlugin(),
     // SEO plugins generate ~7 800 HTML files and several sitemaps.
     // Skipped on Cloudflare Pages (CF_PAGES=1) to avoid OOM; they run
