@@ -72,6 +72,10 @@ GATE_HOSTED_VERIFY=pass BRANCH=copilot/create-playwright-guide \
 | Playwright smoke (local) | ✅ PASS |
 | **Hosted HTTPS verification** | ⏳ PENDING |
 
+## Deployment Trigger
+
+> Last push: 2026-04-22T05:21 UTC — triggered to create Cloudflare Pages preview URL for branch `copilot/create-playwright-guide`.
+
 ## Atomic Strictness Checklist
 
 - [ ] No route without test coverage
