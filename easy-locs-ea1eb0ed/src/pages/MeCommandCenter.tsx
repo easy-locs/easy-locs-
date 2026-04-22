@@ -549,9 +549,9 @@ export default function MeCommandCenter() {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-base font-bold text-foreground line-clamp-1 break-words">{displayName}</p>
-            <p className="text-[0.6875rem] text-muted-foreground truncate font-mono mt-0.5">
-              EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}
-            </p>
+            {user?.email && (
+              <p className="text-[0.6875rem] text-muted-foreground truncate mt-0.5">{user.email}</p>
+            )}
             <span
               className="inline-block mt-1 text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
               style={{ background: `${A.gold}1A`, color: A.gold }}
