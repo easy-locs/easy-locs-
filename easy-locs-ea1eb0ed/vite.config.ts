@@ -207,16 +207,42 @@ function performanceBudgetPlugin(): Plugin {
 
 // Detected when running inside a Cloudflare Pages build (CF_PAGES=1 is set
 // automatically by the platform) or when invoking `npm run build:cf` locally
-// (which sets SKIP_HEAVY_SEO=1). Skips sourcemaps, brotli/gzip compression,
-// the bundle visualizer, the Sentry source-map upload, and the performance
-// budget enforcer — all of which are unnecessary on CF Pages and would push
-// peak RAM above the 2 GB limit or add network round-trips that are pointless
-// for a static-asset deploy.
+// (which sets SKIP_HEAVY_SEO=1). Also detects when CF_PAGES_BRANCH or
+// CF_PAGES_URL are present (set by the CF Pages runtime). Skips sourcemaps,
+// brotli/gzip compression, the bundle visualizer, the Sentry source-map
+// upload, and the performance budget enforcer — all of which are unnecessary
+// on CF Pages and would push peak RAM above the 2 GB limit.
 const IS_CF_PAGES =
   process.env.CF_PAGES === "1" ||
   process.env.SKIP_HEAVY_SEO === "1" ||
   process.env.CF_PAGES_BRANCH !== undefined ||
   process.env.CF_PAGES_URL !== undefined;
+
+// Belt-and-suspenders guard: Cloudflare Pages sets CI=true alongside CF_PAGES=1.
+// If the project was accidentally created as a Worker project (which does NOT set
+// CF_PAGES), CI=true is still present in Cloudflare's build container and in
+// GitHub Actions. This catches the OOM-after-PWA failure caused by brotli/gzip
+// compression running when CF_PAGES is missing.
+const IS_CI = process.env.CI === "true" || process.env.CI === "1";
+
+// Skip all memory-heavy post-build steps when running in any CI/cloud environment.
+const SKIP_HEAVY_PLUGINS = IS_CF_PAGES || IS_CI;
+
+function buildEnvPlugin(): Plugin {
+  return {
+    name: "build-env-log",
+    apply: "build",
+    buildStart() {
+      console.log(
+        `[build-env] CF_PAGES=${process.env.CF_PAGES ?? "(unset)"}` +
+        ` CI=${process.env.CI ?? "(unset)"}` +
+        ` IS_CF_PAGES=${IS_CF_PAGES}` +
+        ` SKIP_HEAVY_PLUGINS=${SKIP_HEAVY_PLUGINS}` +
+        ` NODE_OPTIONS=${process.env.NODE_OPTIONS ?? "(unset)"}`
+      );
+    },
+  };
+}
 
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
@@ -254,6 +280,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    buildEnvPlugin(),
     react(),
     partytownVite({
       dest: path.resolve(__dirname, "dist", "~partytown"),
@@ -366,23 +393,25 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    // Performance budget, compression, visualizer, and Sentry source-map
-    // upload are all skipped for Cloudflare Pages / build:cf to keep peak RAM
-    // under 2 GB and avoid pointless network round-trips during a static
-    // deploy. IS_CF_PAGES is true when CF_PAGES=1 (set by the platform) or
-    // SKIP_HEAVY_SEO=1 (set by `npm run build:cf`).
-    mode === "production" && !IS_CF_PAGES && performanceBudgetPlugin(),
-    mode === "production" && !IS_CF_PAGES && viteCompression({
+    // Skip budget enforcement and compression in any CI/cloud build (SKIP_HEAVY_PLUGINS=true).
+    // CF Pages sets CI=true which would cause the budget plugin to throw on violations;
+    // pre-compressed .br/.gz files waste build memory — CF serves brotli automatically.
+    // The visualizer is also skipped to save peak RSS.
+    // NOTE: SKIP_HEAVY_PLUGINS is true when IS_CF_PAGES OR IS_CI, which covers both the
+    // correct Cloudflare Pages path AND the broken-Worker-project path (which doesn't set
+    // CF_PAGES but still OOMs if compression runs after PWA generation).
+    mode === "production" && !SKIP_HEAVY_PLUGINS && performanceBudgetPlugin(),
+    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && !IS_CF_PAGES && viteCompression({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && !IS_CF_PAGES && visualizer({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -469,15 +498,15 @@ export default defineConfig(({ mode }) => ({
     minify: "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
-    // Generate source maps in production so Sentry can symbolicate stack
-    // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
-    // comment in shipped files — maps exist only for upload to Sentry.
-    // Disabled for Cloudflare Pages builds (IS_CF_PAGES) to avoid the RAM
-    // spike and the upload step that has no target on CF Pages.
-    sourcemap: (mode === "production" && !IS_CF_PAGES) ? "hidden" : false,
-    // Skip compressed-size reporting on CF Pages builds — Brotli/gzip are not
-    // emitted there and the extra pass adds ~15s to an already-constrained build.
-    reportCompressedSize: !IS_CF_PAGES,
+    // Source maps are generated in production for Sentry symbolication.
+    // Skipped in any CI/cloud build (SKIP_HEAVY_PLUGINS): generating hidden maps
+    // doubles peak memory usage (triggering OOM "Killed") and there is no Sentry
+    // upload step on CF Pages anyway.
+    sourcemap: mode === "production" && !SKIP_HEAVY_PLUGINS ? "hidden" : false,
+    // reportCompressedSize re-reads every output file through gzip to show
+    // compressed sizes in the CLI table. This is ~50 % extra RSS at the point
+    // where the build is already at peak memory. Skip in CI/cloud builds.
+    reportCompressedSize: !SKIP_HEAVY_PLUGINS,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
