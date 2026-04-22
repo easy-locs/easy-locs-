@@ -59,7 +59,20 @@ export default {
       const canonical = deriveCanonical(pathname);
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
-      const response = await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
+
+      // SPA fallback: React Router handles all non-asset routes client-side.
+      // If ASSETS returns 404 for a document request (e.g. /dashboard, /orbit),
+      // serve /index.html so the SPA can boot and route correctly.
+      if (response.status === 404) {
+        const indexUrl = new URL("/index.html", request.url);
+        const indexReq = new Request(indexUrl.toString(), { method: "GET", headers: request.headers });
+        const fallback = await env.ASSETS.fetch(indexReq);
+        if (fallback.ok) {
+          response = fallback;
+        }
+      }
+
       const headers = new Headers(response.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);
