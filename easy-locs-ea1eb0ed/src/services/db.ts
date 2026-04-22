@@ -121,18 +121,21 @@ const _from = (table: string) =>
 
 export const db: DbFn = Object.assign(_from, {
   from: _from,
-  rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
+  rpc: (...args: Parameters<typeof supabase.rpc>) =>
+    (supabase as unknown as { rpc: typeof supabase.rpc }).rpc(...args),
   // Lazy accessor: only resolves supabase.schema at call time so mocks that
   // stub @/integrations/supabase/client don't need schema at module init.
   schema: (...args: Parameters<typeof supabase.schema>) =>
     (supabase as unknown as { schema: typeof supabase.schema }).schema(...args),
-  storage: supabase.storage,
-  functions: supabase.functions,
-  auth: supabase.auth,
-  channel: supabase.channel.bind(supabase),
-  removeChannel: supabase.removeChannel.bind(supabase),
-  getChannels: supabase.getChannels.bind(supabase),
-  removeAllChannels: supabase.removeAllChannels.bind(supabase),
+  channel: (...args: Parameters<typeof supabase.channel>) => supabase.channel(...args),
+  removeChannel: (...args: Parameters<typeof supabase.removeChannel>) => supabase.removeChannel(...args),
+  getChannels: () => supabase.getChannels(),
+  removeAllChannels: () => supabase.removeAllChannels(),
+});
+Object.defineProperties(db, {
+  storage: { get: () => supabase.storage, enumerable: true, configurable: true },
+  functions: { get: () => supabase.functions, enumerable: true, configurable: true },
+  auth: { get: () => supabase.auth, enumerable: true, configurable: true },
 });
 
 // ── v2db — legacy-guarded accessor ─────────────────────────────────────────

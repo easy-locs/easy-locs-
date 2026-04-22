@@ -31,6 +31,14 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
+      - name: Cloudflare strict config check
+        run: node scripts/check-cloudflare-strict.cjs
+        working-directory: easy-locs-ea1eb0ed
+
+      - name: Verify dist assets
+        run: node scripts/check-dist-assets.cjs
+        working-directory: easy-locs-ea1eb0ed
+
       - name: Deploy to IONOS
         uses: ionos-deploy-now/deploy-to-ionos@v1
         with:

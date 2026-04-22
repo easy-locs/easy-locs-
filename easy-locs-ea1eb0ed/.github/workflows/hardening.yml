@@ -76,3 +76,12 @@ jobs:
 
       - name: No NEW orphan pages (baseline-enforced)
         run: npm run check:page-orphans
+
+      - name: Cloudflare strict config check
+        run: node scripts/check-cloudflare-strict.cjs
+
+      - name: Supabase lazy access guard
+        run: node scripts/check-supabase-lazy-access.cjs
+
+      - name: Generate route inventory
+        run: node scripts/generate-route-inventory.cjs

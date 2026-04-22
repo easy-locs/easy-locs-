@@ -59,7 +59,18 @@ export default {
       const canonical = deriveCanonical(pathname);
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
-      const response = await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
+
+      // SPA fallback: serve index.html for any 404 document request
+      if (response.status === 404) {
+        const fallback = await env.ASSETS.fetch(new Request(new URL("/index.html", request.url).toString()));
+        response = new Response(fallback.body, {
+          status: 200,
+          statusText: "OK",
+          headers: fallback.headers,
+        });
+      }
+
       const headers = new Headers(response.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);

@@ -1,0 +1,4426 @@
+[
+  {
+    "path": "/builder",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "DevOSDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/architecture",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "ArchitectureMapPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/audit",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AuditCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/repair",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "RepairCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/memory",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "MemoryCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/deploy",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "DeployCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/builder/evolution",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "EvolutionCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDashboard",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/engines",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminEnginesDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/wiring-health",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/ops-dashboard",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminOpsDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/fraud-detection",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminFraudDetectionPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/disputes",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDisputesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/financial-recon",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "FinancialReconPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/menu",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "MenuAdminPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/support-inbox",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "SupportInboxPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/driver-live",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "DriverLivePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/driver-monitor",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDriverMonitorPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/realtime-control",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminRealtimeControlPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/loyalty-redeem",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LoyaltyRedeemPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/alerts",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminAlertCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/wallet-diagnostics",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminWalletDiagnosticsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/execution-proof",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/review-queue",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminReviewQueuePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/growth-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminGrowthOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/qr-generate",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "QrGeneratePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/ui-engine",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminUiEnginePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/marketplace-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminMarketplaceOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/pipeline",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminPipelinePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/ai-control-center",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminAIControlCenter",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/support-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSupportOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/delivery-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDeliveryOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/merchant-health",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminMerchantHealthPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/merchant-approval-queue",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminMerchantApprovalQueuePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/payments-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminPaymentsOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/notification-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminNotificationOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/seed-tools",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSeedToolsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/shop-import",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminShopImportPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/shop-quality",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminShopQualityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/content-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminContentOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/analytics-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminAnalyticsOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/quality-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminQualityOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/crm-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminCrmOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/retention-ops",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminRetentionOpsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/support-sla",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSupportSlaPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/source-audit",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSourceAuditPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/user-lookup",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminUserLookupPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/finance-summary",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminFinanceSummaryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/order-watch",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminOrderWatchPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/refund-queue",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminRefundQueuePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/system-health",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSystemHealthPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/firecrawl-usage",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminFirecrawlUsagePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/platform-health",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminPlatformHealthPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/watchdog",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/map-errors",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminMapErrorDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/merge-conflict-recovery",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminMergeConflictRecoveryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/data-quality",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDataQualityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/command-control",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/food-checkout",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "FoodOrderCheckoutPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/delivery-proof/:orderId",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "DeliveryProofPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/kyc",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminKycReviewPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/super-dashboard",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/dld-backfill",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminDldBackfillPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/agents",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/runs",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/command",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/approvals",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/master",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/tasks",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/watchdog",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/proof",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/wiring",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "super-admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control/:section",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminShellWithChunkBoundary",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/agents/:slug/runs",
+    "domain": "admin",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LegacyAgentRunsRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/agents",
+    "domain": "admin",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/command-center",
+    "domain": "admin",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/approvals",
+    "domain": "admin",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/autonomy",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/control-room",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/engine-control-room",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/master-control",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "LegacyControlRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/lab-hub",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminLabHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/performance-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminPerformanceLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/data-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminDataLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/security-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminSecurityLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/release-history",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminReleaseHistoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/notification-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminNotificationLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/experiment-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminExperimentLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/architecture-lab",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminArchitectureLabPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/integration-health",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminIntegrationHealthPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/integration-diagnostics",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "AdminClientIntegrationDiagnosticsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/admin/statement",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "StatementDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/developer-portal/docs",
+    "domain": "admin",
+    "protected": true,
+    "authLevel": "admin",
+    "component": "DeveloperPortalDocs",
+    "redirectTo": null
+  },
+  {
+    "path": "/login",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Login",
+    "redirectTo": null
+  },
+  {
+    "path": "/signup",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Signup",
+    "redirectTo": null
+  },
+  {
+    "path": "/forgot-password",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ForgotPassword",
+    "redirectTo": null
+  },
+  {
+    "path": "/reset-password",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ResetPassword",
+    "redirectTo": null
+  },
+  {
+    "path": "/verify-account",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "VerifyAccount",
+    "redirectTo": null
+  },
+  {
+    "path": "/verify-email",
+    "domain": "auth",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "VerifyAccount",
+    "redirectTo": null
+  },
+  {
+    "path": "/auth/callback",
+    "domain": "auth",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AuthCallbackPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/auth/diagnostic",
+    "domain": "auth",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AuthDiagnosticPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/onboarding",
+    "domain": "auth",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Onboarding",
+    "redirectTo": null
+  },
+  {
+    "path": "/install",
+    "domain": "auth",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Install",
+    "redirectTo": null
+  },
+  {
+    "path": "/",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HomeRouter",
+    "redirectTo": null
+  },
+  {
+    "path": "/landing",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Index",
+    "redirectTo": null
+  },
+  {
+    "path": "/home",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MarketplaceHomeRouter",
+    "redirectTo": null
+  },
+  {
+    "path": "/pricing",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PricingScrollRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/command-center",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/property/add",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AddProperty",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/property/:id",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyDetailHub",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/create-listing",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CreateListing",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/receipts",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Receipts",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/reminders",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Reminders",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/documents",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Documents",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/ai",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AIAssistant",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/ai-search",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AISearch",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/leases",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Leases",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/company",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Company",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/billing",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Billing",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/settings",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Settings",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/tenants",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Tenants",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/rental-management",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RentalManagement",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/finances",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Finances",
+    "redirectTo": "/orbit"
+  },
+  {
+    "path": "/dashboard/interventions",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Interventions",
+    "redirectTo": "/orbit"
+  },
+  {
+    "path": "/dashboard/tasks",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Tasks",
+    "redirectTo": "/orbit"
+  },
+  {
+    "path": "/dashboard/messages",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/orbit"
+  },
+  {
+    "path": "/dashboard/activities",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/activities"
+  },
+  {
+    "path": "/dashboard/communication",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DashboardCommRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/charges-regularization",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ChargesRegularization",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/fiscal-report",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FiscalReport",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/expenses",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Expenses",
+    "redirectTo": "/property-hub?section=seasonal"
+  },
+  {
+    "path": "/dashboard/candidates",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Candidates",
+    "redirectTo": "/property-hub?section=seasonal"
+  },
+  {
+    "path": "/dashboard/seasonal-rentals",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/property-hub?section=seasonal"
+  },
+  {
+    "path": "/dashboard/payment-notices",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PaymentNotices",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/dunning-letters",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DunningLetters",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/furniture-inventory",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FurnitureInventory",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/buildings",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Buildings",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/vault",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Vault",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/import",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DataImport",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/cv-generator",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CVGenerator",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/subscriptions",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CategorySubscriptions",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/channels",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ChannelManager",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/accounting",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Accounting",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/rent-cockpit",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "LandlordRentDashboard",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/accounting-entries",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AccountingEntries",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/reporting",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ReportingDashboard",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/dynamic-pricing",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DynamicPricing",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/calendar",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyCalendar",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/real-estate",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RealEstateListings",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/profile",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "LandlordProfile",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/referrals",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Referrals",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/referral-funnel",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ReferralFunnelDashboard",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/collaboration",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Collaboration",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/dashboard/developer",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DeveloperPortal",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/dashboard/audit",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "AuditTrail",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/dashboard/wallet",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/dashboard/service-tracking",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ServiceTrackingPage",
+    "redirectTo": "/dashboard/islamic"
+  },
+  {
+    "path": "/dashboard/prayer-times",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/dashboard/islamic"
+  },
+  {
+    "path": "/dashboard/islamic",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "IslamicSectionPage",
+    "redirectTo": "/seller"
+  },
+  {
+    "path": "/dashboard/news",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "NewsPage",
+    "redirectTo": "/seller"
+  },
+  {
+    "path": "/dashboard/seller",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/seller"
+  },
+  {
+    "path": "/dashboard/driver",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/driver/dashboard"
+  },
+  {
+    "path": "/dashboard/delivery",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/driver/dashboard"
+  },
+  {
+    "path": "/dashboard/my-shop",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/dashboard/my-shops"
+  },
+  {
+    "path": "/dashboard/my-shops",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MyShopsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/ops",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OpsCenter",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/command-legacy",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/army",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/country/:countryCode",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CountryWorkspace",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/boost",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "BoostDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/dashboard/properties",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RealEstateModulePage",
+    "redirectTo": null
+  },
+  {
+    "path": "units",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "REUnitsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "tenants",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RETenantsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "leases",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RELeasesPage",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "payments",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "REPaymentsPage",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "documents",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "REDocumentsPage",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "/real-estate/property/:propertyId",
+    "domain": "dashboard",
+    "protected": false,
+    "authLevel": "public",
+    "component": "REPropertyDetailPage",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "/real-estate/lease/:leaseId",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RELeaseDetailPage",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "/property-management",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/dashboard/real-estate"
+  },
+  {
+    "path": "/rentals",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/dashboard/rental-management"
+  },
+  {
+    "path": "/developer",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/dashboard/developer"
+  },
+  {
+    "path": "/concierge-ops",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ConciergeOperations",
+    "redirectTo": null
+  },
+  {
+    "path": "/customer/:customerId",
+    "domain": "dashboard",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerProfilePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/add-contact",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "AddContactPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/u/:userId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "UserProfilePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/product/:productId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProductDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/p/:productId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProductPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/live/:liveId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LivePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/:payId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PayPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/request/:requestId",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PayRequestPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/scan",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrScannerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/link-resolver",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PaymentLinkResolverPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/confirm",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PaymentConfirmPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pay/success",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "GuestPaymentSuccess",
+    "redirectTo": null
+  },
+  {
+    "path": "/qr/pay/:code",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrPayResolver",
+    "redirectTo": null
+  },
+  {
+    "path": "/qr/:code",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrResolvePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/sl/:code",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ShortLinkResolvePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/qr/entry/:targetCode",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrEntryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/qr/track",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrTrackingPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/qr/pickup",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "QrPickupPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/claim/:token",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ClaimPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/go/:slug",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "SlugResolver",
+    "redirectTo": null
+  },
+  {
+    "path": "/go/:slug/:category",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "SlugCategoryResolver",
+    "redirectTo": null
+  },
+  {
+    "path": "/profile",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/account",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/messages",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/orbit"
+  },
+  {
+    "path": "/inbox",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/notifications"
+  },
+  {
+    "path": "/driver/missions",
+    "domain": "deeplinks",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/driver/missions-board"
+  },
+  {
+    "path": "/driver/dashboard",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverDashboardPageNew",
+    "redirectTo": "/driver/earnings"
+  },
+  {
+    "path": "/driver/payout",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverPayoutPage",
+    "redirectTo": "/driver/earnings"
+  },
+  {
+    "path": "/driver/earnings",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverEarningsPageNew",
+    "redirectTo": "/driver/earnings"
+  },
+  {
+    "path": "/driver/earnings-v2",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/driver/earnings"
+  },
+  {
+    "path": "/driver/earnings-summary",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverEarningsSummaryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/missions-board",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverMissionsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/missions-board/:orderId",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverMissionDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/proof/:orderId",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverProofPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/active-missions",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverActiveMissionsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/live-missions",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverLiveMissionsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/completed-deliveries",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverCompletedDeliveriesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/shift",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverShiftPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/availability-zones",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverAvailabilityZonesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/fuel-costs-v2",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverFuelCostsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/breaks",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverBreaksPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/taxi",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverTaxiDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/taxi/earnings",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DriverTaxiEarningsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/seller",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SellerDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/seller/boost",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "BoostDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/business",
+    "domain": "driver",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MyBusinessHub",
+    "redirectTo": null
+  },
+  {
+    "path": "/claim-shop/:merchantId",
+    "domain": "driver",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ClaimShopPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/terms",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "TermsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/privacy",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PrivacyPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/cookies",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CookiePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/legal",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LegalNoticePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/about",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "AboutPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/contact",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ContactPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/help",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "HelpPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/vision",
+    "domain": "legal",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PlatformVision",
+    "redirectTo": null
+  },
+  {
+    "path": "/me",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/edit-profile",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "EditProfilePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/spending-insights",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerSpendingInsightsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/address-book",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerAddressBookPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/loyalty-history",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerLoyaltyHistoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/challenges",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerChallengesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/referral",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerReferralPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/referrals",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerReferralPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/social",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SocialHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/badges",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "BadgesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/reviews",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MyReviewsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/wishlist",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "WishlistPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/loyalty",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerLoyaltyHistoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/creator",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CreatorDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/creator/affiliates",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CreatorDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/creator/analytics",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CreatorDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/creator/tips",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CreatorDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/saved-cards",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerSavedCardsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/saved-carts",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerSavedCartsPage2",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/delivery-notes",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerDeliveryNotesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/payment-activity",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerPaymentActivityPage",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/order-receipts",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerOrderReceiptsPage",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/gestion-immo",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/gestion-immo/:propertyId",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/tenant-view",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/property-hub",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/property-hub"
+  },
+  {
+    "path": "/me/properties",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/properties/list",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/properties/create",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/properties/:propertyId",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/properties/analytics",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/tenants",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/leases",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/leases/:leaseId",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/maintenance",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/maintenance/:ticketId",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/auto-repeat",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerAutoRepeatPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/rewards",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RewardsHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/me/redeem-rewards",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerRewardRedemptionPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/favorites",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FavoritesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/notifications",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "NotificationCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/location/live",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerLiveLocationPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/permissions",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PermissionCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/support/tickets",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SupportTicketsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/support/tickets/:ticketId",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SupportTicketDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/team/command-center",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TeamCommandCenterPage",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/team/permissions",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TeamPermissionsPage",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/settings",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/settings/account",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsAccountPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/orbit",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsOrbitPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/business",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsBusinessPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/wallet",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsWalletPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/addresses",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsAddressesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/notifications",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsNotificationsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/security",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsSecurityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/preferences",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsPreferencesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/support",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsSupportPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/settings/subscription",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsSubscriptionPage",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/settings/privacy",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsPrivacyPage",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/settings/marketing",
+    "domain": "me",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SettingsMarketingPage",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/settings/payment-methods",
+    "domain": "me",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/settings/notification-preferences",
+    "domain": "me",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/settings/notifications"
+  },
+  {
+    "path": "/profile/:userId",
+    "domain": "me",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/me"
+  },
+  {
+    "path": "/merchant/claim",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantClaimPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/onboarding",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantOnboardingPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/dashboard",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/dashboard/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/finance",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantFinancePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/pos",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantPosPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/kitchen",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantKitchenPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/orders",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantOrdersPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/orders/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantOrderBoardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/qr/:shopId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ShopQrCenterPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/menu",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantMenuPageNew",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/menu/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantMenuPageNew",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/menu-bulk/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantMenuBulkEditPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/menu-categories/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantMenuCategoryManagerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/menu/edit/:itemId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantMenuItemEditorPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/store-settings/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantStoreSettingsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/promos/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantPromoManagerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/banner-editor/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantPromoBannerEditorPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/inventory/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantInventoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/inventory-alerts/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantInventoryAlertsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/live/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantLiveControlPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/coupons/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantCouponManagerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/analytics/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantBasicAnalyticsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/customers/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantCustomersPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/customer-insights/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantCustomerInsightsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/product-performance/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantProductPerformancePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/business-summary/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantBusinessSummaryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/closing-mode/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantClosingModePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/auto-accept/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantAutoAcceptSettingsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/staff-access/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantStaffAccessPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/daily-sales/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantDailySalesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/reviews/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantReviewRepliesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/refund-requests/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantRefundRequestsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/delivery-zones/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantDeliveryZonesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/kitchen-display/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantKitchenDisplayPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/business-hours/:merchantId",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantBusinessHoursPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/merchant/returns",
+    "domain": "merchant",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MerchantReturnsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/onboarding/hotel",
+    "domain": "onboarding",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelOnboardingWizard",
+    "redirectTo": null
+  },
+  {
+    "path": "/onboarding/taxi",
+    "domain": "onboarding",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TaxiDriverOnboardingWizard",
+    "redirectTo": null
+  },
+  {
+    "path": "/onboarding/service-provider",
+    "domain": "onboarding",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ServiceProviderOnboardingWizard",
+    "redirectTo": null
+  },
+  {
+    "path": "/onboarding/consumer",
+    "domain": "onboarding",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ConsumerOnboardingWizard",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit/:conversationId",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CommunicationCenter",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit/contacts",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrbitContactsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit/add",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrbitAddContactPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit/identity",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrbitIdentityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/orbit/support",
+    "domain": "orbit",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrbitAISupportPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pro",
+    "domain": "pro",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProShell",
+    "redirectTo": null
+  },
+  {
+    "path": "onboarding",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProOnboarding",
+    "redirectTo": null
+  },
+  {
+    "path": "profile",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProProfile",
+    "redirectTo": null
+  },
+  {
+    "path": "media",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProMedia",
+    "redirectTo": null
+  },
+  {
+    "path": "catalog",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProCatalog",
+    "redirectTo": null
+  },
+  {
+    "path": "availability",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProAvailability",
+    "redirectTo": null
+  },
+  {
+    "path": "pricing",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProPricing",
+    "redirectTo": null
+  },
+  {
+    "path": "orders",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProOrders",
+    "redirectTo": null
+  },
+  {
+    "path": "inbox",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProInbox",
+    "redirectTo": null
+  },
+  {
+    "path": "reviews",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProReviews",
+    "redirectTo": null
+  },
+  {
+    "path": "wallet",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProWallet",
+    "redirectTo": null
+  },
+  {
+    "path": "team",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProTeam",
+    "redirectTo": null
+  },
+  {
+    "path": "analytics",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProAnalytics",
+    "redirectTo": null
+  },
+  {
+    "path": "monitor",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProLiveMonitor",
+    "redirectTo": null
+  },
+  {
+    "path": "settings",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProSettings",
+    "redirectTo": null
+  },
+  {
+    "path": "compliance",
+    "domain": "pro",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProCompliance",
+    "redirectTo": null
+  },
+  {
+    "path": "/radar",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PillarSkeleton",
+    "redirectTo": "/radar"
+  },
+  {
+    "path": "/map",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/radar"
+  },
+  {
+    "path": "/discover",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/radar"
+  },
+  {
+    "path": "/search",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/radar"
+  },
+  {
+    "path": "/explore",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PillarSkeleton",
+    "redirectTo": null
+  },
+  {
+    "path": "/geo-explorer",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "GeoExplorerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/geo-explorer/:countryCode",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "GeoExplorerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/geo-explorer/:countryCode/:cityId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "GeoExplorerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/search-results",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "SearchResultsPage",
+    "redirectTo": "/browse/food"
+  },
+  {
+    "path": "/browse",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "DiscoverPage",
+    "redirectTo": "/browse/food"
+  },
+  {
+    "path": "/browse/:vertical",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "BrowseVerticalPage",
+    "redirectTo": "/browse/food"
+  },
+  {
+    "path": "/food",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/food"
+  },
+  {
+    "path": "/grocery",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/grocery"
+  },
+  {
+    "path": "/services-hub",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/services"
+  },
+  {
+    "path": "/shops",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/retail"
+  },
+  {
+    "path": "/healthcare",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/healthcare"
+  },
+  {
+    "path": "/experiences",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/experiences"
+  },
+  {
+    "path": "/utility",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/utility"
+  },
+  {
+    "path": "/electronics",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/shops?sub=electronics"
+  },
+  {
+    "path": "/gifts",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/shops?sub=gifts"
+  },
+  {
+    "path": "/pets",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/services?sub=pet_care"
+  },
+  {
+    "path": "/food/restaurant/:restaurantId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "FoodRestaurantPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/food/r/:cuisine/:restaurantId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "FoodRestaurantPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/food/:type",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "FoodTypePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/food/:type/:cuisine",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CuisineListPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/shop",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RetailIndexPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/shop/category/:categorySlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RetailCategoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/shop/subcategory/:categorySlug/:subcategorySlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RetailCategoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/shop/mall/:mallSlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RetailMallPage",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/shop/store/:slug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RetailStorePage",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/property",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PropertyHubPage",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/real-estate",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/real-estate/dubai-analytics",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/real-estate/:listingType",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/property"
+  },
+  {
+    "path": "/real-estate/:listingType/:slug",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/property-hub",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyManagementHub",
+    "redirectTo": null
+  },
+  {
+    "path": "/property-hub/seasonal/reservations",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "SeasonalRentals",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "TravelHub",
+    "redirectTo": "/travel/stays"
+  },
+  {
+    "path": "/travel/flights",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TravelFlights",
+    "redirectTo": "/travel/stays"
+  },
+  {
+    "path": "/travel/stays",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TravelStays",
+    "redirectTo": "/travel/stays"
+  },
+  {
+    "path": "/travel/hotels",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/travel/stays"
+  },
+  {
+    "path": "/travel/hotel/:id",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TravelHotelDetail",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/hotel-checkout",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelCheckout",
+    "redirectTo": null
+  },
+  {
+    "path": "/hotel/dashboard",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/hotel/calendar",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelCalendarPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/hotel/rooms",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelRoomsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/hotel/pricing",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HotelPricingPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/stay/:id",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "TravelStayDetail",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight/:id",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "TravelFlightDetail",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-search",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightSearchPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-results",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightResultsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-detail",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-passengers",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightPassengerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-payment",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightPaymentPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/travel/flight-confirmation",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "FlightConfirmationPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/search",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertySearchPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/results",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyResultsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/detail",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/booking",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyBookingPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/payment",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyPaymentPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property/confirmation",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PropertyConfirmationPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MobilityHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility/taxi",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MobilityTaxiPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility/delivery",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MobilityDeliveryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility/delivery/bring",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "DeliveryBringPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility/delivery/parcel",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DeliveryParcelPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/mobility/delivery/gift",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DeliveryGiftPage",
+    "redirectTo": "/mobility/taxi"
+  },
+  {
+    "path": "/mobility/delivery/errand",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DeliveryErrandPage",
+    "redirectTo": "/mobility/taxi"
+  },
+  {
+    "path": "/rider/live",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RiderLivePage",
+    "redirectTo": "/mobility/taxi"
+  },
+  {
+    "path": "/ride",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/mobility/taxi"
+  },
+  {
+    "path": "/taxi",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/mobility/taxi"
+  },
+  {
+    "path": "/send",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/mobility/delivery"
+  },
+  {
+    "path": "/send-package",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/mobility/delivery"
+  },
+  {
+    "path": "/delivery",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/mobility/delivery"
+  },
+  {
+    "path": "/track/:rideRequestId",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TrackRidePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/call/:threadId",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CallDriverPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/driver/heatmap",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "DemandHeatmapPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/subscription/priority",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RiderPrioritySubscriptionPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/listing/:id",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PublicListing",
+    "redirectTo": null
+  },
+  {
+    "path": "/book/:slug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PublicServiceBooking",
+    "redirectTo": null
+  },
+  {
+    "path": "/nearby",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LocalServices",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/rentals/:country",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RentalCatalog",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/rentals/:country/:city",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RentalCatalog",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/stay",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "TravelStays",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/stays",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/stays/:country",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/stays/:country/:city",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/stay"
+  },
+  {
+    "path": "/host/:orgId",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "HostCatalog",
+    "redirectTo": null
+  },
+  {
+    "path": "/activities",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ActivitiesMarketplace",
+    "redirectTo": null
+  },
+  {
+    "path": "/guest/:orgId",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "GuestPortal",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/availability",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderAvailabilityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/availability-v2",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderAvailabilityPageNew",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/zones",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderZonesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/bookings",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderBookingsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/services",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderServicesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/dashboard",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/calendar",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderCalendarPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/services-crud",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderServicesCrudPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/earnings",
+    "domain": "radar",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ProviderEarningsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/:providerId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProviderStorefront",
+    "redirectTo": "/favorites"
+  },
+  {
+    "path": "/store/:storeId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "StorePage",
+    "redirectTo": "/favorites"
+  },
+  {
+    "path": "/s/:slug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ShopPage",
+    "redirectTo": "/favorites"
+  },
+  {
+    "path": "/s/:slug/:categorySlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ShopCategoryPage",
+    "redirectTo": "/favorites"
+  },
+  {
+    "path": "/saved",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/favorites"
+  },
+  {
+    "path": "/showcase/:orgId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PropertiesShowcase",
+    "redirectTo": null
+  },
+  {
+    "path": "/account/:orgId",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "AccountShowcase",
+    "redirectTo": null
+  },
+  {
+    "path": "/properties",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PropertiesShowcase",
+    "redirectTo": null
+  },
+  {
+    "path": "/top-rated",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RealEstateListings",
+    "redirectTo": null
+  },
+  {
+    "path": "/trending",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RealEstateListings",
+    "redirectTo": null
+  },
+  {
+    "path": "/real-estate-listing/:slug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PublicRealEstateListing",
+    "redirectTo": null
+  },
+  {
+    "path": "/concierge-services",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ConciergeServicesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/city-market/:citySlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityMarketplacePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/menu/:shopSlug",
+    "domain": "radar",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ShopOrderPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/browse/services",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ServicesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/browse/services/:providerId",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ServiceProviderPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/marketplace-services",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MarketplaceServicesPage",
+    "redirectTo": "/seasonal-rentals-booking"
+  },
+  {
+    "path": "/activities-booking",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ActivitiesPage",
+    "redirectTo": "/seasonal-rentals-booking"
+  },
+  {
+    "path": "/seasonal-rentals-booking",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "SeasonalRentalsPage",
+    "redirectTo": "/seasonal-rentals-booking"
+  },
+  {
+    "path": "/seasonal-rentals",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/seasonal-rentals-booking"
+  },
+  {
+    "path": "/long-term-rentals",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LongTermRentalsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/property-owner-software",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CoreSEOPages",
+    "redirectTo": null
+  },
+  {
+    "path": "/property-management-platform",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "PropertyManagementPlatformPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/rental-management-software",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "RentalManagementSoftwarePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/guide/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityGuidePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/best/:serviceSlug/in/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "BestServiceCityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/compare/:serviceSlug/in/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CompareServiceCityPage",
+    "redirectTo": "/browse/services"
+  },
+  {
+    "path": "/services/:service/in/:city",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ServiceCitySEOPage",
+    "redirectTo": "/browse/services"
+  },
+  {
+    "path": "/activities/:activity/in/:city",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ActivityCitySEOPage",
+    "redirectTo": "/browse/services"
+  },
+  {
+    "path": "/services",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/browse/services"
+  },
+  {
+    "path": "/services/:categorySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ServiceCategoryPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/services/city/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ServiceCityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/provider/seo/:providerId",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "ProviderSEOPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/locations",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "LocationsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/country/:countrySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CountryHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/city/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityHubPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/city/:citySlug/services",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityServicesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/city/:citySlug/activities",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityActivitiesPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/city/:citySlug/concierge",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "CityConciergePage",
+    "redirectTo": "/annonces"
+  },
+  {
+    "path": "/city/:citySlug/:categorySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "DynamicCityCategoryPage",
+    "redirectTo": "/annonces"
+  },
+  {
+    "path": "/marketplace",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MarketplaceHubPage",
+    "redirectTo": "/annonces"
+  },
+  {
+    "path": "/marketplace/c2c",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Navigate",
+    "redirectTo": "/annonces"
+  },
+  {
+    "path": "/marketplace/c2c/:id",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MarketplaceC2CDetailRedirect",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces/publier",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces/recherche",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces/vendeur/:id",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces/mes-annonces",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/annonces/:id",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "Pages",
+    "redirectTo": null
+  },
+  {
+    "path": "/marketplace/:citySlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MarketplaceCityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/marketplace/:citySlug/:serviceSlug",
+    "domain": "seo",
+    "protected": false,
+    "authLevel": "public",
+    "component": "MarketplaceServiceCityPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PillarSkeleton",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/wallet/hub",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/wallet"
+  },
+  {
+    "path": "/wallet/security",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/settings/wallet"
+  },
+  {
+    "path": "/wallet/top-up",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "WalletTopUpPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/transfer",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "WalletTransferPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/request",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "WalletRequestPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/forex",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ForexDashboardPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/transaction/:txId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "WalletTransactionDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/pay/:threadId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PayRidePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/wallet/property/*",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Pages",
+    "redirectTo": "/settings/wallet"
+  },
+  {
+    "path": "/wallet/virtual-cards",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "VirtualCardsPage",
+    "redirectTo": "/settings/wallet"
+  },
+  {
+    "path": "/wallet/installments",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "InstallmentsPage",
+    "redirectTo": "/settings/wallet"
+  },
+  {
+    "path": "/wallet/accounts",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/settings/wallet"
+  },
+  {
+    "path": "/pos",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "POSPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/pos/:shopId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "POSPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/checkout",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CheckoutPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/checkout/address-selector",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerAddressSelectorPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/checkout/group-order",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerGroupOrderPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/checkout/gift-order",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerOrderGiftsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/checkout/split-bill",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerSplitBillPage",
+    "redirectTo": "/my-orders"
+  },
+  {
+    "path": "/checkout/party-order",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerPartyOrderPage",
+    "redirectTo": "/my-orders"
+  },
+  {
+    "path": "/checkout/share-cart",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerShareCartPage",
+    "redirectTo": "/my-orders"
+  },
+  {
+    "path": "/orders",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "Navigate",
+    "redirectTo": "/my-orders"
+  },
+  {
+    "path": "/my-orders",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "MyOrdersPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/my-orders/active",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerActiveOrdersPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/my-orders/archive",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerOrderArchivePage",
+    "redirectTo": null
+  },
+  {
+    "path": "/order/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "UnifiedOrderDetailPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/order/receipt/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrderReceiptPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/order/refund/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "OrderRefundRequestPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/order/reorder/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "ReorderPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/reorder",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "CustomerReorderPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/tracking/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "TrackingPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/live-tracking",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "LiveTrackingPageNew",
+    "redirectTo": null
+  },
+  {
+    "path": "/refund/:rideRequestId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "RefundRequestPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/payment/:orderId",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "PaymentPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/payments/stripe-elements",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "StripeElementsPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/payments/stripe-handler",
+    "domain": "wallet",
+    "protected": true,
+    "authLevel": "protected",
+    "component": "StripeCheckoutHandlerPage",
+    "redirectTo": null
+  },
+  {
+    "path": "/guest/checkout/:cartId",
+    "domain": "wallet",
+    "protected": false,
+    "authLevel": "public",
+    "component": "GuestCheckoutPage",
+    "redirectTo": null
+  }
+]
