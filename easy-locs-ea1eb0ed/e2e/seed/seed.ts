@@ -170,6 +170,17 @@ async function verifySeededListings(supabase: SupabaseClient, ids: string[]) {
 }
 
 export default async function globalSetup() {
+  // If Supabase env vars are absent, skip seeding gracefully.
+  // This allows public-only smoke specs to run without credentials.
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  if (!supabaseUrl) {
+    console.warn(
+      "\n[e2e-seed] ⚠ VITE_SUPABASE_URL not set — skipping DB seed." +
+      " Authenticated tests will be skipped automatically.\n"
+    );
+    return;
+  }
+
   console.log("\n[e2e-seed] ── Global Setup: Seeding test data ──\n");
 
   const { client: supabase, hasServiceRole } = createAdminClient();
