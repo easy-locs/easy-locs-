@@ -198,6 +198,7 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
+
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
 // Detects any light/memory-constrained build environment.
@@ -276,13 +277,13 @@ export default defineConfig(({ mode }) => ({
     },
   },
   plugins: [
+    buildEnvPlugin(),
     react(),
     partytownVite({
       dest: path.resolve(__dirname, "dist", "~partytown"),
     }),
 
     mode === "development" && repairDiagPlugin(),
-    buildEnvPlugin(),
     cacheControlPlugin(),
     // SEO plugins generate ~7 800 HTML files and several sitemaps.
     // Skipped on light/CF builds to avoid OOM; they run normally in local
