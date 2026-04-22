@@ -1,0 +1,8 @@
+# Cloudflare Pages SPA catch-all redirect.
+# This ensures every non-asset route is served by index.html so React Router
+# can handle client-side navigation.  The Advanced Mode _worker.js already
+# performs the same routing, but _redirects provides a fallback if the Worker
+# is bypassed (e.g. during Cloudflare Pages preview deployments without Workers).
+# Static asset paths (/assets/, /pwa-*, /manifest.json, /sw.js, etc.) are NOT
+# rewritten — the rule only applies when no file matches the request path.
+/* /index.html 200
