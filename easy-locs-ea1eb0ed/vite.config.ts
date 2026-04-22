@@ -209,6 +209,23 @@ function stampServiceWorkerPlugin(version: string): Plugin {
   };
 }
 
+// ── Cloudflare Pages / Light build detection ─────────────────────────────────
+// `npm run build:cf` sets SKIP_HEAVY_SEO=1. Cloudflare Pages auto-sets CF_PAGES.
+// When IS_LIGHT_CF_BUILD is true, heavy plugins (sitemap, prerender, og-images,
+// feeds, indexnow, seo-validate, brotli/gzip, visualizer, Sentry sourcemaps)
+// are skipped so the build completes within Cloudflare's memory / time limits.
+const IS_LIGHT_CF_BUILD =
+  process.env.CF_PAGES === "1" ||
+  process.env.SKIP_HEAVY_SEO === "1" ||
+  process.env.VITE_SKIP_HEAVY_SEO === "1" ||
+  process.env.CF_PAGES_BRANCH !== undefined ||
+  process.env.CF_PAGES_URL !== undefined;
+
+if (IS_LIGHT_CF_BUILD) {
+  // eslint-disable-next-line no-console
+  console.info("[vite] Light Cloudflare build active — heavy plugins skipped");
+}
+
 export default defineConfig(({ mode }) => ({
   define: {
     __BUILD_TIMESTAMP__: JSON.stringify(BUILD_VERSION),
@@ -230,12 +247,12 @@ export default defineConfig(({ mode }) => ({
 
     mode === "development" && repairDiagPlugin(),
     cacheControlPlugin(),
-    sitemapPlugin(),
-    prerenderPlugin(),
-    ogImagesPlugin(),
-    feedsPlugin(),
-    indexNowPlugin(),
-    seoValidatePlugin(),
+    !IS_LIGHT_CF_BUILD && sitemapPlugin(),
+    !IS_LIGHT_CF_BUILD && prerenderPlugin(),
+    !IS_LIGHT_CF_BUILD && ogImagesPlugin(),
+    !IS_LIGHT_CF_BUILD && feedsPlugin(),
+    !IS_LIGHT_CF_BUILD && indexNowPlugin(),
+    !IS_LIGHT_CF_BUILD && seoValidatePlugin(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
@@ -335,18 +352,18 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && performanceBudgetPlugin(),
-    mode === "production" && viteCompression({
+    !IS_LIGHT_CF_BUILD && mode === "production" && performanceBudgetPlugin(),
+    !IS_LIGHT_CF_BUILD && mode === "production" && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && viteCompression({
+    !IS_LIGHT_CF_BUILD && mode === "production" && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && visualizer({
+    !IS_LIGHT_CF_BUILD && mode === "production" && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -355,7 +372,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    !IS_LIGHT_CF_BUILD && mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,

@@ -1,0 +1,7 @@
+name = "easy-locs"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "dist"
+
+# Deploy command (manual): wrangler pages deploy dist --project-name easy-locs
+# Build command (CI):       cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf
+# NEVER use: wrangler versions upload --yes (invalid for Pages)

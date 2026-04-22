@@ -1,28 +1,28 @@
 # Final Deploy Verdict
 
-Generated: 2026-04-22T03:01:54.168Z
+Generated: 2026-04-22T03:10:01.878Z
 
-## ⚠️ Verdict: `KEEP_OPEN_RUNTIME_VERIFICATION_REQUIRED`
+## ❌ Verdict: `DO_NOT_MERGE_BLOCKERS_FOUND`
 
-All blocker gates passed but hosted verification is pending. Keep PR open until runtime verification completes.
+**DO NOT MERGE.** 1 blocker gate(s) failed: typecheck
 
 ## Gate Status
 
 | Gate | Result |
 |------|--------|
-| typecheck | pending |
+| typecheck | fail |
 | lint | pending |
 | unit_tests | pending |
-| cloudflare_strict | pending |
-| supabase_lazy | pending |
+| cloudflare_strict | pass |
+| supabase_lazy | pass |
 | dist_assets | pending |
 | secret_scan | pending |
 | hosted_verification | pending |
 
 ## Blocker Failures
 
-None
+- **typecheck**: TS error in src/Foo.tsx:42
 
 ## Repair Backlog
 
-Empty — no failures.
+Written to `test-results/repair-backlog.json`

@@ -1,8 +1,8 @@
 # Cloudflare Strict Config Report
 
-Generated: 2026-04-22T03:01:00.959Z
+Generated: 2026-04-22T03:09:47.460Z
 
-## Results: 5 passed, 3 failed
+## Results: 10 passed, 0 failed
 
 - **[PASS]** _worker.js SPA fallback
   > Found /index.html fetch on 404
@@ -12,13 +12,17 @@ Generated: 2026-04-22T03:01:00.959Z
   > COEP credentialless not present
 - **[PASS]** _headers has worker-src 'self' blob:
   > worker-src directive present
-- **[FAIL]** wrangler.toml exists
-  > wrangler.toml not found — skipping wrangler checks
-- **[FAIL]** package.json has build:cf script
-  > Missing build:cf script
+- **[PASS]** wrangler.toml pages_build_output_dir = "dist"
+  > Found pages_build_output_dir = "dist"
+- **[PASS]** wrangler.toml name = "easy-locs"
+  > Found name = "easy-locs"
+- **[PASS]** package.json has build:cf script
+  > build:cf = "cross-env SKIP_HEAVY_SEO=1 vite build"
+- **[PASS]** build:cf contains SKIP_HEAVY_SEO
+  > Found SKIP_HEAVY_SEO in build:cf
 - **[PASS]** package.json no "wrangler versions upload"
   > "wrangler versions upload" not found
-- **[FAIL]** wrangler in devDependencies
-  > wrangler not found in dependencies
+- **[PASS]** wrangler in devDependencies
+  > wrangler: ^4.84.1
 
-## Verdict: ❌ 3 CHECK(S) FAILED
+## Verdict: ✅ ALL CHECKS PASS
