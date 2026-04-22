@@ -5,20 +5,6 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
 
-// Detect light Cloudflare Pages build — skips heavy plugins (brotli/gzip/
-// visualizer/Sentry/sourcemaps/budget) to stay within CF Pages build limits.
-const IS_LIGHT_CLOUDFLARE_BUILD =
-  process.env.CF_PAGES === "1" ||
-  process.env.SKIP_HEAVY_SEO === "1" ||
-  !!process.env.CF_PAGES_BRANCH ||
-  !!process.env.CF_PAGES_URL;
-const IS_CI = process.env.CI === "true";
-const SKIP_HEAVY_PLUGINS = IS_LIGHT_CLOUDFLARE_BUILD || IS_CI;
-
-if (IS_LIGHT_CLOUDFLARE_BUILD) {
-  console.info("[vite] Light Cloudflare build active — heavy plugins skipped.");
-}
-
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { prerenderPlugin } from "./vite-plugin-prerender";
 import { indexNowPlugin } from "./vite-plugin-indexnow";
