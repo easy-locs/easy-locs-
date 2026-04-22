@@ -5,6 +5,20 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import fs from "fs";
 
+// Detect light Cloudflare Pages build — skips heavy plugins (brotli/gzip/
+// visualizer/Sentry/sourcemaps/budget) to stay within CF Pages build limits.
+const IS_LIGHT_CLOUDFLARE_BUILD =
+  process.env.CF_PAGES === "1" ||
+  process.env.SKIP_HEAVY_SEO === "1" ||
+  !!process.env.CF_PAGES_BRANCH ||
+  !!process.env.CF_PAGES_URL;
+const IS_CI = process.env.CI === "true";
+const SKIP_HEAVY_PLUGINS = IS_LIGHT_CLOUDFLARE_BUILD || IS_CI;
+
+if (IS_LIGHT_CLOUDFLARE_BUILD) {
+  console.info("[vite] Light Cloudflare build active — heavy plugins skipped.");
+}
+
 import { sitemapPlugin } from "./vite-plugin-sitemap";
 import { prerenderPlugin } from "./vite-plugin-prerender";
 import { indexNowPlugin } from "./vite-plugin-indexnow";
@@ -346,18 +360,18 @@ export default defineConfig(({ mode }) => ({
       },
     }),
     stampServiceWorkerPlugin(BUILD_VERSION),
-    mode === "production" && performanceBudgetPlugin(),
-    mode === "production" && viteCompression({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && performanceBudgetPlugin(),
+    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && viteCompression({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && visualizer({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -366,7 +380,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,

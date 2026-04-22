@@ -60,15 +60,22 @@ export default {
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
       const response = await env.ASSETS.fetch(request);
-      const headers = new Headers(response.headers);
+
+      // SPA fallback: if ASSETS returned 404 for a document navigation, serve
+      // index.html so React Router can handle the route client-side.
+      const body = response.status === 404
+        ? await env.ASSETS.fetch(new Request(new URL("/index.html", request.url).toString()))
+        : response;
+
+      const headers = new Headers(body.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);
       }
       headers.set("X-Robots-Tag", "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1");
 
-      return new Response(response.body, {
-        status: response.status,
-        statusText: response.statusText,
+      return new Response(body.body, {
+        status: response.status === 404 ? 200 : body.status,
+        statusText: response.status === 404 ? "OK" : body.statusText,
         headers,
       });
     }
