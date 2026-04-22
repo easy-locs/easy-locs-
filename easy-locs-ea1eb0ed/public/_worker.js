@@ -59,7 +59,15 @@ export default {
       const canonical = deriveCanonical(pathname);
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
-      const response = await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
+
+      // SPA fallback: if the static asset does not exist (404), serve index.html
+      // so client-side routing can handle the path (e.g. /login, /dashboard).
+      if (response.status === 404) {
+        const indexRequest = new Request(new URL("/index.html", request.url).toString(), { method: "GET" });
+        response = await env.ASSETS.fetch(indexRequest);
+      }
+
       const headers = new Headers(response.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);
