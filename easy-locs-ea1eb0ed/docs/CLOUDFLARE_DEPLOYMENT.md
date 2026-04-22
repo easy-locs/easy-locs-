@@ -2,8 +2,8 @@
 
 ## Status
 
-**Build:** ✅ Passing (`npm run build:cf`)  
-**Deploy:** ✅ Passing (`wrangler pages deploy dist`)  
+**Build:** ✅ Passing (`cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf`)  
+**Deploy:** ✅ Passing (`cd easy-locs-ea1eb0ed && npx wrangler pages deploy dist --project-name easy-locs`)  
 **Runtime gate:** Pending (HTTPS smoke test with real Supabase staging env vars)
 
 ---
@@ -20,10 +20,10 @@ cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf
 - Heavy plugins are skipped: brotli/gzip compression, bundle visualizer, Sentry source-map upload, hidden sourcemaps, and the performance budget enforcer.  
 - This keeps peak RAM under 2 GB (CF Pages limit) and reduces build time.
 
-### Deploy command (CF Pages handles this automatically, or use manually)
+### Deploy command (CF Pages handles this automatically; use manually only if needed)
 
 ```
-npx wrangler pages deploy dist --project-name easy-locs
+cd easy-locs-ea1eb0ed && npx wrangler pages deploy dist --project-name easy-locs
 ```
 
 > ⚠️ **CRITICAL — Do NOT use `wrangler versions upload --yes`**

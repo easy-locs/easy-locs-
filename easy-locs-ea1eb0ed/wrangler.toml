@@ -8,8 +8,8 @@
 # BUILD COMMAND (set in CF Pages dashboard or wrangler CLI):
 #   cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf
 #
-# DEPLOY COMMAND (Cloudflare Pages CI handles this automatically, or use):
-#   npx wrangler pages deploy dist --project-name easy-locs
+# DEPLOY COMMAND (Cloudflare Pages CI handles this automatically, or use manually):
+#   cd easy-locs-ea1eb0ed && npx wrangler pages deploy dist --project-name easy-locs
 #
 # ⚠️  DO NOT use `wrangler versions upload` with the `--yes` flag for this project.
 #     - `wrangler versions upload` is for Workers scripts, NOT for Pages.
