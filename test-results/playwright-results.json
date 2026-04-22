@@ -1,8 +1,8 @@
 {
   "config": {
-    "configFile": "/home/runner/workspace/playwright.config.ts",
-    "rootDir": "/home/runner/workspace/tests/e2e",
-    "forbidOnly": false,
+    "configFile": "/home/runner/work/easy-locs-/easy-locs-/playwright.config.ts",
+    "rootDir": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e",
+    "forbidOnly": true,
     "fullyParallel": true,
     "globalSetup": null,
     "globalTeardown": null,
@@ -11,7 +11,29 @@
     "grepInvert": null,
     "maxFailures": 0,
     "metadata": {
-      "actualWorkers": 4
+      "ci": {
+        "commitHref": "https://github.com/easy-locs/easy-locs-/commit/c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+        "commitHash": "c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+        "buildHref": "https://github.com/easy-locs/easy-locs-/actions/runs/24698762720"
+      },
+      "gitCommit": {
+        "shortHash": "c8ad0195b",
+        "hash": "c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+        "subject": "fix(vite): consolidate React chunks into vendor-react, add 450KB budget override",
+        "body": "fix(vite): consolidate React chunks into vendor-react, add 450KB budget override\n\nAgent-Logs-Url: https://github.com/easy-locs/easy-locs-/sessions/15c3c5c1-9e9f-46f9-89ea-0ea87d87da52\n\nCo-authored-by: easy-locs <266756839+easy-locs@users.noreply.github.com>\n",
+        "author": {
+          "name": "copilot-swe-agent[bot]",
+          "email": "198982749+Copilot@users.noreply.github.com",
+          "time": 1776733283000
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com",
+          "time": 1776733283000
+        },
+        "branch": "copilot/create-playwright-guide"
+      },
+      "actualWorkers": 6
     },
     "preserveOutput": "always",
     "reporter": [
@@ -40,15 +62,37 @@
     "quiet": false,
     "projects": [
       {
-        "outputDir": "/home/runner/workspace/test-results",
+        "outputDir": "/home/runner/work/easy-locs-/easy-locs-/test-results",
         "repeatEach": 1,
-        "retries": 0,
+        "retries": 1,
         "metadata": {
-          "actualWorkers": 4
+          "ci": {
+            "commitHref": "https://github.com/easy-locs/easy-locs-/commit/c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+            "commitHash": "c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+            "buildHref": "https://github.com/easy-locs/easy-locs-/actions/runs/24698762720"
+          },
+          "gitCommit": {
+            "shortHash": "c8ad0195b",
+            "hash": "c8ad0195b6a3eddf2dcdd033a09d49cb1625de27",
+            "subject": "fix(vite): consolidate React chunks into vendor-react, add 450KB budget override",
+            "body": "fix(vite): consolidate React chunks into vendor-react, add 450KB budget override\n\nAgent-Logs-Url: https://github.com/easy-locs/easy-locs-/sessions/15c3c5c1-9e9f-46f9-89ea-0ea87d87da52\n\nCo-authored-by: easy-locs <266756839+easy-locs@users.noreply.github.com>\n",
+            "author": {
+              "name": "copilot-swe-agent[bot]",
+              "email": "198982749+Copilot@users.noreply.github.com",
+              "time": 1776733283000
+            },
+            "committer": {
+              "name": "GitHub",
+              "email": "noreply@github.com",
+              "time": 1776733283000
+            },
+            "branch": "copilot/create-playwright-guide"
+          },
+          "actualWorkers": 6
         },
         "id": "chromium",
         "name": "chromium",
-        "testDir": "/home/runner/workspace/tests/e2e",
+        "testDir": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e",
         "testIgnore": [],
         "testMatch": [
           "**/*.@(spec|test).?(c|m)[jt]s?(x)"
@@ -60,7 +104,7 @@
     "updateSnapshots": "missing",
     "updateSourceMethod": "patch",
     "version": "1.55.0",
-    "workers": 4,
+    "workers": 6,
     "webServer": null
   },
   "suites": [
@@ -89,7 +133,7 @@
                       "type": "skip",
                       "description": "profile email_confirmed missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -103,18 +147,18 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 6381,
+                      "duration": 360,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:07.915Z",
+                      "startTime": "2026-04-21T01:29:44.819Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile email_confirmed missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -151,7 +195,7 @@
                       "type": "skip",
                       "description": "profile phone_otp missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -165,18 +209,18 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 6613,
+                      "duration": 614,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:06.701Z",
+                      "startTime": "2026-04-21T01:29:44.524Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile phone_otp missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -213,7 +257,7 @@
                       "type": "skip",
                       "description": "profile super_admin missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -227,18 +271,18 @@
                       "workerIndex": 2,
                       "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 6046,
+                      "duration": 421,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:06.506Z",
+                      "startTime": "2026-04-21T01:29:44.658Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile super_admin missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -275,7 +319,7 @@
                       "type": "skip",
                       "description": "profile empty_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -289,18 +333,18 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 6053,
+                      "duration": 543,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:06.401Z",
+                      "startTime": "2026-04-21T01:29:44.677Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile empty_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -337,7 +381,7 @@
                       "type": "skip",
                       "description": "profile heavy_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -348,21 +392,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 587,
+                      "duration": 564,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:15.459Z",
+                      "startTime": "2026-04-21T01:29:44.583Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile heavy_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -399,7 +443,7 @@
                       "type": "skip",
                       "description": "profile slow_network missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -410,21 +454,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "skipped",
-                      "duration": 849,
+                      "duration": 266,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:16.132Z",
+                      "startTime": "2026-04-21T01:29:44.778Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile slow_network missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -470,7 +514,7 @@
                       "type": "skip",
                       "description": "profile email_confirmed missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -481,21 +525,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1322,
+                      "duration": 290,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:16.334Z",
+                      "startTime": "2026-04-21T01:29:45.359Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile email_confirmed missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -532,7 +576,7 @@
                       "type": "skip",
                       "description": "profile phone_otp missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -543,21 +587,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
                       "status": "skipped",
-                      "duration": 1009,
+                      "duration": 307,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:16.993Z",
+                      "startTime": "2026-04-21T01:29:45.401Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile phone_otp missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -594,7 +638,7 @@
                       "type": "skip",
                       "description": "profile super_admin missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -605,21 +649,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 898,
+                      "duration": 394,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:17.051Z",
+                      "startTime": "2026-04-21T01:29:45.457Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile super_admin missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -656,7 +700,7 @@
                       "type": "skip",
                       "description": "profile empty_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -667,21 +711,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 1404,
+                      "duration": 304,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:17.880Z",
+                      "startTime": "2026-04-21T01:29:45.543Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile empty_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -718,7 +762,7 @@
                       "type": "skip",
                       "description": "profile heavy_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -729,21 +773,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 1339,
+                      "duration": 344,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:17.918Z",
+                      "startTime": "2026-04-21T01:29:45.572Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile heavy_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -780,7 +824,7 @@
                       "type": "skip",
                       "description": "profile expired_session missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -791,21 +835,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 1185,
+                      "duration": 367,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:18.039Z",
+                      "startTime": "2026-04-21T01:29:45.600Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile expired_session missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -842,7 +886,7 @@
                       "type": "skip",
                       "description": "profile slow_network missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -853,21 +897,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1166,
+                      "duration": 242,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:18.727Z",
+                      "startTime": "2026-04-21T01:29:45.720Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile slow_network missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -903,7 +947,7 @@
           "specs": [
             {
               "title": "public landing renders, then authenticated home appears for non-guests",
-              "ok": true,
+              "ok": false,
               "tags": [],
               "tests": [
                 {
@@ -914,20 +958,123 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 2,
-                      "parallelIndex": 2,
-                      "status": "passed",
-                      "duration": 20359,
-                      "errors": [],
+                      "workerIndex": 5,
+                      "parallelIndex": 5,
+                      "status": "failed",
+                      "duration": 11822,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at /home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts:16:42",
+                        "location": {
+                          "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                          "column": 42,
+                          "line": 16
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 14 |\u001b[39m       \u001b[36mconst\u001b[39m resp \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m       expect(resp\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mstatus() \u001b[33m?\u001b[39m\u001b[33m?\u001b[39m \u001b[35m0\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'landing status'\u001b[39m)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'body'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m\n \u001b[90m 18 |\u001b[39m       \u001b[36mif\u001b[39m (profile\u001b[33m.\u001b[39manonymous) {\n \u001b[90m 19 |\u001b[39m         \u001b[90m// Guest stays on a public surface.\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                            "column": 42,
+                            "line": 16
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  14 |       const resp = await page.goto('/', { waitUntil: 'domcontentloaded' });\n  15 |       expect(resp?.status() ?? 0, 'landing status').toBeLessThan(500);\n> 16 |       await expect(page.locator('body')).toBeVisible();\n     |                                          ^\n  17 |\n  18 |       if (profile.anonymous) {\n  19 |         // Guest stays on a public surface.\n    at /home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts:16:42"
+                        }
+                      ],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:19.301Z",
+                      "startTime": "2026-04-21T01:29:45.759Z",
                       "annotations": [],
-                      "attachments": []
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                        "column": 42,
+                        "line": 16
+                      }
+                    },
+                    {
+                      "workerIndex": 6,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10754,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n    at /home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts:16:42",
+                        "location": {
+                          "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                          "column": 42,
+                          "line": 16
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 14 |\u001b[39m       \u001b[36mconst\u001b[39m resp \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgoto(\u001b[32m'/'\u001b[39m\u001b[33m,\u001b[39m { waitUntil\u001b[33m:\u001b[39m \u001b[32m'domcontentloaded'\u001b[39m })\u001b[33m;\u001b[39m\n \u001b[90m 15 |\u001b[39m       expect(resp\u001b[33m?\u001b[39m\u001b[33m.\u001b[39mstatus() \u001b[33m?\u001b[39m\u001b[33m?\u001b[39m \u001b[35m0\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'landing status'\u001b[39m)\u001b[33m.\u001b[39mtoBeLessThan(\u001b[35m500\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 16 |\u001b[39m       \u001b[36mawait\u001b[39m expect(page\u001b[33m.\u001b[39mlocator(\u001b[32m'body'\u001b[39m))\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 17 |\u001b[39m\n \u001b[90m 18 |\u001b[39m       \u001b[36mif\u001b[39m (profile\u001b[33m.\u001b[39manonymous) {\n \u001b[90m 19 |\u001b[39m         \u001b[90m// Guest stays on a public surface.\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                            "column": 42,
+                            "line": 16
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m()\u001b[22m failed\n\nLocator:  locator('body')\nExpected: visible\nReceived: hidden\nTimeout:  10000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 10000ms\u001b[22m\n\u001b[2m  - waiting for locator('body')\u001b[22m\n\u001b[2m    13 × locator resolved to <body>…</body>\u001b[22m\n\u001b[2m       - unexpected value \"hidden\"\u001b[22m\n\n\n  14 |       const resp = await page.goto('/', { waitUntil: 'domcontentloaded' });\n  15 |       expect(resp?.status() ?? 0, 'landing status').toBeLessThan(500);\n> 16 |       await expect(page.locator('body')).toBeVisible();\n     |                                          ^\n  17 |\n  18 |       if (profile.anonymous) {\n  19 |         // Guest stays on a public surface.\n    at /home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts:16:42"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 1,
+                      "startTime": "2026-04-21T01:29:58.266Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium-retry1/test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium-retry1/video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium-retry1/error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "/home/runner/work/easy-locs-/easy-locs-/test-results/03-public-to-auth-flow-pub-2ea1a-home-appears-for-non-guests-chromium-retry1/trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/e2e/03-public-to-auth.spec.ts",
+                        "column": 42,
+                        "line": 16
+                      }
                     }
                   ],
-                  "status": "expected"
+                  "status": "unexpected"
                 }
               ],
               "id": "beae400ff46502cf1592-99aac517b6bfa80df791",
@@ -964,7 +1111,7 @@
                       "type": "skip",
                       "description": "profile email_confirmed missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -975,21 +1122,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 1503,
+                      "duration": 376,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:19.339Z",
+                      "startTime": "2026-04-21T01:29:45.885Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile email_confirmed missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1026,7 +1173,7 @@
                       "type": "skip",
                       "description": "profile phone_otp missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1040,18 +1187,18 @@
                       "workerIndex": 0,
                       "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 2094,
+                      "duration": 388,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:19.867Z",
+                      "startTime": "2026-04-21T01:29:45.899Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile phone_otp missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1088,7 +1235,7 @@
                       "type": "skip",
                       "description": "profile super_admin missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1102,18 +1249,18 @@
                       "workerIndex": 1,
                       "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 1329,
+                      "duration": 279,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:20.241Z",
+                      "startTime": "2026-04-21T01:29:45.970Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile super_admin missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1150,7 +1297,7 @@
                       "type": "skip",
                       "description": "profile empty_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1161,21 +1308,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1691,
+                      "duration": 261,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:20.951Z",
+                      "startTime": "2026-04-21T01:29:45.998Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile empty_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1212,7 +1359,7 @@
                       "type": "skip",
                       "description": "profile heavy_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1223,21 +1370,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 1493,
+                      "duration": 362,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:22.009Z",
+                      "startTime": "2026-04-21T01:29:46.050Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile heavy_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1274,7 +1421,7 @@
                       "type": "skip",
                       "description": "profile expired_session missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1285,21 +1432,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 1677,
+                      "duration": 379,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:22.016Z",
+                      "startTime": "2026-04-21T01:29:46.285Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile expired_session missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1336,7 +1483,7 @@
                       "type": "skip",
                       "description": "profile slow_network missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1347,21 +1494,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 1003,
+                      "duration": 438,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:22.788Z",
+                      "startTime": "2026-04-21T01:29:46.308Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile slow_network missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1407,7 +1554,7 @@
                       "type": "skip",
                       "description": "profile email_confirmed missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1418,21 +1565,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1619,
+                      "duration": 425,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:23.677Z",
+                      "startTime": "2026-04-21T01:29:46.313Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile email_confirmed missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1469,7 +1616,7 @@
                       "type": "skip",
                       "description": "profile phone_otp missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1480,21 +1627,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 1512,
+                      "duration": 529,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:23.867Z",
+                      "startTime": "2026-04-21T01:29:46.338Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile phone_otp missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1531,7 +1678,7 @@
                       "type": "skip",
                       "description": "profile super_admin missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1542,21 +1689,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 1968,
+                      "duration": 409,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:23.976Z",
+                      "startTime": "2026-04-21T01:29:46.441Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile super_admin missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1593,7 +1740,7 @@
                       "type": "skip",
                       "description": "profile empty_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1604,21 +1751,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 1526,
+                      "duration": 356,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:25.478Z",
+                      "startTime": "2026-04-21T01:29:46.716Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile empty_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1655,7 +1802,7 @@
                       "type": "skip",
                       "description": "profile heavy_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1666,21 +1813,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1547,
+                      "duration": 413,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:25.483Z",
+                      "startTime": "2026-04-21T01:29:46.785Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile heavy_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1717,7 +1864,7 @@
                       "type": "skip",
                       "description": "profile expired_session missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1728,21 +1875,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 1529,
+                      "duration": 386,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:26.357Z",
+                      "startTime": "2026-04-21T01:29:46.798Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile expired_session missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1779,7 +1926,7 @@
                       "type": "skip",
                       "description": "profile slow_network missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1793,18 +1940,18 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 1158,
+                      "duration": 339,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:27.065Z",
+                      "startTime": "2026-04-21T01:29:46.904Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile slow_network missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1850,7 +1997,7 @@
                       "type": "skip",
                       "description": "profile email_confirmed missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1861,21 +2008,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 1325,
+                      "duration": 332,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:27.085Z",
+                      "startTime": "2026-04-21T01:29:46.935Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile email_confirmed missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1912,7 +2059,7 @@
                       "type": "skip",
                       "description": "profile phone_otp missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1923,21 +2070,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 0,
-                      "parallelIndex": 0,
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
                       "status": "skipped",
-                      "duration": 1880,
+                      "duration": 465,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:28.157Z",
+                      "startTime": "2026-04-21T01:29:47.128Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile phone_otp missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -1974,7 +2121,7 @@
                       "type": "skip",
                       "description": "profile super_admin missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -1985,21 +2132,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 3,
-                      "parallelIndex": 3,
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
                       "status": "skipped",
-                      "duration": 1602,
+                      "duration": 331,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:28.337Z",
+                      "startTime": "2026-04-21T01:29:47.252Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile super_admin missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -2036,7 +2183,7 @@
                       "type": "skip",
                       "description": "profile empty_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -2047,21 +2194,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
                       "status": "skipped",
-                      "duration": 1605,
+                      "duration": 452,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:28.454Z",
+                      "startTime": "2026-04-21T01:29:47.265Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile empty_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -2098,7 +2245,7 @@
                       "type": "skip",
                       "description": "profile heavy_data missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -2112,18 +2259,18 @@
                       "workerIndex": 3,
                       "parallelIndex": 3,
                       "status": "skipped",
-                      "duration": 1726,
+                      "duration": 314,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:30.103Z",
+                      "startTime": "2026-04-21T01:29:47.295Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile heavy_data missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -2169,7 +2316,7 @@
                       "type": "skip",
                       "description": "profile expired_session missing creds — skipping",
                       "location": {
-                        "file": "/home/runner/workspace/tests/utils/setup.ts",
+                        "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                         "line": 15,
                         "column": 10
                       }
@@ -2180,21 +2327,21 @@
                   "projectName": "chromium",
                   "results": [
                     {
-                      "workerIndex": 1,
-                      "parallelIndex": 1,
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
                       "status": "skipped",
-                      "duration": 1824,
+                      "duration": 354,
                       "errors": [],
                       "stdout": [],
                       "stderr": [],
                       "retry": 0,
-                      "startTime": "2026-04-18T18:57:30.209Z",
+                      "startTime": "2026-04-21T01:29:47.351Z",
                       "annotations": [
                         {
                           "type": "skip",
                           "description": "profile expired_session missing creds — skipping",
                           "location": {
-                            "file": "/home/runner/workspace/tests/utils/setup.ts",
+                            "file": "/home/runner/work/easy-locs-/easy-locs-/tests/utils/setup.ts",
                             "line": 15,
                             "column": 10
                           }
@@ -2218,11 +2365,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-04-18T18:57:04.848Z",
-    "duration": 35350.187,
-    "expected": 1,
+    "startTime": "2026-04-21T01:29:43.141Z",
+    "duration": 26103.440000000002,
+    "expected": 0,
     "skipped": 33,
-    "unexpected": 0,
+    "unexpected": 1,
     "flaky": 0
   }
 }

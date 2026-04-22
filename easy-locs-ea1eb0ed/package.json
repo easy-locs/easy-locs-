@@ -57,7 +57,16 @@
     "version:bump": "npx tsx scripts/version-bump.ts",
     "api:docs": "npx tsx scripts/api-doc-generator.ts",
     "sdk:generate": "npx tsx scripts/sdk-generator.ts",
-    "generate:locales": "npx tsx scripts/generate-locales.ts"
+    "generate:locales": "npx tsx scripts/generate-locales.ts",
+    "build:cf": "SKIP_HEAVY_SEO=1 vite build",
+    "check:cf-strict": "node scripts/check-cloudflare-strict.cjs",
+    "check:supabase-guard": "node scripts/check-supabase-lazy-access.cjs",
+    "check:dist-assets": "node scripts/check-dist-assets.cjs",
+    "generate:route-inventory": "node scripts/generate-route-inventory.cjs",
+    "generate:final-verdict": "node scripts/generate-final-verdict.cjs",
+    "gate:all": "npm run check:cf-strict && npm run check:supabase-guard && npm run generate:route-inventory",
+    "test:armada": "npx playwright test --config=playwright.runtime.config.ts tests/runtime/route-armada.spec.ts",
+    "test:flows": "npx playwright test --config=playwright.runtime.config.ts tests/runtime/flow-coverage.spec.ts"
   },
   "dependencies": {
     "@builder.io/partytown": "^0.10.3",

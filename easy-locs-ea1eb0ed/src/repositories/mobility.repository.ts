@@ -87,7 +87,16 @@ async function createJobFallback(body: Record<string, any>) {
   const userId = await getCurrentUserId();
   if (!userId) throw new Error("Authentication required");
 
-  const confirmationCode = String(Math.floor(100000 + Math.random() * 900000));
+  const confirmationCode = (() => {
+    const array = new Uint32Array(1);
+    const threshold = 0x100000000 - (0x100000000 % 900000);
+    let val: number;
+    do {
+      crypto.getRandomValues(array);
+      val = array[0];
+    } while (val >= threshold);
+    return String(100000 + (val % 900000));
+  })();
   const isScheduled = body.booking_mode === "scheduled";
 
   let dispatchWindowStart: string | null = null;

@@ -75,6 +75,15 @@ function cacheControlPlugin(): Plugin {
 const CRITICAL_CHUNK_BUDGET_KB = 250;
 const GLOBAL_CHUNK_BUDGET_KB = 300;
 
+// Per-chunk budget overrides for critical chunks that legitimately exceed
+// CRITICAL_CHUNK_BUDGET_KB. vendor-react must be ONE chunk (react + react-dom
+// + scheduler together) so that react-dom can access React's shared internals
+// (__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE) at module
+// initialisation. Splitting them produces a runtime TypeError and blank screen.
+const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-react": 450, // react + react-dom + scheduler (~418KB)
+};
+
 const PILLAR_BUDGETS_KB: Record<string, number> = {
   "pillar-dashboard": 350,
   "pillar-radar": 400,
@@ -112,7 +121,7 @@ function performanceBudgetPlugin(): Plugin {
   return {
     name: "performance-budget-enforcer",
     writeBundle(_options: unknown, bundle: OutputBundle) {
-      const criticalPatterns = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+      const criticalPatterns = ["vendor-react", "vendor-supabase"];
       const violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }> = {};
@@ -125,9 +134,11 @@ function performanceBudgetPlugin(): Plugin {
         const pillarMatch = Object.keys(PILLAR_BUDGETS_KB).find(p => fileName.includes(p));
 
         if (isCritical) {
-          summary[fileName] = { sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, ok: sizeKB <= CRITICAL_CHUNK_BUDGET_KB };
-          if (sizeKB > CRITICAL_CHUNK_BUDGET_KB) {
-            violations.push({ chunk: fileName, sizeKB, limitKB: CRITICAL_CHUNK_BUDGET_KB, category: "critical" });
+          const overrideKey = Object.keys(CRITICAL_CHUNK_BUDGET_OVERRIDES_KB).find(k => fileName.includes(k));
+          const limit = overrideKey ? CRITICAL_CHUNK_BUDGET_OVERRIDES_KB[overrideKey] : CRITICAL_CHUNK_BUDGET_KB;
+          summary[fileName] = { sizeKB, limitKB: limit, ok: sizeKB <= limit };
+          if (sizeKB > limit) {
+            violations.push({ chunk: fileName, sizeKB, limitKB: limit, category: "critical" });
           }
         } else if (pillarMatch) {
           const limit = PILLAR_BUDGETS_KB[pillarMatch];
@@ -398,7 +409,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -486,7 +497,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
-        const critical = ["vendor-react-core", "vendor-react-dom", "vendor-supabase"];
+        const critical = ["vendor-react", "vendor-react-router", "vendor-supabase"];
         return deps.sort((a, b) => {
           const aIsCritical = critical.some((c) => a.includes(c));
           const bIsCritical = critical.some((c) => b.includes(c));
@@ -515,8 +526,12 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            if (id.includes("react-dom")) return "vendor-react-dom";
-            if (id.includes("react/") || id.includes("react-router") || id.includes("scheduler")) return "vendor-react-core";
+            // react + react-dom + scheduler MUST be in ONE chunk. react-dom
+            // accesses react.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
+            // at module initialisation; splitting them into separate chunks
+            // causes a runtime TypeError and blank screen (BOOT_BLOCKER).
+            if (id.includes("react-dom") || (id.includes("react/") && !id.includes("react-router")) || id.includes("scheduler") || id.includes("react-is")) return "vendor-react";
+            if (id.includes("react-router")) return "vendor-react-router";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";
