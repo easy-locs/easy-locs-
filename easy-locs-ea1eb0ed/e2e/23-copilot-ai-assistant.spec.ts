@@ -73,7 +73,7 @@ const AUTH_PASSWORD = SUPER_PASSWORD ?? TEST_PASSWORD;
 // ---------------------------------------------------------------------------
 
 async function assertPageLoaded(page: Page, expectedPathPrefix: string) {
-  const url      = new URL(page.url());
+  const url = new URL(page.url());
   const hashPath = url.hash.replace(/^#/, "") || url.pathname;
 
   // Must not be kicked to the login screen.

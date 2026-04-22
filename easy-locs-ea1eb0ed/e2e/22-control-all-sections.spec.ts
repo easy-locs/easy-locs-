@@ -79,7 +79,7 @@ test.describe("Admin control plane — all sections (#22)", () => {
       await page.goto(`/#/admin/control/${id}`);
       await page.waitForLoadState("networkidle");
 
-      const url      = new URL(page.url());
+      const url = new URL(page.url());
       const hashPath = url.hash.replace(/^#/, "") || url.pathname;
 
       // 1. Must not be silently redirected to the user dashboard.

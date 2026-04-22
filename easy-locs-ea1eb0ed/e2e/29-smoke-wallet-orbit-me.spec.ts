@@ -1,5 +1,5 @@
 /**
- * #29 — Smoke: Radar — wallet, orbit, me pillar routes
+ * #29 — Smoke: Wallet, Orbit, Me pillar routes
  *
  * Three pillars that need deep-smoke coverage beyond what the existing
  * cross-pillar specs provide.
