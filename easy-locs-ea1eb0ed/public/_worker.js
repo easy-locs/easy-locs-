@@ -59,7 +59,26 @@ export default {
       const canonical = deriveCanonical(pathname);
       linkHeaders.push(`<${canonical}>; rel="canonical"`);
 
-      const response = await env.ASSETS.fetch(request);
+      let response = await env.ASSETS.fetch(request);
+
+      // SPA fallback: serve /index.html for document 404s so client-side routes
+      // (/login, /dashboard, /orbit, etc.) work on direct navigation or refresh.
+      // Without this, Cloudflare Pages returns its own 404 page for SPA routes.
+      if (response.status === 404) {
+        const indexReq = new Request(new URL("/index.html", request.url).href, {
+          method: "GET",
+          headers: request.headers,
+        });
+        const indexResp = await env.ASSETS.fetch(indexReq);
+        if (indexResp.ok) {
+          response = new Response(indexResp.body, {
+            status: 200,
+            statusText: "OK",
+            headers: indexResp.headers,
+          });
+        }
+      }
+
       const headers = new Headers(response.headers);
       for (const link of linkHeaders) {
         headers.append("Link", link);
