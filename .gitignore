@@ -135,3 +135,7 @@ dist
 # AI-generated paste artifacts
 attached_assets/Pasted-*.txt
 .git-rewrite/
+
+# Playwright test artifacts (generated at runtime, not source)
+test-results/
+playwright-report/

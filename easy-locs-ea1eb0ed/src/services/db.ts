@@ -119,20 +119,53 @@ type DbFn = {
 const _from = (table: string) =>
   (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
 
+// All Supabase property accesses are deferred to call time (lazy) so that
+// module evaluation never throws when VITE_SUPABASE_URL/KEY are absent —
+// the unconfigured-client Proxy would otherwise throw on the very first
+// property access (e.g. .rpc) during module init, propagate through the
+// static-import chain, and prevent root.render() from ever being reached
+// (body stays height:0, Playwright sees it as hidden). Each accessor mirrors
+// the existing .schema pattern already in use.
 export const db: DbFn = Object.assign(_from, {
   from: _from,
-  rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
-  // Lazy accessor: only resolves supabase.schema at call time so mocks that
+  // Lazy: accesses supabase.rpc at call time, not at module evaluation.
+  rpc: (...args: Parameters<typeof supabase.rpc>) =>
+    (supabase as unknown as { rpc: typeof supabase.rpc }).rpc(...args),
+  // Lazy: only resolves supabase.schema at call time so mocks that
   // stub @/integrations/supabase/client don't need schema at module init.
   schema: (...args: Parameters<typeof supabase.schema>) =>
     (supabase as unknown as { schema: typeof supabase.schema }).schema(...args),
-  storage: supabase.storage,
-  functions: supabase.functions,
-  auth: supabase.auth,
-  channel: supabase.channel.bind(supabase),
-  removeChannel: supabase.removeChannel.bind(supabase),
-  getChannels: supabase.getChannels.bind(supabase),
-  removeAllChannels: supabase.removeAllChannels.bind(supabase),
+  // Lazy: accesses supabase.channel at call time.
+  channel: (...args: Parameters<typeof supabase.channel>) =>
+    (supabase as unknown as { channel: typeof supabase.channel }).channel(...args),
+  // Lazy: accesses supabase.removeChannel at call time.
+  removeChannel: (...args: Parameters<typeof supabase.removeChannel>) =>
+    (supabase as unknown as { removeChannel: typeof supabase.removeChannel }).removeChannel(...args),
+  // Lazy: accesses supabase.getChannels at call time.
+  getChannels: (...args: Parameters<typeof supabase.getChannels>) =>
+    (supabase as unknown as { getChannels: typeof supabase.getChannels }).getChannels(...args),
+  // Lazy: accesses supabase.removeAllChannels at call time.
+  removeAllChannels: (...args: Parameters<typeof supabase.removeAllChannels>) =>
+    (supabase as unknown as { removeAllChannels: typeof supabase.removeAllChannels }).removeAllChannels(...args),
+} as unknown as DbFn);
+// storage / functions / auth are objects (not plain functions), so they need
+// property-getter laziness rather than arrow-function wrappers.
+Object.defineProperties(db, {
+  storage: {
+    get: () => (supabase as unknown as { storage: typeof supabase.storage }).storage,
+    enumerable: true,
+    configurable: true,
+  },
+  functions: {
+    get: () => (supabase as unknown as { functions: typeof supabase.functions }).functions,
+    enumerable: true,
+    configurable: true,
+  },
+  auth: {
+    get: () => (supabase as unknown as { auth: typeof supabase.auth }).auth,
+    enumerable: true,
+    configurable: true,
+  },
 });
 
 // ── v2db — legacy-guarded accessor ─────────────────────────────────────────

@@ -1,57 +1,37 @@
-# Cloudflare Pages configuration for Easy-Locs static frontend.
+# Cloudflare Pages configuration for easy-locs
+# https://developers.cloudflare.com/pages/platform/configuration/
 #
-# ─── PROJECT TYPE ──────────────────────────────────────────────────────────────
-# This is a PAGES project, NOT a Workers project. In the Cloudflare dashboard:
-#   Workers & Pages → Create → Pages → Connect to Git
+# This project deploys as a Cloudflare Pages site with a custom Worker
+# (public/_worker.js → dist/_worker.js) that injects Link preload headers
+# and canonical tags for every document request.
 #
-# If your existing project shows "wrangler deploy" or "Variables and secrets
-# for your Worker" it was created as a Workers project. You must DELETE it and
-# create a new Pages project from scratch — Workers and Pages are different
-# Cloudflare products and cannot be converted.
+# BUILD COMMAND (set in CF Pages dashboard or wrangler CLI):
+#   cd easy-locs-ea1eb0ed && npm ci --no-audit --no-fund && npm run build:cf
 #
-# ─── DEPLOYMENT MODEL ─────────────────────────────────────────────────────────
-# Cloudflare Pages (static assets) + Advanced Mode Worker.
-# public/_worker.js is copied into dist/ by Vite and picked up automatically
-# by Cloudflare Pages as the Advanced Mode Worker script. It handles SPA
-# routing (serving index.html for non-asset paths) and injects Link/canonical
-# response headers via the ASSETS binding.
-# public/_redirects provides a belt-and-suspenders SPA fallback.
+# DEPLOY COMMAND (Cloudflare Pages CI handles this automatically, or use manually):
+#   cd easy-locs-ea1eb0ed && npx wrangler pages deploy dist --project-name easy-locs
 #
-# ─── CLOUDFLARE PAGES DASHBOARD SETTINGS ──────────────────────────────────────
-#   Framework preset:  None
-#   Root directory:    easy-locs-ea1eb0ed
-#   Build command:     npm ci && NODE_OPTIONS=--max-old-space-size=1536 npm run build
-#   Output directory:  dist
+# ⚠️  DO NOT use `wrangler versions upload` with the `--yes` flag for this project.
+#     - `wrangler versions upload` is for Workers scripts, NOT for Pages.
+#     - Wrangler 4.x does not accept --yes for that command at all.
+#     - For Pages deploys, always use `wrangler pages deploy <dist>`.
 #
-# (Root directory = easy-locs-ea1eb0ed means CF Pages cds into that folder
-#  before running the build command, so the build command needs no "cd".)
+# ENV VARS required at build time (set in CF Pages dashboard → Settings → Env vars):
+#   VITE_SUPABASE_URL          — Supabase project REST URL
+#   VITE_SUPABASE_PUBLISHABLE_KEY — Supabase anon/publishable key
+#   NODE_OPTIONS=--max-old-space-size=1536  — prevents OOM during build
 #
-# ─── OOM / "Killed" GUARD ─────────────────────────────────────────────────────
-# Cloudflare Pages automatically sets CF_PAGES=1, which disables brotli/gzip
-# compression, hidden sourcemaps, the bundle visualizer, and the chunk-budget
-# enforcer — all of which spike peak RSS past the ~2 GB container limit and
-# cause an OOM "Killed" after the PWA service-worker generation step.
-#
-# If the project is accidentally connected as a Worker project (which does NOT
-# set CF_PAGES), the build command should be changed to:
-#   npm ci && CF_PAGES=1 NODE_OPTIONS=--max-old-space-size=1536 npm run build
-#
-# The IS_CI belt-and-suspenders guard in vite.config.ts also catches this:
-# Cloudflare's build containers always set CI=true regardless of project type,
-# so brotli/gzip will be skipped even if CF_PAGES is missing.
-#
-# ─── ENVIRONMENT VARIABLES (Pages dashboard → Settings → Environment Variables)
-#   VITE_SUPABASE_URL        – public Supabase project URL  (plain text)
-#   VITE_SUPABASE_ANON_KEY   – public anon key              (plain text)
-#   VITE_APP_VERSION         – optional release label        (plain text)
-#   VITE_SENTRY_DSN          – optional Sentry DSN           (plain text)
-#
-# DO NOT add SUPABASE_SERVICE_ROLE_KEY or any server-side secret — only
-# VITE_* prefixed vars are safe to expose to the browser build.
+# Triggers (apply with `wrangler pages deployment list` or CF dashboard):
+#   - Custom domain:  www.easy-locs.com  →  needs manual DNS CNAME in CF dashboard
+#   - Cron triggers:  none (crons belong to Worker scripts, not Pages)
+#   - Worker version activation:  handled automatically by `wrangler pages deploy`
 
 name = "easy-locs"
-# pages_build_output_dir is relative to this wrangler.toml file.
-# wrangler.toml lives at easy-locs-ea1eb0ed/wrangler.toml, so "dist"
-# resolves to easy-locs-ea1eb0ed/dist — the Vite output directory.
-pages_build_output_dir = "dist"
+
+# Pinned to a date that is stable and widely-available across all CF edge DCs.
+# Bump this date only when a new API/standard is required (test on staging first).
 compatibility_date = "2024-09-23"
+
+# Tells Wrangler where the built static assets live.
+# `npm run build:cf` outputs to this directory.
+pages_build_output_dir = "dist"

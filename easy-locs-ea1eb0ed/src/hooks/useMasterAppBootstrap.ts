@@ -413,10 +413,17 @@ export function useMasterAppBootstrap() {
         console.warn("[boot] boot-integrity-gate failed", e);
       }
 
-      const { data: { session: s4 } } = await supabase.auth.getSession().catch(err => {
+      // supabase.auth throws synchronously when env is missing, which makes
+      // `.catch()` unreachable (the throw happens before getSession() returns
+      // a Promise). Wrapping in try/catch converts any synchronous throw into
+      // a handled rejection so it cannot escape as an uncaught pageerror.
+      let s4: import("@supabase/supabase-js").Session | null = null;
+      try {
+        const { data } = await supabase.auth.getSession();
+        s4 = data.session;
+      } catch (err) {
         console.warn("[boot] Failed to get session for stage-4:", err);
-        return { data: { session: null } };
-      });
+      }
       if (!s4) {
         console.log("[boot] stage-4 auth-gated ops skipped — no authenticated user");
         return;

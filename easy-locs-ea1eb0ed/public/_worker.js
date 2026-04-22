@@ -61,15 +61,29 @@ export default {
 
       let response = await env.ASSETS.fetch(request);
 
-      // SPA fallback: React Router handles all non-asset routes client-side.
-      // If ASSETS returns 404 for a document request (e.g. /dashboard, /orbit),
-      // serve /index.html so the SPA can boot and route correctly.
+      // SPA fallback: serve /index.html for document 404s so client-side routes
+      // (/login, /dashboard, /orbit, etc.) work on direct navigation or refresh.
+      // Without this, Cloudflare Pages returns its own 404 page for SPA routes.
       if (response.status === 404) {
-        const indexUrl = new URL("/index.html", request.url);
-        const indexReq = new Request(indexUrl.toString(), { method: "GET", headers: request.headers });
-        const fallback = await env.ASSETS.fetch(indexReq);
-        if (fallback.ok) {
-          response = fallback;
+        // Only forward safe, non-credential headers to the index.html fetch.
+        // Forwarding Authorization/Cookie to a static asset is unnecessary
+        // and could leak sensitive data.
+        const safeHeaders = new Headers();
+        for (const header of ["Accept", "Accept-Language", "Accept-Encoding"]) {
+          const val = request.headers.get(header);
+          if (val) safeHeaders.set(header, val);
+        }
+        const indexReq = new Request(new URL("/index.html", request.url).href, {
+          method: "GET",
+          headers: safeHeaders,
+        });
+        const indexResp = await env.ASSETS.fetch(indexReq);
+        if (indexResp.ok) {
+          response = new Response(indexResp.body, {
+            status: 200,
+            statusText: "OK",
+            headers: indexResp.headers,
+          });
         }
       }
 

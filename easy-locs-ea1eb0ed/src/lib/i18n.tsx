@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef, useMemo, type ReactNode } from "react";
 import { db } from "@/services/db";
+import { supabaseEnvMissing } from "@/integrations/supabase/client";
 import { interpolate, resolvePlural, trackMissingKey } from "./i18n-utils";
 import { landingKeysEn, landingKeysFr } from "./i18n-landing";
 import { GLOBAL_TRANSLATIONS } from "./i18n-data/translations";
@@ -192,6 +193,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, [locale]);
 
   useEffect(() => {
+    if (supabaseEnvMissing) return;
     const syncLocale = async () => {
       const { data: { session } } = await db.auth.getSession();
       if (!session?.user) return;

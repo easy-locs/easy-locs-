@@ -9,6 +9,7 @@
  */
 import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { db as supabase } from "@/services/db";
+import { supabaseEnvMissing } from "@/integrations/supabase/client";
 import { initSessionLifecycle, teardownSession } from "@/lib/lifecycle/session-lifecycle";
 import {
   probeDbHealth,
@@ -409,6 +410,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (authInitRef.current) return;
     authInitRef.current = true;
 
+    // ── Missing env guard ──────────────────────────────────────────────────────
+    // When VITE_SUPABASE_URL/KEY are absent (CI preview, local dev without env),
+    // accessing supabase.auth throws synchronously through the Proxy stub and
+    // escapes React's error boundary as an uncaught pageerror, preventing the
+    // page from rendering. Exit early with loading=false so the app boots to a
+    // visible (unconfigured) state instead of crashing.
+    if (supabaseEnvMissing) {
+      setLoading(false);
+      setProfileLoaded(true);
+      return;
+    }
+
     let mounted = true;
     let latestSeq = 0;
     // Safety timeout must be longer than getSessionWithRetry's max wait
@@ -633,6 +646,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 
   useEffect(() => {
+    if (supabaseEnvMissing) return;
     const interval = setInterval(() => {
       supabase.auth.getSession();
     }, 25 * 60 * 1000);
@@ -682,9 +696,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     clearReferralCaches();
 
-    await supabase.auth.signOut().catch((err) => {
-      structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
-    });
+    if (!supabaseEnvMissing) {
+      await supabase.auth.signOut().catch((err) => {
+        structuredLogger.warn("auth", "runtime_failure", err instanceof Error ? err.message : "Sign-out error");
+      });
+    }
     // Drop the previous user's TanStack Query cache so the next user (or the
     // anonymous session that follows) cannot briefly see stale data hydrated
     // from the prior session (orders, wallet balance, profile, etc.).
