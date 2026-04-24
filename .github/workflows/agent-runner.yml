@@ -3,6 +3,9 @@ name: Simple Agent Runner
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   run-agent:
     runs-on: ubuntu-latest
