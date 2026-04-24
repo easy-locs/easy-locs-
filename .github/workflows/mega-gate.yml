@@ -202,7 +202,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          NODE_OPTIONS: "--max-old-space-size=1536"
+          NODE_OPTIONS: "--max-old-space-size=4096"
       - name: Bundle size gate
         run: npm run bundle:gate
         continue-on-error: true
@@ -222,11 +222,13 @@ jobs:
           cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
       - run: npm ci --no-audit --no-fund
       - name: Cloudflare build
-        run: npm run build:cf
+        # build:cf sets NODE_OPTIONS=--max-old-space-size=1536 (CF Pages limit).
+        # In GitHub Actions (7 GB RAM), we override with 4096 so the CI build
+        # does not OOM. CF Pages uses its own NODE_OPTIONS from the script.
+        run: SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=4096 npx vite build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          NODE_OPTIONS: "--max-old-space-size=1536"
       - name: Dist asset verifier
         run: node scripts/check-dist-assets.cjs
       - name: Upload dist report

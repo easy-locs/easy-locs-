@@ -12,20 +12,25 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
-vi.mock("@/integrations/supabase/client", () => {
+// watchdog.ts now imports db from @/services/db (migrated from raw supabase).
+// We mock the db module at the boundary: db.schema() returns a stub with rpc.
+vi.mock("@/services/db", () => {
   const rpcMock = vi.fn();
-  return {
-    supabase: {
-      schema: () => ({ rpc: rpcMock }),
+  const schemaStub = { rpc: rpcMock };
+  const dbMock = Object.assign(
+    (_table: string) => ({}),
+    {
+      schema: (_s: string) => schemaStub,
       __rpcMock: rpcMock,
     },
-  };
+  );
+  return { db: dbMock };
 });
 
 import { validateTaskDependencies } from "../watchdog";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
-const rpc = (supabase as unknown as { __rpcMock: ReturnType<typeof vi.fn> }).__rpcMock;
+const rpc = (db as unknown as { __rpcMock: ReturnType<typeof vi.fn> }).__rpcMock;
 
 describe("validateTaskDependencies", () => {
   beforeEach(() => rpc.mockReset());
