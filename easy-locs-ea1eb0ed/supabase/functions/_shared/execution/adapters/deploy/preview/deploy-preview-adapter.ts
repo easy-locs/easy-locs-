@@ -1,14 +1,14 @@
 /**
  * DeployPreviewAdapter — LC2 (task #872).
  *
- * Triggers a Vercel preview deployment via the `deploy.preview` task type.
- * The Vercel call itself is encapsulated behind a `runner` callback so
- * tests can inject a deterministic stub. Edge-function bootstrap wires
- * the real Vercel REST runner, reading the access token from the
- * `metadata.router.primary.key_env` env variable referenced in the agent
+ * Triggers a Cloudflare Pages preview deployment via the `deploy.preview`
+ * task type. The CF Pages call itself is encapsulated behind a `runner`
+ * callback so tests can inject a deterministic stub. Edge-function bootstrap
+ * wires the real Cloudflare Pages REST runner, reading the API token from
+ * the `metadata.router.primary.key_env` env variable referenced in the agent
  * config — never from a hard-coded secret string.
  *
- * Rollback strategy is `manual`: a preview can be deleted via the Vercel
+ * Rollback strategy is `manual`: a preview can be deleted via the CF Pages
  * API but we don't auto-delete on failure (keeps debugging artifacts).
  */
 
@@ -38,10 +38,10 @@ export type DeployRunner = (args: {
 
 export interface DeployPreviewAdapterDeps {
   runner?: DeployRunner;
-  /** Default Vercel team if payload.team is missing. */
+  /** Default CF Pages team/account if payload.team is missing. */
   defaultTeam?: string | null;
   /**
-   * Name of the env var holding the Vercel access token. The adapter
+   * Name of the env var holding the Cloudflare API token. The adapter
    * itself never reads the token — the bootstrap wires the runner with
    * it. Stored on agent metadata for audit (router.primary.key_env).
    */
@@ -66,7 +66,7 @@ export function createDeployPreviewAdapter(
 ): DomainAdapter {
   const runner = deps.runner ?? defaultRunner();
   const defaultTeam = deps.defaultTeam ?? null;
-  const keyEnv = deps.keyEnv ?? "VERCEL_ACCESS_TOKEN";
+  const keyEnv = deps.keyEnv ?? "CF_API_TOKEN";
 
   return {
     domain: DEPLOY_DOMAIN,
@@ -77,15 +77,15 @@ export function createDeployPreviewAdapter(
       slug: "deploy.preview",
       version: "1.0.0",
       kind: "code.tool",
-      displayName: "Deploy (Vercel preview)",
+      displayName: "Deploy (Cloudflare Pages preview)",
       ownerTeam: "platform-dev",
       policyProfile: "dev-default",
       metadata: {
         description:
-          "Triggers a Vercel preview deployment, captures URL + status.",
+          "Triggers a Cloudflare Pages preview deployment, captures URL + status.",
         rollback_strategy: "none",
         router: {
-          primary: { provider: "vercel", key_env: keyEnv },
+          primary: { provider: "cloudflare-pages", key_env: keyEnv },
         },
       },
     },
@@ -146,7 +146,7 @@ export function createDeployPreviewAdapter(
         return {
           success: false,
           errorCode: DEPLOY_ERROR_CODES.RUNNER_THREW,
-          errorMessage: `vercel preview runner threw: ${message}`,
+          errorMessage: `cloudflare pages preview runner threw: ${message}`,
           logs: [
             startLog,
             jsonLog(DEPLOY_EVENTS.PREVIEW_FAILED, {
@@ -197,9 +197,9 @@ export function createDeployPreviewAdapter(
         return {
           success: false,
           errorCode: DEPLOY_ERROR_CODES.DISPATCH_FAILED,
-          errorMessage: `vercel returned status ${runnerResult.status}`,
+          errorMessage: `cloudflare pages returned status ${runnerResult.status}`,
           logs: [startLog, jsonLog(DEPLOY_EVENTS.PREVIEW_FAILED, baseFields)],
-          actionsTaken: ["vercel_dispatched"],
+          actionsTaken: ["cf_pages_dispatched"],
           output: output as unknown as Record<string, unknown>,
         };
       }
@@ -208,7 +208,7 @@ export function createDeployPreviewAdapter(
         success: true,
         output: output as unknown as Record<string, unknown>,
         logs: [startLog, jsonLog(DEPLOY_EVENTS.PREVIEW_COMPLETED, baseFields)],
-        actionsTaken: ["vercel_dispatched", "url_captured"],
+        actionsTaken: ["cf_pages_dispatched", "url_captured"],
       };
     },
   };

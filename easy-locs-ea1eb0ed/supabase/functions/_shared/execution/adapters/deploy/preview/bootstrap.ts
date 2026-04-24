@@ -1,9 +1,10 @@
 /**
  * Deploy preview adapter bootstrap — LC2 (task #872).
  *
- * Defaults the runner to a real Vercel REST runner reading the access
+ * Defaults the runner to a Cloudflare Pages REST runner reading the API
  * token from the env var named in `metadata.router.primary.key_env`
- * (default `VERCEL_ACCESS_TOKEN`). Tests inject a stub.
+ * (default `CF_API_TOKEN`) and the account ID from `CF_ACCOUNT_ID`.
+ * Tests inject a stub.
  */
 
 import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.2";
@@ -16,7 +17,7 @@ import {
   type DeployRunner,
 } from "./deploy-preview-adapter.ts";
 import { createDeployPreviewVerifier } from "./deploy-preview-verifier.ts";
-import { createVercelPreviewRunner } from "../vercel-runner.ts";
+import { createCfPagesPreviewRunner } from "../cloudflare-runner.ts";
 
 export interface DeployPreviewBootstrapOverrides extends DeployPreviewAdapterDeps {
   reconcileAgents?: boolean;
@@ -42,8 +43,8 @@ export async function bootstrapDeployPreviewAdapters(
   sb: SupabaseClient,
   overrides: DeployPreviewBootstrapOverrides = {},
 ): Promise<void> {
-  const keyEnv = overrides.keyEnv ?? "VERCEL_ACCESS_TOKEN";
-  const runner: DeployRunner = overrides.runner ?? createVercelPreviewRunner(keyEnv);
+  const keyEnv = overrides.keyEnv ?? "CF_API_TOKEN";
+  const runner: DeployRunner = overrides.runner ?? createCfPagesPreviewRunner(keyEnv);
   globalVerifierRegistry.register(createDeployPreviewVerifier(), { overwrite: true });
   globalAdapterRegistry.register(
     createDeployPreviewAdapter({

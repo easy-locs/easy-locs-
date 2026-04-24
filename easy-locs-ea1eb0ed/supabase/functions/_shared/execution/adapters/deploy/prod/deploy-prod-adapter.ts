@@ -1,13 +1,13 @@
 /**
  * DeployProdAdapter — LC2 (task #872).
  *
- * Triggers a Vercel **production** deployment. Submits a fail-closed
- * approval gate inside the adapter itself: even if a misconfigured
- * dispatcher slips a deploy.prod task into `queued` without an
- * `approved_by`, this adapter refuses to call Vercel and surfaces
- * `DEPLOY_PROD_NOT_APPROVED`. The orchestrator already enforces
- * approval based on `requires_approval` + the `dev-sensitive` policy
- * profile (LC5); this is a defense-in-depth check.
+ * Triggers a Cloudflare Pages **production** deployment. Submits a
+ * fail-closed approval gate inside the adapter itself: even if a
+ * misconfigured dispatcher slips a deploy.prod task into `queued` without
+ * an `approved_by`, this adapter refuses to call CF Pages and surfaces
+ * `DEPLOY_PROD_NOT_APPROVED`. The orchestrator already enforces approval
+ * based on `requires_approval` + the `dev-sensitive` policy profile (LC5);
+ * this is a defense-in-depth check.
  *
  * Rollback strategy is `manual` (operator can re-promote a previous
  * production deployment) but no `rollback` handler is wired here —
@@ -40,7 +40,7 @@ export type DeployProdRunner = (args: {
 }) => Promise<DeployRunnerResult>;
 
 /**
- * LC6 (#877) — post-deploy hook called once Vercel has accepted a
+ * LC6 (#877) — post-deploy hook called once CF Pages has accepted a
  * production deployment. Implementations run a /api/health probe inside
  * the 5-minute window and (optionally) dispatch an auto-rollback through
  * `system.request_rollback`. Returning `{ healthy: false }` flips the
@@ -114,7 +114,7 @@ export function createDeployProdAdapter(
 ): DomainAdapter {
   const runner = deps.runner ?? defaultRunner();
   const defaultTeam = deps.defaultTeam ?? null;
-  const keyEnv = deps.keyEnv ?? "VERCEL_ACCESS_TOKEN";
+  const keyEnv = deps.keyEnv ?? "CF_API_TOKEN";
   const postDeploy = deps.postDeploy;
   const rollbackHandler = deps.rollbackHandler;
   const rollbackStrategyName = deps.rollbackStrategyName ?? "revert_pr";
@@ -132,21 +132,21 @@ export function createDeployProdAdapter(
       slug: "deploy.prod",
       version: "1.0.0",
       kind: "code.tool",
-      displayName: "Deploy (Vercel production)",
+      displayName: "Deploy (Cloudflare Pages production)",
       ownerTeam: "platform-dev",
       // LC5: dev-sensitive forces pending_review through the policy gate.
       policyProfile: "dev-sensitive",
       metadata: {
         description:
-          "Triggers a Vercel production deployment. Always requires admin " +
-          "approval via the dev-sensitive policy profile.",
+          "Triggers a Cloudflare Pages production deployment. Always requires " +
+          "admin approval via the dev-sensitive policy profile.",
         rollback_strategy: declaredStrategy,
         ...(rollbackHandler
           ? { rollback_strategy_name: rollbackStrategyName }
           : {}),
         sensitive: true,
         router: {
-          primary: { provider: "vercel", key_env: keyEnv },
+          primary: { provider: "cloudflare-pages", key_env: keyEnv },
         },
       },
     },
@@ -164,7 +164,7 @@ export function createDeployProdAdapter(
     async execute(ctx: ExecutionContext): Promise<AdapterResult> {
       const { task } = ctx;
 
-      // Defense-in-depth: never call Vercel without an approval. The
+      // Defense-in-depth: never call CF Pages without an approval. The
       // orchestrator owns the policy gate; this is a redundant guard so
       // a misrouted dispatch cannot ship code to production.
       if (!task.approved_by) {
@@ -228,7 +228,7 @@ export function createDeployProdAdapter(
         return {
           success: false,
           errorCode: DEPLOY_ERROR_CODES.RUNNER_THREW,
-          errorMessage: `vercel prod runner threw: ${message}`,
+          errorMessage: `cloudflare pages prod runner threw: ${message}`,
           logs: [
             startLog,
             jsonLog(DEPLOY_EVENTS.PROD_FAILED, {
@@ -280,9 +280,9 @@ export function createDeployProdAdapter(
         return {
           success: false,
           errorCode: DEPLOY_ERROR_CODES.DISPATCH_FAILED,
-          errorMessage: `vercel returned status ${runnerResult.status}`,
+          errorMessage: `cloudflare pages returned status ${runnerResult.status}`,
           logs: [startLog, jsonLog(DEPLOY_EVENTS.PROD_FAILED, baseFields)],
-          actionsTaken: ["vercel_dispatched"],
+          actionsTaken: ["cf_pages_dispatched"],
           output: output as unknown as Record<string, unknown>,
         };
       }
@@ -291,10 +291,10 @@ export function createDeployProdAdapter(
         startLog,
         jsonLog(DEPLOY_EVENTS.PROD_COMPLETED, baseFields),
       ];
-      const successActions: string[] = ["vercel_dispatched", "production_promoted"];
+      const successActions: string[] = ["cf_pages_dispatched", "production_promoted"];
 
       // LC6 (#877): post-deploy health check + auto-rollback hook. Only the
-      // hook may settle the task as failed AFTER vercel reported READY: we
+      // hook may settle the task as failed AFTER CF Pages reported READY: we
       // keep the deploy `output` so the rollback dispatcher can read the
       // `gitRef`/`deploymentId` from the same task row.
       if (postDeploy) {
