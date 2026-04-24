@@ -38,7 +38,7 @@ export function getCurrentLocalMinutes(timezone: string): { localMinutes: number
       hour12: false,
     });
     const parts = formatter.formatToParts(now);
-    const h = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0");
+    const h = parseInt(parts.find((p) => p.type === "hour")?.value ?? "0") % 24; // % 24: Intl returns "24" for midnight with hour12:false
     const m = parseInt(parts.find((p) => p.type === "minute")?.value ?? "0");
     const y = parts.find((p) => p.type === "year")?.value ?? "";
     const mo = parts.find((p) => p.type === "month")?.value ?? "";

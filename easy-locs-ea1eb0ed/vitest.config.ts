@@ -57,6 +57,9 @@ export default defineConfig({
     },
   },
   resolve: {
-    alias: { "@": path.resolve(__dirname, "./src") },
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      "https://esm.sh/@supabase/supabase-js@2": "@supabase/supabase-js",
+    },
   },
 });
