@@ -93,6 +93,7 @@ if (typeof window !== "undefined") {
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
   const STUCK_DEADLINE_MS = 5000;
+  // nosemgrep: javascript.lang.security.detect-eval-with-expression.detect-eval-with-expression -- passing a callback function, not a string; URL params use encodeURIComponent
   setTimeout(() => {
     try {
       if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;

@@ -1,0 +1,9 @@
+# Exclude Playwright test output — trace assets are minified bundles,
+# not source code. Semgrep would fire false positives on them.
+test-results/
+
+# Built / generated artefacts
+dist/
+storybook-static/
+node_modules/
+easy-locs-ea1eb0ed/node_modules/
