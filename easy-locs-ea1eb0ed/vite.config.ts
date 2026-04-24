@@ -205,9 +205,12 @@ function performanceBudgetPlugin(): Plugin {
 const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
 // Detects any light/memory-constrained build environment.
-// Covers all Cloudflare Pages signals (CF_PAGES, CF_PAGES_BRANCH, CF_PAGES_URL)
-// plus an explicit override (SKIP_HEAVY_SEO / VITE_SKIP_HEAVY_SEO) for local
-// reproduction and the `build:cf` npm script.
+// Covers all Cloudflare Pages signals (CF_PAGES, CF_PAGES_BRANCH, CF_PAGES_URL),
+// an explicit override (SKIP_HEAVY_SEO / VITE_SKIP_HEAVY_SEO) for local
+// reproduction and the `build:cf` npm script, and any generic CI environment
+// (CI=true) which covers Cloudflare Workers auto-deploy, GitHub Actions, etc.
+// CF Workers does NOT set CF_PAGES=1 (that is Pages-only), so without the CI
+// guard the Workers auto-deploy would run all heavy plugins and OOM at 2 GB.
 // When true, heavy SEO/prerender/OG/compression/sourcemap plugins are skipped.
 const boolEnv = (v: string | undefined) => v === "1" || v === "true" || v === "yes";
 const IS_LIGHT_CLOUDFLARE_BUILD =
@@ -215,7 +218,8 @@ const IS_LIGHT_CLOUDFLARE_BUILD =
   boolEnv(process.env.SKIP_HEAVY_SEO) ||
   boolEnv(process.env.VITE_SKIP_HEAVY_SEO) ||
   Boolean(process.env.CF_PAGES_BRANCH) ||
-  Boolean(process.env.CF_PAGES_URL);
+  Boolean(process.env.CF_PAGES_URL) ||
+  process.env.CI === "true"; // Cloudflare Workers + GitHub Actions both set CI=true
 
 if (IS_LIGHT_CLOUDFLARE_BUILD) {
   console.info(
