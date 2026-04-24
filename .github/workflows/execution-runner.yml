@@ -52,15 +52,20 @@ jobs:
       - name: Callback — RUNNING
         env:
           RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+          # Route all user-supplied inputs through env vars to avoid
+          # Semgrep-flagged ${{ inputs.* }} interpolation in shell bodies.
+          INPUT_SUPABASE_URL: ${{ inputs.supabase_url }}
+          INPUT_TASK_ID: ${{ inputs.task_id }}
+          INPUT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           curl -sf -X POST \
-            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            "$INPUT_SUPABASE_URL/functions/v1/execution-runner-callback" \
             -H "Content-Type: application/json" \
             -H "X-Runner-Token: $RUNNER_TOKEN" \
             -d "{
-              \"task_id\": \"${{ inputs.task_id }}\",
+              \"task_id\": \"$INPUT_TASK_ID\",
               \"status\": \"RUNNING\",
-              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+              \"external_run_url\": \"$INPUT_RUN_URL\"
             }" || echo "RUNNING callback failed (non-fatal)"
 
       # ── Checkout ──────────────────────────────────────────────────────
@@ -78,8 +83,10 @@ jobs:
       # ── Create task-scoped branch ─────────────────────────────────────
       - name: Create branch exec/${{ inputs.task_id }}
         id: branch
+        env:
+          INPUT_TASK_ID: ${{ inputs.task_id }}
         run: |
-          BRANCH="exec/${{ inputs.task_id }}"
+          BRANCH="exec/$INPUT_TASK_ID"
           git checkout -b "$BRANCH"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
 
@@ -88,33 +95,40 @@ jobs:
       # Real task types will replace this step with their actual work.
       - name: Apply noop change
         if: inputs.task_type == 'SMOKE_NOOP'
+        env:
+          INPUT_LABEL: ${{ inputs.label }}
+          INPUT_TASK_ID: ${{ inputs.task_id }}
+          INPUT_TASK_TYPE: ${{ inputs.task_type }}
+          INPUT_RUN_ID: ${{ github.run_id }}
         run: |
-          LABEL="${{ inputs.label }}"
-          TASK_ID="${{ inputs.task_id }}"
+          LABEL="$INPUT_LABEL"
+          TASK_ID="$INPUT_TASK_ID"
           TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           mkdir -p .execution-runs
           cat > ".execution-runs/${TASK_ID}.json" << EOF
           {
             "task_id": "$TASK_ID",
-            "task_type": "${{ inputs.task_type }}",
+            "task_type": "$INPUT_TASK_TYPE",
             "label": "$LABEL",
             "executed_at": "$TS",
-            "run_id": "${{ github.run_id }}",
+            "run_id": "$INPUT_RUN_ID",
             "runner": "github-actions"
           }
           EOF
           git add ".execution-runs/${TASK_ID}.json"
           git commit -m "feat(exec): smoke noop — task ${TASK_ID}
 
-          execution-runner task ${TASK_ID} (${{ inputs.task_type }})
+          execution-runner task ${TASK_ID} ($INPUT_TASK_TYPE)
           Label: $LABEL
-          Run: ${{ github.run_id }}
+          Run: $INPUT_RUN_ID
           Timestamp: $TS"
 
       # ── Run tests ─────────────────────────────────────────────────────
       - name: Validate artefact
+        env:
+          INPUT_TASK_ID: ${{ inputs.task_id }}
         run: |
-          TASK_ID="${{ inputs.task_id }}"
+          TASK_ID="$INPUT_TASK_ID"
           FILE=".execution-runs/${TASK_ID}.json"
           if [ -f "$FILE" ]; then
             python3 -c "import json,sys; json.load(open('$FILE')); print('JSON valid')"
@@ -124,29 +138,37 @@ jobs:
 
       # ── Push branch ───────────────────────────────────────────────────
       - name: Push branch
+        env:
+          BRANCH_NAME: ${{ steps.branch.outputs.branch }}
         run: |
-          git push origin "${{ steps.branch.outputs.branch }}"
+          git push origin "$BRANCH_NAME"
 
       # ── Open PR ───────────────────────────────────────────────────────
       - name: Open pull request
         id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_LABEL: ${{ inputs.label }}
+          INPUT_TASK_ID: ${{ inputs.task_id }}
+          INPUT_TASK_TYPE: ${{ inputs.task_type }}
+          INPUT_BRANCH: ${{ steps.branch.outputs.branch }}
+          INPUT_RUN_ID: ${{ github.run_id }}
+          INPUT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          LABEL="${{ inputs.label }}"
-          TASK_ID="${{ inputs.task_id }}"
+          LABEL="$INPUT_LABEL"
+          TASK_ID="$INPUT_TASK_ID"
           PR_URL="$(gh pr create \
             --base main \
-            --head "${{ steps.branch.outputs.branch }}" \
+            --head "$INPUT_BRANCH" \
             --title "feat(exec): ${LABEL:-smoke noop} — task ${TASK_ID:0:8}" \
             --body "## Execution Runner — Phase 1 Smoke
 
           | Field | Value |
           |-------|-------|
           | Task ID | \`${TASK_ID}\` |
-          | Task type | \`${{ inputs.task_type }}\` |
+          | Task type | \`${INPUT_TASK_TYPE}\` |
           | Label | ${LABEL:-(none)} |
-          | Run | [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+          | Run | [${INPUT_RUN_ID}](${INPUT_RUN_URL}) |
 
           > Auto-generated by [execution-runner.yml](.github/workflows/execution-runner.yml). Do not merge automatically.
           ")"
@@ -158,17 +180,20 @@ jobs:
         if: success()
         env:
           RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+          INPUT_SUPABASE_URL: ${{ inputs.supabase_url }}
+          INPUT_TASK_ID: ${{ inputs.task_id }}
+          INPUT_PR_URL: ${{ steps.pr.outputs.pr_url }}
+          INPUT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          PR_URL="${{ steps.pr.outputs.pr_url }}"
           curl -sf -X POST \
-            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            "$INPUT_SUPABASE_URL/functions/v1/execution-runner-callback" \
             -H "Content-Type: application/json" \
             -H "X-Runner-Token: $RUNNER_TOKEN" \
             -d "{
-              \"task_id\": \"${{ inputs.task_id }}\",
+              \"task_id\": \"$INPUT_TASK_ID\",
               \"status\": \"SUCCESS\",
-              \"pr_url\": \"$PR_URL\",
-              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+              \"pr_url\": \"$INPUT_PR_URL\",
+              \"external_run_url\": \"$INPUT_RUN_URL\"
             }"
 
       # ── Report FAILED ─────────────────────────────────────────────────
@@ -176,14 +201,18 @@ jobs:
         if: failure()
         env:
           RUNNER_TOKEN: ${{ steps.cred.outputs.value }}
+          INPUT_SUPABASE_URL: ${{ inputs.supabase_url }}
+          INPUT_TASK_ID: ${{ inputs.task_id }}
+          INPUT_RUN_ID: ${{ github.run_id }}
+          INPUT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           curl -sf -X POST \
-            "${{ inputs.supabase_url }}/functions/v1/execution-runner-callback" \
+            "$INPUT_SUPABASE_URL/functions/v1/execution-runner-callback" \
             -H "Content-Type: application/json" \
             -H "X-Runner-Token: $RUNNER_TOKEN" \
             -d "{
-              \"task_id\": \"${{ inputs.task_id }}\",
+              \"task_id\": \"$INPUT_TASK_ID\",
               \"status\": \"FAILED\",
-              \"error\": \"GitHub Actions job failed — check run ${{ github.run_id }} for details\",
-              \"external_run_url\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+              \"error\": \"GitHub Actions job failed — check run $INPUT_RUN_ID for details\",
+              \"external_run_url\": \"$INPUT_RUN_URL\"
             }" || echo "FAILED callback itself failed — operator must check manually"

@@ -17,7 +17,7 @@ export interface OmegaStreamOptions {
 async function getSupabaseStreamUrl(): Promise<{ url: string; token: string }> {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
   const { data } = await db.auth.getSession();
-  const token = data?.session?.access_token || (import.meta.env.VITE_SUPABASE_ANON_KEY as string);
+  const token = data?.session?.access_token || (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string);
   return {
     url: `${supabaseUrl}/functions/v1/ai-assistant`,
     token,

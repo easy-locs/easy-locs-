@@ -1,0 +1,87 @@
+name: Hardening Gates
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  hardening:
+    name: typecheck • lint • unit • audit • structural
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # 1. Static type safety
+      - name: Typecheck
+        run: npm run check:strict-core
+
+      # 2. Lint
+      - name: Lint
+        run: npm run lint
+
+      # 3. Unit + LC governance gates (vitest)
+      - name: Unit tests
+        run: npm test
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # 4. Critical E2E smoke (subset of Playwright suite) — BLOCKING.
+      # MUST build first: playwright.config.ts uses `vite preview` in CI mode
+      # which requires dist/ to exist. Without this build step vite preview
+      # starts but immediately 404s, causing all smoke tests to time out.
+      - name: Build for preview (required before Playwright smoke)
+        run: npm run prebuild && SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=4096 npx vite build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Install Playwright (chromium only)
+        run: npx playwright install --with-deps chromium
+
+      - name: Critical E2E smoke
+        run: npx playwright test --project=chromium-desktop --grep "@smoke"
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      # 5. Dependency audit (high + critical only fail the build)
+      - name: Dependency audit (high+)
+        run: npm audit --omit=dev --audit-level=high
+
+      # 6. Structural checks — duplicate routes / orphan pages /
+      #    broken @/ imports (Task #1004 hardening contract).
+      # All structural gates are BLOCKING. Pre-existing regressions are
+      # captured in baseline files (route-uniqueness-baseline.txt,
+      # import-aliases-baseline.txt, page-orphans-baseline.txt) so the
+      # gates fail only on NEW occurrences.
+      - name: No NEW duplicate routes (baseline-enforced)
+        run: npm run check:route-uniqueness
+
+      - name: Pillar route ownership
+        run: npm run check:pillar-routes
+
+      - name: No NEW broken @/ imports (baseline-enforced)
+        run: npm run check:import-aliases
+
+      - name: No NEW orphan pages (baseline-enforced)
+        run: npm run check:page-orphans

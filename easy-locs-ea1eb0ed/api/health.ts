@@ -6,7 +6,7 @@ const SUPABASE_URL =
   "https://ifvuvbolrmuuugtzxsfk.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
+  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
 const HEALTH_CHECK_SECRET = process.env.HEALTH_CHECK_SECRET || "";
 

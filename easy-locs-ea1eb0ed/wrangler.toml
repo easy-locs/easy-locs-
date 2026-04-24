@@ -42,7 +42,7 @@
 #
 # ─── ENVIRONMENT VARIABLES (Pages dashboard → Settings → Environment Variables)
 #   VITE_SUPABASE_URL        – public Supabase project URL  (plain text)
-#   VITE_SUPABASE_ANON_KEY   – public anon key              (plain text)
+#   VITE_SUPABASE_PUBLISHABLE_KEY – public anon key         (plain text)
 #   VITE_APP_VERSION         – optional release label        (plain text)
 #   VITE_SENTRY_DSN          – optional Sentry DSN           (plain text)
 #

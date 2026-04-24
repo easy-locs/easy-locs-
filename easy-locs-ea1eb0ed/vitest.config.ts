@@ -22,7 +22,6 @@ export default defineConfig({
     env: {
       VITE_SUPABASE_URL: "https://test.supabase.co",
       VITE_SUPABASE_PUBLISHABLE_KEY: "test-anon-key",
-      VITE_SUPABASE_ANON_KEY: "test-anon-key",
     },
     coverage: {
       provider: "v8",
