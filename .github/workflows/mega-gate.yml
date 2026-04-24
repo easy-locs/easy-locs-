@@ -294,11 +294,13 @@ jobs:
           cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
       - run: npm ci --no-audit --no-fund
       - name: Build for preview
-        run: npm run build:cf
+        # build:cf hardcodes NODE_OPTIONS=1536 in the script string, which OOMs
+        # on GitHub Actions (~1523 MB peak). Use the same 4096 MB override that
+        # Gate 5a uses. CF Pages itself still runs with 1536 MB via build:cf.
+        run: npm run prebuild && SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=4096 npx vite build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          NODE_OPTIONS: "--max-old-space-size=1536"
       - name: Install Playwright (chromium)
         run: npx playwright install --with-deps chromium
       - name: Playwright smoke (@smoke tag)
