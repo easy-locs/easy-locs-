@@ -412,7 +412,7 @@ export const CommunicationCenter = () => {
 
         {threadError && (
           <div className="px-4 py-2 text-xs shrink-0 bg-destructive/6 text-destructive border-b border-destructive/8">
-            {t("orbit.load_error")}: {threadError} —{" "}
+            {t("orbit.load_error")} —{" "}
             <button onClick={() => loadThreads()} className="underline font-bold">{t("orbit.retry")}</button>
           </div>
         )}

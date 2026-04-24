@@ -61,6 +61,7 @@ import PillarOverlayHost from "@/components/overlays/PillarOverlayHost";
 import { useNavigationStateMachine } from "@/stores/navigationStateMachine";
 import WidgetSkeleton from "@/components/dashboard/WidgetSkeleton";
 import { useDashboardCardEnabled } from "@/lib/feature-flags/dashboard-cards";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 const IntelligenceTicker = lazy(() => import("@/components/dashboard/IntelligenceTicker"));
 const ForexWidget = lazy(() => import("@/components/dashboard/ForexWidget"));
@@ -468,6 +469,7 @@ export default function SmartHome() {
   const { balance: walletBal, accountId: walletAccountId, loading: walletLoading } = useWalletBalance();
 
   const engineHealthEnabled = useDashboardCardEnabled("engineHealth");
+  const { isAdmin } = useIsAdmin();
   const featuredHotelsEnabled = useDashboardCardEnabled("featuredHotels");
 
   const [radarDrawerOpen, setRadarDrawerOpen] = useState(false);
@@ -560,7 +562,7 @@ export default function SmartHome() {
         <Suspense fallback={null}>
           <IntelligenceTicker country={vm.countryCode || "AE"} city={vm.city ?? undefined} />
         </Suspense>
-        {engineHealthEnabled && (
+        {engineHealthEnabled && isAdmin && (
           <Suspense fallback={<WidgetSkeleton height={60} lines={1} />}>
             <div className="section-spacer-compact">
               <EngineHealthWidget />

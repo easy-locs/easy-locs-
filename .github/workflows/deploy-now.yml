@@ -1,0 +1,48 @@
+name: Deploy to IONOS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: easy-locs-ea1eb0ed
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce pillar route ownership
+        run: npm run check:pillar-routes
+
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+      - name: Deploy to IONOS
+        uses: ionos-deploy-now/deploy-to-ionos@v1
+        with:
+          project-id: ${{ secrets.IONOS_PROJECT_ID }}
+          branch-id: ${{ secrets.IONOS_BRANCH_ID }}
+          service-host: api-us.ionos.space
+          api-key: ${{ secrets.IONOS_API_KEY }}
+          dist-folder: easy-locs-ea1eb0ed/dist

@@ -7,7 +7,7 @@
  * stuck candidates without re-implementing the rules client-side.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 
 const SYSTEM_SCHEMA = "system";
 
@@ -19,7 +19,7 @@ interface SystemRpcClient {
 }
 
 function client(): SystemRpcClient {
-  return supabase.schema(SYSTEM_SCHEMA) as unknown as SystemRpcClient;
+  return db.schema(SYSTEM_SCHEMA) as unknown as SystemRpcClient;
 }
 
 // ── Dependency validation ────────────────────────────────────────────────
@@ -97,7 +97,7 @@ export async function listIncidents(limit = 200): Promise<{
   rows: IncidentRow[];
   error?: string;
 }> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .schema(SYSTEM_SCHEMA)
     .from("incident_log")
     .select("*")
@@ -161,7 +161,7 @@ export async function listLoopHealth(limit = 20): Promise<{
   rows: LoopHealthRow[];
   error?: string;
 }> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .schema(SYSTEM_SCHEMA)
     .from("watchdog_loop_health")
     .select("*")
@@ -201,7 +201,7 @@ export async function listRecentTimeouts(limit = 100): Promise<{
   rows: RecentTimeoutRow[];
   error?: string;
 }> {
-  const { data, error } = await supabase
+  const { data, error } = await db
     .schema(SYSTEM_SCHEMA)
     .from("execution_tasks")
     .select("id,type,domain,failure_class,error_code,failed_at,attempt_count")

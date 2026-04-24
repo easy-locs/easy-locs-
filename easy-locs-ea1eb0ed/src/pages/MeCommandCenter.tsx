@@ -350,13 +350,13 @@ export default function MeCommandCenter() {
         title: t("me.provider_hub"),
         showIf: "provider" as const,
         items: [
-          { icon: Activity, label: t("me.provider_dashboard") || "Dashboard", subtitle: t("me.provider_dashboard_sub") || "Overview & KPIs", path: "/provider/dashboard", accent: A.blue },
-          { icon: ClipboardList, label: t("me.provider_services"), subtitle: t("me.provider_services_sub"), path: "/provider/services-crud", accent: A.gold },
-          { icon: CalendarDays, label: t("me.provider_availability"), subtitle: t("me.provider_availability_sub"), path: "/provider/availability-v2", accent: A.cyan },
-          { icon: Compass, label: t("me.provider_calendar") || "Calendar", subtitle: t("me.provider_calendar_sub") || "Upcoming bookings", path: "/provider/calendar", accent: A.emerald },
-          { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/provider/bookings", accent: A.violet },
-          { icon: Coins, label: t("me.provider_earnings") || "Earnings", subtitle: t("me.provider_earnings_sub") || "Revenue & payouts", path: "/provider/earnings", accent: A.amber },
-          { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/provider/zones", accent: A.slate },
+          { icon: Activity, label: t("me.provider_dashboard") || "Dashboard", subtitle: t("me.provider_dashboard_sub") || "Overview & KPIs", path: "/pro", accent: A.blue },
+          { icon: ClipboardList, label: t("me.provider_services"), subtitle: t("me.provider_services_sub"), path: "/pro/catalog", accent: A.gold },
+          { icon: CalendarDays, label: t("me.provider_availability"), subtitle: t("me.provider_availability_sub"), path: "/pro/availability", accent: A.cyan },
+          { icon: Compass, label: t("me.provider_calendar") || "Calendar", subtitle: t("me.provider_calendar_sub") || "Upcoming bookings", path: "/pro/orders", accent: A.emerald },
+          { icon: ShoppingBag, label: t("me.provider_bookings"), subtitle: t("me.provider_bookings_sub"), path: "/pro/orders", accent: A.violet },
+          { icon: Coins, label: t("me.provider_earnings") || "Earnings", subtitle: t("me.provider_earnings_sub") || "Revenue & payouts", path: "/pro/wallet", accent: A.amber },
+          { icon: Compass, label: t("me.provider_zones"), subtitle: t("me.provider_zones_sub"), path: "/pro/settings", accent: A.slate },
         ],
       },
       {
@@ -364,10 +364,10 @@ export default function MeCommandCenter() {
         title: "Hotel Management",
         showIf: "hotelier" as const,
         items: [
-          { icon: BedDouble, label: "Dashboard", subtitle: "KPIs, bookings & check-in/out", path: "/hotel/dashboard", accent: A.blue },
-          { icon: CalendarDays, label: "Occupancy Calendar", subtitle: "Room availability grid", path: "/hotel/calendar", accent: A.emerald },
-          { icon: Home, label: "Room Types", subtitle: "Manage rooms & pricing", path: "/hotel/rooms", accent: A.gold },
-          { icon: TrendingUp, label: "Seasonal Pricing", subtitle: "Date-based rate overrides", path: "/hotel/pricing", accent: A.amber },
+          { icon: BedDouble, label: "Dashboard", subtitle: "KPIs, bookings & check-in/out", path: "/pro", accent: A.blue },
+          { icon: CalendarDays, label: "Occupancy Calendar", subtitle: "Room availability grid", path: "/pro/orders", accent: A.emerald },
+          { icon: Home, label: "Room Types", subtitle: "Manage rooms & pricing", path: "/pro/catalog", accent: A.gold },
+          { icon: TrendingUp, label: "Seasonal Pricing", subtitle: "Date-based rate overrides", path: "/pro/pricing", accent: A.amber },
         ],
       },
       {
@@ -549,9 +549,9 @@ export default function MeCommandCenter() {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-base font-bold text-foreground line-clamp-1 break-words">{displayName}</p>
-            <p className="text-[0.6875rem] text-muted-foreground truncate font-mono mt-0.5">
-              EL-{(user?.id || "").replace(/-/g, "").substring(0, 8).toUpperCase()}
-            </p>
+            {user?.email && (
+              <p className="text-[0.6875rem] text-muted-foreground truncate mt-0.5">{user.email}</p>
+            )}
             <span
               className="inline-block mt-1 text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
               style={{ background: `${A.gold}1A`, color: A.gold }}

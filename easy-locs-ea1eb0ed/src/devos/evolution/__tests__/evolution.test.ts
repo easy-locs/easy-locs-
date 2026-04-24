@@ -206,3 +206,15 @@ if (typeof process !== 'undefined' && process.argv && process.argv[1] && process
     }
   });
 }
+
+// Vitest integration: run all collected tests via the framework runner.
+// The file defines its own `it` helper (for direct-node compatibility), so we
+// use the global `test` (not shadowed) to expose results to vitest.
+describe('evolution layer', () => {
+  test('all invariants pass', async () => {
+    const { fail, failures } = await runAllTests();
+    if (fail > 0) {
+      throw new Error(`${fail} evolution invariant(s) failed:\n${failures.join('\n')}`);
+    }
+  });
+});

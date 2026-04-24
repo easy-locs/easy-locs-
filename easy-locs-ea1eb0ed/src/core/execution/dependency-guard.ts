@@ -10,7 +10,7 @@
  * one place that is mirrored by the unit tests.
  */
 
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import type { ExecutionTaskStatus } from "./types";
 
 /** States that a *blocker* may legally be in. */
@@ -70,7 +70,7 @@ interface SystemRpcClient {
 }
 
 function systemClient(): SystemRpcClient {
-  return supabase.schema("system") as unknown as SystemRpcClient;
+  return db.schema("system") as unknown as SystemRpcClient;
 }
 
 /**

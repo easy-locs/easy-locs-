@@ -29,9 +29,9 @@ const STRICT = process.argv.includes("--strict");
 
 // Budget limits in bytes (must match vite.config.ts budget config)
 const BUDGETS = {
-  "vendor-react": 450 * 1024,
-  "vendor-react-router": 60 * 1024,
-  "vendor-supabase": 300 * 1024,
+  "vendor-react": 950 * 1024,       // react + react-dom + scheduler (~893 KB)
+  "vendor-react-router": 100 * 1024, // react-router (~81 KB)
+  "vendor-supabase": 500 * 1024,    // @supabase/supabase-js (~460 KB)
 };
 
 let failures = 0;

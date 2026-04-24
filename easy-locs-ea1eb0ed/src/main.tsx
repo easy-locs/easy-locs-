@@ -14,7 +14,7 @@ import {
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
 import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
-import { supabaseEnvMissing } from "@/integrations/supabase/client";
+import { supabaseEnvMissing } from "@/services/db";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
@@ -93,6 +93,7 @@ if (typeof window !== "undefined") {
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
   const STUCK_DEADLINE_MS = 5000;
+  // nosemgrep: javascript.lang.security.detect-eval-with-expression.detect-eval-with-expression -- passing a callback function, not a string; URL params use encodeURIComponent
   setTimeout(() => {
     try {
       if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;

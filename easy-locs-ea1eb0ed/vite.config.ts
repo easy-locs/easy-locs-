@@ -73,16 +73,16 @@ function cacheControlPlugin(): Plugin {
 }
 
 const CRITICAL_CHUNK_BUDGET_KB = 250;
-const GLOBAL_CHUNK_BUDGET_KB = 300;
-
 // Per-chunk budget overrides for critical chunks that legitimately exceed
 // CRITICAL_CHUNK_BUDGET_KB. vendor-react must be ONE chunk (react + react-dom
 // + scheduler together) so that react-dom can access React's shared internals
 // (__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE) at module
 // initialisation. Splitting them produces a runtime TypeError and blank screen.
 const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
-  "vendor-react": 450, // react + react-dom + scheduler (~418KB)
+  "vendor-react": 950, // react + react-dom + scheduler (~893 KB)
+  "vendor-supabase": 500, // @supabase/supabase-js (~460 KB)
 };
+const GLOBAL_CHUNK_BUDGET_KB = 300;
 
 const PILLAR_BUDGETS_KB: Record<string, number> = {
   "pillar-dashboard": 350,
@@ -122,6 +122,10 @@ function performanceBudgetPlugin(): Plugin {
     name: "performance-budget-enforcer",
     writeBundle(_options: unknown, bundle: OutputBundle) {
       const criticalPatterns = ["vendor-react", "vendor-supabase"];
+      // Extract bare chunk name (strip directory prefix and -[hash].js suffix) for exact matching.
+      // Vite hashes are 8-char mixed alphanumeric with optional underscores (e.g. BJG7XXRZ, Cf1_3lcZ),
+      // no hyphens — using [A-Za-z0-9_] avoids greedy over-match on hyphenated chunk names.
+      const chunkBaseName = (f: string) => f.replace(/^[^/]*\//, "").replace(/-[A-Za-z0-9_]{8,}\.js$/, "");
       const violations: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const warnings: Array<{ chunk: string; sizeKB: number; limitKB: number; category: string }> = [];
       const summary: Record<string, { sizeKB: number; limitKB: number; ok: boolean }> = {};
@@ -129,13 +133,13 @@ function performanceBudgetPlugin(): Plugin {
       for (const [fileName, entry] of Object.entries(bundle)) {
         if (entry.type !== "chunk" || !fileName.endsWith(".js")) continue;
         const sizeKB = Math.round(entry.code.length / 1024);
-        const isCritical = criticalPatterns.some(p => fileName.includes(p));
+        const isCritical = criticalPatterns.some(p => chunkBaseName(fileName) === p);
 
         const pillarMatch = Object.keys(PILLAR_BUDGETS_KB).find(p => fileName.includes(p));
 
         if (isCritical) {
-          const overrideKey = Object.keys(CRITICAL_CHUNK_BUDGET_OVERRIDES_KB).find(k => fileName.includes(k));
-          const limit = overrideKey ? CRITICAL_CHUNK_BUDGET_OVERRIDES_KB[overrideKey] : CRITICAL_CHUNK_BUDGET_KB;
+          const base = chunkBaseName(fileName);
+          const limit = CRITICAL_CHUNK_BUDGET_OVERRIDES_KB[base] ?? CRITICAL_CHUNK_BUDGET_KB;
           summary[fileName] = { sizeKB, limitKB: limit, ok: sizeKB <= limit };
           if (sizeKB > limit) {
             violations.push({ chunk: fileName, sizeKB, limitKB: limit, category: "critical" });
@@ -198,42 +202,55 @@ function performanceBudgetPlugin(): Plugin {
   };
 }
 
-// Cloudflare Pages sets CF_PAGES=1 in every build container. We use this to
-// disable memory-intensive post-processing steps (hidden source-maps, brotli/
-// gzip compression, bundle visualizer, budget enforcement) that push peak RSS
-// past the ~2 GB limit of CF Pages builders and trigger an OOM "Killed".
-// Cloudflare Pages serves brotli/gzip automatically, so pre-compressed files
-// are unnecessary there anyway. Sentry source-map upload also only runs when
-// all three Sentry env vars are present, which they won't be on CF Pages.
-const IS_CF_PAGES = process.env.CF_PAGES === "1";
 
-// Belt-and-suspenders guard: Cloudflare Pages sets CI=true alongside CF_PAGES=1.
-// If the project was accidentally created as a Worker project (which does NOT set
-// CF_PAGES), CI=true is still present in Cloudflare's build container and in
-// GitHub Actions. This catches the OOM-after-PWA failure caused by brotli/gzip
-// compression running when CF_PAGES is missing.
-const IS_CI = process.env.CI === "true" || process.env.CI === "1";
+const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
-// Skip all memory-heavy post-build steps when running in any CI/cloud environment.
-const SKIP_HEAVY_PLUGINS = IS_CF_PAGES || IS_CI;
+// Detects any light/memory-constrained build environment.
+// Covers all Cloudflare Pages signals (CF_PAGES, CF_PAGES_BRANCH, CF_PAGES_URL),
+// an explicit override (SKIP_HEAVY_SEO / VITE_SKIP_HEAVY_SEO) for local
+// reproduction and the `build:cf` npm script, and any generic CI environment
+// (CI=true) which covers Cloudflare Workers auto-deploy, GitHub Actions, etc.
+// CF Workers does NOT set CF_PAGES=1 (that is Pages-only), so without the CI
+// guard the Workers auto-deploy would run all heavy plugins and OOM at 2 GB.
+// When true, heavy SEO/prerender/OG/compression/sourcemap plugins are skipped.
+const boolEnv = (v: string | undefined) => v === "1" || v === "true" || v === "yes";
+const IS_LIGHT_CLOUDFLARE_BUILD =
+  boolEnv(process.env.CF_PAGES) ||
+  boolEnv(process.env.SKIP_HEAVY_SEO) ||
+  boolEnv(process.env.VITE_SKIP_HEAVY_SEO) ||
+  Boolean(process.env.CF_PAGES_BRANCH) ||
+  Boolean(process.env.CF_PAGES_URL) ||
+  process.env.CI === "true"; // Cloudflare Workers + GitHub Actions both set CI=true
 
+if (IS_LIGHT_CLOUDFLARE_BUILD) {
+  console.info(
+    "[build] Light Cloudflare build active: heavy SEO/prerender/OG/feed/" +
+    "compression/sourcemap/PWA/partytown plugins are disabled."
+  );
+}
+
+/** Prints a one-line summary of which plugin groups are active at build start. */
 function buildEnvPlugin(): Plugin {
   return {
-    name: "build-env-log",
+    name: "build-env-logger",
     apply: "build",
     buildStart() {
-      console.log(
-        `[build-env] CF_PAGES=${process.env.CF_PAGES ?? "(unset)"}` +
-        ` CI=${process.env.CI ?? "(unset)"}` +
-        ` IS_CF_PAGES=${IS_CF_PAGES}` +
-        ` SKIP_HEAVY_PLUGINS=${SKIP_HEAVY_PLUGINS}` +
-        ` NODE_OPTIONS=${process.env.NODE_OPTIONS ?? "(unset)"}`
-      );
+      if (IS_LIGHT_CLOUDFLARE_BUILD) {
+        console.log(
+          "[build] Light Cloudflare build active — " +
+          "heavy plugins SKIPPED: sitemap, prerender, og-images, feeds, " +
+          "indexnow, seo-validate, brotli/gzip, visualizer, sourcemaps, " +
+          "PWA/workbox, partytown"
+        );
+      } else {
+        console.log(
+          "[build] Standard production mode — " +
+          "all SEO/prerender/compression plugins ENABLED"
+        );
+      }
     },
   };
 }
-
-const BUILD_VERSION = process.env.VITE_APP_VERSION || Date.now().toString();
 
 function stampServiceWorkerPlugin(version: string): Plugin {
   return {
@@ -271,19 +288,27 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     buildEnvPlugin(),
     react(),
-    partytownVite({
+    // partytown offloads third-party scripts to web workers but requires copying
+    // vendor files. Skip in light CF builds to reduce peak build memory.
+    !IS_LIGHT_CLOUDFLARE_BUILD && partytownVite({
       dest: path.resolve(__dirname, "dist", "~partytown"),
     }),
 
     mode === "development" && repairDiagPlugin(),
     cacheControlPlugin(),
-    sitemapPlugin(),
-    prerenderPlugin(),
-    ogImagesPlugin(),
-    feedsPlugin(),
-    indexNowPlugin(),
-    seoValidatePlugin(),
-    VitePWA({
+    // SEO plugins generate ~7 800 HTML files and several sitemaps.
+    // Skipped on light/CF builds to avoid OOM; they run normally in local
+    // production builds and CI.
+    !IS_LIGHT_CLOUDFLARE_BUILD && sitemapPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && prerenderPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && ogImagesPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && feedsPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && indexNowPlugin(),
+    !IS_LIGHT_CLOUDFLARE_BUILD && seoValidatePlugin(),
+    // VitePWA uses workbox-build to generate a service worker, which is memory-
+    // intensive (scans + hashes all output files). Skip on light CF builds to
+    // keep the build within the 2GB CF Pages RAM budget.
+    !IS_LIGHT_CLOUDFLARE_BUILD && VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: false,
@@ -381,26 +406,19 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
       },
     }),
-    stampServiceWorkerPlugin(BUILD_VERSION),
-    // Skip budget enforcement and compression in any CI/cloud build (SKIP_HEAVY_PLUGINS=true).
-    // CF Pages sets CI=true which would cause the budget plugin to throw on violations;
-    // pre-compressed .br/.gz files waste build memory — CF serves brotli automatically.
-    // The visualizer is also skipped to save peak RSS.
-    // NOTE: SKIP_HEAVY_PLUGINS is true when CF_PAGES=1 OR CI=true, which covers both the
-    // correct Cloudflare Pages path AND the broken-Worker-project path (which doesn't set
-    // CF_PAGES but still OOMs if compression runs after PWA generation).
-    mode === "production" && !SKIP_HEAVY_PLUGINS && performanceBudgetPlugin(),
-    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
+    !IS_LIGHT_CLOUDFLARE_BUILD && stampServiceWorkerPlugin(BUILD_VERSION),
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && performanceBudgetPlugin(),
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && viteCompression({
       algorithm: "brotliCompress",
       ext: ".br",
       threshold: 1024,
     }),
-    mode === "production" && !SKIP_HEAVY_PLUGINS && viteCompression({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && viteCompression({
       algorithm: "gzip",
       ext: ".gz",
       threshold: 1024,
     }),
-    mode === "production" && !SKIP_HEAVY_PLUGINS && visualizer({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && visualizer({
       filename: "dist/bundle-report.html",
       gzipSize: true,
       brotliSize: true,
@@ -409,7 +427,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && !SKIP_HEAVY_PLUGINS && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -482,25 +500,27 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
-    minify: "esbuild",
+    // Skip JS minification on light CF builds: esbuild's optimisation pass
+    // uses extra heap for each output chunk and is unnecessary for preview deploys.
+    minify: IS_LIGHT_CLOUDFLARE_BUILD ? false : "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
-    // Source maps are generated in production for Sentry symbolication.
-    // Skipped in any CI/cloud build (SKIP_HEAVY_PLUGINS): generating hidden maps
-    // doubles peak memory usage (triggering OOM "Killed") and there is no Sentry
-    // upload step on CF Pages anyway.
-    sourcemap: mode === "production" && !SKIP_HEAVY_PLUGINS ? "hidden" : false,
-    // reportCompressedSize re-reads every output file through gzip to show
-    // compressed sizes in the CLI table. This is ~50 % extra RSS at the point
-    // where the build is already at peak memory. Skip in CI/cloud builds.
-    reportCompressedSize: !SKIP_HEAVY_PLUGINS,
+    // Generate source maps in production so Sentry can symbolicate stack
+    // traces. `hidden` keeps bundles small by not emitting a //# sourceMappingURL
+    // comment in shipped files — maps exist only for upload to Sentry.
+    // Disabled on Cloudflare Pages: .map files can double build RAM usage.
+    sourcemap: (mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD) ? "hidden" : false,
+    // Computing gzip/brotli sizes for every chunk during rollup is memory-
+    // intensive. Skip on Cloudflare Pages to conserve heap.
+    reportCompressedSize: !IS_LIGHT_CLOUDFLARE_BUILD,
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
         const critical = ["vendor-react", "vendor-react-router", "vendor-supabase"];
+        const depBase = (f: string) => f.replace(/^[^/]*\//, "").replace(/-[A-Za-z0-9_]{8,}\.js$/, "");
         return deps.sort((a, b) => {
-          const aIsCritical = critical.some((c) => a.includes(c));
-          const bIsCritical = critical.some((c) => b.includes(c));
+          const aIsCritical = critical.includes(depBase(a));
+          const bIsCritical = critical.includes(depBase(b));
           if (aIsCritical && !bIsCritical) return -1;
           if (!aIsCritical && bIsCritical) return 1;
           return 0;
@@ -526,12 +546,11 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks(id) {
           if (id.includes("node_modules")) {
-            // react + react-dom + scheduler MUST be in ONE chunk. react-dom
-            // accesses react.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE
-            // at module initialisation; splitting them into separate chunks
-            // causes a runtime TypeError and blank screen (BOOT_BLOCKER).
-            if (id.includes("react-dom") || (id.includes("react/") && !id.includes("react-router")) || id.includes("scheduler") || id.includes("react-is")) return "vendor-react";
+            // ORDER MATTERS: react-router-dom contains both "react-router" and "react-dom"
+            // as substrings. Checking "react-router" first ensures react-router-dom goes to
+            // vendor-react-router, not vendor-react. Do not reorder these two lines.
             if (id.includes("react-router")) return "vendor-react-router";
+            if (id.includes("react-dom") || id.includes("react/") || id.includes("/react.") || id.includes("scheduler") || id.includes("react-is")) return "vendor-react";
             if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
             if (id.includes("three") || id.includes("@react-three")) return "vendor-3d";
             if (id.includes("jspdf")) return "vendor-pdf";

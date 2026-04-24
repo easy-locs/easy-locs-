@@ -2185,6 +2185,8 @@
   "wallet.scanAction": "Scan",
   "wallet.accounts": "Accounts",
   "wallet.manage": "Manage",
+  "wallet.forexTitle": "Forex · Exchange Rates",
+  "wallet.forexSubtitle": "EUR/USD · USD/AED · 120+ currencies",
   "wallet.recentActivity": "Recent Activity",
   "wallet.all": "All",
   "wallet.in": "In",
