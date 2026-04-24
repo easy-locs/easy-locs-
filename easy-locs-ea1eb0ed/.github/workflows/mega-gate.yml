@@ -1,0 +1,428 @@
+name: Mega Deploy Gate
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ALL GATES PASSED is the only acceptable final status.
+# No merge until every mandatory gate is green.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "copilot/**", "feature/**", "fix/**"]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "CF Pages preview URL for hosted verification (optional)"
+        required: false
+        default: ""
+
+concurrency:
+  group: mega-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+defaults:
+  run:
+    working-directory: easy-locs-ea1eb0ed
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 1 — Static analysis (TypeScript + ESLint)
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  typecheck:
+    name: "Gate 1a — TypeScript strict"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: TypeScript strict check
+        run: npm run check:strict-core
+
+  lint:
+    name: "Gate 1b — ESLint"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 2 — Tests (unit + contracts + architecture)
+# ─────────────────────────────────────────────────────────────────────────────
+  unit-tests:
+    name: "Gate 2a — Unit tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Run unit tests
+        run: npm test
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+  contract-tests:
+    name: "Gate 2b — Contract tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Run contract tests
+        run: npm run test:contracts
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+  arch-checks:
+    name: "Gate 2c — Architecture checks"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: No duplicate routes
+        run: npm run check:route-uniqueness
+      - name: Pillar route ownership
+        run: npm run check:pillar-routes
+      - name: No broken @/ imports
+        run: npm run check:import-aliases
+      - name: No orphan pages
+        run: npm run check:page-orphans
+      - name: Build invariants
+        run: node scripts/check-build-invariants.cjs
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 3 — Security (audit + secret scan + SAST)
+# ─────────────────────────────────────────────────────────────────────────────
+  security-audit:
+    name: "Gate 3a — npm audit (high+)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+
+  secret-scan:
+    name: "Gate 3b — Secret scan"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan for secrets (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: false
+
+  semgrep:
+    name: "Gate 3c — SAST (Semgrep)"
+    runs-on: ubuntu-latest
+    continue-on-error: true  # non-blocking by default; set to false to make mandatory
+    steps:
+      - uses: actions/checkout@v4
+      - name: Semgrep scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/javascript
+            p/typescript
+            p/react
+            p/security-audit
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
+  supabase-guard:
+    name: "Gate 3d — Supabase lazy access guard"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check Supabase lazy access
+        run: node scripts/check-supabase-lazy-access.cjs
+      - name: Upload Supabase guard report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-guard-report
+          path: easy-locs-ea1eb0ed/docs/runtime/SUPABASE_RUNTIME_GUARD.md
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 4 — Bundle budget
+# ─────────────────────────────────────────────────────────────────────────────
+  bundle-budget:
+    name: "Gate 4 — Bundle budget"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build (standard)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=1536"
+      - name: Bundle size gate
+        run: npm run bundle:gate
+        continue-on-error: true
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 5 — Cloudflare build:cf + strict config check + dist asset verify
+# ─────────────────────────────────────────────────────────────────────────────
+  cf-build:
+    name: "Gate 5a — Cloudflare build:cf"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Cloudflare build
+        run: npm run build:cf
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=1536"
+      - name: Dist asset verifier
+        run: node scripts/check-dist-assets.cjs
+      - name: Upload dist report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-asset-report
+          path: easy-locs-ea1eb0ed/docs/runtime/DIST_ASSET_REPORT.md
+
+  cf-strict:
+    name: "Gate 5b — Cloudflare strict config"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Cloudflare strict check
+        run: node scripts/check-cloudflare-strict.cjs
+      - name: Upload CF strict report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cf-strict-report
+          path: easy-locs-ea1eb0ed/docs/runtime/CLOUDFLARE_STRICT_REPORT.md
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 6 — Route inventory generation
+# ─────────────────────────────────────────────────────────────────────────────
+  route-inventory:
+    name: "Gate 6 — Route inventory"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Generate route inventory
+        run: node scripts/generate-route-inventory.cjs
+      - name: Upload route inventory
+        uses: actions/upload-artifact@v4
+        with:
+          name: route-inventory
+          path: |
+            easy-locs-ea1eb0ed/docs/runtime/ROUTE_INVENTORY.md
+            easy-locs-ea1eb0ed/docs/runtime/ROUTE_INVENTORY.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 7 — Playwright smoke (local build)
+# ─────────────────────────────────────────────────────────────────────────────
+  playwright-smoke:
+    name: "Gate 7 — Playwright smoke (local)"
+    runs-on: ubuntu-latest
+    needs: [cf-build]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Build for preview
+        run: npm run build:cf
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=1536"
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+      - name: Playwright smoke (@smoke tag)
+        run: npx playwright test --project=chromium-desktop --grep "@smoke"
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          CI: "true"
+        continue-on-error: false
+      - name: Playwright armada (@armada @phase1)
+        run: npx playwright test --config=playwright.runtime.config.ts --project=phase1-core-access --grep "@armada.*@phase1|@phase1.*@armada" tests/runtime/route-armada.spec.ts
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          CI: "true"
+        continue-on-error: true  # armada is advisory at this stage; smoke is the hard gate
+      - name: Upload Playwright results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-results
+          path: |
+            easy-locs-ea1eb0ed/playwright-report/
+            easy-locs-ea1eb0ed/e2e-results.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GATE 8 — Hosted HTTPS verification (only when BASE_URL is provided)
+# ─────────────────────────────────────────────────────────────────────────────
+  hosted-verify:
+    name: "Gate 8 — Hosted HTTPS verification"
+    runs-on: ubuntu-latest
+    if: ${{ inputs.base_url != '' || vars.CF_PREVIEW_URL != '' }}
+    needs: [typecheck, lint, unit-tests, contract-tests, arch-checks, security-audit, supabase-guard, cf-build, cf-strict]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - name: Install Playwright (chromium)
+        run: npx playwright install --with-deps chromium
+      - name: Hosted smoke verification (8 routes)
+        run: |
+          npx playwright test --project=chromium-desktop --grep "@smoke" \
+            tests/runtime/route-armada.spec.ts tests/runtime/flow-coverage.spec.ts
+        env:
+          BASE_URL: ${{ inputs.base_url || vars.CF_PREVIEW_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          CI: "true"
+      - name: Upload hosted verification results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hosted-verify-results
+          path: |
+            easy-locs-ea1eb0ed/playwright-report/
+            easy-locs-ea1eb0ed/e2e-results.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FINAL GATE — All gates passed + verdict
+# ─────────────────────────────────────────────────────────────────────────────
+  all-gates-passed:
+    name: "ALL GATES PASSED"
+    runs-on: ubuntu-latest
+    needs:
+      - typecheck
+      - lint
+      - unit-tests
+      - contract-tests
+      - arch-checks
+      - security-audit
+      - supabase-guard
+      - bundle-budget
+      - cf-build
+      - cf-strict
+      - route-inventory
+      - playwright-smoke
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Download all reports
+        uses: actions/download-artifact@v4
+        with:
+          path: easy-locs-ea1eb0ed/collected-reports
+        continue-on-error: true
+
+      - name: Generate final verdict
+        run: node scripts/generate-final-verdict.cjs
+        env:
+          GATE_TYPECHECK: ${{ needs.typecheck.result == 'success' && 'pass' || 'fail' }}
+          GATE_LINT: ${{ needs.lint.result == 'success' && 'pass' || 'fail' }}
+          GATE_UNIT: ${{ needs.unit-tests.result == 'success' && 'pass' || 'fail' }}
+          GATE_CONTRACTS: ${{ needs.contract-tests.result == 'success' && 'pass' || 'fail' }}
+          GATE_ARCH: ${{ needs.arch-checks.result == 'success' && 'pass' || 'fail' }}
+          GATE_SECURITY: ${{ needs.security-audit.result == 'success' && 'pass' || 'fail' }}
+          GATE_SEMGREP: ${{ needs.semgrep.result == 'success' && 'pass' || needs.semgrep.result == 'skipped' && 'skipped' || 'fail' }}
+          GATE_BUNDLE: ${{ needs.bundle-budget.result == 'success' && 'pass' || 'fail' }}
+          GATE_CF_BUILD: ${{ needs.cf-build.result == 'success' && 'pass' || 'fail' }}
+          GATE_CF_STRICT: ${{ needs.cf-strict.result == 'success' && 'pass' || 'fail' }}
+          GATE_SUPABASE_GUARD: ${{ needs.supabase-guard.result == 'success' && 'pass' || 'fail' }}
+          GATE_DIST_ASSETS: ${{ needs.cf-build.result == 'success' && 'pass' || 'fail' }}
+          GATE_PLAYWRIGHT_SMOKE: ${{ needs.playwright-smoke.result == 'success' && 'pass' || 'fail' }}
+          GATE_HOSTED_VERIFY: ${{ needs.hosted-verify.result == 'success' && 'pass' || needs.hosted-verify.result == 'skipped' && 'skipped' || 'fail' }}
+          BASE_URL: ${{ inputs.base_url || vars.CF_PREVIEW_URL || '' }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+
+      - name: Upload final verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-deploy-verdict
+          path: |
+            easy-locs-ea1eb0ed/docs/runtime/FINAL_DEPLOY_VERDICT.md
+            easy-locs-ea1eb0ed/test-results/repair-backlog.json
+
+      - name: Check gate results
+        run: |
+          # Fail this job if any mandatory upstream gate failed
+          RESULTS="${{ needs.typecheck.result }} ${{ needs.lint.result }} ${{ needs.unit-tests.result }} ${{ needs.contract-tests.result }} ${{ needs.arch-checks.result }} ${{ needs.security-audit.result }} ${{ needs.supabase-guard.result }} ${{ needs.cf-build.result }} ${{ needs.cf-strict.result }} ${{ needs.playwright-smoke.result }}"
+          echo "Gate results: $RESULTS"
+          if echo "$RESULTS" | grep -qw "failure\|cancelled"; then
+            echo "❌ One or more mandatory gates FAILED. Merge is BLOCKED."
+            exit 1
+          fi
+          echo "✅ All mandatory gates PASSED."

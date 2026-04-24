@@ -117,7 +117,7 @@ DOM/localStorage state within the same describe block.
 
 ```ts
 import { test, expect } from '../utils/setup';
-import { PROFILES } from '../fixtures/profiles';
+import { PROFILES_BY_KIND } from '../fixtures/profiles';
 
 // profile is an option fixture — set it to target a specific user profile.
 test.use({ profile: PROFILES_BY_KIND.email_confirmed });
@@ -196,14 +196,18 @@ so only app-originated errors surface.
 
 ## 7 · Configuration Playwright root (`playwright.config.ts`)
 
-The root config already matches optimal settings:
+The root config already matches optimal settings (`playwright.config.ts`):
 
 ```ts
-{
-  fullyParallel: true,         // isolated workers, no shared state
-  retries: CI ? 1 : 0,        // 1 retry on CI to absorb flakes
-  workers: E2E_WORKERS,        // default 6, override via env
-  timeout: 60_000,             // per-test global timeout
+// Resolved at the top of playwright.config.ts:
+const WORKERS = Number(process.env.E2E_WORKERS || 6);
+const SHARDED = process.env.E2E_SHARDED === '1';
+
+export default defineConfig({
+  fullyParallel: true,                    // isolated workers, no shared state
+  retries: process.env.CI ? 1 : 0,       // 1 retry on CI to absorb flakes
+  workers: WORKERS,                       // default 6, override via E2E_WORKERS
+  timeout: 60_000,                        // per-test global timeout
   expect: { timeout: 10_000 },
   use: {
     actionTimeout: 15_000,
@@ -212,7 +216,7 @@ The root config already matches optimal settings:
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
-}
+});
 ```
 
 Do not lower `actionTimeout` below `15 000 ms` — the Vite dev server cold

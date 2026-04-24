@@ -356,7 +356,7 @@ export const rideTrackingStore = {
         status: "searching_rider",
         specialInstructions: opts.specialInstructions,
         packageSize: opts.packageSize,
-        confirmationCode: Math.random().toString(36).slice(2, 6).toUpperCase(),
+        confirmationCode: (() => { const a = new Uint8Array(3); crypto.getRandomValues(a); return Array.from(a, b => b.toString(16).padStart(2, "0")).join("").toUpperCase().slice(0, 6); })(),
         createdAt: new Date().toISOString(),
       };
 

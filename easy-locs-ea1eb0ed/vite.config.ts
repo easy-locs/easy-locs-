@@ -80,6 +80,15 @@ const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
 };
 const GLOBAL_CHUNK_BUDGET_KB = 300;
 
+// Per-chunk budget overrides for critical chunks that legitimately exceed
+// CRITICAL_CHUNK_BUDGET_KB. vendor-react must be ONE chunk (react + react-dom
+// + scheduler together) so that react-dom can access React's shared internals
+// (__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE) at module
+// initialisation. Splitting them produces a runtime TypeError and blank screen.
+const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
+  "vendor-react": 450, // react + react-dom + scheduler (~418KB)
+};
+
 const PILLAR_BUDGETS_KB: Record<string, number> = {
   "pillar-dashboard": 350,
   "pillar-radar": 400,
@@ -419,7 +428,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    mode === "production" && !SKIP_HEAVY_PLUGINS && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
@@ -508,7 +517,7 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
       resolveDependencies: (_filename, deps, { hostId, hostType }) => {
-        const critical = ["vendor-react", "vendor-supabase"];
+        const critical = ["vendor-react", "vendor-react-router", "vendor-supabase"];
         const depBase = (f: string) => f.replace(/^[^/]*\//, "").replace(/-[A-Za-z0-9_]{8,}\.js$/, "");
         return deps.sort((a, b) => {
           const aIsCritical = critical.includes(depBase(a));
