@@ -83,7 +83,9 @@ const PILLAR_CONFIGS: Record<string, PillarConfig> = {
       "/claim",
       "/go",
     ],
-    allowlist: [],
+    // Legacy redirect aliases — these paths redirect to the correct pillar
+    // and intentionally live in deeplinks.routes.tsx as shorthand entry points.
+    allowlist: ["/profile", "/account", "/messages", "/inbox", "/driver/missions"],
   },
   "driver.routes.tsx": {
     prefixes: ["/driver"],
@@ -104,7 +106,8 @@ const PILLAR_CONFIGS: Record<string, PillarConfig> = {
   },
   "me.routes.tsx": {
     prefixes: ["/me", "/settings", "/support/tickets", "/team"],
-    allowlist: ["/favorites", "/notifications", "/location/live", "/permissions"],
+    // /profile/:userId is a legacy public profile URL that redirects to /me
+    allowlist: ["/favorites", "/notifications", "/location/live", "/permissions", "/profile/:userId"],
   },
   "merchant.routes.tsx": {
     prefixes: ["/merchant"],
