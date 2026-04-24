@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/integrations/supabase/client";
+import { db } from "@/services/db";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface DashSnap {
@@ -118,7 +118,7 @@ function statusBadge(s: string): "default" | "secondary" | "destructive" | "outl
 }
 
 async function callEdge(name: string, body: unknown): Promise<unknown> {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await db.auth.getSession();
   const res = await fetch(`${FN_BASE}/${name}`, {
     method: "POST",
     headers: {
@@ -146,8 +146,8 @@ export default function ArmyCockpit() {
   const [submitting, setSubmitting] = useState(false);
   const [killing, setKilling] = useState(false);
 
-  const army = supabase.schema("army" as never);
-  const cmd = supabase.schema("command" as never) as unknown as {
+  const army = db.schema("army" as never);
+  const cmd = db.schema("command" as never) as unknown as {
     rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: { ok: boolean; error?: string } | null; error: { message: string } | null }>;
   };
 
@@ -227,7 +227,7 @@ export default function ArmyCockpit() {
 
   // Realtime subscription — invalidate queries on writes.
   useEffect(() => {
-    const ch = supabase.channel("army-cockpit")
+    const ch = db.channel("army-cockpit")
       .on("postgres_changes", { event: "*", schema: "army", table: "command_orders" },
           () => qc.invalidateQueries({ queryKey: ["army-orders"] }))
       .on("postgres_changes", { event: "*", schema: "army", table: "execution_tasks" },
@@ -239,7 +239,7 @@ export default function ArmyCockpit() {
       .on("postgres_changes", { event: "*", schema: "army", table: "system_flags" },
           () => qc.invalidateQueries({ queryKey: ["army-dashboard"] }))
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => { db.removeChannel(ch); };
   }, [qc]);
 
   const tasksByOrder = useMemo(() => {

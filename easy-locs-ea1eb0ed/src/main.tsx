@@ -14,7 +14,7 @@ import {
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
 import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
-import { supabaseEnvMissing } from "@/integrations/supabase/client";
+import { supabaseEnvMissing } from "@/services/db";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
