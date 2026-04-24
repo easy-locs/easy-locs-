@@ -43,7 +43,7 @@ jobs:
     name: Semgrep SAST
     runs-on: ubuntu-latest
     container:
-      image: returntocorp/semgrep
+      image: semgrep/semgrep
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

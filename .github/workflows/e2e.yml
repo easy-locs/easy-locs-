@@ -58,13 +58,16 @@ jobs:
       - name: Build app
         working-directory: easy-locs-ea1eb0ed
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       # ── Start dev/preview server ─────────────────────────────────────────────
       - name: Start preview server
         working-directory: easy-locs-ea1eb0ed
-        run: npm run preview &
-        env:
-          PORT: 5173
+        # vite preview defaults to port 4173; pass --port explicitly so
+        # wait-on and E2E_BASE_URL (both set to 5173) can reach the server.
+        run: npm run preview -- --port 5173 &
 
       - name: Wait for server to be ready
         run: npx wait-on http://localhost:5173 --timeout 60000

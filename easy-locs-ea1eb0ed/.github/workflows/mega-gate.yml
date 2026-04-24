@@ -369,12 +369,14 @@ jobs:
       - contract-tests
       - arch-checks
       - security-audit
+      - semgrep
       - supabase-guard
       - bundle-budget
       - cf-build
       - cf-strict
       - route-inventory
       - playwright-smoke
+      - hosted-verify
     if: always()
     steps:
       - uses: actions/checkout@v4
