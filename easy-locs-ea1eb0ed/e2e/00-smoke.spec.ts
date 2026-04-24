@@ -46,7 +46,7 @@ test("JS and CSS assets load without 4xx/5xx @smoke", async ({ page }) => {
     }
   });
 
-  await page.goto("/", { waitUntil: "networkidle" });
+  await page.goto("/", { waitUntil: "load" });
 
   expect(failedAssets).toHaveLength(0);
 });
