@@ -217,7 +217,7 @@ const IS_LIGHT_CLOUDFLARE_BUILD =
 if (IS_LIGHT_CLOUDFLARE_BUILD) {
   console.info(
     "[build] Light Cloudflare build active: heavy SEO/prerender/OG/feed/" +
-    "compression/sourcemap plugins are disabled."
+    "compression/sourcemap/PWA/partytown plugins are disabled."
   );
 }
 
@@ -231,7 +231,8 @@ function buildEnvPlugin(): Plugin {
         console.log(
           "[build] Light Cloudflare build active — " +
           "heavy plugins SKIPPED: sitemap, prerender, og-images, feeds, " +
-          "indexnow, seo-validate, brotli/gzip, visualizer, sourcemaps"
+          "indexnow, seo-validate, brotli/gzip, visualizer, sourcemaps, " +
+          "PWA/workbox, partytown"
         );
       } else {
         console.log(
@@ -279,7 +280,9 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     buildEnvPlugin(),
     react(),
-    partytownVite({
+    // partytown offloads third-party scripts to web workers but requires copying
+    // vendor files. Skip in light CF builds to reduce peak build memory.
+    !IS_LIGHT_CLOUDFLARE_BUILD && partytownVite({
       dest: path.resolve(__dirname, "dist", "~partytown"),
     }),
 
@@ -294,7 +297,10 @@ export default defineConfig(({ mode }) => ({
     !IS_LIGHT_CLOUDFLARE_BUILD && feedsPlugin(),
     !IS_LIGHT_CLOUDFLARE_BUILD && indexNowPlugin(),
     !IS_LIGHT_CLOUDFLARE_BUILD && seoValidatePlugin(),
-    VitePWA({
+    // VitePWA uses workbox-build to generate a service worker, which is memory-
+    // intensive (scans + hashes all output files). Skip on light CF builds to
+    // keep the build within the 2GB CF Pages RAM budget.
+    !IS_LIGHT_CLOUDFLARE_BUILD && VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192x192.png", "pwa-512x512.png"],
       manifest: false,
@@ -392,7 +398,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
       },
     }),
-    stampServiceWorkerPlugin(BUILD_VERSION),
+    !IS_LIGHT_CLOUDFLARE_BUILD && stampServiceWorkerPlugin(BUILD_VERSION),
     mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && performanceBudgetPlugin(),
     mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && viteCompression({
       algorithm: "brotliCompress",
@@ -486,7 +492,9 @@ export default defineConfig(({ mode }) => ({
   build: {
     target: "es2020",
     cssCodeSplit: true,
-    minify: "esbuild",
+    // Skip JS minification on light CF builds: esbuild's optimisation pass
+    // uses extra heap for each output chunk and is unnecessary for preview deploys.
+    minify: IS_LIGHT_CLOUDFLARE_BUILD ? false : "esbuild",
     cssMinify: true,
     chunkSizeWarningLimit: 300,
     // Generate source maps in production so Sentry can symbolicate stack
