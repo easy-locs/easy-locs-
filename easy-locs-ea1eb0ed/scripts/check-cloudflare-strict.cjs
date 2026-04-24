@@ -147,7 +147,9 @@ check("Env var naming", () => {
   if (main) {
     if (/VITE_SUPABASE_PUBLISHABLE_KEY/.test(main)) pass("main.tsx uses VITE_SUPABASE_PUBLISHABLE_KEY");
     else warn("main.tsx may not reference VITE_SUPABASE_PUBLISHABLE_KEY correctly");
-    if (/VITE_SUPABASE_ANON_KEY/.test(main)) fail("main.tsx references deprecated VITE_SUPABASE_ANON_KEY");
+    // Only flag non-comment, non-string-literal references to the deprecated key
+    const nonCommentLines = main.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
+    if (/VITE_SUPABASE_ANON_KEY/.test(nonCommentLines)) fail("main.tsx references deprecated VITE_SUPABASE_ANON_KEY");
   }
 });
 

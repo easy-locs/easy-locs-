@@ -73,13 +73,6 @@ function cacheControlPlugin(): Plugin {
 }
 
 const CRITICAL_CHUNK_BUDGET_KB = 250;
-// Per-chunk budget overrides for critical chunks that legitimately exceed CRITICAL_CHUNK_BUDGET_KB.
-// vendor-react unifies react + react-dom + scheduler + react-is (~418KB); cannot be split further.
-const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
-  "vendor-react": 450,
-};
-const GLOBAL_CHUNK_BUDGET_KB = 300;
-
 // Per-chunk budget overrides for critical chunks that legitimately exceed
 // CRITICAL_CHUNK_BUDGET_KB. vendor-react must be ONE chunk (react + react-dom
 // + scheduler together) so that react-dom can access React's shared internals
@@ -88,6 +81,7 @@ const GLOBAL_CHUNK_BUDGET_KB = 300;
 const CRITICAL_CHUNK_BUDGET_OVERRIDES_KB: Record<string, number> = {
   "vendor-react": 450, // react + react-dom + scheduler (~418KB)
 };
+const GLOBAL_CHUNK_BUDGET_KB = 300;
 
 const PILLAR_BUDGETS_KB: Record<string, number> = {
   "pillar-dashboard": 350,
@@ -428,7 +422,7 @@ export default defineConfig(({ mode }) => ({
     // Upload source maps to Sentry during production builds so stack traces
     // are symbolicated. No-ops at build time when auth credentials are missing
     // (dev/CI without Sentry secrets), so the plugin never breaks the build.
-    mode === "production" && !SKIP_HEAVY_PLUGINS && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
+    mode === "production" && !IS_LIGHT_CLOUDFLARE_BUILD && process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT && sentryVitePlugin({
       authToken: process.env.SENTRY_AUTH_TOKEN,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
