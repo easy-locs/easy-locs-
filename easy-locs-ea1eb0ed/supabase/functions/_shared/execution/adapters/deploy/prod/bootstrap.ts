@@ -1,9 +1,9 @@
 /**
  * Deploy production adapter bootstrap — LC2 (task #872).
  *
- * Defaults the runner to a Cloudflare Pages REST runner. The adapter
- * itself still refuses to call the runner unless `task.approved_by` is
- * set (defense-in-depth on top of the orchestrator's authorization gate
+ * Defaults the runner to a real Vercel REST runner. The adapter itself
+ * still refuses to call the runner unless `task.approved_by` is set
+ * (defense-in-depth on top of the orchestrator's authorization gate
  * and the `dev-sensitive` policy profile).
  */
 
@@ -19,7 +19,7 @@ import {
 } from "./deploy-prod-adapter.ts";
 import { createDeployProdVerifier } from "./deploy-prod-verifier.ts";
 import { createDeployProdRollbackVerifier } from "./deploy-prod-rollback-verifier.ts";
-import { createCfPagesProdRunner } from "../cloudflare-runner.ts";
+import { createVercelProdRunner } from "../vercel-runner.ts";
 // LC6 (#877): post-deploy health-check + auto-rollback wiring.
 import {
   createPostDeployHook,
@@ -71,8 +71,8 @@ export async function bootstrapDeployProdAdapters(
   sb: SupabaseClient,
   overrides: DeployProdBootstrapOverrides = {},
 ): Promise<void> {
-  const keyEnv = overrides.keyEnv ?? "CF_API_TOKEN";
-  const runner: DeployProdRunner = overrides.runner ?? createCfPagesProdRunner(keyEnv);
+  const keyEnv = overrides.keyEnv ?? "VERCEL_ACCESS_TOKEN";
+  const runner: DeployProdRunner = overrides.runner ?? createVercelProdRunner(keyEnv);
   globalVerifierRegistry.register(createDeployProdVerifier(), { overwrite: true });
 
   // ── LC6 (#877): wire health-check + revert_pr only when github is set ──
