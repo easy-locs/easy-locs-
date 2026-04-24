@@ -59,7 +59,6 @@
     "api:docs": "npx tsx scripts/api-doc-generator.ts",
     "sdk:generate": "npx tsx scripts/sdk-generator.ts",
     "generate:locales": "npx tsx scripts/generate-locales.ts",
-    "build:cf": "SKIP_HEAVY_SEO=1 vite build",
     "check:cf-strict": "node scripts/check-cloudflare-strict.cjs",
     "check:supabase-guard": "node scripts/check-supabase-lazy-access.cjs",
     "check:dist-assets": "node scripts/check-dist-assets.cjs",
