@@ -156,7 +156,7 @@ try { warnMissingIntegrationsOnce(); } catch {}
 //   VITE_SUPABASE_PUBLISHABLE_KEY — the anon/public key for this project
 //
 // NOTE: the variable is named VITE_SUPABASE_PUBLISHABLE_KEY throughout this
-// codebase (NOT VITE_SUPABASE_ANON_KEY). Set accordingly in CF Pages dashboard.
+// codebase. Set accordingly in the Vercel / CF Pages dashboard.
 function EnvDiagnosticScreen() {
   const missing: string[] = [];
   const url = import.meta.env.VITE_SUPABASE_URL;
