@@ -158,7 +158,7 @@ describe("MapErrorFallback — unit", () => {
         maxRetries={5}
       />
     );
-    const retryButton = screen.getByRole("button", { name: /retry in 5s/i });
+    const retryButton = screen.getByRole("button", { name: /retry in 5 seconds/i });
     expect(retryButton).toBeDisabled();
   });
 
@@ -169,7 +169,7 @@ describe("MapErrorFallback — unit", () => {
 
   it("disables Retry button and shows cooldown when isOnCooldown is true", () => {
     render(<MapErrorFallback message="Error" onRetry={vi.fn()} isOnCooldown cooldownRemaining={3} />);
-    const btn = screen.getByRole("button", { name: /retry in 3s/i });
+    const btn = screen.getByRole("button", { name: /retry in 3 seconds/i });
     expect(btn).toBeInTheDocument();
     expect(btn).toBeDisabled();
   });

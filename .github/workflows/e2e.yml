@@ -74,6 +74,8 @@ jobs:
       # ── Start dev/preview server ─────────────────────────────────────────────
       - name: Start preview server
         working-directory: easy-locs-ea1eb0ed
+        # vite preview defaults to port 4173; pass --port explicitly so
+        # wait-on and E2E_BASE_URL (both set to 5173) can reach the server.
         run: npm run preview -- --port 5173 &
 
       - name: Wait for server to be ready

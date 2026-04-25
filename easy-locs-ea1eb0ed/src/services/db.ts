@@ -49,9 +49,13 @@
  *   - marketplace_providers (marketplace — pending schema assignment)
  * These exceptions are tracked for future migration.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseEnvMissing } from "@/integrations/supabase/client";
 import type { DomainSchema } from "@/lib/schema/domain-schemas";
 import { DOMAIN_TABLE_MAP, LEGACY_TABLE_REDIRECTS } from "@/lib/schema/domain-schemas";
+
+// Re-exported so callers (e.g. main.tsx boot check) can import this boolean
+// from @/services/db without touching the raw supabase client module directly.
+export { supabaseEnvMissing };
 
 // ── Legacy table guard ──────────────────────────────────────────────────────
 

@@ -79,6 +79,9 @@ export default tseslint.config(
       "src/core/execution/idempotency-service.ts",
       "src/core/execution/lock-service.test.ts",
       "src/core/execution/lock-service.ts",
+      // watchdog.test.ts mocks the supabase module at the module boundary —
+      // this is a vi.mock call site, not a runtime client access (task #1017).
+      "src/core/execution/__tests__/watchdog.test.ts",
       "src/core/execution/task-dispatcher.ts",
       "src/hooks/useCacheMetrics.ts",
       "src/hooks/useKycGate.ts",

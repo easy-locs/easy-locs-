@@ -52,7 +52,9 @@ const DEFAULT_FLAGS: Record<DashboardCardKey, boolean> = {
   topHero: true,
   prayerTimes: true,
   intelligenceTicker: true,
-  engineHealth: true,
+  // OFF by default — internal diagnostic, not for end-users.
+  // Admins can enable via localStorage: dashboardCards.engineHealth=1
+  engineHealth: false,
   forex: true,
   news: true,
   mlRecommendations: true,
