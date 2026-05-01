@@ -1,3 +1,24 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  LEGACY_INACTIVE — IONOS Deploy Now — NOT EXECUTED BY GITHUB ACTIONS       ║
+# ║                                                                              ║
+# ║  DEPLOYMENT TARGET: IONOS Deploy Now (NOT the canonical deployment target)  ║
+# ║  CANONICAL TARGET:  Vercel (see .github/workflows/deploy-vercel.yml)        ║
+# ║                                                                              ║
+# ║  This file lives at easy-locs-ea1eb0ed/.github/workflows/ — a SUBDIRECTORY  ║
+# ║  of the repo root. GitHub Actions NEVER reads files here. This workflow     ║
+# ║  has NEVER been executed since it was placed in this location.              ║
+# ║                                                                              ║
+# ║  IONOS Deploy Now is a LEGACY/FALLBACK target. It is NOT:                   ║
+# ║    - the production deployment target                                        ║
+# ║    - the preview deployment target                                           ║
+# ║    - an actively maintained deployment path                                  ║
+# ║                                                                              ║
+# ║  To activate IONOS deployment you would need to:                            ║
+# ║    1. Move this file to .github/workflows/deploy-ionos.yml (repo root)      ║
+# ║    2. Set IONOS_PROJECT_ID, IONOS_BRANCH_ID, IONOS_API_KEY secrets          ║
+# ║    3. Explicitly declare IONOS canonical in CANONICAL_DEPLOYMENT.md         ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
 name: Deploy to IONOS
 
 on:

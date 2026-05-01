@@ -1,0 +1,85 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: cf-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Secrets preflight ────────────────────────────────────────────────────────
+  check-secrets:
+    name: Check CF secrets
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      secrets_ok: ${{ steps.check.outputs.ok }}
+    steps:
+      - name: Verify required secrets
+        id: check
+        run: |
+          MISSING=""
+          [ -z "$CF_API_TOKEN" ]    && MISSING="$MISSING CF_API_TOKEN"
+          [ -z "$CF_ACCOUNT_ID" ]   && MISSING="$MISSING CF_ACCOUNT_ID"
+          [ -z "$CF_PAGES_PROJECT" ] && MISSING="$MISSING CF_PAGES_PROJECT"
+          if [ -n "$MISSING" ]; then
+            echo "::warning::The following Cloudflare secrets are not set:$MISSING"
+            echo "::warning::Add them in GitHub → Settings → Secrets → Actions to enable CF Pages deploy."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_PAGES_PROJECT: ${{ secrets.CF_PAGES_PROJECT }}
+
+  # ── Build + deploy ───────────────────────────────────────────────────────────
+  deploy:
+    name: CF Pages Deploy
+    needs: check-secrets
+    if: needs.check-secrets.outputs.secrets_ok == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: easy-locs-ea1eb0ed/package-lock.json
+
+      - name: Install dependencies
+        working-directory: easy-locs-ea1eb0ed
+        run: npm ci --no-audit --no-fund
+
+      - name: Build (CF Pages mode)
+        working-directory: easy-locs-ea1eb0ed
+        run: npm run build:cf
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          CF_PAGES: "1"
+          NODE_OPTIONS: "--max-old-space-size=1536"
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: >
+            pages deploy easy-locs-ea1eb0ed/dist
+            --project-name=${{ secrets.CF_PAGES_PROJECT }}
+            ${{ github.ref == 'refs/heads/main' && '' || format('--branch={0}', github.head_ref || github.ref_name) }}

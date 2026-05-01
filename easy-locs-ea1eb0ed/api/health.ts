@@ -6,7 +6,10 @@ const SUPABASE_URL =
   "https://ifvuvbolrmuuugtzxsfk.supabase.co";
 
 const SUPABASE_ANON_KEY =
-  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
+  // VITE_SUPABASE_PUBLISHABLE_KEY is the canonical public key name in this codebase.
+  // SUPABASE_ANON_KEY is the server-side (non-VITE) equivalent for Vercel serverless.
+  // VITE_SUPABASE_ANON_KEY is a deprecated alias — do not add new usages.
+  process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 
 const HEALTH_CHECK_SECRET = process.env.HEALTH_CHECK_SECRET || "";
 

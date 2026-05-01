@@ -133,6 +133,15 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Amiri:wght@400;700&display=swap" media="print" onload="this.media='all'" />
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&family=Amiri:wght@400;700&display=swap" /></noscript>
     <link rel="preload" as="image" type="image/jpeg" href="/og/og-default.jpg" fetchpriority="low" />
+    <!--
+      modulepreload for the app entry point. Vite rewrites this to the hashed
+      output filename at build time, allowing the browser to discover and start
+      fetching the main JS chunk during <head> parsing rather than waiting until
+      the <script type="module"> tag near </body> is reached.
+      Vite additionally auto-injects <link rel="modulepreload"> for vendor-react,
+      vendor-supabase, and vendor-react-router (all direct imports of main.tsx).
+    -->
+    <link rel="modulepreload" href="/src/main.tsx" />
 
     <link rel="alternate" type="application/rss+xml" title="Easy-Locs Updates" href="https://www.easy-locs.com/feed.xml" />
     <link rel="alternate" type="application/rss+xml" title="Easy-Locs Cities" href="https://www.easy-locs.com/feed/cities.xml" />

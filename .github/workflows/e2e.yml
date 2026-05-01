@@ -48,7 +48,15 @@ jobs:
 
       # ── Playwright browsers ──────────────────────────────────────────────────
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'firefox webkit' || '' }}
+        env:
+          # Route the sharded-mode expression through an env var so ${{ }}
+          # never appears inside the shell command body (Semgrep-sensitive pattern).
+          INSTALL_EXTRA_BROWSERS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'true' || 'false' }}
+        run: |
+          npx playwright install --with-deps chromium
+          if [ "$INSTALL_EXTRA_BROWSERS" = "true" ]; then
+            npx playwright install --with-deps firefox webkit
+          fi
 
       # ── App deps + build ─────────────────────────────────────────────────────
       - name: Install app dependencies
@@ -61,6 +69,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          NODE_OPTIONS: "--max-old-space-size=4096"
 
       # ── Start dev/preview server ─────────────────────────────────────────────
       - name: Start preview server

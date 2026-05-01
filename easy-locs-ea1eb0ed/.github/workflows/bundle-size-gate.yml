@@ -1,3 +1,15 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║  INACTIVE_REFERENCE_ONLY — NOT EXECUTED BY GITHUB ACTIONS                  ║
+# ║                                                                              ║
+# ║  This file lives at easy-locs-ea1eb0ed/.github/workflows/ which is a        ║
+# ║  SUBDIRECTORY of the repository root. GitHub Actions ONLY reads workflow     ║
+# ║  files from the repository ROOT (.github/workflows/). This file is           ║
+# ║  therefore NEVER triggered.                                                  ║
+# ║                                                                              ║
+# ║  The canonical active copy is at .github/workflows/bundle-size-gate.yml     ║
+# ║  All changes must be made to the root copy, not this file.                  ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+
 name: Bundle Size Gate
 
 on:

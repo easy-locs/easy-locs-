@@ -46,7 +46,10 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       # 4. Critical E2E smoke (subset of Playwright suite) — BLOCKING.
-      - name: Build for preview
+      # MUST build first: playwright.config.ts uses `vite preview` in CI mode
+      # which requires dist/ to exist. Without this build step vite preview
+      # starts but immediately 404s, causing all smoke tests to time out.
+      - name: Build for preview (required before Playwright smoke)
         run: npm run prebuild && SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=4096 npx vite build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
