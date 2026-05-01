@@ -12,8 +12,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ── Secrets preflight ────────────────────────────────────────────────────────
+  # Fails fast with an actionable message instead of letting the 3-minute build
+  # run only to error on the deploy step with "Input required: vercel-token".
+  check-secrets:
+    name: Check Vercel secrets
+    runs-on: ubuntu-latest
+    outputs:
+      secrets_ok: ${{ steps.check.outputs.ok }}
+    steps:
+      - name: Verify required secrets
+        id: check
+        run: |
+          MISSING=""
+          [ -z "$VERCEL_TOKEN" ]      && MISSING="$MISSING VERCEL_TOKEN"
+          [ -z "$VERCEL_ORG_ID" ]     && MISSING="$MISSING VERCEL_ORG_ID"
+          [ -z "$VERCEL_PROJECT_ID" ] && MISSING="$MISSING VERCEL_PROJECT_ID"
+          if [ -n "$MISSING" ]; then
+            echo "::warning::The following Vercel secrets are not provisioned:$MISSING"
+            echo "::warning::Add them in GitHub → Settings → Secrets → Actions. The deploy step will be skipped until then."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
   deploy:
     name: Vercel Deploy
+    needs: check-secrets
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -48,7 +77,10 @@ jobs:
           NODE_OPTIONS: "--max-old-space-size=4096"
 
       # ── Deploy to Vercel (Production on main, Preview on PRs) ─────────────────
+      # continue-on-error: true so a missing VERCEL_TOKEN never blocks the PR
+      # status. The check-secrets job above emits a warning instead.
       - name: Deploy to Vercel
+        continue-on-error: ${{ needs.check-secrets.outputs.secrets_ok != 'true' }}
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}

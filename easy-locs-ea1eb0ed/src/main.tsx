@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import RawApp from "./App";
 import { RootShell } from "@/app/root-shell";
+import { HealthCheckProvider } from "@/providers/HealthCheckProvider";
 import "./index.css";
 import { APP_VERSION } from "@/lib/version-check";
 import {
@@ -81,7 +82,7 @@ if (typeof window !== "undefined") {
   } catch {}
 }
 
-// "Big tech" stuck-app failsafe: if 5 seconds after boot the user is still
+// "Big tech" stuck-app failsafe: if 3 seconds after boot the user is still
 // on the splash OR has been bounced into a known redirect-loop URL with no
 // route content rendered, hard-redirect to /emergency.html?stuck=1 so they
 // always have a working escape hatch. This catches:
@@ -92,7 +93,7 @@ if (typeof window !== "undefined") {
 // The ?stuck=1 param tells emergency.html to auto-purge SW + caches and
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
-  const STUCK_DEADLINE_MS = 5000;
+  const STUCK_DEADLINE_MS = 3000;
   // nosemgrep: javascript.lang.security.detect-eval-with-expression.detect-eval-with-expression -- passing a callback function, not a string; URL params use encodeURIComponent
   setTimeout(() => {
     try {
@@ -164,9 +165,20 @@ function EnvDiagnosticScreen() {
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!url || (url as string).trim().length === 0) missing.push("VITE_SUPABASE_URL");
   if (!key || (key as string).trim().length === 0) missing.push("VITE_SUPABASE_PUBLISHABLE_KEY");
+
+  // Detect which platform we're running on so we can give targeted instructions.
+  const isVercel = typeof window !== "undefined" && window.location.hostname.endsWith(".vercel.app");
+  const isCFPages = typeof window !== "undefined" && window.location.hostname.endsWith(".pages.dev");
+  const platformLabel = isVercel ? "Vercel" : isCFPages ? "Cloudflare Pages" : "your hosting platform";
+  const dashboardPath = isVercel
+    ? "Vercel → Project → Settings → Environment Variables"
+    : isCFPages
+    ? "Cloudflare Dashboard → Pages → Project → Settings → Environment Variables"
+    : "your hosting platform → Environment Variables";
+
   return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans',system-ui,sans-serif", background: "hsl(225 28% 7%)" }}>
-      <div style={{ textAlign: "center", maxWidth: 480, padding: "32px 24px" }}>
+      <div style={{ textAlign: "center", maxWidth: 520, padding: "32px 24px" }}>
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ margin: "0 auto 16px", display: "block" }}>
           <circle cx="24" cy="24" r="8.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.35" fill="none"/>
           <circle cx="24" cy="24" r="14.4" stroke="hsl(168 72% 44%)" strokeWidth="0.8" strokeOpacity="0.27" fill="none"/>
@@ -174,11 +186,10 @@ function EnvDiagnosticScreen() {
           <circle cx="24" cy="24" r="2.4" fill="hsl(168 72% 44%)"/>
         </svg>
         <p style={{ fontSize: 20, color: "#f8fafc", margin: "0 0 8px", fontWeight: 700 }}>Configuration Required</p>
-        <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 20px", lineHeight: 1.6 }}>
-          The following environment variable{missing.length > 1 ? "s are" : " is"} missing or invalid.<br/>
-          Set {missing.length > 1 ? "them" : "it"} in the Cloudflare Pages dashboard under<br/>
-          <strong style={{ color: "#cbd5e1" }}>Settings → Environment Variables</strong>.
+        <p style={{ fontSize: 14, color: "#94a3b8", margin: "0 0 16px", lineHeight: 1.6 }}>
+          The following environment variable{missing.length > 1 ? "s are" : " is"} missing or invalid on <strong style={{ color: "#cbd5e1" }}>{platformLabel}</strong>.
         </p>
+        {/* Missing variables */}
         <div style={{ background: "hsl(225 28% 11%)", border: "1px solid hsl(225 28% 20%)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, textAlign: "left" }}>
           {missing.map(name => (
             <div key={name} style={{ fontFamily: "monospace", fontSize: 13, color: "#f87171", marginBottom: 4 }}>
@@ -186,8 +197,19 @@ function EnvDiagnosticScreen() {
             </div>
           ))}
         </div>
+        {/* Step-by-step fix guide */}
+        <div style={{ background: "hsl(225 28% 10%)", border: "1px solid hsl(225 28% 18%)", borderRadius: 10, padding: "14px 16px", marginBottom: 20, textAlign: "left" }}>
+          <p style={{ fontSize: 13, color: "#94a3b8", margin: "0 0 10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>How to fix</p>
+          <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#cbd5e1", lineHeight: 1.7 }}>
+            <li>Open your <strong style={{ color: "#f8fafc" }}>Supabase project</strong> → <em>Settings → API</em></li>
+            <li>Copy the <strong style={{ color: "#f8fafc" }}>Project URL</strong> (starts with <code style={{ color: "#7dd3fc" }}>https://</code>) — this is <code style={{ color: "#7dd3fc" }}>VITE_SUPABASE_URL</code></li>
+            <li>Copy the <strong style={{ color: "#f8fafc" }}>anon public</strong> key — this is <code style={{ color: "#7dd3fc" }}>VITE_SUPABASE_PUBLISHABLE_KEY</code></li>
+            <li>Go to <strong style={{ color: "#f8fafc" }}>{dashboardPath}</strong> and add both variables</li>
+            <li>Re-deploy the app — this screen will disappear automatically</li>
+          </ol>
+        </div>
         <p style={{ fontSize: 12, color: "#64748b", margin: 0 }}>
-          Re-deploy after adding the variables. No secrets are exposed in this screen.
+          No secrets are exposed in this screen. Variable names only.
         </p>
       </div>
     </div>
@@ -199,7 +221,11 @@ try {
   root.render(
     <BrowserRouter>
       <RootShell>
-        {supabaseEnvMissing ? <EnvDiagnosticScreen /> : <App />}
+        {supabaseEnvMissing ? <EnvDiagnosticScreen /> : (
+          <HealthCheckProvider>
+            <App />
+          </HealthCheckProvider>
+        )}
       </RootShell>
     </BrowserRouter>
   );
