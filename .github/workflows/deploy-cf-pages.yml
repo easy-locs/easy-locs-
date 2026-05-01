@@ -16,6 +16,7 @@ jobs:
   check-secrets:
     name: Check CF secrets
     runs-on: ubuntu-latest
+    permissions: {}
     outputs:
       secrets_ok: ${{ steps.check.outputs.ok }}
     steps:
