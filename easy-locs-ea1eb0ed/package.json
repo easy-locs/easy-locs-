@@ -8,6 +8,7 @@
     "dev": "bash scripts/kill-port.sh && npx vite",
     "prebuild": "node scripts/check-build-invariants.cjs && npx tsx scripts/generate-locales.ts",
     "build": "vite build",
+    "build:cf": "npm run prebuild && SKIP_HEAVY_SEO=1 NODE_OPTIONS=--max-old-space-size=1536 vite build",
     "build:dev": "vite build --mode development",
     "build:analyze": "vite build && echo 'Bundle report: dist/bundle-report.html'",
     "check:bundle": "npx tsx scripts/check-bundle-size.ts",
@@ -57,7 +58,15 @@
     "version:bump": "npx tsx scripts/version-bump.ts",
     "api:docs": "npx tsx scripts/api-doc-generator.ts",
     "sdk:generate": "npx tsx scripts/sdk-generator.ts",
-    "generate:locales": "npx tsx scripts/generate-locales.ts"
+    "generate:locales": "npx tsx scripts/generate-locales.ts",
+    "check:cf-strict": "node scripts/check-cloudflare-strict.cjs",
+    "check:supabase-guard": "node scripts/check-supabase-lazy-access.cjs",
+    "check:dist-assets": "node scripts/check-dist-assets.cjs",
+    "generate:route-inventory": "node scripts/generate-route-inventory.cjs",
+    "generate:final-verdict": "node scripts/generate-final-verdict.cjs",
+    "gate:all": "npm run check:cf-strict && npm run check:supabase-guard && npm run generate:route-inventory",
+    "test:armada": "npx playwright test --config=playwright.runtime.config.ts tests/runtime/route-armada.spec.ts",
+    "test:flows": "npx playwright test --config=playwright.runtime.config.ts tests/runtime/flow-coverage.spec.ts"
   },
   "dependencies": {
     "@builder.io/partytown": "^0.10.3",
@@ -161,7 +170,8 @@
   },
   "overrides": {
     "protobufjs": "7.5.5",
-    "serialize-javascript": "7.0.5"
+    "serialize-javascript": "7.0.5",
+    "@xmldom/xmldom": "0.8.13"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -200,6 +210,7 @@
     "tsx": "^4.21.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
+    "vitest-axe": "^0.1.0",
     "vite": "^5.4.19",
     "vite-plugin-compression": "^0.5.1"
   }

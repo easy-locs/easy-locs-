@@ -2,11 +2,4 @@
 # Each line is a route path that is currently duplicated and that
 # the build accepts as a known regression. Resolve and remove from
 # this file; never add new entries without a paired cleanup task.
-/admin/agents
-/admin/agents/:slug/runs
-/admin/approvals
-/admin/autonomy
-/admin/command-center
-/admin/control-room
-/admin/engine-control-room
-/admin/master-control
+

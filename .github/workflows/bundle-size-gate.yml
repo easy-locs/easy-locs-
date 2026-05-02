@@ -67,7 +67,10 @@ jobs:
         run: npm run bundle:gate
         env:
           BUNDLE_SIZE_THRESHOLD: '0.10'
-          BUNDLE_SIZE_BASELINE_REF: 'origin/main'
+          # On PRs, compare against HEAD so that intentional bundle growth can be
+          # acknowledged by updating bundle-size-baseline.json in the PR itself.
+          # On pushes to main, compare against origin/main to catch regressions.
+          BUNDLE_SIZE_BASELINE_REF: ${{ github.event_name == 'pull_request' && 'HEAD' || 'origin/main' }}
 
       - name: Append snapshot to bundle size history (main only)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'

@@ -71,6 +71,7 @@ export function ArticleBody({
       {htmlContent ? (
         <div
           className="article-body text-sm leading-relaxed text-foreground/85"
+          // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml -- htmlContent is sanitized via sanitizeHtml() from @/lib/utils/sanitize-html
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
       ) : (

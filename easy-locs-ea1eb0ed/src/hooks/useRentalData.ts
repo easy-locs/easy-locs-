@@ -389,7 +389,7 @@ export function useRentalData(countryFilter?: string | null) {
     if (!orgId || !user) return;
 
     try {
-      const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}_${Math.random().toString(36).slice(2)}`;
+      const token = `inv_${crypto.randomUUID()}_${crypto.randomUUID()}`;
 
       await rentalRepo.insertTenantInvitation({
         org_id: orgId, tenant_id: tenant.id, token, email: normalizedEmail, invited_by: user.id,

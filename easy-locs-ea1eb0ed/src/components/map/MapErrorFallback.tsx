@@ -136,7 +136,7 @@ export default function MapErrorFallback({
             aria-disabled={isOnCooldown}
             aria-label={
               isOnCooldown
-                ? `Retry in ${cooldownRemaining}s`
+                ? `Retry in ${cooldownRemaining} seconds`
                 : `Retry map load, attempt ${retryCount} of ${maxRetries}`
             }
             className="mt-3 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all"

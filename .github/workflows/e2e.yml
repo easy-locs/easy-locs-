@@ -62,13 +62,16 @@ jobs:
       - name: Build app
         working-directory: easy-locs-ea1eb0ed
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       # ── Start dev/preview server ─────────────────────────────────────────────
       - name: Start preview server
         working-directory: easy-locs-ea1eb0ed
-        run: npm run preview &
-        env:
-          PORT: 5173
+        # vite preview defaults to port 4173; pass --port explicitly so
+        # wait-on and E2E_BASE_URL (both set to 5173) can reach the server.
+        run: npm run preview -- --port 5173 &
 
       - name: Wait for server to be ready
         run: npx wait-on http://localhost:5173 --timeout 60000
@@ -80,3 +83,30 @@ jobs:
           E2E_BASE_URL: http://localhost:5173
           E2E_WORKERS: ${{ github.event_name == 'workflow_dispatch' && inputs.workers || '4' }}
           E2E_SHARDED: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && '1' || '0' }}
+          # Authenticated-test credentials — sourced from repository secrets.
+          # When absent, tests using `authenticatedPage` / `signedInPage` skip
+          # automatically (safe in fork PRs that cannot access secrets).
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          QA_EMAIL_USER: ${{ secrets.QA_EMAIL_USER }}
+          QA_EMAIL_PASSWORD: ${{ secrets.QA_EMAIL_PASSWORD }}
+          QA_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          QA_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+          E2E_SUPER_ADMIN_EMAIL: ${{ secrets.QA_ADMIN_EMAIL }}
+          E2E_SUPER_ADMIN_PASSWORD: ${{ secrets.QA_ADMIN_PASSWORD }}
+          QA_EMPTY_EMAIL: ${{ secrets.QA_EMPTY_EMAIL }}
+          QA_EMPTY_PASSWORD: ${{ secrets.QA_EMPTY_PASSWORD }}
+          QA_HEAVY_EMAIL: ${{ secrets.QA_HEAVY_EMAIL }}
+          QA_HEAVY_PASSWORD: ${{ secrets.QA_HEAVY_PASSWORD }}
+          QA_PHONE_NUMBER: ${{ secrets.QA_PHONE_NUMBER }}
+          QA_OTP_BYPASS_TOKEN: ${{ secrets.QA_OTP_BYPASS_TOKEN }}
+
+      # ── Upload artifacts on failure ──────────────────────────────────────────
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            test-results/
+          retention-days: 14

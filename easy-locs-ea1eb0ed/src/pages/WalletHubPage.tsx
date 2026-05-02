@@ -372,8 +372,8 @@ export default function WalletHubPage() {
                   <TrendingUp className="w-[18px] h-[18px] text-accent" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="text-[0.8125rem] font-bold text-foreground/90">Forex · Taux de change</div>
-                  <div className="text-[0.6875rem] text-muted-foreground mt-px">EUR/USD · USD/AED · et 120+ devises</div>
+                  <div className="text-[0.8125rem] font-bold text-foreground/90">{tSafe(t, "wallet.forexTitle", "Forex · Exchange Rates")}</div>
+                  <div className="text-[0.6875rem] text-muted-foreground mt-px">{tSafe(t, "wallet.forexSubtitle", "EUR/USD · USD/AED · 120+ currencies")}</div>
                 </div>
                 <ArrowRight className="w-4 h-4 text-accent/60 shrink-0" />
               </motion.button>

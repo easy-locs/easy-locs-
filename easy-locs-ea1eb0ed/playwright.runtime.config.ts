@@ -21,7 +21,7 @@ const isExternalUrl =
   !/localhost|127\.0\.0\.1|\[::1\]/.test(process.env.BASE_URL);
 
 export default defineConfig({
-  testDir: "./tests/runtime/execution",
+  testDir: "./tests/runtime",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

@@ -1374,6 +1374,9 @@ export function prerenderPlugin(): Plugin {
         }
 
         const baseHtml = fs.readFileSync(indexPath, "utf-8");
+
+        // Build all routes once for validation, then stream-write to disk in
+        // batches so we never hold all ~7 800 HTML strings in memory at once.
         const routes = buildAllRenderedRoutes();
 
         for (const route of routes) {
@@ -1396,27 +1399,36 @@ export function prerenderPlugin(): Plugin {
         let skipped = 0;
         const errors: string[] = [];
 
-        for (const route of routes) {
-          if (route.htmlFile === "index.html") {
-            // Root route — inject into the existing index.html
-            const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
-            fs.writeFileSync(indexPath, html, "utf-8");
-            generated++;
-            continue;
-          }
+        // Write routes in batches of 200 to cap peak memory from assembled
+        // HTML strings.  After each batch the GC can reclaim that memory before
+        // the next batch is assembled.
+        const BATCH_SIZE = 200;
+        for (let i = 0; i < routes.length; i += BATCH_SIZE) {
+          const batch = routes.slice(i, i + BATCH_SIZE);
+          for (const route of batch) {
+            if (route.htmlFile === "index.html") {
+              // Root route — inject into the existing index.html
+              const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
+              fs.writeFileSync(indexPath, html, "utf-8");
+              generated++;
+              continue;
+            }
 
-          const outPath = path.resolve(distDir, route.htmlFile);
-          const outDir = path.dirname(outPath);
+            const outPath = path.resolve(distDir, route.htmlFile);
+            const outDir = path.dirname(outPath);
 
-          try {
-            fs.mkdirSync(outDir, { recursive: true });
-            const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
-            fs.writeFileSync(outPath, html, "utf-8");
-            generated++;
-          } catch (err) {
-            errors.push(`${route.urlPath}: ${err}`);
-            skipped++;
+            try {
+              fs.mkdirSync(outDir, { recursive: true });
+              const html = injectIntoHtml(baseHtml, route.headMeta, route.bodyContent);
+              fs.writeFileSync(outPath, html, "utf-8");
+              generated++;
+            } catch (err) {
+              errors.push(`${route.urlPath}: ${err}`);
+              skipped++;
+            }
           }
+          // Yield to the event loop between batches so GC can run.
+          await new Promise(resolve => setImmediate(resolve));
         }
 
         if (errors.length > 0) {

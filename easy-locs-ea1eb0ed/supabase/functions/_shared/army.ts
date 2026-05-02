@@ -231,4 +231,3 @@ export async function canSpawn(
   if (error) return { ok: false, reason: error.message };
   return data as { ok: boolean; reason?: string };
 }
-}

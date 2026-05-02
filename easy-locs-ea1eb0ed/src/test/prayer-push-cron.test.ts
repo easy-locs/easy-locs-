@@ -9,6 +9,14 @@ import {
   type CronLogger,
 } from "../../supabase/functions/_shared/prayer-cron-helpers";
 
+// Mock the Deno-side content-mutation module so that cRpcEdge delegates
+// directly to supabase.rpc without the Deno-only dispatch gate.
+vi.mock("../../supabase/functions/_shared/execution/content-mutation", () => ({
+  cRpcEdge: async (sb: SupabaseClient, name: string, args?: Record<string, unknown>) =>
+    sb.rpc(name, args ?? {}),
+  cFromEdge: (sb: SupabaseClient) => sb.from.bind(sb),
+}));
+
 describe("prayer-push-cron: isWithinWindow", () => {
   it("returns true when current time is exactly at prayer time", () => {
     expect(isWithinWindow("12:30", 0, 12 * 60 + 30)).toBe(true);
@@ -86,6 +94,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -107,6 +117,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: ["Fajr"],
+        prayer_send_states: { Fajr: { state: "sent", retry_count: 0, claimed_at: null } },
+        max_retry_count: 3,
       },
     ];
 
@@ -123,6 +135,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -139,6 +153,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 10,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -158,6 +174,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "America/New_York",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
       {
         user_id: "u2",
@@ -166,6 +184,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "Asia/Tokyo",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -182,6 +202,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -220,6 +242,8 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
 
@@ -240,6 +264,11 @@ describe("prayer-push-cron: findPrayersToNotify (schedule matching & deduplicati
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: ["Fajr", "Dhuhr"],
+        prayer_send_states: {
+          Fajr: { state: "sent", retry_count: 0, claimed_at: null },
+          Dhuhr: { state: "sent", retry_count: 0, claimed_at: null },
+        },
+        max_retry_count: 3,
       },
     ];
 
@@ -287,7 +316,7 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
     const supabase = createMockSupabase([]);
     const result = await processPrayerCron(supabase, mockLogger);
 
-    expect(result).toEqual({ processed: 0, sent: 0, failed: 0 });
+    expect(result).toEqual({ processed: 0, sent: 0, failed: 0, retried: 0 });
     expect(mockInvoke).not.toHaveBeenCalled();
     expect(mockRpc).not.toHaveBeenCalled();
   });
@@ -317,6 +346,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -357,6 +388,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -366,14 +399,14 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
 
     expect(result.sent).toBe(0);
     expect(result.failed).toBe(1);
-    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledTimes(2); // claim + mark_failed
     expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
       p_user_id: "u1",
       p_date: "2026-04-15",
       p_prayer_name: "Fajr",
     });
     expect(mockLogger.error).toHaveBeenCalledWith(
-      "prayer_push_invoke_error",
+      "prayer_push_failed",
       expect.objectContaining({ userId: "u1", prayerName: "Fajr" }),
     );
   });
@@ -390,6 +423,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -399,14 +434,14 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
 
     expect(result.sent).toBe(0);
     expect(result.failed).toBe(1);
-    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledTimes(2); // claim + mark_failed
     expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
       p_user_id: "u1",
       p_date: "2026-04-15",
       p_prayer_name: "Fajr",
     });
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      "prayer_push_no_tokens_delivered",
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      "prayer_push_failed",
       expect.objectContaining({ userId: "u1" }),
     );
   });
@@ -423,6 +458,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
       {
         user_id: "u2",
@@ -431,6 +468,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -445,7 +484,7 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
     expect(result.failed).toBe(1);
     expect(result.processed).toBe(2);
 
-    expect(mockRpc).toHaveBeenCalledTimes(2);
+    expect(mockRpc).toHaveBeenCalledTimes(4); // claim(u1) + mark_sent(u1) + claim(u2) + mark_failed(u2)
     expect(mockRpc).toHaveBeenCalledWith("claim_prayer_send", {
       p_user_id: "u1",
       p_date: "2026-04-15",
@@ -470,6 +509,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -498,6 +539,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -525,6 +568,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: ["Dhuhr"],
+        prayer_send_states: { Dhuhr: { state: "sent", retry_count: 0, claimed_at: null } },
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);
@@ -547,6 +592,8 @@ describe("prayer-push-cron: processPrayerCron (integration)", () => {
         offset_minutes: 0,
         timezone: "UTC",
         sent_prayers: [],
+        prayer_send_states: {},
+        max_retry_count: 3,
       },
     ];
     const supabase = createMockSupabase(schedules);

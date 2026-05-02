@@ -49,9 +49,13 @@
  *   - marketplace_providers (marketplace — pending schema assignment)
  * These exceptions are tracked for future migration.
  */
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseEnvMissing } from "@/integrations/supabase/client";
 import type { DomainSchema } from "@/lib/schema/domain-schemas";
 import { DOMAIN_TABLE_MAP, LEGACY_TABLE_REDIRECTS } from "@/lib/schema/domain-schemas";
+
+// Re-exported so callers (e.g. main.tsx boot check) can import this boolean
+// from @/services/db without touching the raw supabase client module directly.
+export { supabaseEnvMissing };
 
 // ── Legacy table guard ──────────────────────────────────────────────────────
 
@@ -119,20 +123,58 @@ type DbFn = {
 const _from = (table: string) =>
   (supabase as unknown as { from: (t: string) => ReturnType<typeof supabase.from> }).from(table);
 
+// All sub-client accessors below are intentionally lazy (accessed at call time,
+// not at module init). When supabase env is missing the exported client is a
+// Proxy that throws on every property access; eager access at module-eval time
+// would crash before React can render, producing a permanent blank screen.
+// Making each accessor a function/getter delays the throw to the actual call
+// site — which is inside a component or effect that can be caught by an error
+// boundary or try/catch — so React can still commit and the user sees an error
+// UI rather than a white screen.
+
 export const db: DbFn = Object.assign(_from, {
   from: _from,
-  rpc: (supabase as unknown as { rpc: typeof supabase.rpc }).rpc.bind(supabase),
-  // Lazy accessor: only resolves supabase.schema at call time so mocks that
-  // stub @/integrations/supabase/client don't need schema at module init.
+  // Lazy: accesses supabase.rpc only when the function is called.
+  rpc: ((...args: Parameters<typeof supabase.rpc>) =>
+    (supabase as unknown as { rpc: typeof supabase.rpc }).rpc(...args)) as typeof supabase.rpc,
+  // Lazy: resolves supabase.schema at call time.
   schema: (...args: Parameters<typeof supabase.schema>) =>
     (supabase as unknown as { schema: typeof supabase.schema }).schema(...args),
-  storage: supabase.storage,
-  functions: supabase.functions,
-  auth: supabase.auth,
-  channel: supabase.channel.bind(supabase),
-  removeChannel: supabase.removeChannel.bind(supabase),
-  getChannels: supabase.getChannels.bind(supabase),
-  removeAllChannels: supabase.removeAllChannels.bind(supabase),
+  // storage/functions/auth: lazy via placeholder that will be overridden by
+  // Object.defineProperties below. Typed stubs keep TS happy before the
+  // defineProperties call overrides them.
+  storage: null as unknown as typeof supabase.storage,
+  functions: null as unknown as typeof supabase.functions,
+  auth: null as unknown as typeof supabase.auth,
+  // Lazy wrappers for realtime helpers — access supabase.channel only at call time.
+  channel: ((...args: Parameters<typeof supabase.channel>) =>
+    supabase.channel(...args)) as typeof supabase.channel,
+  removeChannel: ((...args: Parameters<typeof supabase.removeChannel>) =>
+    supabase.removeChannel(...args)) as typeof supabase.removeChannel,
+  getChannels: (() =>
+    supabase.getChannels()) as typeof supabase.getChannels,
+  removeAllChannels: (() =>
+    supabase.removeAllChannels()) as typeof supabase.removeAllChannels,
+});
+
+// Lazy getters for storage/functions/auth — property access on `db` defers
+// the corresponding supabase sub-client lookup to the actual use site.
+Object.defineProperties(db, {
+  storage: {
+    get: () => supabase.storage,
+    enumerable: true,
+    configurable: true,
+  },
+  functions: {
+    get: () => supabase.functions,
+    enumerable: true,
+    configurable: true,
+  },
+  auth: {
+    get: () => supabase.auth,
+    enumerable: true,
+    configurable: true,
+  },
 });
 
 // ── v2db — legacy-guarded accessor ─────────────────────────────────────────

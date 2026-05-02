@@ -172,6 +172,17 @@ async function verifySeededListings(supabase: SupabaseClient, ids: string[]) {
 export default async function globalSetup() {
   console.log("\n[e2e-seed] ── Global Setup: Seeding test data ──\n");
 
+  // Gracefully skip DB seed when Supabase credentials are not available in CI.
+  // Smoke tests will still run against public routes; auth-gated tests are
+  // skipped by Playwright's dependency on the seeded fixtures.
+  if (!process.env.VITE_SUPABASE_URL) {
+    console.warn(
+      "[e2e-seed] VITE_SUPABASE_URL not set — skipping DB seed (no credentials available in CI).\n" +
+        "[e2e-seed] Smoke tests will run against public routes only."
+    );
+    return;
+  }
+
   const { client: supabase, hasServiceRole } = createAdminClient();
   const userId = await authenticateTestUser(supabase);
 

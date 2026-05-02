@@ -14,7 +14,7 @@ import {
 import { startTrace, installFetchTracePropagation } from "@/lib/observability/trace-context";
 import { initBrowserOtel } from "@/lib/observability/otel-bootstrap";
 import { validateIntegrationsBoot, warnMissingIntegrationsOnce } from "@/lib/integrations";
-import { supabaseEnvMissing } from "@/integrations/supabase/client";
+import { supabaseEnvMissing } from "@/services/db";
 
 // Boot-crash tracking MUST be the first thing so we catch errors thrown
 // during module evaluation, React mount, or the very first render. Full
@@ -93,6 +93,7 @@ if (typeof window !== "undefined") {
 // surface a "We rescued you" banner with the reason.
 if (typeof window !== "undefined" && window.location.pathname !== "/emergency.html") {
   const STUCK_DEADLINE_MS = 5000;
+  // nosemgrep: javascript.lang.security.detect-eval-with-expression.detect-eval-with-expression -- passing a callback function, not a string; URL params use encodeURIComponent
   setTimeout(() => {
     try {
       if ((window as any).__EASYLOCS_REACT_MOUNTED__) return;
@@ -255,7 +256,7 @@ requestIdleCallback(() => {
   Promise.all([
     flushSentryBoot(),
     import("@/lib/auto-heal").then(m => m.installGlobalHealer()),
-  ]).catch((err) => { console.warn("[boot] Stage 1 failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 1 failed:", err); captureBootCrash(err, { phase: "stage-1" }); });
 }, { timeout: 2000 });
 
 // Stage 2: Navigation readiness (300ms after mount, < 1s budget)
@@ -287,7 +288,7 @@ setTimeout(() => {
       .then(m => m.initRoutePrefetch()),
     import("@/lib/platform/web-vitals").then(m => m.initWebVitals()),
     import("@/lib/performance/web-vitals-reporter").then(m => m.initWebVitalsReporter()),
-  ]).catch((err) => { console.warn("[boot] Stage 2 failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 2 failed:", err); captureBootCrash(err, { phase: "stage-2" }); });
 }, 300);
 
 // Stage 3: Enrichment (idle, < 3s budget)
@@ -313,7 +314,7 @@ requestIdleCallback(() => {
       script.textContent = JSON.stringify(ld);
       document.head.appendChild(script);
     }),
-  ]).catch((err) => { console.warn("[boot] Stage 3a failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 3a failed:", err); captureBootCrash(err, { phase: "stage-3a" }); });
 }, { timeout: 3000 });
 
 requestIdleCallback(() => {
@@ -322,5 +323,5 @@ requestIdleCallback(() => {
     import("@/lib/events/event-init"),
     import("@/lib/e2ee/e2ee-session-manager").then(m => m.warmupE2EE()),
     import("@/lib/maplibre/config").then(m => m.validateMapBoot()),
-  ]).catch((err) => { console.warn("[boot] Stage 3b failed:", err); });
+  ]).catch((err) => { console.warn("[boot] Stage 3b failed:", err); captureBootCrash(err, { phase: "stage-3b" }); });
 }, { timeout: 5000 });

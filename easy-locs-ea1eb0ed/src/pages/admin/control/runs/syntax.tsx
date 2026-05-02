@@ -62,7 +62,7 @@ export function JsonHighlight({ value }: { value: unknown }) {
   return (
     <pre
       className="text-xs whitespace-pre-wrap rounded border bg-muted/20 p-3 max-h-80 overflow-auto font-mono"
-      // Safe: `colorizeJson` escapes HTML before injecting span markup.
+      // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml -- Safe: `colorizeJson` escapes HTML before injecting span markup.
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
@@ -110,7 +110,7 @@ export function MarkdownHighlight({ source }: { source: string }) {
   return (
     <pre
       className="text-xs whitespace-pre-wrap rounded border bg-muted/20 p-3 max-h-80 overflow-auto"
-      // Safe: `colorizeMarkdown` escapes HTML before token replacement.
+      // nosemgrep: typescript.react.security.audit.react-dangerouslysetinnerhtml.react-dangerouslysetinnerhtml -- Safe: `colorizeMarkdown` escapes HTML before token replacement.
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );
