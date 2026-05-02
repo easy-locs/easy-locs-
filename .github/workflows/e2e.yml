@@ -48,7 +48,11 @@ jobs:
 
       # ── Playwright browsers ──────────────────────────────────────────────────
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'firefox webkit' || '' }}
+        env:
+          # Use an intermediate env var to avoid run-shell-injection (CWE-78).
+          # Never interpolate ${{ github.* }} directly inside a run: script.
+          EXTRA_BROWSERS: ${{ (github.event_name == 'workflow_dispatch' && inputs.sharded == 'true') && 'firefox webkit' || '' }}
+        run: npx playwright install --with-deps chromium $EXTRA_BROWSERS
 
       # ── App deps + build ─────────────────────────────────────────────────────
       - name: Install app dependencies
