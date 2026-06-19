@@ -62,7 +62,6 @@ const App = () => (
           <DeferredServicesProvider>
           <AppLockGuardShell>
             <Suspense fallback={null}><IntentNavigateProvider /></Suspense>
-            <DeferredBootGuards />
             <NavigationTracker />
             <Suspense fallback={null}>
               <SmartCoreTracker />
@@ -76,6 +75,10 @@ const App = () => (
                 </SwipeableMain>
               </TransitionRouter>
             </Suspense>
+            {/* DeferredBootGuards runs AFTER the router so it never delays
+                first paint — guards and background services load lazily once
+                the page is interactive. */}
+            <DeferredBootGuards />
             <Suspense fallback={null}><MainBottomNav /></Suspense>
             {/*
               CookieConsentBanner MUST live inside AuthProvider so its

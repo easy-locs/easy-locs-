@@ -4,7 +4,7 @@
  *
  * Before the fix, `ProtectedRoute` rendered an `InlineSkeleton` for as long
  * as `profileLoaded` stayed `false`, with no upper bound. If profile
- * hydration in `AuthContext` stalled past its own 9s safety timeout (or a
+ * hydration in `AuthContext` stalled past its own 2s safety timeout (or a
  * state update was dropped after a `TOKEN_REFRESHED` / account swap) a
  * verified super admin would be trapped on a permanent skeleton at
  * `/dashboard`. The fix mirrors the `useProfileTimeout` pattern from
@@ -15,7 +15,7 @@
  *   1. A verified user with `profileLoaded = true` renders children
  *      without redirecting (the happy path the audit confirms must work).
  *   2. A verified user whose `profileLoaded` never flips eventually
- *      escapes the skeleton via the 5s timeout fallback.
+ *      escapes the skeleton via the 2s timeout fallback.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
@@ -93,7 +93,7 @@ describe("ProtectedRoute (task #1049)", () => {
     expect(screen.queryByTestId("verify")).toBeNull();
   });
 
-  it("falls back out of the skeleton after 5s when profileLoaded never flips", () => {
+  it("falls back out of the skeleton after 2s when profileLoaded never flips", () => {
     vi.useFakeTimers();
     try {
       useAuthSessionMock.mockReturnValue({
@@ -106,9 +106,9 @@ describe("ProtectedRoute (task #1049)", () => {
       // Initially still in the skeleton — no dashboard yet.
       expect(screen.queryByTestId("dashboard")).toBeNull();
 
-      // Advance past the 5s timeout fallback.
+      // Advance past the 2s timeout fallback.
       act(() => {
-        vi.advanceTimersByTime(5_001);
+        vi.advanceTimersByTime(2_001);
       });
 
       expect(screen.getByTestId("dashboard")).toBeInTheDocument();
